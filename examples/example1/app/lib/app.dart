@@ -1,0 +1,15 @@
+export 'src/core/navigation_router.dart';
+export 'src/data/datasource/assets_articles_data_source.dart';
+export 'src/data/mappers/article_entity_data_mapper.dart';
+export 'src/data/repositories/articles_repository_impl.dart';
+export 'src/domain/interactors/articles_screen_ineractor.dart';
+export 'src/domain/interactors/detail_article_screen_ineractor.dart';
+export 'src/domain/repositories/articles_repository.dart';
+export 'src/presentation/blocs/articles_screen_bloc.dart';
+export 'src/presentation/common/navigation_router_impl.dart';
+export 'src/presentation/interactors/articles_screen_ineractor_impl.dart';
+export 'src/presentation/interactors/detail_article_screen_ineractor_impl.dart';
+export 'src/presentation/mappers/article_model_data_mapper.dart';
+export 'src/presentation/mappers/detail_article_model_data_mapper.dart';
+export 'src/presentation/screens/articles_screen.dart';
+export 'src/presentation/screens/detail_article_screen.dart';

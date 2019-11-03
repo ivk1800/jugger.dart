@@ -1,0 +1,12 @@
+# Read about `build.yaml` at https://pub.dartlang.org/packages/build_config
+builders:
+  jugger_generator:
+    target: ":jugger_generator"
+    import: "package:jugger_generator/jugger_generator.dart"
+    builder_factories:
+      - "componentBuilder"
+    build_extensions:
+      ".dart":
+        - ".jugger.dart"
+    auto_apply: dependents
+    build_to: source

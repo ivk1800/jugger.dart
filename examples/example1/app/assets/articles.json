@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "title": "SQL injection",
+    "description": "SQL injection is a code injection technique, used to attack data-driven applications...",
+    "full_description": "SQL injection is a code injection technique, used to attack data-driven applications, in which malicious SQL statements are inserted into an entry field for execution (e.g. to dump the database contents to the attacker).[1] SQL injection must exploit a security vulnerability in an application's software, for example, when user input is either incorrectly filtered for string literal escape characters embedded in SQL statements or user input is not strongly typed and unexpectedly executed. SQL injection is mostly known as an attack vector for websites but can be used to attack any type of SQL database."
+  },
+  {
+    "id": 2,
+    "title": "Code injection",
+    "description": "Code injection is the exploitation of a computer bug that is caused by processing invalid data.",
+    "full_description": "Code injection is the exploitation of a computer bug that is caused by processing invalid data. Injection is used by an attacker to introduce (or \"inject\") code into a vulnerable computer program and change the course of execution. The result of successful code injection can be disastrous, for example by allowing computer worms to propagate."
+  },
+  {
+    "id": 3,
+    "title": "Dependency injection",
+    "description": "In software engineering, dependency injection is a technique whereby one object supplies the dependencies of another object.",
+    "full_description": "In software engineering, dependency injection is a technique whereby one object supplies the dependencies of another object. A \"dependency\" is an object that can be used, for example as a service. Instead of a client specifying which service it will use, something tells the client what service to use."
+  }
+]

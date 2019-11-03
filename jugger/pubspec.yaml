@@ -1,0 +1,11 @@
+name: jugger
+description: Compile-time dependency injection for Dart and Flutter.
+version: 1.0.0-alpha
+author: ivk1800
+homepage: https://github.com/ivk1800/jugger.dart
+
+environment:
+  sdk: ">=2.1.0 <3.0.0"
+
+dependencies:
+  meta: ^1.1.7
