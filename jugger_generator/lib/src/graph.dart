@@ -153,6 +153,6 @@ class _Dependency {
 
   @override
   String toString() {
-    return element.type.name;
+    return element.thisType.name;
   }
 }

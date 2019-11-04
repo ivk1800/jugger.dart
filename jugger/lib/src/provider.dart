@@ -1,4 +1,3 @@
-
 abstract class IProvider<T> {
   T get();
 }
@@ -17,7 +16,6 @@ class Provider<T> implements IProvider<T> {
 }
 
 class SingletonProvider<T> implements IProvider<T> {
-
   SingletonProvider(Builder<T> builder) : _builder = builder;
 
   final Builder<T> _builder;

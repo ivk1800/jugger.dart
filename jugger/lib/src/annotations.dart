@@ -1,4 +1,3 @@
-
 ///
 /// TODO(): write documentation
 ///
@@ -41,7 +40,6 @@ class Provide {
 /// TODO(): write documentation
 ///
 class Inject {
-
   const factory Inject() = Inject._;
 
   const Inject._();

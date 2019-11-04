@@ -12,18 +12,18 @@ import 'visitors.dart';
 class ComponentBuilder extends Builder {
   ComponentBuilder();
 
-  String _inputLibraryPath;
-
   @override
-  Future<Null> build(BuildStep buildStep) async {
+  Future<void> build(BuildStep buildStep) async {
     final String outputContents = await buildOutput(buildStep);
     if (outputContents.trim().isEmpty) {
-      return;
+      return Future<void>.value(null);
     }
     final AssetId outputFile =
         buildStep.inputId.changeExtension('.$outputExtension');
 
     buildStep.writeAsString(outputFile, outputContents);
+
+    return Future<void>.value(null);
   }
 
   @override
@@ -37,9 +37,6 @@ class ComponentBuilder extends Builder {
 
   Future<String> buildOutput(BuildStep buildStep) async {
     Resolver resolver = buildStep.resolver;
-
-    LibraryElement inputLibrary = await buildStep.inputLibrary;
-    _inputLibraryPath = inputLibrary.library.source.uri.path;
 
     if (await resolver.isLibrary(buildStep.inputId)) {
       final LibraryElement lib = await buildStep.inputLibrary;
@@ -95,7 +92,7 @@ class ComponentBuilder extends Builder {
       return (Field((fb) {
         fb.modifier = FieldModifier.final$;
         fb.name = '_${uncapitalize(moduleAnnotation.element.name)}';
-        fb.type = Reference(moduleAnnotation.element.type.name,
+        fb.type = Reference(moduleAnnotation.element.thisType.name,
             createElementPath(moduleAnnotation.element));
       }));
     }).toList();
@@ -255,7 +252,7 @@ class ComponentBuilder extends Builder {
               .add(const Reference('required', 'package:meta/meta.dart'));
           parameterBuilder.name = uncapitalize(element.name);
           parameterBuilder.type =
-              Reference(element.type.name, createElementPath(element));
+              Reference(element.thisType.name, createElementPath(element));
         });
       }).toList());
       constructorBuilder.name = 'create';

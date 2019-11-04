@@ -1,4 +1,14 @@
 ## jugger.dart - Dependency Injection for Flutter and Dart
+
+jugger:
+
+[![pub package](https://img.shields.io/pub/v/jugger.svg?style=plastic&logo=appveyor)](https://pub.dartlang.org/packages/jugger)
+
+jugger_generator:
+
+[![pub package](https://img.shields.io/pub/v/jugger_generator.svg?style=plastic&logo=appveyor)](https://pub.dartlang.org/packages/jugger_generator)
+
+
 Compile-time dependency injection for Dart and Flutter.
 
 Android developers will easily understand the use of the library, jagger similar [Dagger2](https://github.com/google/dagger)
