@@ -48,6 +48,8 @@ class InjectAnnotation implements Annotation {}
 
 class SingletonAnnotation implements Annotation {}
 
+class BindAnnotation implements Annotation {}
+
 class ModuleAnnotation implements Annotation {
   const ModuleAnnotation(this.element);
 

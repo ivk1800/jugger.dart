@@ -9,6 +9,18 @@ ComponentAnnotation getComponentAnnotation(Element element) {
       orElse: () => null);
 }
 
+BindAnnotation getBindAnnotation(Element element) {
+  return getAnnotations(element).firstWhere(
+          (Annotation a) => a is BindAnnotation,
+      orElse: () => null);
+}
+
+ProvideAnnotation getProvideAnnotation(Element element) {
+  return getAnnotations(element).firstWhere(
+          (Annotation a) => a is ProvideAnnotation,
+      orElse: () => null);
+}
+
 List<Annotation> getAnnotations(Element element) {
   final List<Annotation> annotations = <Annotation>[];
 
@@ -33,6 +45,11 @@ List<Annotation> getAnnotations(Element element) {
         annotations.add(ComponentAnnotation(
             element: valueElement,
             modules: listValue.map((ClassElement c) {
+              if (!c.isAbstract) {
+                throw StateError(
+                  'module must be abstract [${c.thisType.name}]',
+                );
+              }
               return ModuleAnnotation(c);
             }).toList()));
       } else if (valueElement.name == 'Provide') {
@@ -41,6 +58,8 @@ List<Annotation> getAnnotations(Element element) {
         annotations.add(InjectAnnotation());
       } else if (valueElement.name == 'Singleton') {
         annotations.add(SingletonAnnotation());
+      } else if (valueElement.name == 'Bind') {
+        annotations.add(BindAnnotation());
       }
     }
   }

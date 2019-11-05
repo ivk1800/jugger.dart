@@ -1,14 +1,17 @@
 import 'package:example1/src/domain/interactors/detail_article_screen_ineractor.dart';
 import 'package:example1/src/presentation/mappers/detail_article_model_data_mapper.dart';
 import 'package:example1/src/presentation/models/models.dart';
+import 'package:flutter/foundation.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:jugger/jugger.dart';
 import 'base_bloc.dart';
 
 class DetailArticleBloc extends BaseBloc {
   @inject
-  DetailArticleBloc(IDetailArticleScreenInteractor interactor,
-      DetailArticleModelDataMapper articleModelDataMapper)
+  DetailArticleBloc({
+    @required IDetailArticleScreenInteractor interactor,
+    @required DetailArticleModelDataMapper articleModelDataMapper
+  })
       : _interactor = interactor,
         _articleModelDataMapper = articleModelDataMapper;
 

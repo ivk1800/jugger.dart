@@ -73,6 +73,7 @@ class Graph {
     final List<_Dependency> dependencies = injectedConstructor
         .element.parameters
         .map((ParameterElement parameter) {
+      _registerParamDependencyIfNeed(parameter);
       return _registerDependency(parameter);
     }).toList();
 
@@ -85,18 +86,22 @@ class Graph {
   List<_Dependency> _registerMethodDependencies(MethodElement element) {
     final List<_Dependency> dependencies =
         element.parameters.map((ParameterElement parameter) {
-      final j.Method provideMethod = component.provideMethods.firstWhere(
-          (j.Method method) =>
-              method.element.returnType.name == parameter.type.name,
-          orElse: () => null);
-
-      if (provideMethod != null) {
-        _registerDependency(provideMethod.element);
-      }
+          _registerParamDependencyIfNeed(parameter);
       return _registerDependency(parameter);
     }).toList();
 
     return dependencies;
+  }
+
+  void _registerParamDependencyIfNeed(ParameterElement parameter) {
+    final j.Method provideMethod = component.provideMethods.firstWhere(
+            (j.Method method) =>
+        method.element.returnType.name == parameter.type.name,
+        orElse: () => null);
+
+    if (provideMethod != null) {
+      _registerDependency(provideMethod.element);
+    }
   }
 }
 

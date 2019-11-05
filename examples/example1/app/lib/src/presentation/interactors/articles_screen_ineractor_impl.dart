@@ -3,9 +3,11 @@ import 'package:example1/src/domain/interactors/articles_screen_ineractor.dart';
 import 'package:example1/src/domain/objects/objects.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:jugger/jugger.dart';
 
 class ArticleScreenInteractorImpl implements IArticlesScreenInteractor {
 
+  @inject
   ArticleScreenInteractorImpl({
     @required IArticlesRepository articlesRepository,
     @required INavigationRouter router,

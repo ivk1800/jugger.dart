@@ -49,3 +49,12 @@ class Inject {
 /// TODO(): write documentation
 ///
 const Inject inject = Inject();
+
+const Bind bind = Bind._();
+
+///
+/// TODO(): write documentation
+///
+class Bind {
+  const Bind._();
+}

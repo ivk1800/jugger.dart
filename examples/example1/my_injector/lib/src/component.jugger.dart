@@ -1,13 +1,14 @@
 import 'package:my_injector/src/component.dart' as _i1;
-import 'package:meta/meta.dart' as _i2;
-import 'package:jugger/jugger.dart' as _i3;
+import 'package:jugger/jugger.dart' as _i2;
 import 'package:example1/src/data/datasource/assets_articles_data_source.dart'
-    as _i4;
+    as _i3;
 import 'package:example1/src/presentation/mappers/detail_article_model_data_mapper.dart'
-    as _i5;
+    as _i4;
 import 'package:example1/src/data/mappers/article_entity_data_mapper.dart'
-    as _i6;
+    as _i5;
 import 'package:example1/src/presentation/blocs/detail_article_screen_bloc.dart'
+    as _i6;
+import 'package:example1/src/presentation/interactors/articles_screen_ineractor_impl.dart'
     as _i7;
 import 'package:example1/src/presentation/blocs/articles_screen_bloc.dart'
     as _i8;
@@ -18,83 +19,79 @@ import 'package:example1/src/presentation/screens/detail_article_screen.dart'
     as _i11;
 
 class JuggerMyComponent extends _i1.MyComponent {
-  JuggerMyComponent.create(
-      {@_i2.required _i1.InteractorModule interactorModule,
-      @_i2.required _i1.RepositoryModule repositoryModule,
-      @_i2.required _i1.CommonModule commonModule})
-      : _interactorModule = interactorModule,
-        _repositoryModule = repositoryModule,
-        _commonModule = commonModule {
+  JuggerMyComponent.create() {
     _init();
   }
 
-  _i3.IProvider<dynamic> _assetsArticlesDataSourceProvider;
+  _i2.IProvider<dynamic> _assetsArticlesDataSourceProvider;
 
-  _i3.IProvider<dynamic> _iDetailArticleScreenInteractorProvider;
+  _i2.IProvider<dynamic> _iDetailArticleScreenInteractorProvider;
 
-  _i3.IProvider<dynamic> _iArticlesRepositoryProvider;
+  _i2.IProvider<dynamic> _iArticlesRepositoryProvider;
 
-  _i3.IProvider<dynamic> _detailArticleModelDataMapperProvider;
+  _i2.IProvider<dynamic> _detailArticleModelDataMapperProvider;
 
-  _i3.IProvider<dynamic> _articleEntityDataMapperProvider;
+  _i2.IProvider<dynamic> _articleEntityDataMapperProvider;
 
-  _i3.IProvider<dynamic> _detailArticleBlocProvider;
+  _i2.IProvider<dynamic> _detailArticleBlocProvider;
 
-  _i3.IProvider<dynamic> _articlesBlocProvider;
+  _i2.IProvider<dynamic> _articleScreenInteractorImplProvider;
 
-  _i3.IProvider<dynamic> _articleModelDataMapperProvider;
+  _i2.IProvider<dynamic> _articlesBlocProvider;
 
-  _i3.IProvider<dynamic> _iNavigationRouterProvider;
+  _i2.IProvider<dynamic> _articleModelDataMapperProvider;
 
-  _i3.IProvider<dynamic> _iArticlesScreenInteractorProvider;
+  _i2.IProvider<dynamic> _iNavigationRouterProvider;
 
-  final _i1.InteractorModule _interactorModule;
-
-  final _i1.RepositoryModule _repositoryModule;
-
-  final _i1.CommonModule _commonModule;
+  _i2.IProvider<dynamic> _iArticlesScreenInteractorProvider;
 
   void _init() {
     _initProvides();
   }
 
   void _initProvides() {
-    _assetsArticlesDataSourceProvider = _i3.SingletonProvider<dynamic>(() {
-      return _i4.AssetsArticlesDataSource();
+    _assetsArticlesDataSourceProvider = _i2.SingletonProvider<dynamic>(() {
+      return _i3.AssetsArticlesDataSource();
     });
-    _iDetailArticleScreenInteractorProvider = _i3.Provider<dynamic>(() {
-      return _interactorModule.provideDetailArticleScreenInteractor(
+    _iDetailArticleScreenInteractorProvider = _i2.Provider<dynamic>(() {
+      return _i1.InteractorModule.provideDetailArticleScreenInteractor(
           _iArticlesRepositoryProvider.get());
     });
-    _iArticlesRepositoryProvider = _i3.SingletonProvider<dynamic>(() {
-      return _repositoryModule.provideArticlesRepository(
+    _iArticlesRepositoryProvider = _i2.SingletonProvider<dynamic>(() {
+      return _i1.RepositoryModule.provideArticlesRepository(
           _assetsArticlesDataSourceProvider.get(),
           _articleEntityDataMapperProvider.get());
     });
-    _detailArticleModelDataMapperProvider = _i3.SingletonProvider<dynamic>(() {
-      return _i5.DetailArticleModelDataMapper();
+    _detailArticleModelDataMapperProvider = _i2.SingletonProvider<dynamic>(() {
+      return _i4.DetailArticleModelDataMapper();
     });
-    _articleEntityDataMapperProvider = _i3.SingletonProvider<dynamic>(() {
-      return _i6.ArticleEntityDataMapper();
+    _articleEntityDataMapperProvider = _i2.SingletonProvider<dynamic>(() {
+      return _i5.ArticleEntityDataMapper();
     });
-    _detailArticleBlocProvider = _i3.Provider<dynamic>(() {
-      return _i7.DetailArticleBloc(
-          _iDetailArticleScreenInteractorProvider.get(),
-          _detailArticleModelDataMapperProvider.get());
+    _detailArticleBlocProvider = _i2.Provider<dynamic>(() {
+      return _i6.DetailArticleBloc(
+          interactor: _iDetailArticleScreenInteractorProvider.get(),
+          articleModelDataMapper: _detailArticleModelDataMapperProvider.get());
     });
-    _articlesBlocProvider = _i3.Provider<dynamic>(() {
+    _articleScreenInteractorImplProvider = _i2.Provider<dynamic>(() {
+      return _i7.ArticleScreenInteractorImpl(
+          articlesRepository: _iArticlesRepositoryProvider.get(),
+          router: _iNavigationRouterProvider.get());
+    });
+    _articlesBlocProvider = _i2.Provider<dynamic>(() {
       return _i8.ArticlesBloc(_iArticlesScreenInteractorProvider.get(),
           _articleModelDataMapperProvider.get());
     });
-    _articleModelDataMapperProvider = _i3.SingletonProvider<dynamic>(() {
+    _articleModelDataMapperProvider = _i2.SingletonProvider<dynamic>(() {
       return _i9.ArticleModelDataMapper();
     });
-    _iNavigationRouterProvider = _i3.SingletonProvider<dynamic>(() {
-      return _commonModule.provideNavigationRouter();
+    _iNavigationRouterProvider = _i2.SingletonProvider<dynamic>(() {
+      return _i1.CommonModule.provideNavigationRouter();
     });
-    _iArticlesScreenInteractorProvider = _i3.Provider<dynamic>(() {
-      return _interactorModule.provideArticlesScreenInteractor(
-          _iArticlesRepositoryProvider.get(), _iNavigationRouterProvider.get());
+    _iArticlesScreenInteractorProvider = _i2.SingletonProvider<dynamic>(() {
+      return _i7.ArticleScreenInteractorImpl(
+          articlesRepository: _iArticlesRepositoryProvider.get(),
+          router: _iNavigationRouterProvider.get());
     });
   }
 

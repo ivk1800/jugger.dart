@@ -1,4 +1,4 @@
-import 'package:flutter/widgets.dart';
+import 'package:example1/main.dart';
 import 'package:jugger/jugger.dart';
 import 'package:example1/app.dart';
 
@@ -9,20 +9,12 @@ abstract class MyComponent {
 }
 
 @module
-class InteractorModule {
-  @provide
-  IArticlesScreenInteractor provideArticlesScreenInteractor(
-    IArticlesRepository articlesRepository,
-    INavigationRouter router,
-  ) {
-    return ArticleScreenInteractorImpl(
-      articlesRepository: articlesRepository,
-      router: router,
-    );
-  }
+abstract class InteractorModule {
+  @bind
+  IArticlesScreenInteractor provideArticlesScreenInteractor(ArticleScreenInteractorImpl impl);
 
   @provide
-  IDetailArticleScreenInteractor provideDetailArticleScreenInteractor(
+  static IDetailArticleScreenInteractor provideDetailArticleScreenInteractor(
       IArticlesRepository articlesRepository,
       ) {
     return DetailArticleScreenInteractorImpl(
@@ -32,10 +24,10 @@ class InteractorModule {
 }
 
 @module
-class RepositoryModule {
+abstract class RepositoryModule {
   @provide
   @singleton
-  IArticlesRepository provideArticlesRepository(AssetsArticlesDataSource dataSource,
+  static IArticlesRepository provideArticlesRepository(AssetsArticlesDataSource dataSource,
       ArticleEntityDataMapper articlesEntityDataMapper) {
     return ArticlesRepositoryImpl(
         dataSource: dataSource, articlesEntityDataMapper: articlesEntityDataMapper);
@@ -43,17 +35,12 @@ class RepositoryModule {
 }
 
 @module
-class CommonModule {
-  CommonModule({@required GlobalKey<NavigatorState> navigationKey})
-      : _navigationKey = navigationKey;
-
-  final GlobalKey<NavigatorState> _navigationKey;
-
+abstract class CommonModule {
   @singleton
   @provide
-  INavigationRouter provideNavigationRouter() {
+  static INavigationRouter provideNavigationRouter() {
     return NavigationRouteImpl(
-      navigationKey: _navigationKey,
+      navigationKey: MyApp.navigatorKey,
     );
   }
 }

@@ -1,6 +1,9 @@
 import 'dart:async';
+import 'dart:collection';
+import 'dart:math';
 
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/type.dart';
 import 'package:build/build.dart';
 import 'package:code_builder/code_builder.dart';
 import 'package:dart_style/dart_style.dart';
@@ -72,7 +75,6 @@ class ComponentBuilder extends Builder {
 
           classBuilder..name = 'Jugger${component.element.name}';
 
-          classBuilder.fields.addAll(_buildModulesFields(modules));
           return classBuilder;
         }));
       }
@@ -85,17 +87,6 @@ class ComponentBuilder extends Builder {
     throw StateError(
       'is not library',
     );
-  }
-
-  List<Field> _buildModulesFields(List<j.ModuleAnnotation> modules) {
-    return modules.map((j.ModuleAnnotation moduleAnnotation) {
-      return (Field((fb) {
-        fb.modifier = FieldModifier.final$;
-        fb.name = '_${uncapitalize(moduleAnnotation.element.name)}';
-        fb.type = Reference(moduleAnnotation.element.thisType.name,
-            createElementPath(moduleAnnotation.element));
-      }));
-    }).toList();
   }
 
   List<Field> _buildProvidesFields(List<ClassElement> classes) {
@@ -175,8 +166,7 @@ class ComponentBuilder extends Builder {
         final j.Method provideMethod = findProvideMethod(element);
 
         if (provideMethod != null) {
-          buildProviderFromModule(
-              provideMethod.element, provideMethod.element.parameters, b);
+          buildProviderFromModule(provideMethod.element, b);
         } else {
           buildProviderFromClass(element, b);
         }
@@ -200,8 +190,7 @@ class ComponentBuilder extends Builder {
         getProviderType(injectedConstructor.element).newInstance([
       CodeExpression(Block.of([
         const Code('() { return '),
-        ToCodeExpression(refer(element.name, createElementPath(element))
-            .newInstance(_buildArgumentsExpression(parameters))),
+        _buildCallMethodOrConstructor(element, parameters),
         const Code(';}'),
       ])),
     ]);
@@ -212,23 +201,101 @@ class ComponentBuilder extends Builder {
     ])));
   }
 
-  void buildProviderFromModule(
-      MethodElement method, List<ParameterElement> parameters, BlockBuilder b) {
-    final ClassElement moduleClass = method.enclosingElement;
-
-    final InvokeExpression newInstance = getProviderType(method).newInstance([
-      CodeExpression(Block.of([
-        Code('() { return _${uncapitalize(moduleClass.thisType.name)}.'),
-        ToCodeExpression(refer(method.name)
-            .newInstance(_buildArgumentsExpression(parameters))),
-        const Code(';}'),
-      ])),
-    ]);
+  void buildProviderFromModule(MethodElement method, BlockBuilder b) {
+    InvokeExpression expression;
+    if (method.isStatic) {
+      expression = _buildProviderFromStaticMethod(method);
+    } else if (method.isAbstract) {
+      expression = _buildProviderFromAbstractMethod(method);
+    } else {
+      throw StateError(
+        'provided method must be abstract or static [${method.enclosingElement.name}.${method.name}]',
+      );
+    }
 
     b.addExpression(CodeExpression(Block.of([
       Code('_${uncapitalize(method.returnType.name)}Provider  = '),
-      ToCodeExpression(newInstance),
+      ToCodeExpression(expression),
     ])));
+  }
+
+  InvokeExpression _buildProviderFromAbstractMethod(MethodElement method) {
+    assert(method.parameters.length == 1, 'method annotates [Bind] must have 1 parameter');
+
+    final ClassElement parameter = method.parameters[0].type.element;
+
+    final InjectedConstructorsVisitor visitor = InjectedConstructorsVisitor();
+    parameter.visitChildren(visitor);
+
+    assert(visitor.injectedConstructors.length == 1,
+    'not found injected constructor for ${parameter.name}');
+    final j.InjectedConstructor injectedConstructor =
+    visitor.injectedConstructors[0];
+    final List<ParameterElement> parameters =
+        injectedConstructor.element.parameters;
+
+    return getProviderType(method).newInstance([
+      CodeExpression(Block.of([
+        const Code('() { return '),
+        _buildCallMethodOrConstructor(parameter, parameters),
+        const Code(';}'),
+      ])),
+    ]);
+  }
+
+  InvokeExpression _buildProviderFromStaticMethod(MethodElement method) {
+    final ClassElement moduleClass = method.enclosingElement;
+    return getProviderType(method).newInstance([
+      CodeExpression(Block.of([
+        const Code('() { return '),
+        ToCodeExpression(refer(moduleClass.name, createElementPath(moduleClass))),
+        const Code('.'),
+        _buildCallMethodOrConstructor(method, method.parameters),
+        const Code(';}'),
+      ])),
+    ]);
+  }
+
+  ToCodeExpression _buildCallMethodOrConstructor(Element element,
+      List<ParameterElement> parameters,) {
+
+    if (!(element is ClassElement) && !(element is MethodElement)) {
+      throw StateError(
+        'element${element.name} must be ClassElement or MethodElement',
+      );
+    }
+
+    Reference r(String symbol) {
+      if (element is MethodElement) {
+        return refer(element.name);
+      }
+      return refer(element.name, createElementPath(element));
+    }
+
+    if (parameters.isEmpty) {
+      return ToCodeExpression(r(element.name).newInstance([]));
+    }
+
+    final bool isPositional = parameters.map((ParameterElement p) => p.isPositional).any((bool b) => b);
+    final bool isNamed = parameters.map((ParameterElement p) => p.isNamed).any((bool b) => b);
+
+    if (isPositional && isNamed) {
+      throw StateError(
+        'all parameters must be Positional or Named [${element.name}]',
+      );
+    }
+
+    if (isPositional) {
+      return ToCodeExpression(r(element.name).newInstance(_buildArgumentsExpression(parameters).values.toList()));
+    }
+
+    if (isNamed) {
+      return ToCodeExpression(r(element.name).newInstance([], _buildArgumentsExpression(parameters)));
+    }
+
+    throw StateError(
+      '????',
+    );
   }
 
   Reference getProviderType(Element element) {
@@ -243,37 +310,22 @@ class ComponentBuilder extends Builder {
   Constructor _buildConstructor(List<j.ModuleAnnotation> modules) {
     return Constructor((ConstructorBuilder constructorBuilder) {
       constructorBuilder.body = const Code('_init();');
-      constructorBuilder.optionalParameters
-          .addAll(modules.map((j.ModuleAnnotation moduleAnnotation) {
-        return Parameter((ParameterBuilder parameterBuilder) {
-          ClassElement element = moduleAnnotation.element;
-          parameterBuilder.named = true;
-          parameterBuilder.annotations
-              .add(const Reference('required', 'package:meta/meta.dart'));
-          parameterBuilder.name = uncapitalize(element.name);
-          parameterBuilder.type =
-              Reference(element.thisType.name, createElementPath(element));
-        });
-      }).toList());
       constructorBuilder.name = 'create';
-      constructorBuilder.initializers
-          .addAll(modules.map((j.ModuleAnnotation moduleAnnotation) {
-        return Code(
-            '_${uncapitalize(moduleAnnotation.element.thisType.name)} = ${uncapitalize(moduleAnnotation.element.thisType.name)}');
-      }).toList());
     });
   }
 
-  Iterable<Expression> _buildArgumentsExpression(
+  Map<String, Expression> _buildArgumentsExpression(
       List<ParameterElement> parameters) {
     if (parameters.isEmpty) {
-      return <Expression>[];
+      return HashMap<String, Expression>();
     }
 
-    return parameters.map((ParameterElement parameter) {
-      return CodeExpression(Block.of([
+    final Iterable<MapEntry<String, Expression>> map = parameters.map((ParameterElement parameter) {
+      final CodeExpression codeExpression = CodeExpression(Block.of([
         Code('${'_${uncapitalize(parameter.type.name)}Provider'}.get()'),
       ]));
+      return MapEntry<String, Expression>(parameter.name, codeExpression);
     });
+    return Map<String, Expression>.fromEntries(map);
   }
 }

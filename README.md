@@ -44,8 +44,8 @@ abstract class MyComponent {
 }
 
 @module
-class MyModule {
-  String provideString() {
+abstract class MyModule {
+  static String provideString() {
     return 'hello';
   }
 }
@@ -76,7 +76,7 @@ import 'inject.jugger.dart';
 ...
   @override
   void initState() {
-    JuggerMyComponent myComponent = JuggerMyComponent.create(myModule: MyModule());
+    JuggerMyComponent myComponent = JuggerMyComponent.create();
     myComponent.injectMyHomePageState(this);
     super.initState();
   }
@@ -92,6 +92,7 @@ import 'inject.jugger.dart';
 |  @Singleton | TODO  |
 |  @Provide | TODO  |
 |  @Inject |  TODO |
+|  @Bind |  TODO |
 
 #### Powerful example
 In this repo you can find Best practice [example1](examples/example1) of jugger with multiple dependencies and using all annotations.
