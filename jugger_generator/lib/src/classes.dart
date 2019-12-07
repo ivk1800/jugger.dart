@@ -132,12 +132,28 @@ class DependencyAnnotation implements Annotation {
   final ClassElement element;
 }
 
+class NamedAnnotation implements Annotation {
+  const NamedAnnotation({
+    @required this.element,
+    @required this.name,
+  });
+
+  final ClassElement element;
+  final String name;
+}
+
 class Method {
   const Method(this.element, this.annotations);
 
   final MethodElement element;
 
   final List<Annotation> annotations;
+
+  NamedAnnotation get _namedAnnotation =>
+      annotations.firstWhere((Annotation a) => a is NamedAnnotation,
+          orElse: () => null);
+
+  String get named => _namedAnnotation?.name;
 }
 
 class MemberInjectorMethod {

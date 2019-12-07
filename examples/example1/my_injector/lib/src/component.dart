@@ -18,7 +18,10 @@ abstract class MyComponentBuilder {
 
   MyComponentBuilder tracker(Tracker tracker);
 
-  MyComponentBuilder token(String token);
+  @Named('test')
+  MyComponentBuilder tokenTest(String token);
+
+  MyComponentBuilder tokenProd( String token);
 
   MyComponentBuilder appComponent(AppComponent component);
 
@@ -31,9 +34,11 @@ abstract class InteractorModule {
   IArticlesScreenInteractor provideArticlesScreenInteractor(ArticleScreenInteractorImpl impl);
 
   @provide
+  @Named('test')
   static IDetailArticleScreenInteractor provideDetailArticleScreenInteractor(
       IArticlesRepository articlesRepository,
       Tracker tracker,
+      @Named('test') String token,
       ) {
     return DetailArticleScreenInteractorImpl(
       articlesRepository: articlesRepository,

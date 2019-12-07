@@ -9,7 +9,7 @@ import 'base_bloc.dart';
 class DetailArticleBloc extends BaseBloc {
   @inject
   DetailArticleBloc({
-    @required IDetailArticleScreenInteractor interactor,
+    @required @Named('test') IDetailArticleScreenInteractor interactor,
     @required DetailArticleModelDataMapper articleModelDataMapper
   })
       : _interactor = interactor,

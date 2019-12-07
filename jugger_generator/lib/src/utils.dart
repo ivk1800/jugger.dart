@@ -27,6 +27,12 @@ ProvideAnnotation getProvideAnnotation(Element element) {
       orElse: () => null);
 }
 
+NamedAnnotation getNamedAnnotation(Element element) {
+  return getAnnotations(element).firstWhere(
+          (Annotation a) => a is NamedAnnotation,
+      orElse: () => null);
+}
+
 List<Annotation> getAnnotations(Element element) {
   final List<Annotation> annotations = <Annotation>[];
 
@@ -85,6 +91,13 @@ List<Annotation> getAnnotations(Element element) {
         annotations.add(BindAnnotation());
       } else if (valueElement.name == 'ComponentBuilder') {
         annotations.add(ComponentBuilderAnnotation(valueElement));
+      } else if (valueElement.name == 'Named') {
+        annotations.add(NamedAnnotation(
+            element: valueElement,
+            name: annotation.computeConstantValue()
+                .getField('name')
+                .toStringValue()
+        ));
       }
     }
   }

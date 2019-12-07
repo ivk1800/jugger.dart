@@ -17,6 +17,7 @@ class ArticlesScreenState extends State<ArticlesScreen> {
   @inject
   Tracker tracker;
   @inject
+  @Named('test')
   String token;
 
   @override

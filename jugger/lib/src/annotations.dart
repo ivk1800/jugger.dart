@@ -70,3 +70,14 @@ const ComponentBuilder componentBuilder = ComponentBuilder._();
 class ComponentBuilder {
   const ComponentBuilder._();
 }
+
+///
+/// TODO(): write documentation
+///
+class Named {
+  const factory Named(String name) = Named._;
+
+  const Named._(this.name);
+
+  final String name;
+}

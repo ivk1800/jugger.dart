@@ -66,7 +66,7 @@ class ComponentBuilder extends Builder {
 
         target.body.add(Class((ClassBuilder classBuilder) {
           classBuilder.fields
-              .addAll(_buildProvidesFields(graph.dependenciesClasses, graph));
+              .addAll(_buildProvidesFields(graph.dependencies, graph));
           classBuilder.fields.addAll(_buildConstructorFields(componentBuilder));
 
           classBuilder.methods.addAll(_buildProvideMethods(graph));
@@ -74,7 +74,7 @@ class ComponentBuilder extends Builder {
           classBuilder.methods.add(_buildInitMethod());
 
           classBuilder.methods.add(
-              _buildInitProvidesMethod(graph.dependenciesClasses, modules, graph));
+              _buildInitProvidesMethod(graph.dependencies, modules, graph));
 
           classBuilder.methods.addAll(
               _buildMembersInjectorMethods(component.methods, classBuilder, graph));
@@ -132,9 +132,10 @@ class ComponentBuilder extends Builder {
                   if (m.name == 'build') {
                     final Iterable<Expression> map = componentBuilder.parameters
                         .map((j.ComponentBuilderParameter parameter) {
+                      final String name = getNamedAnnotation(parameter.parameter.enclosingElement)?.name;
                       final CodeExpression codeExpression = CodeExpression(
                           Block.of([
-                            Code('_${uncapitalize(parameter.toString())}'),
+                            Code('_${_generateName(parameter.parameter.type.element, name)}'),
                           ]));
                       return codeExpression;
                     });
@@ -142,8 +143,9 @@ class ComponentBuilder extends Builder {
                     b.addExpression(CodeExpression(Block.of(
                         componentBuilder.parameters.map((
                             j.ComponentBuilderParameter parameter) {
+                          final String name = getNamedAnnotation(parameter.parameter.enclosingElement)?.name;
                           return Code(
-                              'assert(${parameter.fieldName} != null); ');
+                              'assert(_${_generateName(parameter.parameter.type.element, name)} != null); ');
                         }))));
 
                     final newInstance = refer(
@@ -157,8 +159,9 @@ class ComponentBuilder extends Builder {
                   } else {
                     final j.ComponentBuilderParameter p = j
                         .ComponentBuilderParameter(parameter: m.parameters[0]);
+                    final String name = getNamedAnnotation(p.parameter.enclosingElement)?.name;
                     b.addExpression(CodeExpression(Block.of([
-                      Code('_${uncapitalize(p.toString())} = ${p.parameter
+                      Code('_${_generateName(p.parameter.type.element, name)} = ${p.parameter
                           .name}; return this'),
                     ])));
                   }
@@ -170,7 +173,8 @@ class ComponentBuilder extends Builder {
           return Field((FieldBuilder b) {
             b.type = Reference(parameter.parameter.type.name,
                 createElementPath(parameter.parameter.type.element));
-            b.name = '_${uncapitalize(parameter.toString())}';
+            final String name = getNamedAnnotation(parameter.parameter.enclosingElement)?.name;
+            b.name = '_${_generateName(parameter.parameter.type.element, name)}';
           });
         }));
 
@@ -179,17 +183,17 @@ class ComponentBuilder extends Builder {
     }
   }
 
-  List<Field> _buildProvidesFields(List<ClassElement> classes, Graph graph) {
+  List<Field> _buildProvidesFields(List<Dependency> dependencies, Graph graph) {
     final List<Field> fields = <Field>[];
 
-    for (ClassElement element in classes) {
-      final ProviderSource provider = graph.findProvider(element);
+    for (Dependency dependency in dependencies) {
+      final ProviderSource provider = graph.findProvider(dependency.element);
 
       if (!(provider is BuildInstanceSource) &&
           !(provider is AnotherComponentSource)) {
         fields.add(Field((FieldBuilder b) {
-          final name = element.thisType.name;
-          b.name = '_${uncapitalize(name)}Provider';
+          final String name = getNamedAnnotation(dependency.enclosingElement)?.name;
+          b.name = '_${_generateName(dependency.element, name)}Provider';
           b.type =
           const Reference('IProvider<dynamic>', 'package:jugger/jugger.dart');
         }));
@@ -211,7 +215,8 @@ class ComponentBuilder extends Builder {
         b.name = method.name;
         b.returns = Reference(method.returnType.name, createElementPath(method.returnType.element));
 
-        final ProviderSource providerSource = graph.findProvider(method.returnType.element);
+        final String name = getNamedAnnotation(method)?.name;
+        final ProviderSource providerSource = graph.findProvider(method.returnType.element, name);
 
         assert(providerSource != null, '${method.returnType.element.name} not provided');
 
@@ -255,10 +260,11 @@ class ComponentBuilder extends Builder {
 
       builder.body = Block((b) {
         for (j.InjectedMember member in visitor.members) {
+          final String name = getNamedAnnotation(member.element)?.name;
           b.addExpression(CodeExpression(Block.of([
             Code('${parameterElement.name}.${member.element.name}'),
             Code(' = ${_generateAssignString(
-                member.element.type.element, graph)}'),
+                member.element.type.element, graph, name)}'),
           ])));
         }
       });
@@ -267,8 +273,8 @@ class ComponentBuilder extends Builder {
     }).toList();
   }
 
-  String _generateAssignString(ClassElement element, Graph graph) {
-    final ProviderSource provider = graph.findProvider(element);
+  String _generateAssignString(ClassElement element, Graph graph, [String name]) {
+    final ProviderSource provider = graph.findProvider(element, name);
 
     if (provider is BuildInstanceSource) {
       return provider.assignString;
@@ -278,11 +284,27 @@ class ComponentBuilder extends Builder {
       return provider.assignString;
     }
 
-    return '_${uncapitalize(element.type.name)}Provider.get()';
+    final InjectedConstructorsVisitor visitor = InjectedConstructorsVisitor();
+    element.visitChildren(visitor);
+
+    if (visitor.injectedConstructors.isEmpty) {
+      final j.Method provideMethod = graph.findProvideMethod(element.thisType, name);
+      assert(provideMethod != null, 'provider for (${element.thisType.name}, name: $name) not found');
+    }
+
+    return '_${_generateName(element.thisType.element, name)}Provider.get()';
+  }
+
+  String _generateName(ClassElement element, String name) {
+    if (name != null) {
+      return '$name${element.thisType.name}';
+    }
+
+    return '${uncapitalize(element.thisType.name)}';
   }
 
   Method _buildInitProvidesMethod(
-      List<ClassElement> classes, List<j.ModuleAnnotation> modules,
+  List<Dependency> dependencies, List<j.ModuleAnnotation> modules,
       Graph graph) {
     final MethodBuilder builder = MethodBuilder();
     builder.name = '_initProvides';
@@ -290,8 +312,9 @@ class ComponentBuilder extends Builder {
 
     // ignore: unnecessary_parenthesis
     builder.body = Block(((BlockBuilder b) {
-      for (ClassElement element in classes) {
-        final ProviderSource provider = graph.findProvider(element);
+      for (Dependency dependency in dependencies) {
+        final String name = getNamedAnnotation(dependency.enclosingElement)?.name;
+        final ProviderSource provider = graph.findProvider(dependency.element, name);
 
         if (provider is ModuleSource) {
           buildProviderFromModule(provider.method.element, b, graph);
@@ -300,7 +323,12 @@ class ComponentBuilder extends Builder {
         } else if (provider is AnotherComponentSource) {
           print('${provider.providedClass} is AnotherComponentSource');
         }  else {
-          buildProviderFromClass(element, b, graph);
+          if (isCore(dependency.element)) {
+            throw StateError(
+              '${dependency.enclosingElement.name}.${dependency.element.name} (name: $name) not provided',
+            );
+          }
+          buildProviderFromClass(dependency.element, b, graph);
         }
       }
     }));
@@ -348,8 +376,10 @@ class ComponentBuilder extends Builder {
       );
     }
 
+    final String name = getNamedAnnotation(method)?.name;
+
     b.addExpression(CodeExpression(Block.of([
-      Code('_${uncapitalize(method.returnType.name)}Provider  = '),
+      Code('_${_generateName(method.returnType.element, name)}Provider  = '),
       ToCodeExpression(expression),
     ])));
   }
@@ -457,7 +487,8 @@ class ComponentBuilder extends Builder {
         constructorBuilder.requiredParameters.addAll(componentBuilder.parameters.map((j.ComponentBuilderParameter parameter) {
           return Parameter((ParameterBuilder b) {
             b.toThis = true;
-            b.name = '_${uncapitalize(parameter.toString())}';
+            final String name = getNamedAnnotation(parameter.parameter.enclosingElement)?.name;
+            b.name = '_${_generateName(parameter.parameter.type.element, name)}';
           });
         }));
       }
@@ -472,7 +503,8 @@ class ComponentBuilder extends Builder {
     return componentBuilder.parameters.map((j.ComponentBuilderParameter parameter) {
       // ignore: unnecessary_parenthesis
       return (Field((FieldBuilder b) {
-        b.name = '_${uncapitalize(parameter.toString())}';
+        final String name = getNamedAnnotation(parameter.parameter.enclosingElement)?.name;
+        b.name = '_${_generateName(parameter.parameter.type.element, name)}';
         b.modifier = FieldModifier.final$;
         b.type = Reference(parameter.parameter.type.name,
             createElementPath(parameter.parameter.type.element));
@@ -487,8 +519,9 @@ class ComponentBuilder extends Builder {
     }
 
     final Iterable<MapEntry<String, Expression>> map = parameters.map((ParameterElement parameter) {
+      final String name = getNamedAnnotation(parameter)?.name;
       final CodeExpression codeExpression = CodeExpression(Block.of([
-        Code(_generateAssignString(parameter.type.element, graph)),
+        Code(_generateAssignString(parameter.type.element, graph, name)),
       ]));
       return MapEntry<String, Expression>(parameter.name, codeExpression);
     });

@@ -23,6 +23,8 @@ import 'package:example1/src/core/logger.dart' as _i13;
 class JuggerMyComponentBuilder implements _i1.MyComponentBuilder {
   _i2.Tracker _tracker;
 
+  String _testString;
+
   String _string;
 
   _i1.AppComponent _appComponent;
@@ -34,7 +36,13 @@ class JuggerMyComponentBuilder implements _i1.MyComponentBuilder {
   }
 
   @override
-  _i1.MyComponentBuilder token(String token) {
+  _i1.MyComponentBuilder tokenTest(String token) {
+    _testString = token;
+    return this;
+  }
+
+  @override
+  _i1.MyComponentBuilder tokenProd(String token) {
     _string = token;
     return this;
   }
@@ -48,21 +56,24 @@ class JuggerMyComponentBuilder implements _i1.MyComponentBuilder {
   @override
   _i1.MyComponent build() {
     assert(_tracker != null);
+    assert(_testString != null);
     assert(_string != null);
     assert(_appComponent != null);
     ;
-    return JuggerMyComponent._create(_tracker, _string, _appComponent);
+    return JuggerMyComponent._create(
+        _tracker, _testString, _string, _appComponent);
   }
 }
 
 class JuggerMyComponent implements _i1.MyComponent {
-  JuggerMyComponent._create(this._tracker, this._string, this._appComponent) {
+  JuggerMyComponent._create(
+      this._tracker, this._testString, this._string, this._appComponent) {
     _init();
   }
 
   _i3.IProvider<dynamic> _assetsArticlesDataSourceProvider;
 
-  _i3.IProvider<dynamic> _iDetailArticleScreenInteractorProvider;
+  _i3.IProvider<dynamic> _testIDetailArticleScreenInteractorProvider;
 
   _i3.IProvider<dynamic> _detailArticleModelDataMapperProvider;
 
@@ -84,6 +95,8 @@ class JuggerMyComponent implements _i1.MyComponent {
 
   final _i2.Tracker _tracker;
 
+  final String _testString;
+
   final String _string;
 
   final _i1.AppComponent _appComponent;
@@ -101,16 +114,16 @@ class JuggerMyComponent implements _i1.MyComponent {
     _assetsArticlesDataSourceProvider = _i3.SingletonProvider<dynamic>(() {
       return _i4.AssetsArticlesDataSource();
     });
-    _iDetailArticleScreenInteractorProvider = _i3.Provider<dynamic>(() {
+    _testIDetailArticleScreenInteractorProvider = _i3.Provider<dynamic>(() {
       return _i1.InteractorModule.provideDetailArticleScreenInteractor(
-          _iArticlesRepositoryProvider.get(), _tracker);
+          _iArticlesRepositoryProvider.get(), _tracker, _testString);
     });
     _detailArticleModelDataMapperProvider = _i3.SingletonProvider<dynamic>(() {
       return _i5.DetailArticleModelDataMapper();
     });
     _detailArticleBlocProvider = _i3.Provider<dynamic>(() {
       return _i6.DetailArticleBloc(
-          interactor: _iDetailArticleScreenInteractorProvider.get(),
+          interactor: _testIDetailArticleScreenInteractorProvider.get(),
           articleModelDataMapper: _detailArticleModelDataMapperProvider.get());
     });
     _articleScreenInteractorImplProvider = _i3.Provider<dynamic>(() {
@@ -147,7 +160,7 @@ class JuggerMyComponent implements _i1.MyComponent {
   void injectArticlesScreen(_i11.ArticlesScreenState target) {
     target.bloc = _articlesBlocProvider.get();
     target.tracker = _tracker;
-    target.token = _string;
+    target.token = _testString;
   }
 
   @override
