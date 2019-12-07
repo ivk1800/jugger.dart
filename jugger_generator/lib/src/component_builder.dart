@@ -185,7 +185,8 @@ class ComponentBuilder extends Builder {
     for (ClassElement element in classes) {
       final ProviderSource provider = graph.findProvider(element);
 
-      if (!(provider is BuildInstanceSource)) {
+      if (!(provider is BuildInstanceSource) &&
+          !(provider is AnotherComponentSource)) {
         fields.add(Field((FieldBuilder b) {
           final name = element.thisType.name;
           b.name = '_${uncapitalize(name)}Provider';
@@ -273,6 +274,10 @@ class ComponentBuilder extends Builder {
       return provider.assignString;
     }
 
+    if (provider is AnotherComponentSource) {
+      return provider.assignString;
+    }
+
     return '_${uncapitalize(element.type.name)}Provider.get()';
   }
 
@@ -292,7 +297,9 @@ class ComponentBuilder extends Builder {
           buildProviderFromModule(provider.method.element, b, graph);
         } else if (provider is BuildInstanceSource) {
           print('${provider.providedClass} is BuildInstanceSource');
-        } else {
+        } else if (provider is AnotherComponentSource) {
+          print('${provider.providedClass} is AnotherComponentSource');
+        }  else {
           buildProviderFromClass(element, b, graph);
         }
       }

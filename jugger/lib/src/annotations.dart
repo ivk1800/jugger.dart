@@ -2,11 +2,14 @@
 /// TODO(): write documentation
 ///
 class Component {
-  const factory Component([List<Type> modules]) = Component._;
+  const factory Component(
+      {List<Type> modules, List<Type> dependencies}) = Component._;
 
-  const Component._([this.modules = const <Type>[]]);
+  const Component._(
+      {this.modules = const <Type>[], this.dependencies = const <Type>[]});
 
   final List<Type> modules;
+  final List<Type> dependencies;
 }
 
 const Module module = Module._();

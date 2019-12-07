@@ -25,6 +25,8 @@ class JuggerMyComponentBuilder implements _i1.MyComponentBuilder {
 
   String _string;
 
+  _i1.AppComponent _appComponent;
+
   @override
   _i1.MyComponentBuilder tracker(_i2.Tracker tracker) {
     _tracker = tracker;
@@ -38,16 +40,23 @@ class JuggerMyComponentBuilder implements _i1.MyComponentBuilder {
   }
 
   @override
+  _i1.MyComponentBuilder appComponent(_i1.AppComponent component) {
+    _appComponent = component;
+    return this;
+  }
+
+  @override
   _i1.MyComponent build() {
     assert(_tracker != null);
     assert(_string != null);
+    assert(_appComponent != null);
     ;
-    return JuggerMyComponent._create(_tracker, _string);
+    return JuggerMyComponent._create(_tracker, _string, _appComponent);
   }
 }
 
 class JuggerMyComponent implements _i1.MyComponent {
-  JuggerMyComponent._create(this._tracker, this._string) {
+  JuggerMyComponent._create(this._tracker, this._string, this._appComponent) {
     _init();
   }
 
@@ -76,6 +85,13 @@ class JuggerMyComponent implements _i1.MyComponent {
   final _i2.Tracker _tracker;
 
   final String _string;
+
+  final _i1.AppComponent _appComponent;
+
+  @override
+  _i2.Tracker tracker() {
+    return _tracker;
+  }
 
   void _init() {
     _initProvides();

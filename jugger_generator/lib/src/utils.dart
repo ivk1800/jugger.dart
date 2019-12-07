@@ -40,7 +40,7 @@ List<Annotation> getAnnotations(Element element) {
       //TODO
     } else {
       if (valueElement.name == 'Component') {
-        final List<ClassElement> listValue = annotation
+        final List<ClassElement> modules = annotation
             .computeConstantValue()
             .getField('modules')
             .toListValue()
@@ -48,16 +48,33 @@ List<Annotation> getAnnotations(Element element) {
             .map((DartObject o) => o.toTypeValue().element as ClassElement)
             .toList();
 
+        final List<ClassElement> dependencies = annotation
+            .computeConstantValue()
+            .getField('dependencies')
+            .toListValue()
+            .cast<DartObject>()
+            .map((DartObject o) => o.toTypeValue().element as ClassElement)
+            .toList();
+
         annotations.add(ComponentAnnotation(
             element: valueElement,
-            modules: listValue.map((ClassElement c) {
+            modules: modules.map((ClassElement c) {
               if (!c.isAbstract) {
                 throw StateError(
                   'module must be abstract [${c.thisType.name}]',
                 );
               }
               return ModuleAnnotation(c);
-            }).toList()));
+            }).toList(),
+          dependencies: dependencies.map((ClassElement c) {
+            if (!c.isAbstract) {
+              throw StateError(
+                'dependency must be abstract [${c.thisType.name}]',
+              );
+            }
+            return DependencyAnnotation(element: c);
+          }).toList()
+        ));
       } else if (valueElement.name == 'Provide') {
         annotations.add(ProvideAnnotation());
       } else if (valueElement.name == 'Inject') {

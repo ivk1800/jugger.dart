@@ -2,10 +2,15 @@ import 'package:example1/main.dart';
 import 'package:jugger/jugger.dart';
 import 'package:example1/app.dart';
 
-@Component([InteractorModule, RepositoryModule, CommonModule])
+@Component(
+    modules: [InteractorModule, RepositoryModule, CommonModule],
+    dependencies: [AppComponent]
+)
 abstract class MyComponent {
   void injectArticlesScreen(ArticlesScreenState target);
   void injectDetailArticleScreen(DetailArticleScreenState target);
+
+  Tracker tracker();
 }
 
 @componentBuilder
@@ -14,6 +19,8 @@ abstract class MyComponentBuilder {
   MyComponentBuilder tracker(Tracker tracker);
 
   MyComponentBuilder token(String token);
+
+  MyComponentBuilder appComponent(AppComponent component);
 
   MyComponent build();
 }
@@ -57,7 +64,7 @@ abstract class CommonModule {
   }
 }
 
-@Component([AppModule])
+@Component(modules: [AppModule])
 abstract class AppComponent {
 
   Logger logger();

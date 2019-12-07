@@ -1,4 +1,6 @@
 import 'dart:collection';
+import 'dart:math';
+import 'package:code_builder/code_builder.dart';
 import "package:collection/collection.dart";
 
 import 'package:analyzer/dart/element/element.dart';
@@ -13,6 +15,26 @@ class Graph {
   Graph(this.component, this.componentBuilder);
 
   Graph.fromComponent(this.component, this.componentBuilder) {
+    for (j.DependencyAnnotation dep in component.dependencies) {
+      ProvideMethodVisitor v = ProvideMethodVisitor();
+      dep.element.visitChildren(v);
+
+      for (MethodElement m in v.methods) {
+        providerSources.add(AnotherComponentSource(
+            providedClass: m.returnType.element,
+            method: m,
+            dependencyClass: dep.element
+        ));
+      }
+    }
+
+    if (component.dependencies.isNotEmpty) {
+      assert(componentBuilder !=
+          null, 'you need provide dependencies by builder. '
+          'component: ${component.element.name}, dependencies: ${component.dependencies.map((
+          j.DependencyAnnotation de) => de.element.name).join(',')}');
+    }
+
     for (j.Method method in component.provideMethods) {
       final MethodElement element = method.element;
 
@@ -256,5 +278,24 @@ class BuildInstanceSource extends ProviderSource {
   }
 
   @override
-  String get sourceString => 'builder of component';
+  String get sourceString => '${parameter.type.name} ${parameter.name}';
+}
+
+class AnotherComponentSource extends ProviderSource {
+
+  AnotherComponentSource({
+    @required ClassElement providedClass,
+    @required this.method,
+    @required this.dependencyClass,
+  }) : super(providedClass);
+
+  final ClassElement dependencyClass;
+  final MethodElement method;
+
+  String get assignString {
+    return '_${uncapitalize(dependencyClass.name)}.${method.name}()';
+  }
+
+  @override
+  String get sourceString => '${providedClass.thisType.name}.${method.name}';
 }

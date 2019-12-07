@@ -155,9 +155,30 @@ class ComponentBuildersVisitor extends RecursiveElementVisitor<dynamic> {
         if (methodElement.name == 'build') {
           assert(methodElement.parameters.isEmpty);
         } else {
-          assert(methodElement.returnType.name == element.name);
+          assert(methodElement.returnType.name ==
+              element.name, '(${methodElement
+              .name})  method return wrong type. Expected ${element
+              .name}');
           assert(methodElement.parameters.length == 1);
         }
+      }
+
+      final ComponentAnnotation componentAnnotation = getComponentAnnotation(
+          v.buildMethod.returnType.element);
+
+      assert(componentAnnotation != null, 'build method must retunt component');
+
+      for (DependencyAnnotation dep in componentAnnotation.dependencies) {
+        final bool dependencyProvided = v.methodElements.where((
+            MethodElement me) => me.name != 'build')
+            .any((MethodElement me) {
+          assert(me.parameters.length == 1, 'build method (${me
+              .name}) must have 1 paramenter');
+          return me.parameters[0].type.element == dep.element;
+        });
+
+        assert(dependencyProvided, 'dependency (${dep.element
+            .name}) must provided by build method');
       }
 
       componentBuilders.add(ComponentBuilder(element: element,

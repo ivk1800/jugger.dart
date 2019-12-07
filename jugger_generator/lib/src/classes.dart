@@ -15,11 +15,19 @@ class Component {
   final List<MemberInjectorMethod> methods;
 
   List<ModuleAnnotation> get modules {
+    return getComponentAnnotation()?.modules;
+  }
+
+  List<DependencyAnnotation> get dependencies {
+    return getComponentAnnotation()?.dependencies;
+  }
+
+  ComponentAnnotation getComponentAnnotation() {
     final ComponentAnnotation annotation =
         annotations.firstWhere((Annotation a) {
       return a is ComponentAnnotation;
     });
-    return annotation?.modules;
+    return annotation;
   }
 
   List<Method> get provideMethods {
@@ -85,10 +93,15 @@ class ComponentBuilderParameter {
 abstract class Annotation {}
 
 class ComponentAnnotation implements Annotation {
-  const ComponentAnnotation({this.element, this.modules});
+  const ComponentAnnotation({
+    @required this.element,
+    @required this.modules,
+    @required this.dependencies
+  });
 
   final Element element;
   final List<ModuleAnnotation> modules;
+  final List<DependencyAnnotation> dependencies;
 }
 
 class ProvideAnnotation implements Annotation {}
@@ -107,6 +120,14 @@ class ComponentBuilderAnnotation implements Annotation {
 
 class ModuleAnnotation implements Annotation {
   const ModuleAnnotation(this.element);
+
+  final ClassElement element;
+}
+
+class DependencyAnnotation implements Annotation {
+  const DependencyAnnotation({
+    @required this.element
+  });
 
   final ClassElement element;
 }
