@@ -81,6 +81,10 @@ class InjectedFieldsVisitor extends RecursiveElementVisitor<dynamic> {
 
   @override
   dynamic visitMethodElement(MethodElement element) {
+    if (element.returnType.name != 'void') {
+      return null;
+    }
+
     if (element.parameters.length != 1) {
       throw StateError(
         'method ${element.name} must have 1 parameter',
@@ -198,8 +202,25 @@ class BuildInstanceFieldsVisitor extends RecursiveElementVisitor<dynamic> {
     fields.add(element);
     return null;
   }
+}
+
+class ProvideMethodVisitor extends RecursiveElementVisitor<dynamic> {
+  List<MethodElement> methods = <MethodElement>[];
 
   @override
   dynamic visitMethodElement(MethodElement element) {
+    if (element.returnType.name == 'void') {
+      return null;
+    }
+
+    if (!element.isAbstract) {
+      throw StateError(
+        '${element.name} not abstract',
+      );
+    }
+
+
+    methods.add(element);
+    return null;
   }
 }

@@ -18,6 +18,7 @@ import 'package:example1/src/presentation/blocs/articles_screen_bloc.dart'
 import 'package:example1/src/presentation/screens/articles_screen.dart' as _i11;
 import 'package:example1/src/presentation/screens/detail_article_screen.dart'
     as _i12;
+import 'package:example1/src/core/logger.dart' as _i13;
 
 class JuggerMyComponentBuilder implements _i1.MyComponentBuilder {
   _i2.Tracker _tracker;
@@ -145,6 +146,11 @@ class JuggerAppComponent implements _i1.AppComponent {
   }
 
   _i3.IProvider<dynamic> _loggerProvider;
+
+  @override
+  _i13.Logger logger() {
+    return _loggerProvider.get();
+  }
 
   void _init() {
     _initProvides();

@@ -38,6 +38,12 @@ class Component {
     }
     return componentBuilder.parameters.map((ComponentBuilderParameter p) => p.parameter).toList();
   }
+
+  List<MethodElement> get provideMethod {
+    final ProvideMethodVisitor v = ProvideMethodVisitor();
+    element.visitChildren(v);
+    return v.methods;
+  }
 }
 
 class ComponentBuilder {

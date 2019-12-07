@@ -69,6 +69,8 @@ class ComponentBuilder extends Builder {
               .addAll(_buildProvidesFields(graph.dependenciesClasses, graph));
           classBuilder.fields.addAll(_buildConstructorFields(componentBuilder));
 
+          classBuilder.methods.addAll(_buildProvideMethods(graph));
+
           classBuilder.methods.add(_buildInitMethod());
 
           classBuilder.methods.add(
@@ -196,6 +198,28 @@ class ComponentBuilder extends Builder {
     }
 
     return fields;
+  }
+
+  List<Method> _buildProvideMethods(Graph graph) {
+    final List<MethodElement> methods = graph.component.provideMethod;
+    final List<Method> newProperties = <Method>[];
+
+    for (MethodElement method in methods) {
+      final m = Method((MethodBuilder b) {
+        b.annotations.add(const CodeExpression(Code('override')));
+        b.name = method.name;
+        b.returns = Reference(method.returnType.name, createElementPath(method.returnType.element));
+
+        final ProviderSource providerSource = graph.findProvider(method.returnType.element);
+
+        assert(providerSource != null, '${method.returnType.element.name} not provided');
+
+        b.body = Code('return ${_generateAssignString(method.returnType.element, graph)};');
+      });
+      newProperties.add(m);
+    }
+
+    return newProperties;
   }
 
   Method _buildInitMethod() {

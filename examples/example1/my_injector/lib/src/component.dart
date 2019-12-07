@@ -60,6 +60,7 @@ abstract class CommonModule {
 @Component([AppModule])
 abstract class AppComponent {
 
+  Logger logger();
 }
 
 @module
