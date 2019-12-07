@@ -58,3 +58,12 @@ const Bind bind = Bind._();
 class Bind {
   const Bind._();
 }
+
+const ComponentBuilder componentBuilder = ComponentBuilder._();
+
+///
+/// TODO(): write documentation
+///
+class ComponentBuilder {
+  const ComponentBuilder._();
+}

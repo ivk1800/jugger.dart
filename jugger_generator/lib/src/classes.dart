@@ -31,6 +31,49 @@ class Component {
       return l;
     }).toList();
   }
+
+  List<ParameterElement> buildInstanceFields(ComponentBuilder componentBuilder) {
+    if (componentBuilder == null) {
+      return <ParameterElement>[];
+    }
+    return componentBuilder.parameters.map((ComponentBuilderParameter p) => p.parameter).toList();
+  }
+}
+
+class ComponentBuilder {
+  const ComponentBuilder({
+    @required this.element,
+    @required this.componentClass,
+    @required this.methods,
+  });
+
+  final ClassElement element;
+  final ClassElement componentClass;
+
+  final List<MethodElement> methods;
+
+  List<ComponentBuilderParameter> get parameters {
+    return methods.expand<ParameterElement>((MethodElement methodElement) {
+      return methodElement.parameters;
+    }).map((ParameterElement p) => ComponentBuilderParameter(parameter: p)).toList();
+  }
+}
+
+class ComponentBuilderParameter {
+  const ComponentBuilderParameter({
+    @required this.parameter,
+  });
+
+  final ParameterElement parameter;
+
+  @override
+  String toString() {
+    return parameter.type.name;
+  }
+
+  String get fieldName {
+    return '_${uncapitalize(parameter.type.name)}';
+  }
 }
 
 abstract class Annotation {}
@@ -49,6 +92,12 @@ class InjectAnnotation implements Annotation {}
 class SingletonAnnotation implements Annotation {}
 
 class BindAnnotation implements Annotation {}
+
+class ComponentBuilderAnnotation implements Annotation {
+  const ComponentBuilderAnnotation(this.element);
+
+  final ClassElement element;
+}
 
 class ModuleAnnotation implements Annotation {
   const ModuleAnnotation(this.element);

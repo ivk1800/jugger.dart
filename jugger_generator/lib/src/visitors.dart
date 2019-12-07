@@ -126,3 +126,80 @@ class InjectedConstructorsVisitor extends RecursiveElementVisitor<dynamic> {
       .where((InjectedConstructor constructor) => constructor.isInjected)
       .toList();
 }
+
+class ComponentBuildersVisitor extends RecursiveElementVisitor<dynamic> {
+  List<ComponentBuilder> componentBuilders = <ComponentBuilder>[];
+
+  @override
+  dynamic visitClassElement(ClassElement element) {
+    final ComponentBuilderAnnotation annotation = getComponentBuilderAnnotation(
+        element);
+
+    if (annotation != null) {
+      BuildMethodsVisitor v = BuildMethodsVisitor();
+      element.visitChildren(v);
+
+      if (v.buildMethod == null) {
+        throw StateError(
+          'builder $element must have build method',
+        );
+      }
+
+      for (int i = 0; i < v.methodElements.length; i++) {
+        final MethodElement methodElement = v.methodElements[i];
+
+        if (methodElement.name == 'build') {
+          assert(methodElement.parameters.isEmpty);
+        } else {
+          assert(methodElement.returnType.name == element.name);
+          assert(methodElement.parameters.length == 1);
+        }
+      }
+
+      componentBuilders.add(ComponentBuilder(element: element,
+          methods: v.methodElements,
+          componentClass: v.buildMethod.returnType.element));
+    }
+
+    return null;
+  }
+}
+
+class BuildMethodsVisitor extends RecursiveElementVisitor<dynamic> {
+  List<MethodElement> methodElements = <MethodElement>[];
+
+  @override
+  dynamic visitMethodElement(MethodElement element) {
+    if (element.name == 'build') {
+      final ComponentAnnotation componentAnnotation = getComponentAnnotation(
+          element.returnType.element);
+      if (componentAnnotation == null) {
+        throw StateError(
+          'build ${element} method must returm component type',
+        );
+      }
+    }
+    methodElements.add(element);
+    return null;
+  }
+
+  MethodElement get buildMethod {
+    return methodElements.firstWhere((MethodElement m) {
+      return m.name == 'build';
+    });
+  }
+}
+
+class BuildInstanceFieldsVisitor extends RecursiveElementVisitor<dynamic> {
+  List<FieldElement> fields = <FieldElement>[];
+
+  @override
+  dynamic visitFieldElement(FieldElement element) {
+    fields.add(element);
+    return null;
+  }
+
+  @override
+  dynamic visitMethodElement(MethodElement element) {
+  }
+}

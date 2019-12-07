@@ -1,4 +1,5 @@
 import 'dart:collection';
+import "package:collection/collection.dart";
 
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
@@ -9,9 +10,28 @@ import 'package:jugger_generator/src/visitors.dart';
 import 'package:quiver/core.dart';
 
 class Graph {
-  Graph(this.component);
+  Graph(this.component, this.componentBuilder);
 
-  Graph.fromComponent(this.component) {
+  Graph.fromComponent(this.component, this.componentBuilder) {
+    for (j.Method method in component.provideMethods) {
+      final MethodElement element = method.element;
+
+      providerSources.add(ModuleSource(
+          moduleClass: element.enclosingElement,
+          providedClass: element.returnType.element,
+          method: method
+      ));
+    }
+
+    for (ParameterElement parameter in component.buildInstanceFields(componentBuilder)) {
+      providerSources.add(BuildInstanceSource(
+        parameter: parameter,
+        providedClass: parameter.type.element
+      ));
+    }
+
+    _validateProviderSources();
+
     for (j.Method method in component.provideMethods) {
       final MethodElement element = method.element;
       _registerDependency(element);
@@ -33,6 +53,9 @@ class Graph {
 
   final Map<_Key, _Dependency> _dependencies = HashMap<_Key, _Dependency>();
   final j.Component component;
+  final j.ComponentBuilder componentBuilder;
+
+  final List<ProviderSource> providerSources = <ProviderSource>[];
 
   List<ClassElement> get dependenciesClasses =>
       _dependencies.values.map((_Dependency d) => d.element).toList();
@@ -61,11 +84,25 @@ class Graph {
   _Dependency _registerVariableElementDependency(VariableElement element) {
     _Key key = _Key.of(element);
 
+//    if (isCore(element.type.element)) {
+//      final _Dependency dependency =
+//      _Dependency(element.type.element as ClassElement, <_Dependency>[]);
+//      _dependencies[key] = dependency;
+//      return dependency;
+//    }
+
     final InjectedConstructorsVisitor visitor = InjectedConstructorsVisitor();
     element.type.element.visitChildren(visitor);
 
+    if (visitor.injectedConstructors.isEmpty) {
+      final _Dependency dependency =
+      _Dependency(element.type.element as ClassElement, <_Dependency>[]);
+      _dependencies[key] = dependency;
+      return dependency;
+    }
+
     assert(visitor.injectedConstructors.length == 1,
-        'not found injected constructor or provider for ${element.type.name}');
+        'too many injected constructors for ${element.type.name}');
 
     final j.InjectedConstructor injectedConstructor =
         visitor.injectedConstructors[0];
@@ -102,6 +139,24 @@ class Graph {
     if (provideMethod != null) {
       _registerDependency(provideMethod.element);
     }
+  }
+
+  ProviderSource findProvider(ClassElement element) {
+    return providerSources.firstWhere((ProviderSource source)  {
+      return source.providedClass == element;
+    }, orElse: () => null);
+  }
+
+  void _validateProviderSources() {
+    final groupBy2 = groupBy(providerSources, (ProviderSource source) {
+      return source.providedClass;
+    });
+
+    groupBy2.forEach((ClassElement element, List<ProviderSource> p) {
+      assert(p.length == 1, '${element.thisType} has several providers: ${p
+          .map((ProviderSource s) => s.sourceString)
+          .join(', ')}');
+    });
   }
 }
 
@@ -160,4 +215,46 @@ class _Dependency {
   String toString() {
     return element.thisType.name;
   }
+}
+
+abstract class ProviderSource {
+
+  ProviderSource(this.providedClass);
+
+  final ClassElement providedClass;
+
+  String  get sourceString;
+}
+
+class ModuleSource extends ProviderSource {
+
+  ModuleSource({
+    @required this.moduleClass,
+    @required ClassElement providedClass,
+    @required this.method,
+  }) : super(providedClass);
+
+  final ClassElement moduleClass;
+
+  final j.Method method;
+
+  @override
+  String get sourceString => '${moduleClass.name}.${method.element.name}';
+}
+
+class BuildInstanceSource extends ProviderSource {
+
+  BuildInstanceSource({
+    @required ClassElement providedClass,
+    @required this.parameter,
+  }) : super(providedClass);
+
+  final ParameterElement parameter;
+
+  String get assignString {
+    return '_${uncapitalize(parameter.type.name)}';
+  }
+
+  @override
+  String get sourceString => 'builder of component';
 }

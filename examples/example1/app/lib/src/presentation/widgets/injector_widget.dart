@@ -1,3 +1,4 @@
+import 'package:example1/app.dart';
 import 'package:example1/src/presentation/screens/articles_screen.dart';
 import 'package:example1/src/presentation/screens/detail_article_screen.dart';
 import 'package:flutter/cupertino.dart';
@@ -26,12 +27,9 @@ class InjectorState extends State<Injector> implements MyComponent {
 
   @override
   void initState() {
-    _myComponent = JuggerMyComponent.create(
-        interactorModule: InteractorModule(),
-        repositoryModule: RepositoryModule(),
-        commonModule: CommonModule(
-          navigationKey: widget.navigationKey,
-        ));
+    _myComponent = JuggerMyComponentBuilder()
+        .tracker(Tracker())
+        .token('123').build();
 
     super.initState();
   }

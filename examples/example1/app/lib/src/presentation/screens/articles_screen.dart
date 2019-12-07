@@ -1,3 +1,4 @@
+import 'package:example1/src/core/tracker.dart';
 import 'package:example1/src/presentation/blocs/articles_screen_bloc.dart';
 import 'package:example1/src/presentation/models/models.dart';
 import 'package:example1/src/presentation/widgets/injector_widget.dart';
@@ -13,6 +14,10 @@ class ArticlesScreen extends StatefulWidget {
 class ArticlesScreenState extends State<ArticlesScreen> {
   @inject
   ArticlesBloc bloc;
+  @inject
+  Tracker tracker;
+  @inject
+  String token;
 
   @override
   void initState() {

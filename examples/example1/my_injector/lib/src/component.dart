@@ -8,6 +8,16 @@ abstract class MyComponent {
   void injectDetailArticleScreen(DetailArticleScreenState target);
 }
 
+@componentBuilder
+abstract class MyComponentBuilder {
+
+  MyComponentBuilder tracker(Tracker tracker);
+
+  MyComponentBuilder token(String token);
+
+  MyComponent build();
+}
+
 @module
 abstract class InteractorModule {
   @bind
@@ -16,9 +26,11 @@ abstract class InteractorModule {
   @provide
   static IDetailArticleScreenInteractor provideDetailArticleScreenInteractor(
       IArticlesRepository articlesRepository,
+      Tracker tracker,
       ) {
     return DetailArticleScreenInteractorImpl(
       articlesRepository: articlesRepository,
+      tracker: tracker
     );
   }
 }
@@ -42,5 +54,19 @@ abstract class CommonModule {
     return NavigationRouteImpl(
       navigationKey: MyApp.navigatorKey,
     );
+  }
+}
+
+@Component([AppModule])
+abstract class AppComponent {
+
+}
+
+@module
+abstract class AppModule {
+  @provide
+  @singleton
+  static Logger provideLogger() {
+    return Logger();
   }
 }

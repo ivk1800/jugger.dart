@@ -9,6 +9,12 @@ ComponentAnnotation getComponentAnnotation(Element element) {
       orElse: () => null);
 }
 
+ComponentBuilderAnnotation getComponentBuilderAnnotation(Element element) {
+  return getAnnotations(element).firstWhere(
+          (Annotation a) => a is ComponentBuilderAnnotation,
+      orElse: () => null);
+}
+
 BindAnnotation getBindAnnotation(Element element) {
   return getAnnotations(element).firstWhere(
           (Annotation a) => a is BindAnnotation,
@@ -60,6 +66,8 @@ List<Annotation> getAnnotations(Element element) {
         annotations.add(SingletonAnnotation());
       } else if (valueElement.name == 'Bind') {
         annotations.add(BindAnnotation());
+      } else if (valueElement.name == 'ComponentBuilder') {
+        annotations.add(ComponentBuilderAnnotation(valueElement));
       }
     }
   }
@@ -71,5 +79,13 @@ String uncapitalize(String name) {
 }
 
 String createElementPath(Element element) {
+  if (isCore(element)) {
+    return 'dart:core';
+  }
+
   return 'package:${element.source.uri.path}'.replaceFirst('/lib', '');
+}
+
+bool isCore(Element element) {
+  return element.librarySource.fullName.startsWith('dart:core') ?? false;
 }
