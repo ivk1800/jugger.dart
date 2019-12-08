@@ -15,3 +15,4 @@ export 'src/presentation/mappers/article_model_data_mapper.dart';
 export 'src/presentation/mappers/detail_article_model_data_mapper.dart';
 export 'src/presentation/screens/articles_screen.dart';
 export 'src/presentation/screens/detail_article_screen.dart';
+export 'src/presentation/widgets/injector_widget.dart';

@@ -1,6 +1,3 @@
-import 'package:example1/app.dart';
-import 'package:example1/src/presentation/screens/articles_screen.dart';
-import 'package:example1/src/presentation/screens/detail_article_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:my_injector/my_injector.dart';
@@ -22,30 +19,19 @@ class Injector extends StatefulWidget {
   }
 }
 
-class InjectorState extends State<Injector> implements MyComponent {
-  JuggerMyComponent _myComponent;
+class InjectorState extends State<Injector> {
+  JuggerAppComponent _appComponent;
+
+  JuggerAppComponent get appComponent => _appComponent;
 
   @override
   void initState() {
-    _myComponent = JuggerMyComponentBuilder()
-        .tracker(Tracker())
-        .token('123').build();
-
+    _appComponent = JuggerAppComponent.create();
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return widget.child;
-  }
-
-  @override
-  void injectArticlesScreen(ArticlesScreenState target) {
-    _myComponent.injectArticlesScreen(target);
-  }
-
-  @override
-  void injectDetailArticleScreen(DetailArticleScreenState target) {
-    _myComponent.injectDetailArticleScreen(target);
   }
 }

@@ -4,6 +4,7 @@ import 'package:example1/src/presentation/widgets/injector_widget.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:jugger/jugger.dart';
+import 'package:my_injector/my_injector.dart';
 
 class DetailArticleScreen extends StatefulWidget {
   const DetailArticleScreen({Key key, @required this.articlesId})
@@ -21,8 +22,7 @@ class DetailArticleScreenState extends State<DetailArticleScreen> {
 
   @override
   void initState() {
-    Injector.of(context).injectDetailArticleScreen(this);
-    bloc.setData(widget.articlesId);
+    this.inject();
     assert(bloc != null);
     super.initState();
   }

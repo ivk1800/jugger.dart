@@ -1,10 +1,10 @@
 import 'package:example1/src/core/tracker.dart';
 import 'package:example1/src/presentation/blocs/articles_screen_bloc.dart';
 import 'package:example1/src/presentation/models/models.dart';
-import 'package:example1/src/presentation/widgets/injector_widget.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:jugger/jugger.dart';
+import 'package:my_injector/my_injector.dart';
 
 class ArticlesScreen extends StatefulWidget {
   @override
@@ -16,13 +16,10 @@ class ArticlesScreenState extends State<ArticlesScreen> {
   ArticlesBloc bloc;
   @inject
   Tracker tracker;
-  @inject
-  @Named('test')
-  String token;
 
   @override
   void initState() {
-    Injector.of(context).injectArticlesScreen(this);
+    this.inject();
     assert(bloc != null);
     super.initState();
   }

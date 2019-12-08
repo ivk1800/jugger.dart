@@ -9,20 +9,18 @@ import 'base_bloc.dart';
 class DetailArticleBloc extends BaseBloc {
   @inject
   DetailArticleBloc({
-    @required @Named('test') IDetailArticleScreenInteractor interactor,
-    @required DetailArticleModelDataMapper articleModelDataMapper
+    IDetailArticleScreenInteractor interactor,
+    @required DetailArticleModelDataMapper articleModelDataMapper,
+    @required int articleId,
   })
       : _interactor = interactor,
-        _articleModelDataMapper = articleModelDataMapper;
+        _articleModelDataMapper = articleModelDataMapper,
+        _articleId = articleId;
 
   final IDetailArticleScreenInteractor _interactor;
   final DetailArticleModelDataMapper _articleModelDataMapper;
 
-  void setData(int articleId) {
-    _articleId = articleId;
-  }
-
-  int _articleId;
+  final int _articleId;
 
   Observable<DetailArticleModel> get article => _interactor
       .getDetailArticle(_articleId)
