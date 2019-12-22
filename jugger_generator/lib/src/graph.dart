@@ -29,7 +29,7 @@ class Graph {
     }
 
     if (component.dependencies.isNotEmpty) {
-      assert(componentBuilder !=
+      check(componentBuilder !=
           null, 'you need provide dependencies by builder. '
           'component: ${component.element.name}, dependencies: ${component.dependencies.map((
           j.DependencyAnnotation de) => de.element.name).join(',')}');
@@ -133,7 +133,7 @@ class Graph {
       return dependency;
     }
 
-    assert(visitor.injectedConstructors.length == 1,
+    check(visitor.injectedConstructors.length == 1,
         'too many injected constructors for ${element.type.name}');
 
     final j.InjectedConstructor injectedConstructor =
@@ -199,7 +199,7 @@ class Graph {
     });
 
     groupBy2.forEach((dynamic key, List<ProviderSource> p) {
-      assert(p.length == 1, '${key} has several providers: ${p
+      check(p.length == 1, '${key} has several providers: ${p
           .map((ProviderSource s) => s.sourceString)
           .join(', ')}');
     });

@@ -119,3 +119,9 @@ String createElementPath(Element element) {
 bool isCore(Element element) {
   return element.librarySource.fullName.startsWith('dart:core') ?? false;
 }
+
+void check(bool condition, String message) {
+  if (!condition) {
+    throw StateError(message);
+  }
+}

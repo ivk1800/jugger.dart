@@ -218,7 +218,7 @@ class ComponentBuilder extends Builder {
         final String name = getNamedAnnotation(method)?.name;
         final ProviderSource providerSource = graph.findProvider(method.returnType.element, name);
 
-        assert(providerSource != null, '${method.returnType.element.name} not provided');
+        check(providerSource != null, '${method.returnType.element.name} not provided');
 
         b.body = Code('return ${_generateAssignString(method.returnType.element, graph)};');
       });
@@ -245,7 +245,8 @@ class ComponentBuilder extends Builder {
       builder.name = method.element.name;
       builder.annotations.add(const CodeExpression(Code('override')));
       builder.returns = const Reference('void');
-      assert(method.element.parameters.length == 1);
+      check(method.element.parameters.length == 1,
+          'method ${method.element.name} must have 1 parameter');
 
       final ParameterElement parameterElement = method.element.parameters[0];
 
@@ -289,7 +290,7 @@ class ComponentBuilder extends Builder {
 
     if (visitor.injectedConstructors.isEmpty) {
       final j.Method provideMethod = graph.findProvideMethod(element.thisType, name);
-      assert(provideMethod != null, 'provider for (${element.thisType.name}, name: $name) not found');
+      check(provideMethod != null, 'provider for (${element.thisType.name}, name: $name) not found');
     }
 
     return '_${_generateName(element.thisType.element, name)}Provider.get()';
@@ -340,7 +341,7 @@ class ComponentBuilder extends Builder {
     final InjectedConstructorsVisitor visitor = InjectedConstructorsVisitor();
     element.visitChildren(visitor);
 
-    assert(visitor.injectedConstructors.length == 1,
+    check(visitor.injectedConstructors.length == 1,
         'not found injected constructor for ${element.name}');
     final j.InjectedConstructor injectedConstructor =
         visitor.injectedConstructors[0];
@@ -386,7 +387,7 @@ class ComponentBuilder extends Builder {
 
   InvokeExpression _buildProviderFromAbstractMethod(MethodElement method,
       Graph graph) {
-    assert(method.parameters.length ==
+    check(method.parameters.length ==
         1, 'method annotates [Bind] must have 1 parameter');
 
     final ClassElement parameter = method.parameters[0].type.element;
@@ -394,7 +395,7 @@ class ComponentBuilder extends Builder {
     final InjectedConstructorsVisitor visitor = InjectedConstructorsVisitor();
     parameter.visitChildren(visitor);
 
-    assert(visitor.injectedConstructors.length == 1,
+    check(visitor.injectedConstructors.length == 1,
     'not found injected constructor for ${parameter.name}');
     final j.InjectedConstructor injectedConstructor =
     visitor.injectedConstructors[0];

@@ -48,16 +48,16 @@ class ProvidesVisitor extends RecursiveElementVisitor<dynamic> {
     }
 
     if (element.isStatic) {
-      assert(getProvideAnnotation(element) !=
+      check(getProvideAnnotation(element) !=
           null, 'provide static method [${element.enclosingElement
           .name}.${element.name}] must be annotated [provide]');
     }
 
     if (element.isAbstract) {
-      assert(getBindAnnotation(element) !=
+      check(getBindAnnotation(element) !=
           null, 'provide abstract method [${element.enclosingElement
           .name}.${element.name}] must be annotated [Bind]');
-      assert(element.parameters.length == 1, 'method [${element.enclosingElement
+      check(element.parameters.length == 1, 'method [${element.enclosingElement
           .name}.${element.name}] annotates [Bind] must have 1 parameter');
       //TODO: check parameter type must be assignable to the return type
     }
@@ -153,31 +153,33 @@ class ComponentBuildersVisitor extends RecursiveElementVisitor<dynamic> {
         final MethodElement methodElement = v.methodElements[i];
 
         if (methodElement.name == 'build') {
-          assert(methodElement.parameters.isEmpty);
+          check(methodElement.parameters.isEmpty,
+              'build have > 1 parameter');
         } else {
-          assert(methodElement.returnType.name ==
+          check(methodElement.returnType.name ==
               element.name, '(${methodElement
               .name})  method return wrong type. Expected ${element
               .name}');
-          assert(methodElement.parameters.length == 1);
+          check(methodElement.parameters.length == 1,
+              '${methodElement.name} have > 1 parameter');
         }
       }
 
       final ComponentAnnotation componentAnnotation = getComponentAnnotation(
           v.buildMethod.returnType.element);
 
-      assert(componentAnnotation != null, 'build method must retunt component');
+      check(componentAnnotation != null, 'build method must retunt component');
 
       for (DependencyAnnotation dep in componentAnnotation.dependencies) {
         final bool dependencyProvided = v.methodElements.where((
             MethodElement me) => me.name != 'build')
             .any((MethodElement me) {
-          assert(me.parameters.length == 1, 'build method (${me
+          check(me.parameters.length == 1, 'build method (${me
               .name}) must have 1 paramenter');
           return me.parameters[0].type.element == dep.element;
         });
 
-        assert(dependencyProvided, 'dependency (${dep.element
+        check(dependencyProvided, 'dependency (${dep.element
             .name}) must provided by build method');
       }
 
