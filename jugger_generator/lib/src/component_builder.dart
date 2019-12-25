@@ -324,7 +324,8 @@ class ComponentBuilder extends Builder {
         } else if (provider is AnotherComponentSource) {
           print('${provider.providedClass} is AnotherComponentSource');
         }  else {
-          if (isCore(dependency.element)) {
+          if (isCore(dependency.element) ||
+              dependency.element.isAbstract) {
             throw StateError(
               '${dependency.enclosingElement.name}.${dependency.element.name} (name: $name) not provided',
             );
