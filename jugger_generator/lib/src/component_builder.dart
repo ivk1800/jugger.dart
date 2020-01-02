@@ -42,6 +42,8 @@ class ComponentBuilder extends Builder {
     final Resolver resolver = buildStep.resolver;
 
     if (await resolver.isLibrary(buildStep.inputId)) {
+      final Allocator allocator = Allocator.simplePrefixing();
+
       final LibraryElement lib = await buildStep.inputLibrary;
 
       final ComponentBuildersVisitor componentBuildersVisitor =
@@ -70,16 +72,16 @@ class ComponentBuilder extends Builder {
         final List<j.ModuleAnnotation> modules = component.modules;
 
         target.body.add(Class((ClassBuilder classBuilder) {
-          classBuilder.fields
-              .addAll(_buildProvidesFields(graph.dependencies, graph));
+          classBuilder.fields.addAll(
+              _buildProvidesFields(graph.dependencies, graph, allocator));
           classBuilder.fields.addAll(_buildConstructorFields(componentBuilder));
 
           classBuilder.methods.addAll(_buildProvideMethods(graph));
 
           classBuilder.methods.add(_buildInitMethod());
 
-          classBuilder.methods.add(
-              _buildInitProvidesMethod(graph.dependencies, modules, graph));
+          classBuilder.methods.add(_buildInitProvidesMethod(
+              graph.dependencies, modules, graph, allocator));
 
           classBuilder.methods.addAll(_buildMembersInjectorMethods(
               component.methods, classBuilder, graph));
@@ -96,7 +98,7 @@ class ComponentBuilder extends Builder {
       }
 
       final String string =
-          target.build().accept(DartEmitter.scoped()).toString();
+          target.build().accept(DartEmitter(allocator)).toString();
 
       final String finalString = string.isEmpty
           ? ''
@@ -201,7 +203,8 @@ class ComponentBuilder extends Builder {
     }
   }
 
-  List<Field> _buildProvidesFields(List<Dependency> dependencies, Graph graph) {
+  List<Field> _buildProvidesFields(
+      List<Dependency> dependencies, Graph graph, Allocator allocator) {
     final List<Field> fields = <Field>[];
 
     for (Dependency dependency in dependencies) {
@@ -217,8 +220,14 @@ class ComponentBuilder extends Builder {
           final String name =
               getNamedAnnotation(dependency.enclosingElement)?.name;
           b.name = '_${_generateName(dependency.element, name)}Provider';
-          b.type = const Reference(
-              'IProvider<dynamic>', 'package:jugger/jugger.dart');
+
+          final String generic = allocator.allocate(Reference(
+              dependency.element.thisType.name,
+              dependency.element.thisType.element.librarySource.uri
+                  .toString()));
+
+          b.type =
+              Reference('IProvider<$generic>', 'package:jugger/jugger.dart');
         }));
       } else {
         print('skip generation provide field for $provider');
@@ -345,7 +354,7 @@ class ComponentBuilder extends Builder {
   }
 
   Method _buildInitProvidesMethod(List<Dependency> dependencies,
-      List<j.ModuleAnnotation> modules, Graph graph) {
+      List<j.ModuleAnnotation> modules, Graph graph, Allocator allocator) {
     final MethodBuilder builder = MethodBuilder();
     builder.name = '_initProvides';
     builder.returns = const Reference('void');
@@ -359,7 +368,7 @@ class ComponentBuilder extends Builder {
             graph.findProvider(dependency.element, name);
 
         if (provider is ModuleSource) {
-          buildProviderFromModule(provider.method.element, b, graph);
+          buildProviderFromModule(provider.method.element, b, graph, allocator);
         } else if (provider is BuildInstanceSource) {
           print('${provider.providedClass} is BuildInstanceSource');
         } else if (provider is AnotherComponentSource) {
@@ -373,7 +382,7 @@ class ComponentBuilder extends Builder {
           if (_isBindDependency(dependency)) {
             continue;
           }
-          buildProviderFromClass(dependency.element, b, graph);
+          buildProviderFromClass(dependency.element, b, graph, allocator);
         }
       }
     }));
@@ -381,7 +390,7 @@ class ComponentBuilder extends Builder {
   }
 
   void buildProviderFromClass(
-      ClassElement element, BlockBuilder b, Graph graph) {
+      ClassElement element, BlockBuilder b, Graph graph, Allocator allocator) {
     final InjectedConstructorsVisitor visitor = InjectedConstructorsVisitor();
     element.visitChildren(visitor);
 
@@ -393,7 +402,8 @@ class ComponentBuilder extends Builder {
         injectedConstructor.element.parameters;
 
     final InvokeExpression newInstance =
-        getProviderType(injectedConstructor.element).newInstance(<Expression>[
+        getProviderType(injectedConstructor.element, allocator)
+            .newInstance(<Expression>[
       CodeExpression(Block.of(<Code>[
         const Code('() { return '),
         _buildCallMethodOrConstructor(element, parameters, graph),
@@ -408,12 +418,12 @@ class ComponentBuilder extends Builder {
   }
 
   void buildProviderFromModule(
-      MethodElement method, BlockBuilder b, Graph graph) {
+      MethodElement method, BlockBuilder b, Graph graph, Allocator allocator) {
     InvokeExpression expression;
     if (method.isStatic) {
-      expression = _buildProviderFromStaticMethod(method, graph);
+      expression = _buildProviderFromStaticMethod(method, graph, allocator);
     } else if (method.isAbstract) {
-      expression = _buildProviderFromAbstractMethod(method, graph);
+      expression = _buildProviderFromAbstractMethod(method, graph, allocator);
     } else {
       throw StateError(
         'provided method must be abstract or static [${method.enclosingElement.name}.${method.name}]',
@@ -429,7 +439,7 @@ class ComponentBuilder extends Builder {
   }
 
   InvokeExpression _buildProviderFromAbstractMethod(
-      MethodElement method, Graph graph) {
+      MethodElement method, Graph graph, Allocator allocator) {
     check(method.parameters.length == 1,
         'method annotates [Bind] must have 1 parameter');
 
@@ -445,7 +455,7 @@ class ComponentBuilder extends Builder {
     final List<ParameterElement> parameters =
         injectedConstructor.element.parameters;
 
-    return getProviderType(method).newInstance(<Expression>[
+    return getProviderType(method, allocator).newInstance(<Expression>[
       CodeExpression(Block.of(<Code>[
         const Code('() { return '),
         _buildCallMethodOrConstructor(parameter, parameters, graph),
@@ -455,9 +465,9 @@ class ComponentBuilder extends Builder {
   }
 
   InvokeExpression _buildProviderFromStaticMethod(
-      MethodElement method, Graph graph) {
+      MethodElement method, Graph graph, Allocator allocator) {
     final ClassElement moduleClass = method.enclosingElement;
-    return getProviderType(method).newInstance(<Expression>[
+    return getProviderType(method, allocator).newInstance(<Expression>[
       CodeExpression(Block.of(<Code>[
         const Code('() { return '),
         ToCodeExpression(
@@ -515,13 +525,27 @@ class ComponentBuilder extends Builder {
     );
   }
 
-  Reference getProviderType(Element element) {
+  Reference getProviderType(Element element, Allocator allocator) {
+    final String generic = _getGeneric(element, allocator);
     return refer(
         getAnnotations(element)
                 .any((j.Annotation a) => a is j.SingletonAnnotation)
-            ? 'SingletonProvider<dynamic>'
-            : 'Provider<dynamic>',
+            ? 'SingletonProvider<$generic>'
+            : 'Provider<$generic>',
         'package:jugger/jugger.dart');
+  }
+
+  String _getGeneric(Element element, Allocator allocator) {
+    if (element is ConstructorElement) {
+      final ClassElement c = element.enclosingElement;
+      return allocator
+          .allocate(Reference(c.thisType.name, c.librarySource.uri.toString()));
+    } else if (element is MethodElement) {
+      return allocator.allocate(Reference(element.returnType.name,
+          element.returnType.element.librarySource.uri.toString()));
+    }
+    throw StateError(
+        'unsupported type: ${element.name}, ${element.runtimeType}');
   }
 
   Constructor _buildConstructor(j.ComponentBuilder componentBuilder) {
