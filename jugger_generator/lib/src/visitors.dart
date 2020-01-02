@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:analyzer/dart/element/visitor.dart';
@@ -15,9 +13,10 @@ class InjectedMembersVisitor extends RecursiveElementVisitor<dynamic> {
     final List<Annotation> annotations = getAnnotations(element);
     if (annotations
         .any((Annotation annotation) => annotation is InjectAnnotation)) {
-      //TODO: check anothedynamic states
+      // ignore: flutter_style_todos
+      //TODO: check another dynamic states
       if (!element.isPublic || element.isStatic) {
-        throw new StateError(
+        throw StateError(
           'field ${element.name} must be only public',
         );
       }
@@ -87,6 +86,7 @@ class ProvidesVisitor extends RecursiveElementVisitor<dynamic> {
           .name}.${element.name}] must be annotated [Bind]');
       check(element.parameters.length == 1, 'method [${element.enclosingElement
           .name}.${element.name}] annotates [Bind] must have 1 parameter');
+      // ignore: flutter_style_todos
       //TODO: check parameter type must be assignable to the return type
     }
 
@@ -168,7 +168,7 @@ class ComponentBuildersVisitor extends RecursiveElementVisitor<dynamic> {
         element);
 
     if (annotation != null) {
-      BuildMethodsVisitor v = BuildMethodsVisitor();
+      final BuildMethodsVisitor v = BuildMethodsVisitor();
       element.visitChildren(v);
 
       if (v.buildMethod == null) {
@@ -230,7 +230,7 @@ class BuildMethodsVisitor extends RecursiveElementVisitor<dynamic> {
           element.returnType.element);
       if (componentAnnotation == null) {
         throw StateError(
-          'build ${element} method must returm component type',
+          'build $element method must returm component type',
         );
       }
     }

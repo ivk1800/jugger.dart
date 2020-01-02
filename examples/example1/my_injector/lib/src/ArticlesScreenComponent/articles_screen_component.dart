@@ -5,7 +5,7 @@ import 'package:my_injector/src/AppComponent/app_component.dart';
 
 import '../../my_injector.dart';
 
-@Component(dependencies: [AppComponent])
+@Component(dependencies: <Type>[AppComponent])
 abstract class ArticlesScreenComponent {
   void inject(ArticlesScreenState target);
 }

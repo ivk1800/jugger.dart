@@ -1,6 +1,5 @@
 import 'dart:collection';
-import 'dart:math';
-import "package:collection/collection.dart";
+import 'package:collection/collection.dart';
 
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
@@ -15,7 +14,7 @@ class Graph {
 
   Graph.fromComponent(this.component, this.componentBuilder) {
     for (j.DependencyAnnotation dep in component.dependencies) {
-      ProvideMethodVisitor v = ProvideMethodVisitor();
+      final ProvideMethodVisitor v = ProvideMethodVisitor();
       dep.element.visitChildren(v);
 
       for (MethodElement m in v.methods) {
@@ -23,16 +22,15 @@ class Graph {
             providedClass: m.returnType.element,
             method: m,
             dependencyClass: dep.element,
-            annotations: getAnnotations(m)
-        ));
+            annotations: getAnnotations(m)));
       }
     }
 
     if (component.dependencies.isNotEmpty) {
-      check(componentBuilder !=
-          null, 'you need provide dependencies by builder. '
-          'component: ${component.element.name}, dependencies: ${component.dependencies.map((
-          j.DependencyAnnotation de) => de.element.name).join(',')}');
+      check(
+          componentBuilder != null,
+          'you need provide dependencies by builder. '
+          'component: ${component.element.name}, dependencies: ${component.dependencies.map((j.DependencyAnnotation de) => de.element.name).join(',')}');
     }
 
     for (j.Method method in component.provideMethods) {
@@ -42,16 +40,15 @@ class Graph {
           moduleClass: element.enclosingElement,
           providedClass: element.returnType.element,
           method: method,
-          annotations: getAnnotations(element)
-      ));
+          annotations: getAnnotations(element)));
     }
 
-    for (ParameterElement parameter in component.buildInstanceFields(componentBuilder)) {
+    for (ParameterElement parameter
+        in component.buildInstanceFields(componentBuilder)) {
       providerSources.add(BuildInstanceSource(
-        parameter: parameter,
-        providedClass: parameter.type.element,
-        annotations: getAnnotations(parameter.enclosingElement)
-      ));
+          parameter: parameter,
+          providedClass: parameter.type.element,
+          annotations: getAnnotations(parameter.enclosingElement)));
     }
 
     _validateProviderSources();
@@ -95,9 +92,9 @@ class Graph {
 
     if (element is MethodElement) {
       final Dependency dependency = Dependency(
-          element.returnType.element,
-          _registerMethodDependencies(element),
-          element,
+        element.returnType.element,
+        _registerMethodDependencies(element),
+        element,
       );
       _dependencies[key] = dependency;
       return dependency;
@@ -111,7 +108,7 @@ class Graph {
   }
 
   Dependency _registerVariableElementDependency(VariableElement element) {
-    _Key key = _Key.of(element);
+    final _Key key = _Key.of(element);
 
 //    if (isCore(element.type.element)) {
 //      final _Dependency dependency =
@@ -124,10 +121,10 @@ class Graph {
     element.type.element.visitChildren(visitor);
 
     if (visitor.injectedConstructors.isEmpty) {
-      final Dependency dependency =
-      Dependency(
-          element.type.element as ClassElement, <Dependency>[],
-          element,
+      final Dependency dependency = Dependency(
+        // ignore: avoid_as
+        element.type.element as ClassElement, <Dependency>[],
+        element,
       );
       _dependencies[key] = dependency;
       return dependency;
@@ -139,19 +136,18 @@ class Graph {
     final j.InjectedConstructor injectedConstructor =
         visitor.injectedConstructors[0];
 
-    final List<Dependency> dependencies = injectedConstructor
-        .element.parameters
+    final List<Dependency> dependencies = injectedConstructor.element.parameters
         .map((ParameterElement parameter) {
       _registerParamDependencyIfNeed(parameter);
       return _registerDependency(parameter);
     }).toList();
 
-    final Dependency dependency =
-        Dependency(
-            element.type.element as ClassElement,
-            dependencies,
-            element,
-        );
+    final Dependency dependency = Dependency(
+      // ignore: avoid_as
+      element.type.element as ClassElement,
+      dependencies,
+      element,
+    );
     _dependencies[key] = dependency;
     return dependency;
   }
@@ -159,7 +155,7 @@ class Graph {
   List<Dependency> _registerMethodDependencies(MethodElement element) {
     final List<Dependency> dependencies =
         element.parameters.map((ParameterElement parameter) {
-          _registerParamDependencyIfNeed(parameter);
+      _registerParamDependencyIfNeed(parameter);
       return _registerDependency(parameter);
     }).toList();
 
@@ -176,32 +172,33 @@ class Graph {
 
   j.Method findProvideMethod(DartType type, [String name]) {
     return component.provideMethods.firstWhere(
-            (j.Method method) =>
-        method.element.returnType.name == type.name && method.named == name,
+        (j.Method method) =>
+            method.element.returnType.name == type.name && method.named == name,
         orElse: () => null);
   }
 
   ProviderSource findProvider(ClassElement element, [String name]) {
-    return providerSources.firstWhere((ProviderSource source)  {
+    return providerSources.firstWhere((ProviderSource source) {
       return source.providedClass == element && source.named == name;
     }, orElse: () => null);
   }
 
   List<ProviderSource> findProviders(ClassElement element) {
-    return providerSources.where((ProviderSource source)  {
+    return providerSources.where((ProviderSource source) {
       return source.providedClass == element;
     }).toList();
   }
 
   void _validateProviderSources() {
-    final groupBy2 = groupBy<ProviderSource, dynamic>(providerSources, (ProviderSource source) {
+    final Map<dynamic, List<ProviderSource>> groupBy2 =
+        groupBy<ProviderSource, dynamic>(providerSources,
+            (ProviderSource source) {
       return source.key;
     });
 
     groupBy2.forEach((dynamic key, List<ProviderSource> p) {
-      check(p.length == 1, '${key} has several providers: ${p
-          .map((ProviderSource s) => s.sourceString)
-          .join(', ')}');
+      check(p.length == 1,
+          '$key has several providers: ${p.map((ProviderSource s) => s.sourceString).join(', ')}');
     });
   }
 }
@@ -238,10 +235,10 @@ class _Key {
   String toString() {
     final Element element = type.element;
     if (element is MethodElement) {
-      MethodElement m = element;
+      final MethodElement m = element;
       return m.returnType.name;
     } else if (element is ParameterElement) {
-      ParameterElement p = element;
+      final ParameterElement p = element;
       return p.type.name;
     }
 
@@ -265,7 +262,6 @@ class Dependency {
 }
 
 abstract class ProviderSource {
-
   ProviderSource(this.providedClass, this.annotations);
 
   final ClassElement providedClass;
@@ -273,8 +269,7 @@ abstract class ProviderSource {
   dynamic get key {
     final j.NamedAnnotation named = namedAnnotation;
     if (named != null) {
-      return '${named.name}_${createElementPath(providedClass)}/${providedClass
-          .name}';
+      return '${named.name}_${createElementPath(providedClass)}/${providedClass.name}';
     }
 
     return providedClass;
@@ -292,7 +287,6 @@ abstract class ProviderSource {
 }
 
 class ModuleSource extends ProviderSource {
-
   ModuleSource({
     @required this.moduleClass,
     @required ClassElement providedClass,
@@ -309,7 +303,6 @@ class ModuleSource extends ProviderSource {
 }
 
 class BuildInstanceSource extends ProviderSource {
-
   BuildInstanceSource({
     @required ClassElement providedClass,
     @required this.parameter,
@@ -332,7 +325,6 @@ class BuildInstanceSource extends ProviderSource {
 }
 
 class AnotherComponentSource extends ProviderSource {
-
   AnotherComponentSource({
     @required ClassElement providedClass,
     @required this.method,

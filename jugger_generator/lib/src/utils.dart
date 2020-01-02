@@ -39,10 +39,11 @@ List<Annotation> getAnnotations(Element element) {
   final List<ElementAnnotation> resolvedMetadata = element.metadata;
 
   for (int i = 0; i < resolvedMetadata.length; i++) {
-    ElementAnnotation annotation = resolvedMetadata[i];
-    Element valueElement = annotation.computeConstantValue()?.type?.element;
+    final ElementAnnotation annotation = resolvedMetadata[i];
+    final Element valueElement = annotation.computeConstantValue()?.type?.element;
 
     if (valueElement == null) {
+      // ignore: flutter_style_todos
       //TODO
     } else {
       if (valueElement.name == 'Component') {
@@ -51,6 +52,7 @@ List<Annotation> getAnnotations(Element element) {
             .getField('modules')
             .toListValue()
             .cast<DartObject>()
+            // ignore: avoid_as
             .map((DartObject o) => o.toTypeValue().element as ClassElement)
             .toList();
 
@@ -59,6 +61,7 @@ List<Annotation> getAnnotations(Element element) {
             .getField('dependencies')
             .toListValue()
             .cast<DartObject>()
+            // ignore: avoid_as
             .map((DartObject o) => o.toTypeValue().element as ClassElement)
             .toList();
 

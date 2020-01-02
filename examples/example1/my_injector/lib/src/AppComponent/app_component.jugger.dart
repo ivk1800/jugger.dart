@@ -33,8 +33,6 @@ class JuggerAppComponent implements _i1.AppComponent {
 
   _i2.IProvider<dynamic> _articleEntityDataMapperProvider;
 
-  _i2.IProvider<dynamic> _articleScreenInteractorImplProvider;
-
   _i2.IProvider<dynamic> _iArticlesScreenInteractorProvider;
 
   _i2.IProvider<dynamic> _iNavigationRouterProvider;
@@ -83,11 +81,6 @@ class JuggerAppComponent implements _i1.AppComponent {
     });
     _articleEntityDataMapperProvider = _i2.SingletonProvider<dynamic>(() {
       return _i11.ArticleEntityDataMapper();
-    });
-    _articleScreenInteractorImplProvider = _i2.Provider<dynamic>(() {
-      return _i12.ArticleScreenInteractorImpl(
-          articlesRepository: _iArticlesRepositoryProvider.get(),
-          router: _iNavigationRouterProvider.get());
     });
     _iArticlesScreenInteractorProvider = _i2.Provider<dynamic>(() {
       return _i12.ArticleScreenInteractorImpl(
