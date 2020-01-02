@@ -11,26 +11,23 @@ ComponentAnnotation getComponentAnnotation(Element element) {
 
 ComponentBuilderAnnotation getComponentBuilderAnnotation(Element element) {
   return getAnnotations(element).firstWhere(
-          (Annotation a) => a is ComponentBuilderAnnotation,
+      (Annotation a) => a is ComponentBuilderAnnotation,
       orElse: () => null);
 }
 
 BindAnnotation getBindAnnotation(Element element) {
-  return getAnnotations(element).firstWhere(
-          (Annotation a) => a is BindAnnotation,
-      orElse: () => null);
+  return getAnnotations(element)
+      .firstWhere((Annotation a) => a is BindAnnotation, orElse: () => null);
 }
 
 ProvideAnnotation getProvideAnnotation(Element element) {
-  return getAnnotations(element).firstWhere(
-          (Annotation a) => a is ProvideAnnotation,
-      orElse: () => null);
+  return getAnnotations(element)
+      .firstWhere((Annotation a) => a is ProvideAnnotation, orElse: () => null);
 }
 
 NamedAnnotation getNamedAnnotation(Element element) {
-  return getAnnotations(element).firstWhere(
-          (Annotation a) => a is NamedAnnotation,
-      orElse: () => null);
+  return getAnnotations(element)
+      .firstWhere((Annotation a) => a is NamedAnnotation, orElse: () => null);
 }
 
 List<Annotation> getAnnotations(Element element) {
@@ -40,7 +37,8 @@ List<Annotation> getAnnotations(Element element) {
 
   for (int i = 0; i < resolvedMetadata.length; i++) {
     final ElementAnnotation annotation = resolvedMetadata[i];
-    final Element valueElement = annotation.computeConstantValue()?.type?.element;
+    final Element valueElement =
+        annotation.computeConstantValue()?.type?.element;
 
     if (valueElement == null) {
       // ignore: flutter_style_todos
@@ -75,15 +73,14 @@ List<Annotation> getAnnotations(Element element) {
               }
               return ModuleAnnotation(c);
             }).toList(),
-          dependencies: dependencies.map((ClassElement c) {
-            if (!c.isAbstract) {
-              throw StateError(
-                'dependency must be abstract [${c.thisType.name}]',
-              );
-            }
-            return DependencyAnnotation(element: c);
-          }).toList()
-        ));
+            dependencies: dependencies.map((ClassElement c) {
+              if (!c.isAbstract) {
+                throw StateError(
+                  'dependency must be abstract [${c.thisType.name}]',
+                );
+              }
+              return DependencyAnnotation(element: c);
+            }).toList()));
       } else if (valueElement.name == 'Provide') {
         annotations.add(ProvideAnnotation());
       } else if (valueElement.name == 'Inject') {
@@ -97,10 +94,10 @@ List<Annotation> getAnnotations(Element element) {
       } else if (valueElement.name == 'Named') {
         annotations.add(NamedAnnotation(
             element: valueElement,
-            name: annotation.computeConstantValue()
+            name: annotation
+                .computeConstantValue()
                 .getField('name')
-                .toStringValue()
-        ));
+                .toStringValue()));
       }
     }
   }

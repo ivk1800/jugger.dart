@@ -69,23 +69,20 @@ class ProvidesVisitor extends RecursiveElementVisitor<dynamic> {
 
     if (element.isPrivate) {
       throw StateError(
-        'provided method can not be private [${element.enclosingElement
-            .name}.${element.name}]',
+        'provided method can not be private [${element.enclosingElement.name}.${element.name}]',
       );
     }
 
     if (element.isStatic) {
-      check(getProvideAnnotation(element) !=
-          null, 'provide static method [${element.enclosingElement
-          .name}.${element.name}] must be annotated [provide]');
+      check(getProvideAnnotation(element) != null,
+          'provide static method [${element.enclosingElement.name}.${element.name}] must be annotated [provide]');
     }
 
     if (element.isAbstract) {
-      check(getBindAnnotation(element) !=
-          null, 'provide abstract method [${element.enclosingElement
-          .name}.${element.name}] must be annotated [Bind]');
-      check(element.parameters.length == 1, 'method [${element.enclosingElement
-          .name}.${element.name}] annotates [Bind] must have 1 parameter');
+      check(getBindAnnotation(element) != null,
+          'provide abstract method [${element.enclosingElement.name}.${element.name}] must be annotated [Bind]');
+      check(element.parameters.length == 1,
+          'method [${element.enclosingElement.name}.${element.name}] annotates [Bind] must have 1 parameter');
       // ignore: flutter_style_todos
       //TODO: check parameter type must be assignable to the return type
     }
@@ -93,9 +90,7 @@ class ProvidesVisitor extends RecursiveElementVisitor<dynamic> {
     if (getBindAnnotation(element) != null &&
         getProvideAnnotation(element) != null) {
       throw StateError(
-        'provide method [${element
-            .enclosingElement.name}.${element
-            .name}] can not be annotated together [provide] and [bind]',
+        'provide method [${element.enclosingElement.name}.${element.name}] can not be annotated together [provide] and [bind]',
       );
     }
 
@@ -164,8 +159,8 @@ class ComponentBuildersVisitor extends RecursiveElementVisitor<dynamic> {
 
   @override
   dynamic visitClassElement(ClassElement element) {
-    final ComponentBuilderAnnotation annotation = getComponentBuilderAnnotation(
-        element);
+    final ComponentBuilderAnnotation annotation =
+        getComponentBuilderAnnotation(element);
 
     if (annotation != null) {
       final BuildMethodsVisitor v = BuildMethodsVisitor();
@@ -181,37 +176,35 @@ class ComponentBuildersVisitor extends RecursiveElementVisitor<dynamic> {
         final MethodElement methodElement = v.methodElements[i];
 
         if (methodElement.name == 'build') {
-          check(methodElement.parameters.isEmpty,
-              'build have > 1 parameter');
+          check(methodElement.parameters.isEmpty, 'build have > 1 parameter');
         } else {
-          check(methodElement.returnType.name ==
-              element.name, '(${methodElement
-              .name})  method return wrong type. Expected ${element
-              .name}');
+          check(methodElement.returnType.name == element.name,
+              '(${methodElement.name})  method return wrong type. Expected ${element.name}');
           check(methodElement.parameters.length == 1,
               '${methodElement.name} have > 1 parameter');
         }
       }
 
-      final ComponentAnnotation componentAnnotation = getComponentAnnotation(
-          v.buildMethod.returnType.element);
+      final ComponentAnnotation componentAnnotation =
+          getComponentAnnotation(v.buildMethod.returnType.element);
 
       check(componentAnnotation != null, 'build method must retunt component');
 
       for (DependencyAnnotation dep in componentAnnotation.dependencies) {
-        final bool dependencyProvided = v.methodElements.where((
-            MethodElement me) => me.name != 'build')
+        final bool dependencyProvided = v.methodElements
+            .where((MethodElement me) => me.name != 'build')
             .any((MethodElement me) {
-          check(me.parameters.length == 1, 'build method (${me
-              .name}) must have 1 paramenter');
+          check(me.parameters.length == 1,
+              'build method (${me.name}) must have 1 paramenter');
           return me.parameters[0].type.element == dep.element;
         });
 
-        check(dependencyProvided, 'dependency (${dep.element
-            .name}) must provided by build method');
+        check(dependencyProvided,
+            'dependency (${dep.element.name}) must provided by build method');
       }
 
-      componentBuilders.add(ComponentBuilder(element: element,
+      componentBuilders.add(ComponentBuilder(
+          element: element,
           methods: v.methodElements,
           componentClass: v.buildMethod.returnType.element));
     }
@@ -226,8 +219,8 @@ class BuildMethodsVisitor extends RecursiveElementVisitor<dynamic> {
   @override
   dynamic visitMethodElement(MethodElement element) {
     if (element.name == 'build') {
-      final ComponentAnnotation componentAnnotation = getComponentAnnotation(
-          element.returnType.element);
+      final ComponentAnnotation componentAnnotation =
+          getComponentAnnotation(element.returnType.element);
       if (componentAnnotation == null) {
         throw StateError(
           'build $element method must returm component type',
@@ -269,7 +262,6 @@ class ProvideMethodVisitor extends RecursiveElementVisitor<dynamic> {
         '${element.name} not abstract',
       );
     }
-
 
     methods.add(element);
     return null;

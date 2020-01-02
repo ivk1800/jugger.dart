@@ -156,8 +156,7 @@ class ComponentBuilder extends Builder {
                   return codeExpression;
                 });
 
-                final List<Code> assertCodes = componentBuilder
-                    .parameters
+                final List<Code> assertCodes = componentBuilder.parameters
                     .map((j.ComponentBuilderParameter parameter) {
                   final String name =
                       getNamedAnnotation(parameter.parameter.enclosingElement)

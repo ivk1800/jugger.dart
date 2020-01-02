@@ -40,11 +40,14 @@ class Component {
     }).toList();
   }
 
-  List<ParameterElement> buildInstanceFields(ComponentBuilder componentBuilder) {
+  List<ParameterElement> buildInstanceFields(
+      ComponentBuilder componentBuilder) {
     if (componentBuilder == null) {
       return <ParameterElement>[];
     }
-    return componentBuilder.parameters.map((ComponentBuilderParameter p) => p.parameter).toList();
+    return componentBuilder.parameters
+        .map((ComponentBuilderParameter p) => p.parameter)
+        .toList();
   }
 
   List<MethodElement> get provideMethod {
@@ -67,9 +70,12 @@ class ComponentBuilder {
   final List<MethodElement> methods;
 
   List<ComponentBuilderParameter> get parameters {
-    return methods.expand<ParameterElement>((MethodElement methodElement) {
-      return methodElement.parameters;
-    }).map((ParameterElement p) => ComponentBuilderParameter(parameter: p)).toList();
+    return methods
+        .expand<ParameterElement>((MethodElement methodElement) {
+          return methodElement.parameters;
+        })
+        .map((ParameterElement p) => ComponentBuilderParameter(parameter: p))
+        .toList();
   }
 }
 
@@ -93,11 +99,10 @@ class ComponentBuilderParameter {
 abstract class Annotation {}
 
 class ComponentAnnotation implements Annotation {
-  const ComponentAnnotation({
-    @required this.element,
-    @required this.modules,
-    @required this.dependencies
-  });
+  const ComponentAnnotation(
+      {@required this.element,
+      @required this.modules,
+      @required this.dependencies});
 
   final Element element;
   final List<ModuleAnnotation> modules;
@@ -125,9 +130,7 @@ class ModuleAnnotation implements Annotation {
 }
 
 class DependencyAnnotation implements Annotation {
-  const DependencyAnnotation({
-    @required this.element
-  });
+  const DependencyAnnotation({@required this.element});
 
   final ClassElement element;
 }
@@ -149,9 +152,8 @@ class Method {
 
   final List<Annotation> annotations;
 
-  NamedAnnotation get _namedAnnotation =>
-      annotations.firstWhere((Annotation a) => a is NamedAnnotation,
-          orElse: () => null);
+  NamedAnnotation get _namedAnnotation => annotations
+      .firstWhere((Annotation a) => a is NamedAnnotation, orElse: () => null);
 
   String get named => _namedAnnotation?.name;
 }

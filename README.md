@@ -84,6 +84,49 @@ import 'inject.jugger.dart';
 
 ```
 
+#### Limitations:
+not allowed inject Functions, example:
+```dart
+typedef Click<T> = void Function(T result); 
+```
+
+#### SubComponents:
+example:
+```dart
+@Component(
+    modules: <Type>[RegisterScreenModule], dependencies: <Type>[AppComponent])
+abstract class RegisterScreenComponent {
+  void inject(RegisterPageState target);
+}
+
+@componentBuilder
+abstract class RegisterScreenComponentBuilder {
+  RegisterScreenComponentBuilder appComponent(AppComponent component);
+
+  RegisterScreenComponentBuilder screen(RegisterPageState screen);
+
+  RegisterScreenComponent build();
+}
+
+@module
+abstract class RegisterScreenModule {
+  @provide
+  static ResultDispatcher<UserCredentials> provideResultDispatcher(
+      RegisterPageState screen) {
+    return screen;
+  }
+}
+
+extension RegisterScreenInject on RegisterPageState {
+  void inject() {
+        JuggerRegisterScreenComponentBuilder()
+            .screen(this)
+            .appComponent(appComponent)
+            .build().inject(this);
+  }
+}
+```
+
 #### Annotations
 | Name | Description |
 |---|---|
@@ -93,6 +136,8 @@ import 'inject.jugger.dart';
 |  @Provide | TODO  |
 |  @Inject |  TODO |
 |  @Bind |  TODO |
+|  @ComponentBuilder |  TODO |
+|  @Named |  TODO |
 
 #### Powerful example
 In this repo you can find Best practice [example1](examples/example1) of jugger with multiple dependencies and using all annotations.
