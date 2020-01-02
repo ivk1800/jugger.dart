@@ -1,8 +1,6 @@
-
 import 'package:flutter/foundation.dart';
 
 class ArticleModel {
-
   const ArticleModel({
     @required this.id,
     @required this.title,
@@ -15,7 +13,6 @@ class ArticleModel {
 }
 
 class DetailArticleModel {
-
   const DetailArticleModel({
     @required this.id,
     @required this.title,

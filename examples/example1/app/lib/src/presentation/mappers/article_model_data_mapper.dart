@@ -4,7 +4,6 @@ import 'package:example1/src/presentation/models/models.dart';
 import 'package:jugger/jugger.dart';
 
 class ArticleModelDataMapper extends AbstractDataMapper<Article, ArticleModel> {
-
   @inject
   @singleton
   const ArticleModelDataMapper();

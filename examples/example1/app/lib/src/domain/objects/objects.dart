@@ -1,8 +1,6 @@
-
 import 'package:flutter/foundation.dart';
 
 class Article {
-
   const Article({
     @required this.id,
     @required this.title,
@@ -15,7 +13,6 @@ class Article {
 }
 
 class DetailArticle {
-
   const DetailArticle({
     @required this.id,
     @required this.title,

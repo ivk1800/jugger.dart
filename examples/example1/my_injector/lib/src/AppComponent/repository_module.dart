@@ -5,9 +5,11 @@ import 'package:example1/app.dart';
 abstract class RepositoryModule {
   @provide
   @singleton
-  static IArticlesRepository provideArticlesRepository(AssetsArticlesDataSource dataSource,
+  static IArticlesRepository provideArticlesRepository(
+      AssetsArticlesDataSource dataSource,
       ArticleEntityDataMapper articlesEntityDataMapper) {
     return ArticlesRepositoryImpl(
-        dataSource: dataSource, articlesEntityDataMapper: articlesEntityDataMapper);
+        dataSource: dataSource,
+        articlesEntityDataMapper: articlesEntityDataMapper);
   }
 }

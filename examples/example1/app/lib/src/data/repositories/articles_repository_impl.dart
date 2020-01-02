@@ -8,11 +8,11 @@ import 'package:rxdart/rxdart.dart';
 import '../../../app.dart';
 
 class ArticlesRepositoryImpl implements IArticlesRepository {
-
   ArticlesRepositoryImpl({
     @required AssetsArticlesDataSource dataSource,
     @required ArticleEntityDataMapper articlesEntityDataMapper,
-  }) : _dataSource = dataSource, _articlesEntityDataMapper = articlesEntityDataMapper;
+  })  : _dataSource = dataSource,
+        _articlesEntityDataMapper = articlesEntityDataMapper;
 
   final AssetsArticlesDataSource _dataSource;
   final ArticleEntityDataMapper _articlesEntityDataMapper;
@@ -22,7 +22,8 @@ class ArticlesRepositoryImpl implements IArticlesRepository {
   @override
   Observable<List<Article>> get articles {
     if (_cachedArticles != null) {
-      return Observable<List<ArticleEntity>>.just(_cachedArticles).map(_articlesEntityDataMapper.transformList);
+      return Observable<List<ArticleEntity>>.just(_cachedArticles)
+          .map(_articlesEntityDataMapper.transformList);
     }
     return _dataSource.articles.doOnData((List<ArticleEntity> data) {
       _cachedArticles = data;
@@ -32,8 +33,11 @@ class ArticlesRepositoryImpl implements IArticlesRepository {
   @override
   Observable<DetailArticle> getDetailArticle(int id) {
     if (_cachedArticles != null) {
-      return Observable<ArticleEntity>.just(_cachedArticles.firstWhere((ArticleEntity a) => a.id == id)).map((ArticleEntity a) {
-        return DetailArticle(id: a.id, description: a.fullDescription, title: a.title);
+      return Observable<ArticleEntity>.just(
+              _cachedArticles.firstWhere((ArticleEntity a) => a.id == id))
+          .map((ArticleEntity a) {
+        return DetailArticle(
+            id: a.id, description: a.fullDescription, title: a.title);
       });
     }
     return Observable<DetailArticle>.error('not found');

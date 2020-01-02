@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:rxdart/rxdart.dart';
 
 class BaseBloc {
-
   final CompositeSubscription _compositeSubscription = CompositeSubscription();
 
   void init() {}

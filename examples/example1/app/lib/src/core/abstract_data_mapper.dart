@@ -1,6 +1,4 @@
-
 abstract class AbstractDataMapper<IN, OUT> {
-
   const AbstractDataMapper();
 
   OUT transform(IN value);

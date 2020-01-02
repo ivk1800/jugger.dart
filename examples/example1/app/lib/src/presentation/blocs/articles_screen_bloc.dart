@@ -6,14 +6,17 @@ import 'package:jugger/jugger.dart';
 import 'base_bloc.dart';
 
 class ArticlesBloc extends BaseBloc {
-
   @inject
-  ArticlesBloc(IArticlesScreenInteractor interactor, ArticleModelDataMapper articleModelDataMapper): _interactor = interactor, _articleModelDataMapper = articleModelDataMapper;
+  ArticlesBloc(IArticlesScreenInteractor interactor,
+      ArticleModelDataMapper articleModelDataMapper)
+      : _interactor = interactor,
+        _articleModelDataMapper = articleModelDataMapper;
 
   final IArticlesScreenInteractor _interactor;
   final ArticleModelDataMapper _articleModelDataMapper;
 
-  Observable<List<ArticleModel>> get articles => _interactor.articles.map(_articleModelDataMapper.transformList);
+  Observable<List<ArticleModel>> get articles =>
+      _interactor.articles.map(_articleModelDataMapper.transformList);
 
   void articleClicked(ArticleModel article) {
     _interactor.openDetailArticlesScreen(article.id);

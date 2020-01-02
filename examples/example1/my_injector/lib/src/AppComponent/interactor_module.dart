@@ -4,16 +4,15 @@ import 'package:jugger/jugger.dart';
 @module
 abstract class InteractorModule {
   @bind
-  IArticlesScreenInteractor provideArticlesScreenInteractor(ArticleScreenInteractorImpl impl);
+  IArticlesScreenInteractor provideArticlesScreenInteractor(
+      ArticleScreenInteractorImpl impl);
 
   @provide
   static IDetailArticleScreenInteractor provideDetailArticleScreenInteractor(
-      IArticlesRepository articlesRepository,
-      Tracker tracker,
-      ) {
+    IArticlesRepository articlesRepository,
+    Tracker tracker,
+  ) {
     return DetailArticleScreenInteractorImpl(
-        articlesRepository: articlesRepository,
-        tracker: tracker
-    );
+        articlesRepository: articlesRepository, tracker: tracker);
   }
 }

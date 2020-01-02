@@ -1,5 +1,3 @@
-
 class Logger {
-
   Logger();
 }

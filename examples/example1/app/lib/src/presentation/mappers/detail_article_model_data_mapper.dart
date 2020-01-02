@@ -3,8 +3,8 @@ import 'package:example1/src/domain/objects/objects.dart';
 import 'package:example1/src/presentation/models/models.dart';
 import 'package:jugger/jugger.dart';
 
-class DetailArticleModelDataMapper extends AbstractDataMapper<DetailArticle, DetailArticleModel> {
-
+class DetailArticleModelDataMapper
+    extends AbstractDataMapper<DetailArticle, DetailArticleModel> {
   @inject
   @singleton
   const DetailArticleModelDataMapper();

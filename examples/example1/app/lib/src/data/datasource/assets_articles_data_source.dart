@@ -6,17 +6,19 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:jugger/jugger.dart';
 
 class AssetsArticlesDataSource {
-
   @inject
   @singleton
   AssetsArticlesDataSource();
 
   Observable<List<ArticleEntity>> get articles {
-    return Observable<String>.fromFuture(rootBundle.loadString('assets/articles.json'))
+    return Observable<String>.fromFuture(
+            rootBundle.loadString('assets/articles.json'))
         .map((String json) {
       final List<dynamic> jsonList = jsonDecode(json);
       // ignore: avoid_as
-      return jsonList.map((dynamic v) => v as Map<String, dynamic>).map((Map<String, dynamic> j) {
+      return jsonList
+          .map((dynamic v) => v as Map<String, dynamic>)
+          .map((Map<String, dynamic> j) {
         return ArticleEntity(
           id: j['id'],
           title: j['title'],
