@@ -23,7 +23,6 @@ class JuggerArticlesScreenComponentBuilder
   @override
   _i3.ArticlesScreenComponent build() {
     assert(_appComponent != null);
-    ;
     return JuggerArticlesScreenComponent._create(_appComponent);
   }
 }

@@ -37,7 +37,6 @@ class JuggerDetailArticleScreenComponentBuilder
   _i3.DetailArticleScreenComponent build() {
     assert(_appComponent != null);
     assert(_detailArticleScreenState != null);
-    ;
     return JuggerDetailArticleScreenComponent._create(
         _appComponent, _detailArticleScreenState);
   }

@@ -104,6 +104,7 @@ class ComponentBuilder extends Builder {
           ? ''
           : '// ignore_for_file: implementation_imports \n'
               '// ignore_for_file: prefer_const_constructors \n'
+              '// ignore_for_file: always_specify_types \n'
               ' $string';
 
       return Future<String>.value(DartFormatter().format(finalString));
@@ -155,15 +156,19 @@ class ComponentBuilder extends Builder {
                   return codeExpression;
                 });
 
-                b.addExpression(CodeExpression(Block.of(componentBuilder
+                final List<Code> assertCodes = componentBuilder
                     .parameters
                     .map((j.ComponentBuilderParameter parameter) {
                   final String name =
                       getNamedAnnotation(parameter.parameter.enclosingElement)
                           ?.name;
                   return Code(
-                      'assert(_${_generateName(parameter.parameter.type.element, name)} != null); ');
-                }))));
+                      'assert(_${_generateName(parameter.parameter.type.element, name)} != null) ');
+                }).toList();
+
+                for (Code value in assertCodes) {
+                  b.addExpression(CodeExpression(value));
+                }
 
                 final Expression newInstance =
                     refer('Jugger${m.returnType.name}._create')
