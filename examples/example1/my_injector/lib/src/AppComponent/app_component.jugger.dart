@@ -1,3 +1,5 @@
+// ignore_for_file: implementation_imports
+// ignore_for_file: prefer_const_constructors
 import 'package:my_injector/src/AppComponent/app_component.dart' as _i1;
 import 'package:jugger/jugger.dart' as _i2;
 import 'package:example1/src/core/logger.dart' as _i3;

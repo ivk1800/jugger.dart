@@ -89,9 +89,16 @@ class ComponentBuilder extends Builder {
         }));
       }
 
-      return Future.value(DartFormatter().format(
-        target.build().accept(DartEmitter.scoped()).toString(),
-      ));
+      final String string =
+          target.build().accept(DartEmitter.scoped()).toString();
+
+      final String finalString = string.isEmpty
+          ? ''
+          : '// ignore_for_file: implementation_imports \n'
+              '// ignore_for_file: prefer_const_constructors \n'
+              ' $string';
+
+      return Future<String>.value(DartFormatter().format(finalString));
     }
 
     throw StateError(
@@ -189,6 +196,10 @@ class ComponentBuilder extends Builder {
     for (Dependency dependency in dependencies) {
       final ProviderSource provider = graph.findProvider(dependency.element);
 
+      if (_isBindDependency(dependency)) {
+        continue;
+      }
+
       if (!(provider is BuildInstanceSource) &&
           !(provider is AnotherComponentSource)) {
         fields.add(Field((FieldBuilder b) {
@@ -203,6 +214,15 @@ class ComponentBuilder extends Builder {
     }
 
     return fields;
+  }
+
+  bool _isBindDependency(Dependency dependency) {
+    if (dependency.enclosingElement is ParameterElement) {
+      if (dependency.enclosingElement.enclosingElement is MethodElement) {
+        return getBindAnnotation(dependency.enclosingElement.enclosingElement) != null;
+      }
+    }
+    return false;
   }
 
   List<Method> _buildProvideMethods(Graph graph) {
@@ -329,6 +349,9 @@ class ComponentBuilder extends Builder {
             throw StateError(
               '${dependency.enclosingElement.name}.${dependency.element.name} (name: $name) not provided',
             );
+          }
+          if (_isBindDependency(dependency)) {
+            continue;
           }
           buildProviderFromClass(dependency.element, b, graph);
         }

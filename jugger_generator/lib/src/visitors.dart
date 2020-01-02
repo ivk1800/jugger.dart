@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/type.dart';
 import 'package:analyzer/dart/element/visitor.dart';
 
 import 'classes.dart';
@@ -14,16 +15,43 @@ class InjectedMembersVisitor extends RecursiveElementVisitor<dynamic> {
     final List<Annotation> annotations = getAnnotations(element);
     if (annotations
         .any((Annotation annotation) => annotation is InjectAnnotation)) {
-      //TODO: check another states
+      //TODO: check anothedynamic states
       if (!element.isPublic || element.isStatic) {
         throw new StateError(
           'field ${element.name} must be only public',
         );
       }
-      members.add(InjectedMember(element));
+      _add(element);
     }
 
     return null;
+  }
+
+  @override
+  dynamic visitConstructorElement(ConstructorElement element) {
+    final List<InterfaceType> allSupertypes =
+        element.enclosingElement.allSupertypes;
+
+    for (InterfaceType interfaceType in allSupertypes) {
+      final Element element = interfaceType.element;
+      if (isFlutterCore(element) || isCore(element)) {
+        continue;
+      }
+
+      final InjectedMembersVisitor visitor = InjectedMembersVisitor();
+      element.visitChildren(visitor);
+
+      _addAll(visitor.members.map((InjectedMember m) => m.element).toList());
+    }
+    return null;
+  }
+
+  void _add(Element element) {
+    members.add(InjectedMember(element));
+  }
+
+  void _addAll(List<Element> elements) {
+    elements.forEach(_add);
   }
 }
 

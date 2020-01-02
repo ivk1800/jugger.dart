@@ -1,0 +1,23 @@
+name: example3
+description: A new Flutter project.
+version: 0.0.1
+author:
+homepage:
+
+environment:
+  sdk: ">=2.1.0 <3.0.0"
+
+dependencies:
+  jugger:
+    path: ../../jugger
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  build_runner: ^1.7.2
+  jugger_generator:
+    path: ../../jugger_generator
+  flutter_test:
+    sdk: flutter
+
+flutter:
