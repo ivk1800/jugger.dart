@@ -18,7 +18,7 @@ class ComponentBuilder extends Builder {
   @override
   Future<void> build(BuildStep buildStep) async {
     final String outputContents = await buildOutput(buildStep);
-    if (outputContents.trim().isEmpty) {
+    if (outputContents.trim().isEmpty || _isTestAsset(buildStep.inputId)) {
       return Future<void>.value(null);
     }
     final AssetId outputFile =
@@ -608,5 +608,9 @@ class ComponentBuilder extends Builder {
       return MapEntry<String, Expression>(parameter.name, codeExpression);
     });
     return Map<String, Expression>.fromEntries(map);
+  }
+
+  bool _isTestAsset(AssetId inputId) {
+    return inputId.pathSegments.first == 'test';
   }
 }
