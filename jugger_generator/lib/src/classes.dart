@@ -168,6 +168,13 @@ class InjectedMember {
   const InjectedMember(this.element);
 
   final FieldElement element;
+
+  @override
+  int get hashCode => element.name.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      other is InjectedMember && other.element.name == element.name;
 }
 
 class MyComponent {

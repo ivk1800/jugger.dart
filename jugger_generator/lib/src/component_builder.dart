@@ -105,6 +105,7 @@ class ComponentBuilder extends Builder {
           : '// ignore_for_file: implementation_imports \n'
               '// ignore_for_file: prefer_const_constructors \n'
               '// ignore_for_file: always_specify_types \n'
+              '// ignore_for_file: directives_ordering \n'
               ' $string';
 
       return Future<String>.value(DartFormatter().format(finalString));
@@ -313,7 +314,7 @@ class ComponentBuilder extends Builder {
       parameterElement.type.element.visitChildren(visitor);
 
       builder.body = Block((BlockBuilder b) {
-        for (j.InjectedMember member in visitor.members) {
+        for (j.InjectedMember member in visitor.members.toSet()) {
           print('build provide method for member: ${member.element}');
           final String name = getNamedAnnotation(member.element)?.name;
           b.addExpression(CodeExpression(Block.of(<Code>[

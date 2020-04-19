@@ -124,7 +124,7 @@ class Graph {
       final Dependency dependency = Dependency(
         // ignore: avoid_as
         element.type.element as ClassElement, <Dependency>[],
-        element,
+        element.enclosingElement,
       );
       _dependencies[key] = dependency;
       return dependency;
