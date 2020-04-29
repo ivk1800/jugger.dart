@@ -213,7 +213,11 @@ class ComponentBuilder extends Builder {
     final List<Field> fields = <Field>[];
 
     for (Dependency dependency in dependencies) {
-      final ProviderSource provider = graph.findProvider(dependency.element);
+      final ProviderSource provider =
+          graph.findProvider(dependency.element, dependency.named);
+
+      check(provider != null,
+          'provider for (${dependency.element.thisType.name}, name: ${dependency.named}) not found');
 
       if (_isBindDependency(dependency)) {
         continue;
@@ -259,8 +263,7 @@ class ComponentBuilder extends Builder {
 
     for (MethodElement method in methods) {
       print(
-          'build provide method for: ${method?.enclosingElement?.name}.${method
-              ?.name}');
+          'build provide method for: ${method?.enclosingElement?.name}.${method?.name}');
       final Method m = Method((MethodBuilder b) {
         b.annotations.add(const CodeExpression(Code('override')));
         b.name = method.name;
@@ -372,9 +375,7 @@ class ComponentBuilder extends Builder {
     builder.body = Block(((BlockBuilder b) {
       for (Dependency dependency in dependencies) {
         print(
-            'build provider for dependency: ${dependency?.enclosingElement
-                ?.name}.${dependency
-                ?.element?.name}');
+            'build provider for dependency: ${dependency?.enclosingElement?.name}.${dependency?.element?.name}');
         final String name =
             getNamedAnnotation(dependency.enclosingElement)?.name;
         final ProviderSource provider =
@@ -389,8 +390,7 @@ class ComponentBuilder extends Builder {
         } else {
           if (isCore(dependency.element) || dependency.element.isAbstract) {
             throw StateError(
-              '${dependency.enclosingElement.name}.${dependency.element
-                  .name} (name: $name) not provided',
+              '${dependency.enclosingElement.name}.${dependency.element.name} (name: $name) not provided',
             );
           }
           if (_isBindDependency(dependency)) {
@@ -436,8 +436,7 @@ class ComponentBuilder extends Builder {
   void buildProviderFromModule(
       MethodElement method, BlockBuilder b, Graph graph, Allocator allocator) {
     print(
-        'build provider from module: ${method?.enclosingElement?.name}.${method
-            ?.name}');
+        'build provider from module: ${method?.enclosingElement?.name}.${method?.name}');
     InvokeExpression expression;
     if (method.isStatic) {
       expression = _buildProviderFromStaticMethod(method, graph, allocator);
@@ -459,8 +458,8 @@ class ComponentBuilder extends Builder {
 
   InvokeExpression _buildProviderFromAbstractMethod(
       MethodElement method, Graph graph, Allocator allocator) {
-    print('build provider from abstract method: ${method?.enclosingElement
-        ?.name}.${method?.name}');
+    print(
+        'build provider from abstract method: ${method?.enclosingElement?.name}.${method?.name}');
 
     check(method.parameters.length == 1,
         'method annotates [Bind] must have 1 parameter');
@@ -488,8 +487,8 @@ class ComponentBuilder extends Builder {
 
   InvokeExpression _buildProviderFromStaticMethod(
       MethodElement method, Graph graph, Allocator allocator) {
-    print('build provider from static method: ${method?.enclosingElement
-        ?.name}.${method?.name}');
+    print(
+        'build provider from static method: ${method?.enclosingElement?.name}.${method?.name}');
 
     final ClassElement moduleClass = method.enclosingElement;
     return getProviderType(method, allocator).newInstance(<Expression>[
@@ -538,13 +537,13 @@ class ComponentBuilder extends Builder {
 
     if (isPositional) {
       return ToCodeExpression(r(element.name).newInstance(
-          _buildArgumentsExpression(element, parameters, graph).values
+          _buildArgumentsExpression(element, parameters, graph)
+              .values
               .toList()));
     }
 
     if (isNamed) {
-      return ToCodeExpression(r(element.name).newInstance(
-          <Expression>[],
+      return ToCodeExpression(r(element.name).newInstance(<Expression>[],
           _buildArgumentsExpression(element, parameters, graph)));
     }
 
@@ -618,8 +617,7 @@ class ComponentBuilder extends Builder {
   }
 
   Map<String, Expression> _buildArgumentsExpression(
-      Element forElement,
-      List<ParameterElement> parameters, Graph graph) {
+      Element forElement, List<ParameterElement> parameters, Graph graph) {
     print('build arguments for ${forElement.name}: ${parameters}');
 
     if (parameters.isEmpty) {

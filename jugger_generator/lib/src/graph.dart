@@ -3,6 +3,7 @@ import 'package:collection/collection.dart';
 
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
+import 'package:jugger_generator/src/classes.dart';
 import 'package:jugger_generator/src/utils.dart';
 import 'package:meta/meta.dart';
 import 'package:jugger_generator/src/classes.dart' as j;
@@ -84,7 +85,9 @@ class Graph {
       _dependencies.values.map((Dependency d) => d.element).toList();
 
   Dependency _registerDependency(Element element) {
-    final _Key key = _Key.of(element);
+    final String named = getNamedAnnotation(element)?.name;
+
+    final _Key key = _Key.of(element, named);
 
     if (_dependencies.containsKey(key)) {
       return _dependencies[key];
@@ -92,6 +95,7 @@ class Graph {
 
     if (element is MethodElement) {
       final Dependency dependency = Dependency(
+        named,
         element.returnType.element,
         _registerMethodDependencies(element),
         element,
@@ -108,7 +112,9 @@ class Graph {
   }
 
   Dependency _registerVariableElementDependency(VariableElement element) {
-    final _Key key = _Key.of(element);
+    final String named = getNamedAnnotation(element)?.name;
+
+    final _Key key = _Key.of(element, named);
 
 //    if (isCore(element.type.element)) {
 //      final _Dependency dependency =
@@ -122,8 +128,10 @@ class Graph {
 
     if (visitor.injectedConstructors.isEmpty) {
       final Dependency dependency = Dependency(
+        named,
         // ignore: avoid_as
-        element.type.element as ClassElement, <Dependency>[],
+        element.type.element as ClassElement,
+        <Dependency>[],
         element.enclosingElement,
       );
       _dependencies[key] = dependency;
@@ -143,6 +151,7 @@ class Graph {
     }).toList();
 
     final Dependency dependency = Dependency(
+      named,
       // ignore: avoid_as
       element.type.element as ClassElement,
       dependencies,
@@ -204,17 +213,20 @@ class Graph {
 }
 
 class _Key {
-  _Key({@required this.type, @required this.path})
+  _Key({@required this.named, @required this.type, @required this.path})
       : assert(type.element is ClassElement);
 
-  factory _Key.of(Element element) {
+  factory _Key.of(Element element, String named) {
     if (element is MethodElement) {
       return _Key(
+          named: named,
           type: element.returnType,
           path: createElementPath(element.returnType.element));
     } else if (element is VariableElement) {
       return _Key(
-          type: element.type, path: createElementPath(element.type.element));
+          named: named,
+          type: element.type,
+          path: createElementPath(element.type.element));
     }
 
     throw StateError(
@@ -224,12 +236,14 @@ class _Key {
 
   final DartType type;
   final String path;
+  final String named;
 
   @override
-  bool operator ==(dynamic o) => o is _Key && type == o.type && path == o.path;
+  bool operator ==(dynamic o) =>
+      o is _Key && type == o.type && path == o.path && named == o.named;
 
   @override
-  int get hashCode => hash2(type.hashCode, path.hashCode);
+  int get hashCode => hash3(type.hashCode, path.hashCode, named.hashCode);
 
   @override
   String toString() {
@@ -249,11 +263,13 @@ class _Key {
 }
 
 class Dependency {
-  const Dependency(this.element, this.dependencies, this.enclosingElement);
+  const Dependency(
+      this.named, this.element, this.dependencies, this.enclosingElement);
 
   final ClassElement element;
   final Element enclosingElement;
   final List<Dependency> dependencies;
+  final String named;
 
   @override
   String toString() {
