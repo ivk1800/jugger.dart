@@ -1,6 +1,6 @@
 name: jugger_generator
 description: Generates dependency injection code using the jugger package.
-version: 1.1.0+1-alpha
+version: 1.1.0+2-alpha
 author: ivk1800
 homepage: https://github.com/ivk1800/jugger.dart
 
