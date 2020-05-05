@@ -216,9 +216,6 @@ class ComponentBuilder extends Builder {
       final ProviderSource provider =
           graph.findProvider(dependency.element, dependency.named);
 
-      check(provider != null,
-          'provider for (${dependency.element.thisType.name}, name: ${dependency.named}) not found');
-
       if (_isBindDependency(dependency)) {
         continue;
       }
