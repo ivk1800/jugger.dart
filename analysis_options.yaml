@@ -19,6 +19,8 @@
 # Android Studio, and the `flutter analyze` command.
 
 analyzer:
+  enable-experiment:
+    - non-nullable
   strong-mode:
     implicit-dynamic: false
   errors:
