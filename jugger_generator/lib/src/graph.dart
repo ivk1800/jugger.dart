@@ -213,7 +213,7 @@ class Graph {
 }
 
 class _Key {
-  _Key({@required this.named, @required this.type, @required this.path})
+  _Key({required this.named, required this.type, required this.path})
       : assert(type.element is ClassElement);
 
   factory _Key.of(Element element, String named) {
@@ -304,10 +304,10 @@ abstract class ProviderSource {
 
 class ModuleSource extends ProviderSource {
   ModuleSource({
-    @required this.moduleClass,
-    @required ClassElement providedClass,
-    @required List<j.Annotation> annotations,
-    @required this.method,
+    required this.moduleClass,
+    required ClassElement providedClass,
+    required List<j.Annotation> annotations,
+    required this.method,
   }) : super(providedClass, annotations);
 
   final ClassElement moduleClass;
@@ -320,9 +320,9 @@ class ModuleSource extends ProviderSource {
 
 class BuildInstanceSource extends ProviderSource {
   BuildInstanceSource({
-    @required ClassElement providedClass,
-    @required this.parameter,
-    @required List<j.Annotation> annotations,
+    required ClassElement providedClass,
+    required this.parameter,
+    required List<j.Annotation> annotations,
   }) : super(providedClass, annotations);
 
   final ParameterElement parameter;
@@ -342,10 +342,10 @@ class BuildInstanceSource extends ProviderSource {
 
 class AnotherComponentSource extends ProviderSource {
   AnotherComponentSource({
-    @required ClassElement providedClass,
-    @required this.method,
-    @required this.dependencyClass,
-    @required List<j.Annotation> annotations,
+    required ClassElement providedClass,
+    required this.method,
+    required this.dependencyClass,
+    required List<j.Annotation> annotations,
   }) : super(providedClass, annotations);
 
   final ClassElement dependencyClass;

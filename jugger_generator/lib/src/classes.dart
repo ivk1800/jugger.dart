@@ -5,9 +5,9 @@ import 'package:meta/meta.dart';
 
 class Component {
   const Component({
-    @required this.element,
-    @required this.annotations,
-    @required this.methods,
+    required this.element,
+    required this.annotations,
+    required this.methods,
   });
 
   final ClassElement element;
@@ -59,9 +59,9 @@ class Component {
 
 class ComponentBuilder {
   const ComponentBuilder({
-    @required this.element,
-    @required this.componentClass,
-    @required this.methods,
+    required this.element,
+    required this.componentClass,
+    required this.methods,
   });
 
   final ClassElement element;
@@ -81,7 +81,7 @@ class ComponentBuilder {
 
 class ComponentBuilderParameter {
   const ComponentBuilderParameter({
-    @required this.parameter,
+    required this.parameter,
   });
 
   final ParameterElement parameter;
@@ -100,9 +100,9 @@ abstract class Annotation {}
 
 class ComponentAnnotation implements Annotation {
   const ComponentAnnotation(
-      {@required this.element,
-      @required this.modules,
-      @required this.dependencies});
+      {required this.element,
+      required this.modules,
+      required this.dependencies});
 
   final Element element;
   final List<ModuleAnnotation> modules;
@@ -130,15 +130,15 @@ class ModuleAnnotation implements Annotation {
 }
 
 class DependencyAnnotation implements Annotation {
-  const DependencyAnnotation({@required this.element});
+  const DependencyAnnotation({required this.element});
 
   final ClassElement element;
 }
 
 class NamedAnnotation implements Annotation {
   const NamedAnnotation({
-    @required this.element,
-    @required this.name,
+    required this.element,
+    required this.name,
   });
 
   final ClassElement element;

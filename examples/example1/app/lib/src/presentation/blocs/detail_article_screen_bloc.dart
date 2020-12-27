@@ -10,8 +10,8 @@ class DetailArticleBloc extends BaseBloc {
   @inject
   DetailArticleBloc({
     IDetailArticleScreenInteractor interactor,
-    @required DetailArticleModelDataMapper articleModelDataMapper,
-    @required int articleId,
+    required DetailArticleModelDataMapper articleModelDataMapper,
+    required int articleId,
   })  : _interactor = interactor,
         _articleModelDataMapper = articleModelDataMapper,
         _articleId = articleId;

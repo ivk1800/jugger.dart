@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
 class NavigationRouteImpl implements INavigationRouter {
-  NavigationRouteImpl({@required GlobalKey<NavigatorState> navigationKey})
+  NavigationRouteImpl({required GlobalKey<NavigatorState> navigationKey})
       : _navigationKey = navigationKey;
 
   final GlobalKey<NavigatorState> _navigationKey;

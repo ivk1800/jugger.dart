@@ -9,8 +9,8 @@ import '../../../app.dart';
 
 class ArticlesRepositoryImpl implements IArticlesRepository {
   ArticlesRepositoryImpl({
-    @required AssetsArticlesDataSource dataSource,
-    @required ArticleEntityDataMapper articlesEntityDataMapper,
+    required AssetsArticlesDataSource dataSource,
+    required ArticleEntityDataMapper articlesEntityDataMapper,
   })  : _dataSource = dataSource,
         _articlesEntityDataMapper = articlesEntityDataMapper;
 

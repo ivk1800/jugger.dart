@@ -6,8 +6,8 @@ import 'package:rxdart/rxdart.dart';
 class DetailArticleScreenInteractorImpl
     implements IDetailArticleScreenInteractor {
   DetailArticleScreenInteractorImpl({
-    @required IArticlesRepository articlesRepository,
-    @required Tracker tracker,
+    required IArticlesRepository articlesRepository,
+    required Tracker tracker,
   })  : _articlesRepository = articlesRepository,
         _tracker = tracker;
 

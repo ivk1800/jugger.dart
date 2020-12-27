@@ -8,8 +8,8 @@ import 'package:jugger/jugger.dart';
 class ArticleScreenInteractorImpl implements IArticlesScreenInteractor {
   @inject
   ArticleScreenInteractorImpl({
-    @required IArticlesRepository articlesRepository,
-    @required INavigationRouter router,
+    required IArticlesRepository articlesRepository,
+    required INavigationRouter router,
   })  : _articlesRepository = articlesRepository,
         _router = router;
 

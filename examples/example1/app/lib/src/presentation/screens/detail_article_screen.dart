@@ -7,7 +7,7 @@ import 'package:jugger/jugger.dart';
 import 'package:my_injector/my_injector.dart';
 
 class DetailArticleScreen extends StatefulWidget {
-  const DetailArticleScreen({Key key, @required this.articlesId})
+  const DetailArticleScreen({Key key, required this.articlesId})
       : super(key: key);
 
   final int articlesId;

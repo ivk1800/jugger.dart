@@ -2,9 +2,9 @@ import 'package:flutter/foundation.dart';
 
 class ArticleModel {
   const ArticleModel({
-    @required this.id,
-    @required this.title,
-    @required this.description,
+    required this.id,
+    required this.title,
+    required this.description,
   });
 
   final int id;
@@ -14,9 +14,9 @@ class ArticleModel {
 
 class DetailArticleModel {
   const DetailArticleModel({
-    @required this.id,
-    @required this.title,
-    @required this.description,
+    required this.id,
+    required this.title,
+    required this.description,
   });
 
   final int id;
