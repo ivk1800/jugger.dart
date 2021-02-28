@@ -4,13 +4,15 @@ import 'dart:async';
 import 'dart:collection';
 
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/type.dart';
 import 'package:build/build.dart';
 import 'package:code_builder/code_builder.dart';
+import 'package:collection/collection.dart';
 import 'package:dart_style/dart_style.dart';
 import 'package:jugger_generator/src/utils.dart';
+
 import 'classes.dart' as j;
 import 'graph.dart';
-import 'package:collection/collection.dart';
 import 'visitors.dart';
 
 class ComponentBuilder extends Builder {
@@ -233,7 +235,7 @@ class ComponentBuilder extends Builder {
           b.name = '_${_generateName(dependency.element, name)}Provider';
 
           final String generic = allocator.allocate(Reference(
-              dependency.element.thisType.name,
+              _getNameFromDependency(allocator, dependency),
               dependency.element.thisType.element.librarySource.uri
                   .toString()));
           // TODO(Ivan): temporary
@@ -247,6 +249,45 @@ class ComponentBuilder extends Builder {
     }
 
     return fields;
+  }
+
+  /// example:
+  /// ResultDispatcher
+  String _getNameFromDependency(Allocator allocator, Dependency dependency) {
+    final Element enclosingElement = dependency.enclosingElement;
+    if (enclosingElement is MethodElement) {
+      return _getNameFromMethod(enclosingElement, allocator);
+    }
+
+    return dependency.element.thisType.name!;
+  }
+
+  /// example:
+  /// ResultDispatcher<_i1.UserCredentials>
+  /// ResultDispatcher
+  String _getNameFromMethod(MethodElement element, Allocator allocator) {
+    final DartType returnType = element.returnType;
+
+    if (returnType is InterfaceType) {
+      return _getNameFromInterface(element, returnType, allocator);
+    }
+
+    return element.returnType.element!.name!;
+  }
+
+  String _getNameFromInterface(Element el, InterfaceType type, Allocator allocator) {
+    final List<DartType> arguments = type.typeArguments;
+
+    if (arguments.isNotEmpty) {
+      final String join = '<${arguments.map((DartType e) {
+        final ClassElement classElement = e.element as ClassElement;
+        return allocator.allocate(Reference(classElement.name,
+            classElement.thisType.element.librarySource.uri.toString()));
+      }).join(',')}>';
+      return '${type.name!}$join';
+    }
+
+    return type.element.name;
   }
 
   bool _isBindDependency(Dependency dependency) {
@@ -578,7 +619,7 @@ class ComponentBuilder extends Builder {
       return allocator
           .allocate(Reference(c.thisType.name, c.librarySource.uri.toString()));
     } else if (element is MethodElement) {
-      return allocator.allocate(Reference(element.returnType.name,
+      return allocator.allocate(Reference(_getNameFromMethod(element, allocator),
           element.returnType.element!.librarySource!.uri.toString()));
     }
     throw StateError(

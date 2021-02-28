@@ -34,3 +34,64 @@ class MyClass {
   @inject
   late IDataFormatter dataFormatter;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
+class AuthPageState implements ResultDispatcher<UserCredentials> {
+  @inject
+  late AuthScreenViewModel viewModel;
+
+  @override
+  void dispatchResult(UserCredentials result) {
+    // TODO: implement dispatchResult
+  }
+}
+
+abstract class ResultDispatcher<T> {
+  void dispatchResult(T result);
+}
+
+class AuthScreenViewModel {
+  final ResultDispatcher<UserCredentials> resultDispatcher;
+  final Map<int, List<String>> data;
+
+  @inject
+  AuthScreenViewModel(this.resultDispatcher, this.data);
+}
+
+@Component(
+    modules: <Type>[AuthScreenModule], dependencies: <Type>[AppComponent])
+abstract class AuthScreenComponent {
+  void inject(AuthPageState target);
+}
+
+@componentBuilder
+abstract class AuthScreenComponentBuilder {
+  AuthScreenComponentBuilder appComponent(AppComponent component);
+
+  AuthScreenComponentBuilder screen(AuthPageState screen);
+
+  AuthScreenComponent build();
+}
+
+@module
+abstract class AuthScreenModule {
+  @provide
+  static ResultDispatcher<UserCredentials> provideResultDispatcher(
+      AuthPageState screen) {
+    return screen;
+  }
+
+  @provide
+  static Map<int, List<String>> provideData() {
+    return <int, List<String>>{};
+  }
+}
+
+class UserCredentials {
+  UserCredentials(this.token);
+
+  final String token;
+}
+
+////////////////////////////////////////////////////////////////////////////////
