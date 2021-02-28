@@ -68,12 +68,6 @@ class ComponentBuilder extends Builder {
           return b.componentClass.name == component.element.name;
         });
 
-        if (componentBuilder ==null) {
-          throw StateError(
-            'component [${component.element.name}] is null',
-          );
-        }
-
         final Graph graph = Graph.fromComponent(component, componentBuilder);
 
         final List<j.ModuleAnnotation> modules = component.modules;
@@ -588,7 +582,7 @@ class ComponentBuilder extends Builder {
         'unsupported type: ${element.name}, ${element.runtimeType}');
   }
 
-  Constructor _buildConstructor(j.ComponentBuilder componentBuilder) {
+  Constructor _buildConstructor(j.ComponentBuilder? componentBuilder) {
     return Constructor((ConstructorBuilder constructorBuilder) {
       constructorBuilder.body = const Code('_init();');
 
@@ -610,7 +604,7 @@ class ComponentBuilder extends Builder {
     });
   }
 
-  List<Field> _buildConstructorFields(j.ComponentBuilder componentBuilder) {
+  List<Field> _buildConstructorFields(j.ComponentBuilder? componentBuilder) {
     if (componentBuilder == null) {
       return <Field>[];
     }

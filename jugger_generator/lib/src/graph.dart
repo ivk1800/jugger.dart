@@ -78,7 +78,7 @@ class Graph {
 
   final Map<_Key, Dependency> _dependencies = HashMap<_Key, Dependency>();
   final j.Component component;
-  final j.ComponentBuilder componentBuilder;
+  final j.ComponentBuilder? componentBuilder;
 
   final List<ProviderSource> providerSources = <ProviderSource>[];
 

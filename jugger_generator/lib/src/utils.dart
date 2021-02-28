@@ -11,26 +11,26 @@ ComponentAnnotation? getComponentAnnotation(Element element) {
 }
 
 ComponentBuilderAnnotation? getComponentBuilderAnnotation(Element element) {
-  final Annotation? annotation = getAnnotations(element).firstWhere(
+  final Annotation? annotation = getAnnotations(element).firstWhereOrNull(
       (Annotation a) => a is ComponentBuilderAnnotation);
   return annotation is ComponentBuilderAnnotation ? annotation : null;
 }
 
 BindAnnotation? getBindAnnotation(Element element) {
   final Annotation? annotation = getAnnotations(element)
-      .firstWhere((Annotation a) => a is BindAnnotation);
+      .firstWhereOrNull((Annotation a) => a is BindAnnotation);
   return annotation is BindAnnotation ? annotation : null;
 }
 
 ProvideAnnotation? getProvideAnnotation(Element element) {
   final Annotation? annotation = getAnnotations(element)
-      .firstWhere((Annotation a) => a is ProvideAnnotation);
+      .firstWhereOrNull((Annotation a) => a is ProvideAnnotation);
   return annotation is ProvideAnnotation ? annotation : null;
 }
 
 NamedAnnotation? getNamedAnnotation(Element element) {
   final Annotation? annotation = getAnnotations(element)
-      .firstWhere((Annotation a) => a is NamedAnnotation);
+      .firstWhereOrNull((Annotation a) => a is NamedAnnotation);
   return annotation is NamedAnnotation ? annotation : null;
 }
 
