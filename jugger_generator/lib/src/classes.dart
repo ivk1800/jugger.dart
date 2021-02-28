@@ -1,7 +1,7 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:jugger_generator/src/utils.dart';
 import 'package:jugger_generator/src/visitors.dart';
-import 'package:meta/meta.dart';
+import 'package:collection/collection.dart';
 
 class Component {
   const Component({
@@ -14,20 +14,17 @@ class Component {
   final List<Annotation> annotations;
   final List<MemberInjectorMethod> methods;
 
-  List<ModuleAnnotation> get modules {
-    return getComponentAnnotation()?.modules;
-  }
+  List<ModuleAnnotation> get modules =>
+      getComponentAnnotation()?.modules ?? List<ModuleAnnotation>.empty();
 
-  List<DependencyAnnotation> get dependencies {
-    return getComponentAnnotation()?.dependencies;
-  }
+  List<DependencyAnnotation> get dependencies =>
+      getComponentAnnotation()?.dependencies ??
+      List<DependencyAnnotation>.empty();
 
-  ComponentAnnotation getComponentAnnotation() {
-    final ComponentAnnotation annotation =
-        annotations.firstWhere((Annotation a) {
-      return a is ComponentAnnotation;
-    });
-    return annotation;
+  ComponentAnnotation? getComponentAnnotation() {
+    final Annotation? annotation = annotations
+        .firstWhereOrNull((Annotation a) => a is ComponentAnnotation);
+    return annotation is ComponentAnnotation ? annotation : null;
   }
 
   List<Method> get provideMethods {
@@ -41,7 +38,7 @@ class Component {
   }
 
   List<ParameterElement> buildInstanceFields(
-      ComponentBuilder componentBuilder) {
+      ComponentBuilder? componentBuilder) {
     if (componentBuilder == null) {
       return <ParameterElement>[];
     }
@@ -152,10 +149,13 @@ class Method {
 
   final List<Annotation> annotations;
 
-  NamedAnnotation get _namedAnnotation => annotations
-      .firstWhere((Annotation a) => a is NamedAnnotation, orElse: () => null);
+  NamedAnnotation? get _namedAnnotation {
+    final Annotation? annotation = annotations
+        .firstWhereOrNull((Annotation a) => a is NamedAnnotation);
+    return annotation is NamedAnnotation ? annotation : null;
+  }
 
-  String get named => _namedAnnotation?.name;
+  String? get named => _namedAnnotation?.name;
 }
 
 class MemberInjectorMethod {

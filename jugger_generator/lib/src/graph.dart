@@ -1,12 +1,11 @@
 import 'dart:collection';
-import 'package:collection/collection.dart';
 
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
+import 'package:collection/collection.dart';
 import 'package:jugger_generator/src/classes.dart';
-import 'package:jugger_generator/src/utils.dart';
-import 'package:meta/meta.dart';
 import 'package:jugger_generator/src/classes.dart' as j;
+import 'package:jugger_generator/src/utils.dart';
 import 'package:jugger_generator/src/visitors.dart';
 import 'package:quiver/core.dart';
 
@@ -20,7 +19,8 @@ class Graph {
 
       for (MethodElement m in v.methods) {
         providerSources.add(AnotherComponentSource(
-            providedClass: m.returnType.element,
+            // ignore: avoid_as
+            providedClass: m.returnType.element as ClassElement,
             method: m,
             dependencyClass: dep.element,
             annotations: getAnnotations(m)));
@@ -38,8 +38,10 @@ class Graph {
       final MethodElement element = method.element;
 
       providerSources.add(ModuleSource(
-          moduleClass: element.enclosingElement,
-          providedClass: element.returnType.element,
+          // ignore: avoid_as
+          moduleClass: element.enclosingElement as ClassElement,
+          // ignore: avoid_as
+          providedClass: element.returnType.element as ClassElement,
           method: method,
           annotations: getAnnotations(element)));
     }
@@ -48,7 +50,8 @@ class Graph {
         in component.buildInstanceFields(componentBuilder)) {
       providerSources.add(BuildInstanceSource(
           parameter: parameter,
-          providedClass: parameter.type.element,
+          // ignore: avoid_as
+          providedClass: parameter.type.element as ClassElement,
           annotations: getAnnotations(parameter.enclosingElement)));
     }
 
@@ -85,18 +88,19 @@ class Graph {
       _dependencies.values.map((Dependency d) => d.element).toList();
 
   Dependency _registerDependency(Element element) {
-    final String named = getNamedAnnotation(element)?.name;
+    final String? named = getNamedAnnotation(element)?.name;
 
     final _Key key = _Key.of(element, named);
 
     if (_dependencies.containsKey(key)) {
-      return _dependencies[key];
+      return _dependencies[key]!;
     }
 
     if (element is MethodElement) {
       final Dependency dependency = Dependency(
         named,
-        element.returnType.element,
+        // ignore: avoid_as
+        element.returnType.element as ClassElement,
         _registerMethodDependencies(element),
         element,
       );
@@ -111,8 +115,12 @@ class Graph {
     );
   }
 
-  Dependency _registerVariableElementDependency(VariableElement element) {
-    final String named = getNamedAnnotation(element)?.name;
+  Dependency _registerVariableElementDependency(Element element) {
+    if (!(element is VariableElement)) {
+      throw StateError('element[$element] is not VariableElement');
+    }
+
+    final String? named = getNamedAnnotation(element)?.name;
 
     final _Key key = _Key.of(element, named);
 
@@ -172,24 +180,25 @@ class Graph {
   }
 
   void _registerParamDependencyIfNeed(ParameterElement parameter) {
-    final j.Method provideMethod = findProvideMethod(parameter.type);
+    final j.Method? provideMethod = findProvideMethod(parameter.type);
 
     if (provideMethod != null) {
       _registerDependency(provideMethod.element);
     }
   }
 
-  j.Method findProvideMethod(DartType type, [String name]) {
-    return component.provideMethods.firstWhere(
-        (j.Method method) =>
-            method.element.returnType.name == type.name && method.named == name,
-        orElse: () => null);
+  j.Method? findProvideMethod(DartType type, [String? name]) {
+    return component.provideMethods.firstWhereOrNull((j.Method method) =>
+        method.element.returnType.name == type.name && method.named == name);
   }
 
-  ProviderSource findProvider(ClassElement element, [String name]) {
-    return providerSources.firstWhere((ProviderSource source) {
+  ProviderSource? findProvider(Element element, [String? name]) {
+    if (!(element is ClassElement)) {
+      throw StateError('element[$element] is not ClassElement');
+    }
+    return providerSources.firstWhereOrNull((ProviderSource source) {
       return source.providedClass == element && source.named == name;
-    }, orElse: () => null);
+    });
   }
 
   List<ProviderSource> findProviders(ClassElement element) {
@@ -216,7 +225,7 @@ class _Key {
   _Key({required this.named, required this.type, required this.path})
       : assert(type.element is ClassElement);
 
-  factory _Key.of(Element element, String named) {
+  factory _Key.of(Element element, String? named) {
     if (element is MethodElement) {
       return _Key(
           named: named,
@@ -236,7 +245,7 @@ class _Key {
 
   final DartType type;
   final String path;
-  final String named;
+  final String? named;
 
   @override
   bool operator ==(dynamic o) =>
@@ -269,7 +278,7 @@ class Dependency {
   final ClassElement element;
   final Element enclosingElement;
   final List<Dependency> dependencies;
-  final String named;
+  final String? named;
 
   @override
   String toString() {
@@ -283,7 +292,7 @@ abstract class ProviderSource {
   final ClassElement providedClass;
 
   dynamic get key {
-    final j.NamedAnnotation named = namedAnnotation;
+    final j.NamedAnnotation? named = namedAnnotation;
     if (named != null) {
       return '${named.name}_${createElementPath(providedClass)}/${providedClass.name}';
     }
@@ -291,11 +300,13 @@ abstract class ProviderSource {
     return providedClass;
   }
 
-  j.NamedAnnotation get namedAnnotation =>
-      annotations.firstWhere((j.Annotation a) => a is j.NamedAnnotation,
-          orElse: () => null);
+  j.NamedAnnotation? get namedAnnotation {
+    final Annotation? annotation = annotations
+        .firstWhereOrNull((j.Annotation a) => a is j.NamedAnnotation);
+    return annotation is NamedAnnotation ? annotation : null;
+  }
 
-  String get named => namedAnnotation?.name;
+  String? get named => namedAnnotation?.name;
 
   String get sourceString;
 
@@ -328,7 +339,7 @@ class BuildInstanceSource extends ProviderSource {
   final ParameterElement parameter;
 
   String get assignString {
-    final j.NamedAnnotation named = namedAnnotation;
+    final j.NamedAnnotation? named = namedAnnotation;
     if (named != null) {
       return '_${named.name}${parameter.type.name}';
     }

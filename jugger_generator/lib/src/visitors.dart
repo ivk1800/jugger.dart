@@ -46,7 +46,8 @@ class InjectedMembersVisitor extends RecursiveElementVisitor<dynamic> {
   }
 
   void _add(Element element) {
-    members.add(InjectedMember(element));
+    // ignore: avoid_as
+    members.add(InjectedMember(element as FieldElement));
   }
 
   void _addAll(List<Element> elements) {
@@ -124,7 +125,7 @@ class ComponentsVisitor extends RecursiveElementVisitor<dynamic> {
 
   @override
   dynamic visitClassElement(ClassElement element) {
-    final ComponentAnnotation component = getComponentAnnotation(element);
+    final ComponentAnnotation? component = getComponentAnnotation(element);
 
     if (component != null) {
       final InjectedFieldsVisitor fieldsVisitor = InjectedFieldsVisitor();
@@ -159,7 +160,7 @@ class ComponentBuildersVisitor extends RecursiveElementVisitor<dynamic> {
 
   @override
   dynamic visitClassElement(ClassElement element) {
-    final ComponentBuilderAnnotation annotation =
+    final ComponentBuilderAnnotation? annotation =
         getComponentBuilderAnnotation(element);
 
     if (annotation != null) {
@@ -185,12 +186,12 @@ class ComponentBuildersVisitor extends RecursiveElementVisitor<dynamic> {
         }
       }
 
-      final ComponentAnnotation componentAnnotation =
+      final ComponentAnnotation? componentAnnotation =
           getComponentAnnotation(v.buildMethod.returnType.element);
 
       check(componentAnnotation != null, 'build method must retunt component');
 
-      for (DependencyAnnotation dep in componentAnnotation.dependencies) {
+      for (DependencyAnnotation dep in componentAnnotation!.dependencies) {
         final bool dependencyProvided = v.methodElements
             .where((MethodElement me) => me.name != 'build')
             .any((MethodElement me) {
@@ -206,7 +207,8 @@ class ComponentBuildersVisitor extends RecursiveElementVisitor<dynamic> {
       componentBuilders.add(ComponentBuilder(
           element: element,
           methods: v.methodElements,
-          componentClass: v.buildMethod.returnType.element));
+          // ignore: avoid_as
+          componentClass: v.buildMethod.returnType.element as ClassElement));
     }
 
     return null;
@@ -219,7 +221,7 @@ class BuildMethodsVisitor extends RecursiveElementVisitor<dynamic> {
   @override
   dynamic visitMethodElement(MethodElement element) {
     if (element.name == 'build') {
-      final ComponentAnnotation componentAnnotation =
+      final ComponentAnnotation? componentAnnotation =
           getComponentAnnotation(element.returnType.element);
       if (componentAnnotation == null) {
         throw StateError(

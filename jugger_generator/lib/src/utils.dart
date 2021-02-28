@@ -1,33 +1,37 @@
 import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
+import 'package:collection/collection.dart';
 
 import 'classes.dart';
 
-ComponentAnnotation getComponentAnnotation(Element element) {
-  return getAnnotations(element).firstWhere(
-      (Annotation a) => a is ComponentAnnotation,
-      orElse: () => null);
+ComponentAnnotation? getComponentAnnotation(Element element) {
+  final Annotation? annotation = getAnnotations(element).firstWhereOrNull(
+      (Annotation a) => a is ComponentAnnotation);
+  return annotation is ComponentAnnotation ? annotation : null;
 }
 
-ComponentBuilderAnnotation getComponentBuilderAnnotation(Element element) {
-  return getAnnotations(element).firstWhere(
-      (Annotation a) => a is ComponentBuilderAnnotation,
-      orElse: () => null);
+ComponentBuilderAnnotation? getComponentBuilderAnnotation(Element element) {
+  final Annotation? annotation = getAnnotations(element).firstWhere(
+      (Annotation a) => a is ComponentBuilderAnnotation);
+  return annotation is ComponentBuilderAnnotation ? annotation : null;
 }
 
-BindAnnotation getBindAnnotation(Element element) {
-  return getAnnotations(element)
-      .firstWhere((Annotation a) => a is BindAnnotation, orElse: () => null);
+BindAnnotation? getBindAnnotation(Element element) {
+  final Annotation? annotation = getAnnotations(element)
+      .firstWhere((Annotation a) => a is BindAnnotation);
+  return annotation is BindAnnotation ? annotation : null;
 }
 
-ProvideAnnotation getProvideAnnotation(Element element) {
-  return getAnnotations(element)
-      .firstWhere((Annotation a) => a is ProvideAnnotation, orElse: () => null);
+ProvideAnnotation? getProvideAnnotation(Element element) {
+  final Annotation? annotation = getAnnotations(element)
+      .firstWhere((Annotation a) => a is ProvideAnnotation);
+  return annotation is ProvideAnnotation ? annotation : null;
 }
 
-NamedAnnotation getNamedAnnotation(Element element) {
-  return getAnnotations(element)
-      .firstWhere((Annotation a) => a is NamedAnnotation, orElse: () => null);
+NamedAnnotation? getNamedAnnotation(Element element) {
+  final Annotation? annotation = getAnnotations(element)
+      .firstWhere((Annotation a) => a is NamedAnnotation);
+  return annotation is NamedAnnotation ? annotation : null;
 }
 
 List<Annotation> getAnnotations(Element element) {
@@ -37,7 +41,7 @@ List<Annotation> getAnnotations(Element element) {
 
   for (int i = 0; i < resolvedMetadata.length; i++) {
     final ElementAnnotation annotation = resolvedMetadata[i];
-    final Element valueElement =
+    final Element? valueElement =
         annotation.computeConstantValue()?.type?.element;
 
     if (valueElement == null) {
@@ -90,8 +94,14 @@ List<Annotation> getAnnotations(Element element) {
       } else if (valueElement.name == 'Bind') {
         annotations.add(BindAnnotation());
       } else if (valueElement.name == 'ComponentBuilder') {
+        if (!(valueElement is ClassElement)) {
+          throw StateError('element[$valueElement] is not ClassElement');
+        }
         annotations.add(ComponentBuilderAnnotation(valueElement));
       } else if (valueElement.name == 'Named') {
+        if (!(valueElement is ClassElement)) {
+          throw StateError('element[$valueElement] is not ClassElement');
+        }
         annotations.add(NamedAnnotation(
             element: valueElement,
             name: annotation
