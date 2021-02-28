@@ -275,19 +275,34 @@ class ComponentBuilder extends Builder {
     return element.returnType.element!.name!;
   }
 
-  String _getNameFromInterface(Element el, InterfaceType type, Allocator allocator) {
+  String _getNameFromInterface(
+      Element el, InterfaceType type, Allocator allocator) {
     final List<DartType> arguments = type.typeArguments;
-
     if (arguments.isNotEmpty) {
-      final String join = '<${arguments.map((DartType e) {
-        final ClassElement classElement = e.element as ClassElement;
-        return allocator.allocate(Reference(classElement.name,
-            classElement.thisType.element.librarySource.uri.toString()));
-      }).join(',')}>';
-      return '${type.name!}$join';
+      return '${type.name!}${_getNameFromTypeArguments(arguments, allocator)}';
     }
 
     return type.element.name;
+  }
+
+  /// example:
+  /// Map<int, List<String>>
+  String _getNameFromTypeArguments(
+      List<DartType> arguments, Allocator allocator) {
+    final String join = '<${arguments.map((DartType e) {
+      final ClassElement classElement = e.element as ClassElement;
+
+      String name;
+      if (e is InterfaceType) {
+        name = _getNameFromInterface(classElement, e, allocator);
+      } else {
+        name = classElement.name;
+      }
+
+      return allocator.allocate(Reference(
+          name, classElement.thisType.element.librarySource.uri.toString()));
+    }).join(',')}>';
+    return join;
   }
 
   bool _isBindDependency(Dependency dependency) {
@@ -619,7 +634,8 @@ class ComponentBuilder extends Builder {
       return allocator
           .allocate(Reference(c.thisType.name, c.librarySource.uri.toString()));
     } else if (element is MethodElement) {
-      return allocator.allocate(Reference(_getNameFromMethod(element, allocator),
+      return allocator.allocate(Reference(
+          _getNameFromMethod(element, allocator),
           element.returnType.element!.librarySource!.uri.toString()));
     }
     throw StateError(
@@ -669,7 +685,7 @@ class ComponentBuilder extends Builder {
 
   Map<String, Expression> _buildArgumentsExpression(
       Element forElement, List<ParameterElement> parameters, Graph graph) {
-    print('build arguments for ${forElement.name}: ${parameters}');
+    print('build arguments for ${forElement.name}: $parameters');
 
     if (parameters.isEmpty) {
       return HashMap<String, Expression>();
