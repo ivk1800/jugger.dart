@@ -51,20 +51,20 @@ List<Annotation> getAnnotations(Element element) {
       if (valueElement.name == 'Component') {
         final List<ClassElement> modules = annotation
             .computeConstantValue()
-            .getField('modules')
-            .toListValue()
-            .cast<DartObject>()
+            !.getField('modules')
+            !.toListValue()
+            !.cast<DartObject>()
             // ignore: avoid_as
-            .map((DartObject o) => o.toTypeValue().element as ClassElement)
+            .map((DartObject o) => o.toTypeValue()!.element as ClassElement)
             .toList();
 
         final List<ClassElement> dependencies = annotation
             .computeConstantValue()
-            .getField('dependencies')
-            .toListValue()
-            .cast<DartObject>()
+            !.getField('dependencies')
+            !.toListValue()
+            !.cast<DartObject>()
             // ignore: avoid_as
-            .map((DartObject o) => o.toTypeValue().element as ClassElement)
+            .map((DartObject o) => o.toTypeValue()!.element as ClassElement)
             .toList();
 
         annotations.add(ComponentAnnotation(
@@ -106,8 +106,8 @@ List<Annotation> getAnnotations(Element element) {
             element: valueElement,
             name: annotation
                 .computeConstantValue()
-                .getField('name')
-                .toStringValue()));
+                !.getField('name')
+                !.toStringValue()!));
       }
     }
   }
@@ -123,15 +123,15 @@ String createElementPath(Element element) {
     return 'dart:core';
   }
 
-  return 'package:${element.source.uri.path}'.replaceFirst('/lib', '');
+  return 'package:${element.source!.uri.path}'.replaceFirst('/lib', '');
 }
 
 bool isCore(Element element) {
-  return element.librarySource.fullName.startsWith('dart:core') ?? false;
+  return element.librarySource!.fullName.startsWith('dart:core') ?? false;
 }
 
 bool isFlutterCore(Element element) {
-  return element.librarySource.fullName.startsWith('/flutter') ?? false;
+  return element.librarySource!.fullName.startsWith('/flutter') ?? false;
 }
 
 void check(bool condition, String message) {

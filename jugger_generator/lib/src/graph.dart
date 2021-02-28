@@ -52,7 +52,7 @@ class Graph {
           parameter: parameter,
           // ignore: avoid_as
           providedClass: parameter.type.element as ClassElement,
-          annotations: getAnnotations(parameter.enclosingElement)));
+          annotations: getAnnotations(parameter.enclosingElement!)));
     }
 
     _validateProviderSources();
@@ -67,7 +67,7 @@ class Graph {
 
       for (ParameterElement parameter in element.parameters) {
         final InjectedMembersVisitor visitor = InjectedMembersVisitor();
-        parameter.type.element.visitChildren(visitor);
+        parameter.type.element!.visitChildren(visitor);
 
         for (j.InjectedMember member in visitor.members) {
           _registerDependency(member.element);
@@ -132,7 +132,7 @@ class Graph {
 //    }
 
     final InjectedConstructorsVisitor visitor = InjectedConstructorsVisitor();
-    element.type.element.visitChildren(visitor);
+    element.type.element!.visitChildren(visitor);
 
     if (visitor.injectedConstructors.isEmpty) {
       final Dependency dependency = Dependency(
@@ -140,7 +140,7 @@ class Graph {
         // ignore: avoid_as
         element.type.element as ClassElement,
         <Dependency>[],
-        element.enclosingElement,
+        element.enclosingElement!,
       );
       _dependencies[key] = dependency;
       return dependency;
@@ -230,12 +230,12 @@ class _Key {
       return _Key(
           named: named,
           type: element.returnType,
-          path: createElementPath(element.returnType.element));
+          path: createElementPath(element.returnType.element!));
     } else if (element is VariableElement) {
       return _Key(
           named: named,
           type: element.type,
-          path: createElementPath(element.type.element));
+          path: createElementPath(element.type.element!));
     }
 
     throw StateError(
@@ -256,17 +256,17 @@ class _Key {
 
   @override
   String toString() {
-    final Element element = type.element;
+    final Element? element = type.element;
     if (element is MethodElement) {
       final MethodElement m = element;
-      return m.returnType.name;
+      return m.returnType.name!;
     } else if (element is ParameterElement) {
       final ParameterElement p = element;
-      return p.type.name;
+      return p.type.name!;
     }
 
     throw StateError(
-      'field ${element.name} unsupported type',
+      'field ${element!.name} unsupported type',
     );
   }
 }
@@ -282,7 +282,7 @@ class Dependency {
 
   @override
   String toString() {
-    return element.thisType.name;
+    return element.thisType.name!;
   }
 }
 
@@ -344,7 +344,7 @@ class BuildInstanceSource extends ProviderSource {
       return '_${named.name}${parameter.type.name}';
     }
 
-    return '_${uncapitalize(parameter.type.name)}';
+    return '_${uncapitalize(parameter.type.name!)}';
   }
 
   @override

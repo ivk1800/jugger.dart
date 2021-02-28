@@ -187,7 +187,7 @@ class ComponentBuildersVisitor extends RecursiveElementVisitor<dynamic> {
       }
 
       final ComponentAnnotation? componentAnnotation =
-          getComponentAnnotation(v.buildMethod.returnType.element);
+          getComponentAnnotation(v.buildMethod.returnType.element!);
 
       check(componentAnnotation != null, 'build method must retunt component');
 
@@ -222,7 +222,7 @@ class BuildMethodsVisitor extends RecursiveElementVisitor<dynamic> {
   dynamic visitMethodElement(MethodElement element) {
     if (element.name == 'build') {
       final ComponentAnnotation? componentAnnotation =
-          getComponentAnnotation(element.returnType.element);
+          getComponentAnnotation(element.returnType.element!);
       if (componentAnnotation == null) {
         throw StateError(
           'build $element method must returm component type',

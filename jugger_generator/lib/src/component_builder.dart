@@ -138,12 +138,12 @@ class ComponentBuilder extends Builder {
             b.annotations.add(const CodeExpression(Code('override')));
             b.name = m.name;
             b.returns = Reference(
-                m.returnType.name, createElementPath(m.returnType.element));
+                m.returnType.name, createElementPath(m.returnType.element!));
             b.requiredParameters.addAll(m.parameters.map((ParameterElement pe) {
               return Parameter((ParameterBuilder parameterBuilder) {
                 parameterBuilder.name = pe.name;
                 parameterBuilder.type =
-                    Reference(pe.type.name, createElementPath(pe.type.element));
+                    Reference(pe.type.name, createElementPath(pe.type.element!));
               });
             }));
 
@@ -152,7 +152,7 @@ class ComponentBuilder extends Builder {
                 final Iterable<Expression> map = componentBuilder.parameters
                     .map((j.ComponentBuilderParameter parameter) {
                   final String? name =
-                      getNamedAnnotation(parameter.parameter.enclosingElement)
+                      getNamedAnnotation(parameter.parameter.enclosingElement!)
                           ?.name;
                   final classElement = parameter.parameter.type.element;
                   if (!(classElement is ClassElement)) {
@@ -170,10 +170,10 @@ class ComponentBuilder extends Builder {
                 final List<Code> assertCodes = componentBuilder.parameters
                     .map((j.ComponentBuilderParameter parameter) {
                   final String? name =
-                      getNamedAnnotation(parameter.parameter.enclosingElement)
+                      getNamedAnnotation(parameter.parameter.enclosingElement!)
                           ?.name;
                   return Code(
-                      'assert(_${_generateName(parameter.parameter.type.element, name)} != null) ');
+                      'assert(_${_generateName(parameter.parameter.type.element!, name)} != null) ');
                 }).toList();
 
                 for (Code value in assertCodes) {
@@ -192,10 +192,10 @@ class ComponentBuilder extends Builder {
                 final j.ComponentBuilderParameter p =
                     j.ComponentBuilderParameter(parameter: m.parameters[0]);
                 final String? name =
-                    getNamedAnnotation(p.parameter.enclosingElement)?.name;
+                    getNamedAnnotation(p.parameter.enclosingElement!)?.name;
                 b.addExpression(CodeExpression(Block.of(<Code>[
                   Code(
-                      '_${_generateName(p.parameter.type.element, name)} = ${p.parameter.name}; return this'),
+                      '_${_generateName(p.parameter.type.element!, name)} = ${p.parameter.name}; return this'),
                 ])));
               }
             });
@@ -205,11 +205,11 @@ class ComponentBuilder extends Builder {
             .map((j.ComponentBuilderParameter parameter) {
           return Field((FieldBuilder b) {
             b.type = Reference(parameter.parameter.type.name,
-                createElementPath(parameter.parameter.type.element));
+                createElementPath(parameter.parameter.type.element!));
             final String? name =
-                getNamedAnnotation(parameter.parameter.enclosingElement)?.name;
+                getNamedAnnotation(parameter.parameter.enclosingElement!)?.name;
             b.name =
-                '_${_generateName(parameter.parameter.type.element, name)}';
+                '_${_generateName(parameter.parameter.type.element!, name)}';
           });
         }));
       }));
@@ -255,7 +255,7 @@ class ComponentBuilder extends Builder {
     if (dependency.enclosingElement is ParameterElement) {
       if (dependency.enclosingElement.enclosingElement is MethodElement) {
         return getBindAnnotation(
-                dependency.enclosingElement.enclosingElement) !=
+                dependency.enclosingElement.enclosingElement!) !=
             null;
       }
     }
@@ -273,17 +273,17 @@ class ComponentBuilder extends Builder {
         b.annotations.add(const CodeExpression(Code('override')));
         b.name = method.name;
         b.returns = Reference(method.returnType.name,
-            createElementPath(method.returnType.element));
+            createElementPath(method.returnType.element!));
 
         final String? name = getNamedAnnotation(method)?.name;
         final ProviderSource? providerSource =
-            graph.findProvider(method.returnType.element, name);
+            graph.findProvider(method.returnType.element!, name);
 
         check(providerSource != null,
-            '${method.returnType.element.name} not provided');
+            '${method.returnType.element!.name} not provided');
 
         b.body = Code(
-            'return ${_generateAssignString(method.returnType.element, graph)};');
+            'return ${_generateAssignString(method.returnType.element!, graph)};');
       });
       newProperties.add(m);
     }
@@ -315,11 +315,11 @@ class ComponentBuilder extends Builder {
       builder.requiredParameters.add(Parameter((ParameterBuilder b) {
         b.name = uncapitalize(parameterElement.name);
         b.type = Reference(parameterElement.type.name,
-            createElementPath(parameterElement.type.element));
+            createElementPath(parameterElement.type.element!));
       }));
 
       final InjectedMembersVisitor visitor = InjectedMembersVisitor();
-      parameterElement.type.element.visitChildren(visitor);
+      parameterElement.type.element!.visitChildren(visitor);
 
       builder.body = Block((BlockBuilder b) {
         for (j.InjectedMember member in visitor.members.toSet()) {
@@ -328,7 +328,7 @@ class ComponentBuilder extends Builder {
           b.addExpression(CodeExpression(Block.of(<Code>[
             Code('${parameterElement.name}.${member.element.name}'),
             Code(
-                ' = ${_generateAssignString(member.element.type.element, graph, name)}'),
+                ' = ${_generateAssignString(member.element.type.element!, graph, name)}'),
           ])));
         }
       });
@@ -375,7 +375,7 @@ class ComponentBuilder extends Builder {
       return '$name${element.thisType.name}';
     }
 
-    return '${uncapitalize(element.thisType.name)}';
+    return '${uncapitalize(element.thisType.name!)}';
   }
 
   Method _buildInitProvidesMethod(List<Dependency> dependencies,
@@ -464,7 +464,7 @@ class ComponentBuilder extends Builder {
     final String? name = getNamedAnnotation(method)?.name;
 
     b.addExpression(CodeExpression(Block.of(<Code>[
-      Code('_${_generateName(method.returnType.element, name)}Provider  = '),
+      Code('_${_generateName(method.returnType.element!, name)}Provider  = '),
       ToCodeExpression(expression),
     ])));
   }
@@ -477,7 +477,7 @@ class ComponentBuilder extends Builder {
     check(method.parameters.length == 1,
         'method annotates [Bind] must have 1 parameter');
 
-    final Element parameter = method.parameters[0].type.element;
+    final Element parameter = method.parameters[0].type.element!;
 
     final InjectedConstructorsVisitor visitor = InjectedConstructorsVisitor();
     parameter.visitChildren(visitor);
@@ -533,7 +533,7 @@ class ComponentBuilder extends Builder {
     }
 
     if (parameters.isEmpty) {
-      return ToCodeExpression(r(element.name).newInstance(<Expression>[]));
+      return ToCodeExpression(r(element.name!).newInstance(<Expression>[]));
     }
 
     final bool isPositional = parameters
@@ -549,14 +549,14 @@ class ComponentBuilder extends Builder {
     }
 
     if (isPositional) {
-      return ToCodeExpression(r(element.name).newInstance(
+      return ToCodeExpression(r(element.name!).newInstance(
           _buildArgumentsExpression(element, parameters, graph)
               .values
               .toList()));
     }
 
     if (isNamed) {
-      return ToCodeExpression(r(element.name).newInstance(<Expression>[],
+      return ToCodeExpression(r(element.name!).newInstance(<Expression>[],
           _buildArgumentsExpression(element, parameters, graph)));
     }
 
@@ -582,7 +582,7 @@ class ComponentBuilder extends Builder {
           .allocate(Reference(c.thisType.name, c.librarySource.uri.toString()));
     } else if (element is MethodElement) {
       return allocator.allocate(Reference(element.returnType.name,
-          element.returnType.element.librarySource.uri.toString()));
+          element.returnType.element!.librarySource!.uri.toString()));
     }
     throw StateError(
         'unsupported type: ${element.name}, ${element.runtimeType}');
@@ -601,9 +601,9 @@ class ComponentBuilder extends Builder {
           return Parameter((ParameterBuilder b) {
             b.toThis = true;
             final String? name =
-                getNamedAnnotation(parameter.parameter.enclosingElement)?.name;
+                getNamedAnnotation(parameter.parameter.enclosingElement!)?.name;
             b.name =
-                '_${_generateName(parameter.parameter.type.element, name)}';
+                '_${_generateName(parameter.parameter.type.element!, name)}';
           });
         }));
       }
@@ -620,11 +620,11 @@ class ComponentBuilder extends Builder {
       // ignore: unnecessary_parenthesis
       return (Field((FieldBuilder b) {
         final String? name =
-            getNamedAnnotation(parameter.parameter.enclosingElement)?.name;
-        b.name = '_${_generateName(parameter.parameter.type.element, name)}';
+            getNamedAnnotation(parameter.parameter.enclosingElement!)?.name;
+        b.name = '_${_generateName(parameter.parameter.type.element!, name)}';
         b.modifier = FieldModifier.final$;
         b.type = Reference(parameter.parameter.type.name,
-            createElementPath(parameter.parameter.type.element));
+            createElementPath(parameter.parameter.type.element!));
       }));
     }).toList();
   }
@@ -641,7 +641,7 @@ class ComponentBuilder extends Builder {
         parameters.map((ParameterElement parameter) {
       final String? name = getNamedAnnotation(parameter)?.name;
       final CodeExpression codeExpression = CodeExpression(Block.of(<Code>[
-        Code(_generateAssignString(parameter.type.element, graph, name)),
+        Code(_generateAssignString(parameter.type.element!, graph, name)),
       ]));
       return MapEntry<String, Expression>(parameter.name, codeExpression);
     });

@@ -32,5 +32,5 @@ abstract class AppModule {
 
 class MyClass {
   @inject
-  IDataFormatter dataFormatter;
+  late IDataFormatter dataFormatter;
 }
