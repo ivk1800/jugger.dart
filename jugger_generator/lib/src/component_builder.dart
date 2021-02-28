@@ -156,7 +156,7 @@ class ComponentBuilder extends Builder {
                   final CodeExpression codeExpression =
                       CodeExpression(Block.of(<Code>[
                     Code(
-                        '_${_generateName(classElement, name)}'),
+                        '_${_generateName(classElement, name, )}!'),
                   ]));
                   return codeExpression;
                 });
@@ -198,7 +198,7 @@ class ComponentBuilder extends Builder {
         classBuilder.fields.addAll(componentBuilder.parameters
             .map((j.ComponentBuilderParameter parameter) {
           return Field((FieldBuilder b) {
-            b.type = Reference(parameter.parameter.type.name,
+            b.type = Reference('${parameter.parameter.type.name}?',
                 createElementPath(parameter.parameter.type.element!));
             final String? name =
                 getNamedAnnotation(parameter.parameter.enclosingElement!)?.name;
@@ -233,7 +233,8 @@ class ComponentBuilder extends Builder {
               dependency.element.thisType.name,
               dependency.element.thisType.element.librarySource.uri
                   .toString()));
-
+          // TODO(Ivan): temporary
+          b.docs.add('late');
           b.type =
               Reference('IProvider<$generic>', 'package:jugger/jugger.dart');
         }));
