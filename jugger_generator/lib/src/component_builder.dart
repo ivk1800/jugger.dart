@@ -136,8 +136,8 @@ class ComponentBuilder extends Builder {
             b.requiredParameters.addAll(m.parameters.map((ParameterElement pe) {
               return Parameter((ParameterBuilder parameterBuilder) {
                 parameterBuilder.name = pe.name;
-                parameterBuilder.type =
-                    Reference(pe.type.name, createElementPath(pe.type.element!));
+                parameterBuilder.type = Reference(
+                    pe.type.name, createElementPath(pe.type.element!));
               });
             }));
 
@@ -150,13 +150,16 @@ class ComponentBuilder extends Builder {
                           ?.name;
                   final classElement = parameter.parameter.type.element;
                   if (!(classElement is ClassElement)) {
-                    throw StateError('element[$classElement] is not ClassElement');
+                    throw StateError(
+                        'element[$classElement] is not ClassElement');
                   }
 
                   final CodeExpression codeExpression =
                       CodeExpression(Block.of(<Code>[
-                    Code(
-                        '_${_generateName(classElement, name, )}!'),
+                    Code('_${_generateName(
+                      classElement,
+                      name,
+                    )}!'),
                   ]));
                   return codeExpression;
                 });
@@ -332,8 +335,7 @@ class ComponentBuilder extends Builder {
     }).toList();
   }
 
-  String _generateAssignString(Element element, Graph graph,
-      [String? name]) {
+  String _generateAssignString(Element element, Graph graph, [String? name]) {
     if (!(element is ClassElement)) {
       throw StateError('element[$element] is not ClassElement');
     }

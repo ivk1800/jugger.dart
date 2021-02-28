@@ -11,7 +11,7 @@ class ArticlesRepositoryImpl implements IArticlesRepository {
   ArticlesRepositoryImpl({
     required AssetsArticlesDataSource dataSource,
     required ArticleEntityDataMapper articlesEntityDataMapper,
-  })  : _dataSource = dataSource,
+  })   : _dataSource = dataSource,
         _articlesEntityDataMapper = articlesEntityDataMapper;
 
   final AssetsArticlesDataSource _dataSource;

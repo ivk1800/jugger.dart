@@ -8,7 +8,7 @@ class DetailArticleScreenInteractorImpl
   DetailArticleScreenInteractorImpl({
     required IArticlesRepository articlesRepository,
     required Tracker tracker,
-  })  : _articlesRepository = articlesRepository,
+  })   : _articlesRepository = articlesRepository,
         _tracker = tracker;
 
   final IArticlesRepository _articlesRepository;

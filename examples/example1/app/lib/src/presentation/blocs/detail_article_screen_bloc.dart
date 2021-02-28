@@ -12,7 +12,7 @@ class DetailArticleBloc extends BaseBloc {
     IDetailArticleScreenInteractor interactor,
     required DetailArticleModelDataMapper articleModelDataMapper,
     required int articleId,
-  })  : _interactor = interactor,
+  })   : _interactor = interactor,
         _articleModelDataMapper = articleModelDataMapper,
         _articleId = articleId;
 

@@ -10,7 +10,7 @@ class ArticleScreenInteractorImpl implements IArticlesScreenInteractor {
   ArticleScreenInteractorImpl({
     required IArticlesRepository articlesRepository,
     required INavigationRouter router,
-  })  : _articlesRepository = articlesRepository,
+  })   : _articlesRepository = articlesRepository,
         _router = router;
 
   final IArticlesRepository _articlesRepository;

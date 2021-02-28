@@ -5,14 +5,14 @@ import 'package:collection/collection.dart';
 import 'classes.dart';
 
 ComponentAnnotation? getComponentAnnotation(Element element) {
-  final Annotation? annotation = getAnnotations(element).firstWhereOrNull(
-      (Annotation a) => a is ComponentAnnotation);
+  final Annotation? annotation = getAnnotations(element)
+      .firstWhereOrNull((Annotation a) => a is ComponentAnnotation);
   return annotation is ComponentAnnotation ? annotation : null;
 }
 
 ComponentBuilderAnnotation? getComponentBuilderAnnotation(Element element) {
-  final Annotation? annotation = getAnnotations(element).firstWhereOrNull(
-      (Annotation a) => a is ComponentBuilderAnnotation);
+  final Annotation? annotation = getAnnotations(element)
+      .firstWhereOrNull((Annotation a) => a is ComponentBuilderAnnotation);
   return annotation is ComponentBuilderAnnotation ? annotation : null;
 }
 
@@ -50,19 +50,19 @@ List<Annotation> getAnnotations(Element element) {
     } else {
       if (valueElement.name == 'Component') {
         final List<ClassElement> modules = annotation
-            .computeConstantValue()
-            !.getField('modules')
-            !.toListValue()
-            !.cast<DartObject>()
+            .computeConstantValue()!
+            .getField('modules')!
+            .toListValue()!
+            .cast<DartObject>()
             // ignore: avoid_as
             .map((DartObject o) => o.toTypeValue()!.element as ClassElement)
             .toList();
 
         final List<ClassElement> dependencies = annotation
-            .computeConstantValue()
-            !.getField('dependencies')
-            !.toListValue()
-            !.cast<DartObject>()
+            .computeConstantValue()!
+            .getField('dependencies')!
+            .toListValue()!
+            .cast<DartObject>()
             // ignore: avoid_as
             .map((DartObject o) => o.toTypeValue()!.element as ClassElement)
             .toList();
@@ -105,9 +105,9 @@ List<Annotation> getAnnotations(Element element) {
         annotations.add(NamedAnnotation(
             element: valueElement,
             name: annotation
-                .computeConstantValue()
-                !.getField('name')
-                !.toStringValue()!));
+                .computeConstantValue()!
+                .getField('name')!
+                .toStringValue()!));
       }
     }
   }

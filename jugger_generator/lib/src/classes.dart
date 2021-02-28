@@ -150,8 +150,8 @@ class Method {
   final List<Annotation> annotations;
 
   NamedAnnotation? get _namedAnnotation {
-    final Annotation? annotation = annotations
-        .firstWhereOrNull((Annotation a) => a is NamedAnnotation);
+    final Annotation? annotation =
+        annotations.firstWhereOrNull((Annotation a) => a is NamedAnnotation);
     return annotation is NamedAnnotation ? annotation : null;
   }
 
