@@ -20,11 +20,11 @@ class SingletonProvider<T> implements IProvider<T> {
 
   final Builder<T> _builder;
 
-  late T value;
+  T? value;
 
   @override
   T get() {
     value ??= _builder();
-    return value;
+    return value!;
   }
 }
