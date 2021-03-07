@@ -167,12 +167,6 @@ class ComponentBuildersVisitor extends RecursiveElementVisitor<dynamic> {
       final BuildMethodsVisitor v = BuildMethodsVisitor();
       element.visitChildren(v);
 
-      if (v.buildMethod == null) {
-        throw StateError(
-          'builder $element must have build method',
-        );
-      }
-
       for (int i = 0; i < v.methodElements.length; i++) {
         final MethodElement methodElement = v.methodElements[i];
 

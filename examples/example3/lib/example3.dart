@@ -52,11 +52,12 @@ abstract class ResultDispatcher<T> {
 }
 
 class AuthScreenViewModel {
-  final ResultDispatcher<UserCredentials> resultDispatcher;
-  final Map<int, List<String>> data;
 
   @inject
   AuthScreenViewModel(this.resultDispatcher, this.data);
+
+  final ResultDispatcher<UserCredentials> resultDispatcher;
+  final Map<int, List<String>> data;
 }
 
 @Component(

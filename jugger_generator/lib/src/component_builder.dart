@@ -150,7 +150,7 @@ class ComponentBuilder extends Builder {
                   final String? name =
                       getNamedAnnotation(parameter.parameter.enclosingElement!)
                           ?.name;
-                  final classElement = parameter.parameter.type.element;
+                  final Element? classElement = parameter.parameter.type.element;
                   if (!(classElement is ClassElement)) {
                     throw StateError(
                         'element[$classElement] is not ClassElement');
@@ -290,7 +290,10 @@ class ComponentBuilder extends Builder {
   String _getNameFromTypeArguments(
       List<DartType> arguments, Allocator allocator) {
     final String join = '<${arguments.map((DartType e) {
-      final ClassElement classElement = e.element as ClassElement;
+      final Element? element2 = e.element;
+      final ClassElement classElement = element2 is ClassElement
+          ? element2
+          : throw StateError('element is not ClassElement');
 
       String name;
       if (e is InterfaceType) {
@@ -322,7 +325,7 @@ class ComponentBuilder extends Builder {
 
     for (MethodElement method in methods) {
       print(
-          'build provide method for: ${method.enclosingElement?.name}.${method.name}');
+          'build provide method for: ${method.enclosingElement.name}.${method.name}');
       final Method m = Method((MethodBuilder b) {
         b.annotations.add(const CodeExpression(Code('override')));
         b.name = method.name;
@@ -471,7 +474,7 @@ class ComponentBuilder extends Builder {
 
   void buildProviderFromClass(
       ClassElement element, BlockBuilder b, Graph graph, Allocator allocator) {
-    print('build provider from class: ${element?.name}');
+    print('build provider from class: ${element.name}');
 
     final InjectedConstructorsVisitor visitor = InjectedConstructorsVisitor();
     element.visitChildren(visitor);
@@ -502,7 +505,7 @@ class ComponentBuilder extends Builder {
   void buildProviderFromModule(
       MethodElement method, BlockBuilder b, Graph graph, Allocator allocator) {
     print(
-        'build provider from module: ${method.enclosingElement?.name}.${method.name}');
+        'build provider from module: ${method.enclosingElement.name}.${method.name}');
     Expression expression;
     if (method.isStatic) {
       expression = _buildProviderFromStaticMethod(method, graph, allocator);
@@ -525,7 +528,7 @@ class ComponentBuilder extends Builder {
   Expression _buildProviderFromAbstractMethod(
       MethodElement method, Graph graph, Allocator allocator) {
     print(
-        'build provider from abstract method: ${method?.enclosingElement?.name}.${method?.name}');
+        'build provider from abstract method: ${method.enclosingElement.name}.${method.name}');
 
     check(method.parameters.length == 1,
         'method annotates [Bind] must have 1 parameter');
@@ -554,7 +557,7 @@ class ComponentBuilder extends Builder {
   Expression _buildProviderFromStaticMethod(
       MethodElement method, Graph graph, Allocator allocator) {
     print(
-        'build provider from static method: ${method.enclosingElement?.name}.${method.name}');
+        'build provider from static method: ${method.enclosingElement.name}.${method.name}');
 
     final Element moduleClass = method.enclosingElement;
     return getProviderType(method, allocator).newInstance(<Expression>[
@@ -571,7 +574,7 @@ class ComponentBuilder extends Builder {
 
   Code _buildCallMethodOrConstructor(
       Element element, List<ParameterElement> parameters, Graph graph) {
-    print('build CallMethodOrConstructor for: ${element?.name}');
+    print('build CallMethodOrConstructor for: ${element.name}');
     if (!(element is ClassElement) && !(element is MethodElement)) {
       throw StateError(
         'element${element.name} must be ClassElement or MethodElement',

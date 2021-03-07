@@ -127,11 +127,11 @@ String createElementPath(Element element) {
 }
 
 bool isCore(Element element) {
-  return element.librarySource!.fullName.startsWith('dart:core') ?? false;
+  return element.librarySource!.fullName.startsWith('dart:core');
 }
 
 bool isFlutterCore(Element element) {
-  return element.librarySource!.fullName.startsWith('/flutter') ?? false;
+  return element.librarySource!.fullName.startsWith('/flutter');
 }
 
 void check(bool condition, String message) {

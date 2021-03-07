@@ -1,3 +1,7 @@
+## 1.1.0+4-alpha
+
+* support nullsafety
+
 ## 1.1.0+2-alpha
 
 * fix generation bug with @Named annotation
