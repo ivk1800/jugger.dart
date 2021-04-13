@@ -150,7 +150,8 @@ class ComponentBuilder extends Builder {
                   final String? name =
                       getNamedAnnotation(parameter.parameter.enclosingElement!)
                           ?.name;
-                  final Element? classElement = parameter.parameter.type.element;
+                  final Element? classElement =
+                      parameter.parameter.type.element;
                   if (!(classElement is ClassElement)) {
                     throw StateError(
                         'element[$classElement] is not ClassElement');
@@ -586,6 +587,22 @@ class ComponentBuilder extends Builder {
         return refer(element.name);
       }
       return refer(element.name, createElementPath(element));
+    }
+
+    /// handle case:
+    ///   @singleton
+    ///   @provide
+    ///   static UpdatesProvider provideUpdatesProvider() => UpdatesProvider();
+    ///
+    ///   @singleton
+    ///   @bind
+    ///   IChatUpdatesProvider bindChatUpdatesProvider(UpdatesProvider impl);
+    if (element is ClassElement) {
+      final ProviderSource? provider = graph.findProvider(element, null);
+
+      if (provider is ModuleSource) {
+        return Code('${_generateAssignString(provider.providedClass, graph)}');
+      }
     }
 
     if (parameters.isEmpty) {

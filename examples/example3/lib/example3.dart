@@ -52,7 +52,6 @@ abstract class ResultDispatcher<T> {
 }
 
 class AuthScreenViewModel {
-
   @inject
   AuthScreenViewModel(this.resultDispatcher, this.data);
 
@@ -93,6 +92,35 @@ class UserCredentials {
   UserCredentials(this.token);
 
   final String token;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+abstract class IChatUpdatesProvider {
+  Stream<String> get chatUpdates;
+}
+
+class UpdatesProvider implements IChatUpdatesProvider {
+  @inject
+  UpdatesProvider();
+
+  @override
+  Stream<String> get chatUpdates => Stream<String>.value("");
+}
+
+abstract class Module {
+  @singleton
+  @provide
+  static UpdatesProvider provideUpdatesProvider() => UpdatesProvider();
+
+  @singleton
+  @bind
+  IChatUpdatesProvider bindChatUpdatesProvider(UpdatesProvider impl);
+}
+
+@Component(modules: <Type>[Module])
+abstract class AppComponent2 {
+  IChatUpdatesProvider getChatUpdatesProvider();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
