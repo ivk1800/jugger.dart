@@ -22,6 +22,12 @@ BindAnnotation? getBindAnnotation(Element element) {
   return annotation is BindAnnotation ? annotation : null;
 }
 
+DisposableAnnotation? getDisposableAnnotation(Element element) {
+  final Annotation? annotation = getAnnotations(element)
+      .firstWhereOrNull((Annotation a) => a is DisposableAnnotation);
+  return annotation is DisposableAnnotation ? annotation : null;
+}
+
 ProvideAnnotation? getProvideAnnotation(Element element) {
   final Annotation? annotation = getAnnotations(element)
       .firstWhereOrNull((Annotation a) => a is ProvideAnnotation);
@@ -93,6 +99,8 @@ List<Annotation> getAnnotations(Element element) {
         annotations.add(SingletonAnnotation());
       } else if (valueElement.name == 'Bind') {
         annotations.add(BindAnnotation());
+      } else if (valueElement.name == 'Disposable') {
+        annotations.add(DisposableAnnotation());
       } else if (valueElement.name == 'ComponentBuilder') {
         if (!(valueElement is ClassElement)) {
           throw StateError('element[$valueElement] is not ClassElement');

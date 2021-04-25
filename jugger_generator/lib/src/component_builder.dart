@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'dart:collection';
+import 'dart:math';
 
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
@@ -41,6 +42,8 @@ class ComponentBuilder extends Builder {
 
   String get outputExtension => 'jugger.dart';
 
+  late Graph currentGraph;
+
   Future<String> buildOutput(BuildStep buildStep) async {
     final Resolver resolver = buildStep.resolver;
 
@@ -71,6 +74,7 @@ class ComponentBuilder extends Builder {
         });
 
         final Graph graph = Graph.fromComponent(component, componentBuilder);
+        currentGraph = graph;
 
         final List<j.ModuleAnnotation> modules = component.modules;
 
@@ -91,6 +95,11 @@ class ComponentBuilder extends Builder {
 
           classBuilder.implements
               .add(Reference(component.element.name, createElementPath(lib)));
+
+          if (_isMustDisposedCurrentComponent()) {
+            classBuilder.mixins.add(const Reference(
+                'DisposableBagMixin', 'package:jugger/jugger.dart'));
+          }
 
           classBuilder.constructors.add(_buildConstructor(componentBuilder));
 
@@ -115,6 +124,24 @@ class ComponentBuilder extends Builder {
     throw StateError(
       'is not library',
     );
+  }
+
+  bool _isMustDisposedCurrentComponent() =>
+      currentGraph.dependencies.any((Dependency dependency) {
+        final ProviderSource? provider =
+            currentGraph.findProvider(dependency.element);
+
+        if ((provider != null && provider is ModuleSource ||
+                provider is BuildInstanceSource) ||
+            provider == null) {
+          return _isDisposable(dependency.element);
+        }
+        return false;
+      });
+
+  bool _isDisposable(ClassElement element) {
+    return element.interfaces.any((InterfaceType element) =>
+        element.getDisplayString(withNullability: false) == 'IDisposable');
   }
 
   void _generateComponentBuilders(LibraryBuilder target, LibraryElement lib,
@@ -488,17 +515,13 @@ class ComponentBuilder extends Builder {
         injectedConstructor.element.parameters;
 
     final Expression newInstance =
-        getProviderType(injectedConstructor.element, allocator)
-            .newInstance(<Expression>[
-      CodeExpression(Block.of(<Code>[
-        const Code('() { return '),
-        _buildCallMethodOrConstructor(element, parameters, graph),
-        const Code(';}'),
-      ])),
+        getProviderType(injectedConstructor.element, allocator).newInstance([
+      CodeExpression(Block.of(_buildProviderBody(element,
+          <Code>[_buildCallMethodOrConstructor(element, parameters, graph)])))
     ]);
 
     b.addExpression(CodeExpression(Block.of(<Code>[
-      Code('_${uncapitalize(element.name)}Provider  = '),
+      Code('_${uncapitalize(element.name)}Provider = '),
       ToCodeExpression(newInstance),
     ])));
   }
@@ -546,13 +569,54 @@ class ComponentBuilder extends Builder {
     final List<ParameterElement> parameters =
         injectedConstructor.element.parameters;
 
-    return getProviderType(method, allocator).newInstance(<Expression>[
-      CodeExpression(Block.of(<Code>[
-        const Code('() { return '),
-        _buildCallMethodOrConstructor(parameter, parameters, graph),
-        const Code(';}'),
-      ])),
+    final ClassElement returnClass;
+    if (getBindAnnotation(method) != null) {
+      final Element? bindedElement = method.parameters[0].type.element;
+      assert(bindedElement is ClassElement);
+      // ignore: avoid_as
+      returnClass = bindedElement as ClassElement;
+    } else if (getProvideAnnotation(method) != null) {
+      assert(method.returnType.element is ClassElement);
+      // ignore: avoid_as
+      returnClass = method.returnType.element as ClassElement;
+    } else {
+      throw StateError(
+          'unknown provided type of method ${method.getDisplayString(withNullability: false)}');
+    }
+
+    final Expression newInstance =
+        getProviderType(method, allocator).newInstance([
+      CodeExpression(Block.of(_buildProviderBody(returnClass,
+          <Code>[_buildCallMethodOrConstructor(parameter, parameters, graph)])))
     ]);
+
+    return CodeExpression(ToCodeExpression(newInstance));
+  }
+
+  List<Code> _buildProviderBody(ClassElement classElement, List<Code> code) {
+    final List<Code> codes = <Code>[];
+
+    final ToCodeExpression primaryExpression =
+        ToCodeExpression(CodeExpression(Block.of(code)));
+    if (_isDisposable(classElement)) {
+      codes.addAll(<Code>[
+        const Code('() { '),
+        const Code('final v = '),
+        primaryExpression,
+        const Code(';'),
+        const Code('registerDisposable(v);'),
+        const Code('return v;'),
+        const Code('}'),
+      ]);
+    } else {
+      codes.addAll([
+        const Code('() { '),
+        const Code('return '),
+        primaryExpression,
+        const Code(';}'),
+      ]);
+    }
+    return codes;
   }
 
   Expression _buildProviderFromStaticMethod(
@@ -560,17 +624,21 @@ class ComponentBuilder extends Builder {
     print(
         'build provider from static method: ${method.enclosingElement.name}.${method.name}');
 
+    assert(method.returnType.element is ClassElement);
+    // ignore: avoid_as
+    final ClassElement returnClass = method.returnType.element as ClassElement;
     final Element moduleClass = method.enclosingElement;
-    return getProviderType(method, allocator).newInstance(<Expression>[
-      CodeExpression(Block.of(<Code>[
-        const Code('() { return '),
+    final Expression newInstance =
+        getProviderType(method, allocator).newInstance(<Expression>[
+      CodeExpression(Block.of(_buildProviderBody(returnClass, <Code>[
         ToCodeExpression(
             refer(moduleClass.name, createElementPath(moduleClass))),
         const Code('.'),
-        _buildCallMethodOrConstructor(method, method.parameters, graph),
-        const Code(';}'),
-      ])),
+        _buildCallMethodOrConstructor(method, method.parameters, graph)
+      ])))
     ]);
+
+    return CodeExpression(ToCodeExpression(newInstance));
   }
 
   Code _buildCallMethodOrConstructor(
