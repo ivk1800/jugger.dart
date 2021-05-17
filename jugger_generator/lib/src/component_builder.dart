@@ -99,6 +99,13 @@ class ComponentBuilder extends Builder {
           if (_isMustDisposedCurrentComponent()) {
             classBuilder.mixins.add(const Reference(
                 'DisposableBagMixin', 'package:jugger/jugger.dart'));
+          } else {
+            classBuilder.methods.add(Method((MethodBuilder b) {
+              b.annotations.add(const CodeExpression(Code('override')));
+              b.name = 'dispose';
+              b.returns = const Reference('void');
+              b.body = const Code('');
+            }));
           }
 
           classBuilder.constructors.add(_buildConstructor(componentBuilder));
