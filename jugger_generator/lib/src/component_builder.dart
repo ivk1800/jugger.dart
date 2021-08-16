@@ -115,7 +115,7 @@ class ComponentBuilder extends Builder {
       }
 
       final String string =
-          target.build().accept(DartEmitter(allocator)).toString();
+          target.build().accept(DartEmitter(allocator: allocator)).toString();
 
       final String finalString = string.isEmpty
           ? ''
@@ -639,7 +639,7 @@ class ComponentBuilder extends Builder {
         getProviderType(method, allocator).newInstance(<Expression>[
       CodeExpression(Block.of(_buildProviderBody(returnClass, <Code>[
         ToCodeExpression(
-            refer(moduleClass.name, createElementPath(moduleClass))),
+            refer(moduleClass.name!, createElementPath(moduleClass))),
         const Code('.'),
         _buildCallMethodOrConstructor(method, method.parameters, graph)
       ])))
@@ -661,7 +661,7 @@ class ComponentBuilder extends Builder {
       if (element is MethodElement) {
         return refer(element.name);
       }
-      return refer(element.name, createElementPath(element));
+      return refer(element.name!, createElementPath(element));
     }
 
     /// handle case:

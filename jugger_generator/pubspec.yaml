@@ -8,16 +8,13 @@ environment:
   sdk: ">=2.12.0-0 <3.0.0"
 
 dependencies:
-  analyzer: ^1.1.0
-  build: ^1.6.3
-  built_value: ^8.0.6
-  quiver: ^3.0.1
-  code_builder: ^3.3.0
-  collection: ^1.15.0
-  dart_style: ^1.3.14
+  build: 2.1.0
+  built_value: 8.1.2
+  code_builder: 4.1.0
+  dart_style: 2.0.3
+  quiver: 3.0.1
   jugger:
     git:
       url: git@github.com:ivk1800/jugger.dart.git
       path: jugger
       ref: 02cb9197b758cd89457d71c2b4c1daab4d92477c
-  meta: ^1.3.0
