@@ -125,12 +125,10 @@ class ComponentBuilder extends Builder {
               '// ignore_for_file: directives_ordering \n'
               ' $string';
 
-      return Future<String>.value(DartFormatter().format(finalString));
+      return DartFormatter().format(finalString);
     }
 
-    throw StateError(
-      'is not library',
-    );
+    return '';
   }
 
   bool _isMustDisposedCurrentComponent() =>
