@@ -1,5 +1,7 @@
 ## jugger.dart - Dependency Injection for Flutter and Dart
 
+## docs is outdated, see [diff](https://github.com/ivk1800/diff) as example of using
+
 jugger:
 
 [![pub package](https://img.shields.io/pub/v/jugger.svg?style=plastic&logo=appveyor)](https://pub.dartlang.org/packages/jugger)
