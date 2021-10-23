@@ -10,10 +10,11 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  jugger: ^1.1.0-alpha
+  jugger:
+    path: ../../jugger
 
 dev_dependencies:
-  build_runner: ^1.10.2
+  build_runner: ^2.1.1
   flutter_test:
     sdk: flutter
   jugger_generator:

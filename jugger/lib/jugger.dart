@@ -9,6 +9,7 @@ export 'src/annotations.dart'
         Component,
         Inject,
         bind,
+        nonLazy,
         componentBuilder,
         Named;
 

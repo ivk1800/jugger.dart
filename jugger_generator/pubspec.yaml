@@ -1,20 +1,19 @@
 name: jugger_generator
 description: Generates dependency injection code using the jugger package.
 version: 1.1.0+4-alpha
-author: ivk1800
 homepage: https://github.com/ivk1800/jugger.dart
 
 environment:
   sdk: ">=2.12.0-0 <3.0.0"
 
 dependencies:
-  build: 2.1.0
-  built_value: 8.1.2
-  code_builder: 4.1.0
-  dart_style: 2.0.3
-  quiver: 3.0.1
+  build: ^2.1.1
+  built_value: ^8.1.2
+  code_builder: ^4.1.0
+  dart_style: ^2.2.0
   jugger:
     git:
       url: git@github.com:ivk1800/jugger.dart.git
       path: jugger
       ref: 02cb9197b758cd89457d71c2b4c1daab4d92477c
+  quiver: ^3.0.1+1

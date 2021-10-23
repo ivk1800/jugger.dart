@@ -90,6 +90,10 @@ class ComponentBuilder extends Builder {
           classBuilder.methods.add(_buildInitProvidesMethod(
               graph.dependencies, modules, graph, allocator));
 
+          if (hasNonLazyProviders()) {
+            classBuilder.methods.add(_buildInitNonLazyMethod(graph));
+          }
+
           classBuilder.methods.addAll(_buildMembersInjectorMethods(
               component.methods, classBuilder, graph));
 
@@ -384,8 +388,12 @@ class ComponentBuilder extends Builder {
   Method _buildInitMethod() {
     return Method((MethodBuilder b) {
       b.name = '_init';
-      b.body = const Code(''
-          '_initProvides();');
+      b.body = Block((BlockBuilder builder) {
+        builder.statements.add(const Code('_initProvides();'));
+        if (hasNonLazyProviders()) {
+          builder.statements.add(const Code('_initNonLazy();'));
+        }
+      });
       b.returns = const Reference('void');
     });
   }
@@ -427,6 +435,10 @@ class ComponentBuilder extends Builder {
     }).toList();
   }
 
+  ///
+  /// [element] element of provider
+  /// Return example: '_myRepositoryProvider.get()
+  ///
   String _generateAssignString(Element element, Graph graph, [String? name]) {
     if (!(element is ClassElement)) {
       throw StateError('element[$element] is not ClassElement');
@@ -503,6 +515,30 @@ class ComponentBuilder extends Builder {
       }
     }));
     return builder.build();
+  }
+
+  Method _buildInitNonLazyMethod(Graph graph) {
+    final MethodBuilder builder = MethodBuilder();
+    builder.name = '_initNonLazy';
+    builder.returns = const Reference('void');
+    builder.body = Block((BlockBuilder builder) {
+      final Iterable<ProviderSource> nonLazyProviders = graph.providerSources
+          .whereType<ModuleSource>()
+          .where((ProviderSource source) => source.annotations.any(
+              (j.Annotation annotation) => annotation is j.NonLazyAnnotation));
+      for (ProviderSource source in nonLazyProviders) {
+        builder.statements.add(
+            Code('${_generateAssignString(source.providedClass, graph)};'));
+      }
+    });
+
+    return builder.build();
+  }
+
+  bool hasNonLazyProviders() {
+    return currentGraph.providerSources.any((ProviderSource source) => source
+        .annotations
+        .any((j.Annotation annotation) => annotation is j.NonLazyAnnotation));
   }
 
   void buildProviderFromClass(

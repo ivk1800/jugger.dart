@@ -22,6 +22,12 @@ BindAnnotation? getBindAnnotation(Element element) {
   return annotation is BindAnnotation ? annotation : null;
 }
 
+NonLazyAnnotation? getNonLazyAnnotation(Element element) {
+  final Annotation? annotation = getAnnotations(element)
+      .firstWhereOrNull((Annotation a) => a is NonLazyAnnotation);
+  return annotation is NonLazyAnnotation ? annotation : null;
+}
+
 DisposableAnnotation? getDisposableAnnotation(Element element) {
   final Annotation? annotation = getAnnotations(element)
       .firstWhereOrNull((Annotation a) => a is DisposableAnnotation);
@@ -116,6 +122,8 @@ List<Annotation> getAnnotations(Element element) {
                 .computeConstantValue()!
                 .getField('name')!
                 .toStringValue()!));
+      } else if (valueElement.name == 'NonLazy') {
+        annotations.add(NonLazyAnnotation());
       }
     }
   }

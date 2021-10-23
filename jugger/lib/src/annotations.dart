@@ -83,3 +83,17 @@ class Named {
 
   final String name;
 }
+
+///
+/// TODO(): write documentation
+///
+class NonLazy {
+  const factory NonLazy() = NonLazy._;
+
+  const NonLazy._();
+}
+
+///
+/// TODO(): write documentation
+///
+const NonLazy nonLazy = NonLazy();
