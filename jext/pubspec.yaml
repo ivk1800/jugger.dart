@@ -10,7 +10,7 @@ dependencies:
     git:
       url: git@github.com:ivk1800/jugger.dart.git
       path: jugger
-      ref: c1d7d863e06378d94bf8bf9a33a718fe21dc8cfd
+      ref: 85d05caacbe81d3a683c1d31a9b27735e512bb93
   flutter:
     sdk: flutter
 
