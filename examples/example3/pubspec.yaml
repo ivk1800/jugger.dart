@@ -19,5 +19,6 @@ dev_dependencies:
     sdk: flutter
   jugger_generator:
     path: ../../jugger_generator
+  test: ^1.16.0
 
 flutter:

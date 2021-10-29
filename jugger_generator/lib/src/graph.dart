@@ -359,9 +359,15 @@ class AnotherComponentSource extends ProviderSource {
     required List<j.Annotation> annotations,
   }) : super(providedClass, annotations);
 
+  ///
+  /// example: _appComponent
+  ///
   final ClassElement dependencyClass;
   final MethodElement method;
 
+  ///
+  /// example: _appComponent.getFoldersRouter()
+  ///
   String get assignString {
     return '_${uncapitalize(dependencyClass.name)}.${method.name}()';
   }

@@ -2,44 +2,45 @@
 // ignore_for_file: prefer_const_constructors
 // ignore_for_file: always_specify_types
 // ignore_for_file: directives_ordering
-import 'package:example3/example3.dart' as _i1;
-import 'package:jugger/jugger.dart' as _i2;
+import 'package:example3/bind/bind_from_another_module.dart' as _i1;
+import 'package:example3/example3.dart' as _i2;
+import 'package:jugger/jugger.dart' as _i3;
 
 class JuggerAuthScreenComponentBuilder
-    implements _i1.AuthScreenComponentBuilder {
-  _i1.AppComponent? _appComponent;
+    implements _i2.AuthScreenComponentBuilder {
+  _i2.AppComponent? _appComponent;
 
-  _i1.AuthPageState? _authPageState;
+  _i2.AuthPageState? _authPageState;
 
   @override
-  _i1.AuthScreenComponentBuilder appComponent(_i1.AppComponent component) {
+  _i2.AuthScreenComponentBuilder appComponent(_i2.AppComponent component) {
     _appComponent = component;
     return this;
   }
 
   @override
-  _i1.AuthScreenComponentBuilder screen(_i1.AuthPageState screen) {
+  _i2.AuthScreenComponentBuilder screen(_i2.AuthPageState screen) {
     _authPageState = screen;
     return this;
   }
 
   @override
-  _i1.AuthScreenComponent build() {
+  _i2.AuthScreenComponent build() {
     assert(_appComponent != null);
     assert(_authPageState != null);
     return JuggerAuthScreenComponent._create(_appComponent!, _authPageState!);
   }
 }
 
-class JuggerAppComponent implements _i1.AppComponent {
+class JuggerAppComponent implements _i2.AppComponent {
   JuggerAppComponent.create() {
     _init();
   }
 
-  late _i2.IProvider<_i1.IDataFormatter> _iDataFormatterProvider;
+  late _i3.IProvider<_i2.IDataFormatter> _iDataFormatterProvider;
 
   @override
-  _i1.IDataFormatter getDataFormatter() {
+  _i2.IDataFormatter getDataFormatter() {
     return _iDataFormatterProvider.get();
   }
 
@@ -48,13 +49,13 @@ class JuggerAppComponent implements _i1.AppComponent {
   }
 
   void _initProvides() {
-    _iDataFormatterProvider = _i2.SingletonProvider<_i1.IDataFormatter>(() {
-      return _i1.DataFormatter();
+    _iDataFormatterProvider = _i3.SingletonProvider<_i2.IDataFormatter>(() {
+      return _i2.DataFormatter();
     });
   }
 
   @override
-  void inject(_i1.MyClass target) {
+  void inject(_i2.MyClass target) {
     target.dataFormatter = _iDataFormatterProvider.get();
   }
 
@@ -62,42 +63,42 @@ class JuggerAppComponent implements _i1.AppComponent {
   void dispose() {}
 }
 
-class JuggerAuthScreenComponent implements _i1.AuthScreenComponent {
+class JuggerAuthScreenComponent implements _i2.AuthScreenComponent {
   JuggerAuthScreenComponent._create(this._appComponent, this._authPageState) {
     _init();
   }
 
-  late _i2.IProvider<_i1.AuthScreenViewModel> _authScreenViewModelProvider;
+  late _i3.IProvider<_i2.AuthScreenViewModel> _authScreenViewModelProvider;
 
-  late _i2.IProvider<_i1.ResultDispatcher<_i1.UserCredentials>>
+  late _i3.IProvider<_i2.ResultDispatcher<_i2.UserCredentials>>
       _resultDispatcherProvider;
 
-  late _i2.IProvider<Map<int, List<String>>> _mapProvider;
+  late _i3.IProvider<Map<int, List<String>>> _mapProvider;
 
-  final _i1.AppComponent _appComponent;
+  final _i2.AppComponent _appComponent;
 
-  final _i1.AuthPageState _authPageState;
+  final _i2.AuthPageState _authPageState;
 
   void _init() {
     _initProvides();
   }
 
   void _initProvides() {
-    _authScreenViewModelProvider = _i2.Provider<_i1.AuthScreenViewModel>(() {
-      return _i1.AuthScreenViewModel(
+    _authScreenViewModelProvider = _i3.Provider<_i2.AuthScreenViewModel>(() {
+      return _i2.AuthScreenViewModel(
           _resultDispatcherProvider.get(), _mapProvider.get());
     });
     _resultDispatcherProvider =
-        _i2.Provider<_i1.ResultDispatcher<_i1.UserCredentials>>(() {
-      return _i1.AuthScreenModule.provideResultDispatcher(_authPageState);
+        _i3.Provider<_i2.ResultDispatcher<_i2.UserCredentials>>(() {
+      return _i2.AuthScreenModule.provideResultDispatcher(_authPageState);
     });
-    _mapProvider = _i2.Provider<Map<int, List<String>>>(() {
-      return _i1.AuthScreenModule.provideData();
+    _mapProvider = _i3.Provider<Map<int, List<String>>>(() {
+      return _i2.AuthScreenModule.provideData();
     });
   }
 
   @override
-  void inject(_i1.AuthPageState target) {
+  void inject(_i2.AuthPageState target) {
     target.viewModel = _authScreenViewModelProvider.get();
   }
 
@@ -105,17 +106,17 @@ class JuggerAuthScreenComponent implements _i1.AuthScreenComponent {
   void dispose() {}
 }
 
-class JuggerAppComponent2 implements _i1.AppComponent2 {
+class JuggerAppComponent2 implements _i2.AppComponent2 {
   JuggerAppComponent2.create() {
     _init();
   }
 
-  late _i2.IProvider<_i1.IChatUpdatesProvider> _iChatUpdatesProviderProvider;
+  late _i3.IProvider<_i2.UpdatesProvider> _updatesProviderProvider;
 
-  late _i2.IProvider<_i1.UpdatesProvider> _updatesProviderProvider;
+  late _i3.IProvider<_i2.IChatUpdatesProvider> _iChatUpdatesProviderProvider;
 
   @override
-  _i1.IChatUpdatesProvider getChatUpdatesProvider() {
+  _i2.IChatUpdatesProvider getChatUpdatesProvider() {
     return _iChatUpdatesProviderProvider.get();
   }
 
@@ -124,12 +125,12 @@ class JuggerAppComponent2 implements _i1.AppComponent2 {
   }
 
   void _initProvides() {
-    _iChatUpdatesProviderProvider =
-        _i2.SingletonProvider<_i1.IChatUpdatesProvider>(() {
-      return _updatesProviderProvider.get();
+    _updatesProviderProvider = _i3.SingletonProvider<_i2.UpdatesProvider>(() {
+      return _i2.Module.provideUpdatesProvider();
     });
-    _updatesProviderProvider = _i2.SingletonProvider<_i1.UpdatesProvider>(() {
-      return _i1.Module.provideUpdatesProvider();
+    _iChatUpdatesProviderProvider =
+        _i3.SingletonProvider<_i2.IChatUpdatesProvider>(() {
+      return _updatesProviderProvider.get();
     });
   }
 

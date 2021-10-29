@@ -1,0 +1,71 @@
+// ignore_for_file: implementation_imports
+// ignore_for_file: prefer_const_constructors
+// ignore_for_file: always_specify_types
+// ignore_for_file: directives_ordering
+import 'package:example3/bind/bind_from_another_module.dart' as _i1;
+import 'package:jugger/jugger.dart' as _i2;
+
+class JuggerMyScreenComponentBuilder implements _i1.MyScreenComponentBuilder {
+  _i1.AppComponent? _appComponent;
+
+  @override
+  _i1.MyScreenComponentBuilder appComponent(_i1.AppComponent foldersComponent) {
+    _appComponent = foldersComponent;
+    return this;
+  }
+
+  @override
+  _i1.MyScreenComponent build() {
+    assert(_appComponent != null);
+    return JuggerMyScreenComponent._create(_appComponent!);
+  }
+}
+
+class JuggerAppComponent implements _i1.AppComponent {
+  JuggerAppComponent.create() {
+    _init();
+  }
+
+  late _i2.IProvider<_i1.IMainRouter> _iMainRouterProvider;
+
+  @override
+  _i1.IMainRouter getFoldersRouter() {
+    return _iMainRouterProvider.get();
+  }
+
+  void _init() {
+    _initProvides();
+  }
+
+  void _initProvides() {
+    _iMainRouterProvider = _i2.SingletonProvider<_i1.IMainRouter>(() {
+      return _i1.AppModule.provideMainRouter();
+    });
+  }
+
+  @override
+  void dispose() {}
+}
+
+class JuggerMyScreenComponent implements _i1.MyScreenComponent {
+  JuggerMyScreenComponent._create(this._appComponent) {
+    _init();
+  }
+
+  late _i2.IProvider<_i1.IMyScreenRouter> _iMyScreenRouterProvider;
+
+  final _i1.AppComponent _appComponent;
+
+  void _init() {
+    _initProvides();
+  }
+
+  void _initProvides() {
+    _iMyScreenRouterProvider = _i2.SingletonProvider<_i1.IMyScreenRouter>(() {
+      return _appComponent.getFoldersRouter();
+    });
+  }
+
+  @override
+  void dispose() {}
+}

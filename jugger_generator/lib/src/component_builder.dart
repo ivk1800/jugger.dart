@@ -43,12 +43,14 @@ class ComponentBuilder extends Builder {
   String get outputExtension => 'jugger.dart';
 
   late Graph currentGraph;
+  late Allocator currentAllocator;
 
   Future<String> buildOutput(BuildStep buildStep) async {
     final Resolver resolver = buildStep.resolver;
 
     if (await resolver.isLibrary(buildStep.inputId)) {
       final Allocator allocator = Allocator.simplePrefixing();
+      currentAllocator = allocator;
 
       final LibraryElement lib = await buildStep.inputLibrary;
 
@@ -575,7 +577,7 @@ class ComponentBuilder extends Builder {
     if (method.isStatic) {
       expression = _buildProviderFromStaticMethod(method, graph, allocator);
     } else if (method.isAbstract) {
-      expression = _buildProviderFromAbstractMethod(method, graph, allocator);
+      expression = _buildProviderFromAbstractMethod(method);
     } else {
       throw StateError(
         'provided method must be abstract or static [${method.enclosingElement.name}.${method.name}]',
@@ -590,8 +592,40 @@ class ComponentBuilder extends Builder {
     ])));
   }
 
-  Expression _buildProviderFromAbstractMethod(
-      MethodElement method, Graph graph, Allocator allocator) {
+  ///
+  /// [method]: provider method
+  ///
+  /// example:
+  /// ```dart main
+  /// @singleton
+  /// @bind
+  /// IFoldersScreenRouter bindFoldersScreenRouter(IFoldersRouter router);
+  /// ```
+  ///
+  Expression _buildProviderFromAnotherComponent(
+    MethodElement method,
+    AnotherComponentSource provider,
+  ) {
+    final Expression newInstance =
+        getProviderType(method, currentAllocator).newInstance(
+      <Expression>[
+        CodeExpression(
+          Block.of(
+            _buildProviderBody(
+              provider.dependencyClass,
+              <Code>[
+                Code(provider.assignString),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+
+    return CodeExpression(ToCodeExpression(newInstance));
+  }
+
+  Expression _buildProviderFromAbstractMethod(MethodElement method) {
     print(
         'build provider from abstract method: ${method.enclosingElement.name}.${method.name}');
 
@@ -602,6 +636,29 @@ class ComponentBuilder extends Builder {
 
     final InjectedConstructorsVisitor visitor = InjectedConstructorsVisitor();
     parameter.visitChildren(visitor);
+
+    final ProviderSource? provider = currentGraph.findProvider(parameter, null);
+
+    if (provider is AnotherComponentSource) {
+      return _buildProviderFromAnotherComponent(method, provider);
+      // final Expression newInstance =
+      //     getProviderType(method, allocator).newInstance(
+      //   <Expression>[
+      //     CodeExpression(
+      //       Block.of(
+      //         _buildProviderBody(
+      //           provider.dependencyClass,
+      //           <Code>[
+      //             Code(provider.assignString),
+      //           ],
+      //         ),
+      //       ),
+      //     ),
+      //   ],
+      // );
+      //
+      // return CodeExpression(ToCodeExpression(newInstance));
+    }
 
     check(visitor.injectedConstructors.length == 1,
         'not found injected constructor for ${parameter.name}');
@@ -626,9 +683,17 @@ class ComponentBuilder extends Builder {
     }
 
     final Expression newInstance =
-        getProviderType(method, allocator).newInstance([
-      CodeExpression(Block.of(_buildProviderBody(returnClass,
-          <Code>[_buildCallMethodOrConstructor(parameter, parameters, graph)])))
+        getProviderType(method, currentAllocator).newInstance([
+      CodeExpression(
+        Block.of(
+          _buildProviderBody(
+            returnClass,
+            <Code>[
+              _buildCallMethodOrConstructor(parameter, parameters, currentGraph)
+            ],
+          ),
+        ),
+      )
     ]);
 
     return CodeExpression(ToCodeExpression(newInstance));
