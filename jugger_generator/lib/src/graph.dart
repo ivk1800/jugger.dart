@@ -82,7 +82,9 @@ class Graph {
 
   final List<ProviderSource> providerSources = <ProviderSource>[];
 
-  List<Dependency> get dependencies => _dependencies.values.toList();
+  List<Dependency> get dependencies => _dependencies.values.toList()
+    ..sort((Dependency a, Dependency b) =>
+        a.element.name.compareTo(b.element.name));
 
   List<ClassElement> get dependenciesClasses =>
       _dependencies.values.map((Dependency d) => d.element).toList();

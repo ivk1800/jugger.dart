@@ -300,7 +300,7 @@ class ComponentBuilder extends Builder {
       }
     }
 
-    return fields;
+    return fields..sort((Field a, Field b) => a.name.compareTo(b.name));
   }
 
   /// example:
@@ -397,7 +397,8 @@ class ComponentBuilder extends Builder {
       newProperties.add(m);
     }
 
-    return newProperties;
+    return newProperties
+      ..sort((Method a, Method b) => a.name!.compareTo(b.name!));
   }
 
   Method _buildInitMethod() {
@@ -540,7 +541,11 @@ class ComponentBuilder extends Builder {
       final Iterable<ProviderSource> nonLazyProviders = graph.providerSources
           .whereType<ModuleSource>()
           .where((ProviderSource source) => source.annotations.any(
-              (j.Annotation annotation) => annotation is j.NonLazyAnnotation));
+              (j.Annotation annotation) => annotation is j.NonLazyAnnotation))
+          .toList()
+        ..sort((ProviderSource a, ProviderSource b) =>
+            a.providedClass.name.compareTo(b.providedClass.name));
+
       for (ProviderSource source in nonLazyProviders) {
         builder.statements
             .add(Code('${_generateAssignString(source.providedClass)};'));

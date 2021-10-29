@@ -2,20 +2,18 @@
 // ignore_for_file: prefer_const_constructors
 // ignore_for_file: always_specify_types
 // ignore_for_file: directives_ordering
-import 'package:example/bind/bind_from_another_module.dart' as _i1;
-import 'package:example/bind/bind_from_module.dart' as _i2;
-import 'package:example/non_lazy/non_lazy_without_non_lazy.dart' as _i3;
-import 'package:jugger/jugger.dart' as _i4;
+import 'package:example/non_lazy/non_lazy_without_non_lazy.dart' as _i1;
+import 'package:jugger/jugger.dart' as _i2;
 
-class JuggerAppComponent implements _i3.AppComponent {
+class JuggerAppComponent implements _i1.AppComponent {
   JuggerAppComponent.create() {
     _init();
   }
 
-  late _i4.IProvider<_i3.LazyRepository> _lazyRepositoryProvider;
+  late _i2.IProvider<_i1.LazyRepository> _lazyRepositoryProvider;
 
   @override
-  _i3.LazyRepository getLazyRepository() {
+  _i1.LazyRepository getLazyRepository() {
     return _lazyRepositoryProvider.get();
   }
 
@@ -24,8 +22,8 @@ class JuggerAppComponent implements _i3.AppComponent {
   }
 
   void _initProvides() {
-    _lazyRepositoryProvider = _i4.SingletonProvider<_i3.LazyRepository>(() {
-      return _i3.AppModule.provideLazyRepository();
+    _lazyRepositoryProvider = _i2.SingletonProvider<_i1.LazyRepository>(() {
+      return _i1.AppModule.provideLazyRepository();
     });
   }
 

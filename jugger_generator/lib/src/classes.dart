@@ -50,7 +50,8 @@ class Component {
   List<MethodElement> get provideMethod {
     final ProvideMethodVisitor v = ProvideMethodVisitor();
     element.visitChildren(v);
-    return v.methods;
+    return v.methods
+      ..sort((MethodElement a, MethodElement b) => a.name.compareTo(b.name));
   }
 }
 
