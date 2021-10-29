@@ -142,7 +142,7 @@ extension RegisterScreenInject on RegisterPageState {
 |  @Named |  TODO |
 
 #### Powerful example
-In this repo you can find Best practice [example1](examples/example1) of jugger with multiple dependencies and using all annotations.
+In this repo you can find Best practice [example1](example/example1) of jugger with multiple dependencies and using all annotations.
 
 #### Bugs
 the library is in alpha version, if you find a bug, you can create a [issue](https://github.com/ivk1800/jugger.dart/issues/new)

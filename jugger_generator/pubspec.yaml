@@ -12,8 +12,5 @@ dependencies:
   code_builder: ^4.1.0
   dart_style: ^2.2.0
   jugger:
-    git:
-      url: git@github.com:ivk1800/jugger.dart.git
-      path: jugger
-      ref: 85d05caacbe81d3a683c1d31a9b27735e512bb93
+    path: ../jugger
   quiver: ^3.0.1+1

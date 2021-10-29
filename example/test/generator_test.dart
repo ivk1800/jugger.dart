@@ -21,13 +21,19 @@ void main() {
 }
 
 Future<void> _checkGenerateCode(String fileName) async {
-  final String testContent =
-      await File('${Directory.current.path}/assets/$fileName.txt')
-          .readAsString();
+  final File testContentFile =
+      File('${Directory.current.path}/assets/$fileName.txt');
+  final File buildContentFile =
+      File('${Directory.current.path}/lib/$fileName.jugger.dart');
 
-  final String buildContent =
-      await File('${Directory.current.path}/lib/bind/$fileName.jugger.dart')
-          .readAsString();
+  assert(testContentFile.existsSync(),
+      'test file is missing, ${testContentFile.path}');
+  assert(buildContentFile.existsSync(),
+      'build file is missing, ${buildContentFile.path}');
+
+  final String testContent = await testContentFile.readAsString();
+
+  final String buildContent = await buildContentFile.readAsString();
 
   expect(buildContent, testContent);
 }
