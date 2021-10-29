@@ -43,7 +43,6 @@ class ComponentBuilder extends Builder {
   String get outputExtension => 'jugger.dart';
 
   late Graph currentGraph;
-  late Allocator currentAllocator;
   final List<String> _logs = <String>[];
 
   Future<String> buildOutput(BuildStep buildStep) async {
@@ -61,7 +60,6 @@ class ComponentBuilder extends Builder {
 
     if (await resolver.isLibrary(buildStep.inputId)) {
       final Allocator allocator = Allocator.simplePrefixing();
-      currentAllocator = allocator;
 
       final LibraryElement lib = await buildStep.inputLibrary;
 
@@ -595,7 +593,7 @@ class ComponentBuilder extends Builder {
     if (method.isStatic) {
       expression = _buildProviderFromStaticMethod(method, graph, allocator);
     } else if (method.isAbstract) {
-      expression = _buildProviderFromAbstractMethod(method);
+      expression = _buildProviderFromAbstractMethod(method, allocator);
     } else {
       throw StateError(
         'provided method must be abstract or static [${method.enclosingElement.name}.${method.name}]',
@@ -622,10 +620,11 @@ class ComponentBuilder extends Builder {
   ///
   Expression _buildProviderFromAnotherComponent(
     MethodElement method,
+    Allocator allocator,
     AnotherComponentSource provider,
   ) {
     final Expression newInstance =
-        getProviderType(method, currentAllocator).newInstance(
+        getProviderType(method, allocator).newInstance(
       <Expression>[
         CodeExpression(
           Block.of(
@@ -645,10 +644,11 @@ class ComponentBuilder extends Builder {
 
   Expression _buildProviderFromModule(
     MethodElement method,
+    Allocator allocator,
     ModuleSource provider,
   ) {
     final Expression newInstance =
-        getProviderType(method, currentAllocator).newInstance(
+        getProviderType(method, allocator).newInstance(
       <Expression>[
         CodeExpression(
           Block.of(
@@ -666,7 +666,10 @@ class ComponentBuilder extends Builder {
     return CodeExpression(ToCodeExpression(newInstance));
   }
 
-  Expression _buildProviderFromAbstractMethod(MethodElement method) {
+  Expression _buildProviderFromAbstractMethod(
+    MethodElement method,
+    Allocator allocator,
+  ) {
     _log(
         'build provider from abstract method: ${method.enclosingElement.name}.${method.name} [${method.library.identifier}]');
 
@@ -693,9 +696,9 @@ class ComponentBuilder extends Builder {
 
     check(isSupertype, '${method.name} bind wrong type ${method.returnType}');
     if (provider is AnotherComponentSource) {
-      return _buildProviderFromAnotherComponent(method, provider);
+      return _buildProviderFromAnotherComponent(method, allocator, provider);
     } else if (provider is ModuleSource) {
-      return _buildProviderFromModule(method, provider);
+      return _buildProviderFromModule(method, allocator, provider);
     }
 
     check(visitor.injectedConstructors.length == 1,
@@ -721,7 +724,7 @@ class ComponentBuilder extends Builder {
     }
 
     final Expression newInstance =
-        getProviderType(method, currentAllocator).newInstance([
+        getProviderType(method, allocator).newInstance([
       CodeExpression(
         Block.of(
           _buildProviderBody(
