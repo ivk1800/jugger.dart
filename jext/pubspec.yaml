@@ -6,13 +6,13 @@ environment:
   flutter: ">=1.17.0"
 
 dependencies:
+  flutter:
+    sdk: flutter
   jugger:
     git:
       url: git@github.com:ivk1800/jugger.dart.git
       path: jugger
       ref: 85d05caacbe81d3a683c1d31a9b27735e512bb93
-  flutter:
-    sdk: flutter
 
 dev_dependencies:
   flutter_test:

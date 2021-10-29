@@ -2,7 +2,6 @@
 
 import 'dart:async';
 import 'dart:collection';
-import 'dart:math';
 
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
@@ -574,7 +573,8 @@ class ComponentBuilder extends Builder {
         injectedConstructor.element.parameters;
 
     final Expression newInstance =
-        getProviderType(injectedConstructor.element, allocator).newInstance([
+        getProviderType(injectedConstructor.element, allocator)
+            .newInstance(<Expression>[
       CodeExpression(Block.of(_buildProviderBody(element,
           <Code>[_buildCallMethodOrConstructor(element, parameters, graph)])))
     ]);
@@ -724,7 +724,7 @@ class ComponentBuilder extends Builder {
     }
 
     final Expression newInstance =
-        getProviderType(method, allocator).newInstance([
+        getProviderType(method, allocator).newInstance(<Expression>[
       CodeExpression(
         Block.of(
           _buildProviderBody(
@@ -756,7 +756,7 @@ class ComponentBuilder extends Builder {
         const Code('}'),
       ]);
     } else {
-      codes.addAll([
+      codes.addAll(<Code>[
         const Code('() { '),
         const Code('return '),
         primaryExpression,

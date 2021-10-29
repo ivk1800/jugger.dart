@@ -1,7 +1,7 @@
 import 'package:analyzer/dart/element/element.dart';
+import 'package:collection/collection.dart';
 import 'package:jugger_generator/src/utils.dart';
 import 'package:jugger_generator/src/visitors.dart';
-import 'package:collection/collection.dart';
 
 class Component {
   const Component({
