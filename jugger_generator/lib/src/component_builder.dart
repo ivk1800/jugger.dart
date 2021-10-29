@@ -392,7 +392,7 @@ class ComponentBuilder extends Builder {
             '${method.returnType.element!.name} not provided');
 
         b.body = Code(
-            'return ${_generateAssignString(method.returnType.element!, graph)};');
+            'return ${_generateAssignString(method.returnType.element!)};');
       });
       newProperties.add(m);
     }
@@ -441,7 +441,7 @@ class ComponentBuilder extends Builder {
           b.addExpression(CodeExpression(Block.of(<Code>[
             Code('${parameterElement.name}.${member.element.name}'),
             Code(
-                ' = ${_generateAssignString(member.element.type.element!, graph, name)}'),
+                ' = ${_generateAssignString(member.element.type.element!, name)}'),
           ])));
         }
       });
@@ -454,12 +454,12 @@ class ComponentBuilder extends Builder {
   /// [element] element of provider
   /// Return example: '_myRepositoryProvider.get()
   ///
-  String _generateAssignString(Element element, Graph graph, [String? name]) {
+  String _generateAssignString(Element element, [String? name]) {
     if (!(element is ClassElement)) {
       throw StateError('element[$element] is not ClassElement');
     }
 
-    final ProviderSource? provider = graph.findProvider(element, name);
+    final ProviderSource? provider = currentGraph.findProvider(element, name);
 
     if (provider is BuildInstanceSource) {
       return provider.assignString;
@@ -474,7 +474,7 @@ class ComponentBuilder extends Builder {
 
     if (visitor.injectedConstructors.isEmpty) {
       final j.Method? provideMethod =
-          graph.findProvideMethod(element.thisType, name);
+          currentGraph.findProvideMethod(element.thisType, name);
       check(provideMethod != null,
           'provider for (${element.thisType.name}, name: $name) not found');
     }
@@ -542,8 +542,8 @@ class ComponentBuilder extends Builder {
           .where((ProviderSource source) => source.annotations.any(
               (j.Annotation annotation) => annotation is j.NonLazyAnnotation));
       for (ProviderSource source in nonLazyProviders) {
-        builder.statements.add(
-            Code('${_generateAssignString(source.providedClass, graph)};'));
+        builder.statements
+            .add(Code('${_generateAssignString(source.providedClass)};'));
       }
     });
 
@@ -638,6 +638,29 @@ class ComponentBuilder extends Builder {
     return CodeExpression(ToCodeExpression(newInstance));
   }
 
+  Expression _buildProviderFromModule(
+    MethodElement method,
+    ModuleSource provider,
+  ) {
+    final Expression newInstance =
+        getProviderType(method, currentAllocator).newInstance(
+      <Expression>[
+        CodeExpression(
+          Block.of(
+            _buildProviderBody(
+              provider.moduleClass,
+              <Code>[
+                Code('${_generateAssignString(provider.providedClass)}'),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+
+    return CodeExpression(ToCodeExpression(newInstance));
+  }
+
   Expression _buildProviderFromAbstractMethod(MethodElement method) {
     _log(
         'build provider from abstract method: ${method.enclosingElement.name}.${method.name}');
@@ -654,23 +677,8 @@ class ComponentBuilder extends Builder {
 
     if (provider is AnotherComponentSource) {
       return _buildProviderFromAnotherComponent(method, provider);
-      // final Expression newInstance =
-      //     getProviderType(method, allocator).newInstance(
-      //   <Expression>[
-      //     CodeExpression(
-      //       Block.of(
-      //         _buildProviderBody(
-      //           provider.dependencyClass,
-      //           <Code>[
-      //             Code(provider.assignString),
-      //           ],
-      //         ),
-      //       ),
-      //     ),
-      //   ],
-      // );
-      //
-      // return CodeExpression(ToCodeExpression(newInstance));
+    } else if (provider is ModuleSource) {
+      return _buildProviderFromModule(method, provider);
     }
 
     check(visitor.injectedConstructors.length == 1,
@@ -788,7 +796,7 @@ class ComponentBuilder extends Builder {
       final ProviderSource? provider = graph.findProvider(element, null);
 
       if (provider is ModuleSource) {
-        return Code('${_generateAssignString(provider.providedClass, graph)}');
+        return Code('${_generateAssignString(provider.providedClass)}');
       }
     }
 
@@ -902,7 +910,7 @@ class ComponentBuilder extends Builder {
         parameters.map((ParameterElement parameter) {
       final String? name = getNamedAnnotation(parameter)?.name;
       final CodeExpression codeExpression = CodeExpression(Block.of(<Code>[
-        Code(_generateAssignString(parameter.type.element!, graph, name)),
+        Code(_generateAssignString(parameter.type.element!, name)),
       ]));
       return MapEntry<String, Expression>(parameter.name, codeExpression);
     });

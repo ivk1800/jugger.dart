@@ -5,17 +5,21 @@ import 'package:test/test.dart';
 void main() {
   group('bind', () {
     test('bind from another module', () async {
-      _checkGenerateCode('bind/bind_from_another_module');
+      await _checkGenerateCode('bind/bind_from_another_module');
+    });
+
+    test('bind from module', () async {
+      await _checkGenerateCode('bind/bind_from_module');
     });
   });
 
   group('non lazy', () {
     test('simple', () async {
-      _checkGenerateCode('non_lazy/non_lazy_simple');
+      await _checkGenerateCode('non_lazy/non_lazy_simple');
     });
 
     test('without non lazy', () async {
-      _checkGenerateCode('non_lazy/non_lazy_without_non_lazy');
+      await _checkGenerateCode('non_lazy/non_lazy_without_non_lazy');
     });
   });
 }

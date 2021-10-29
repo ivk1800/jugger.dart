@@ -2,7 +2,7 @@
 // ignore_for_file: prefer_const_constructors
 // ignore_for_file: always_specify_types
 // ignore_for_file: directives_ordering
-import 'package:example3/non_lazy/non_lazy_simple.dart' as _i1;
+import 'package:example/non_lazy/non_lazy_simple.dart' as _i1;
 import 'package:jugger/jugger.dart' as _i2;
 
 class JuggerAppComponent implements _i1.AppComponent {
@@ -10,9 +10,9 @@ class JuggerAppComponent implements _i1.AppComponent {
     _init();
   }
 
-  late _i2.IProvider<_i1.LazyRepository> _lazyRepositoryProvider;
-
   late _i2.IProvider<_i1.NonLazyRepository> _nonLazyRepositoryProvider;
+
+  late _i2.IProvider<_i1.LazyRepository> _lazyRepositoryProvider;
 
   @override
   _i1.NonLazyRepository getNonLazyRepository() {
@@ -30,12 +30,12 @@ class JuggerAppComponent implements _i1.AppComponent {
   }
 
   void _initProvides() {
-    _lazyRepositoryProvider = _i2.SingletonProvider<_i1.LazyRepository>(() {
-      return _i1.AppModule.provideLazyRepository();
-    });
     _nonLazyRepositoryProvider =
         _i2.SingletonProvider<_i1.NonLazyRepository>(() {
       return _i1.AppModule.provideNonLazyRepository();
+    });
+    _lazyRepositoryProvider = _i2.SingletonProvider<_i1.LazyRepository>(() {
+      return _i1.AppModule.provideLazyRepository();
     });
   }
 
