@@ -663,18 +663,30 @@ class ComponentBuilder extends Builder {
 
   Expression _buildProviderFromAbstractMethod(MethodElement method) {
     _log(
-        'build provider from abstract method: ${method.enclosingElement.name}.${method.name}');
+        'build provider from abstract method: ${method.enclosingElement.name}.${method.name} [${method.library.identifier}]');
 
     check(method.parameters.length == 1,
         'method annotates [Bind] must have 1 parameter');
 
-    final Element parameter = method.parameters[0].type.element!;
+    final Element rawParameter = method.parameters[0].type.element!;
+    final ClassElement parameter;
+    if (rawParameter is ClassElement) {
+      parameter = rawParameter;
+    } else {
+      throw StateError('parameter must be class [${rawParameter.name}]');
+    }
 
     final InjectedConstructorsVisitor visitor = InjectedConstructorsVisitor();
     parameter.visitChildren(visitor);
 
     final ProviderSource? provider = currentGraph.findProvider(parameter, null);
 
+    final bool isSupertype = parameter.allSupertypes.any(
+        (InterfaceType interfaceType) =>
+            interfaceType.element.name ==
+            method.returnType.getDisplayString(withNullability: false));
+
+    check(isSupertype, '${method.name} bind wrong type ${method.returnType}');
     if (provider is AnotherComponentSource) {
       return _buildProviderFromAnotherComponent(method, provider);
     } else if (provider is ModuleSource) {
