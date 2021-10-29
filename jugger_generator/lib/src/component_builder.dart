@@ -44,8 +44,19 @@ class ComponentBuilder extends Builder {
 
   late Graph currentGraph;
   late Allocator currentAllocator;
+  final List<String> _logs = <String>[];
 
   Future<String> buildOutput(BuildStep buildStep) async {
+    try {
+      return await _buildOutput(buildStep);
+    } catch (e) {
+      final String message = '${_logs.join('\n')}\n$e';
+      print('\x1B[94m$message\x1B[0m');
+      rethrow;
+    }
+  }
+
+  Future<String> _buildOutput(BuildStep buildStep) async {
     final Resolver resolver = buildStep.resolver;
 
     if (await resolver.isLibrary(buildStep.inputId)) {
@@ -77,6 +88,7 @@ class ComponentBuilder extends Builder {
 
         final Graph graph = Graph.fromComponent(component, componentBuilder);
         currentGraph = graph;
+        _logs.clear();
 
         final List<j.ModuleAnnotation> modules = component.modules;
 
@@ -84,7 +96,8 @@ class ComponentBuilder extends Builder {
           classBuilder.fields.addAll(
               _buildProvidesFields(graph.dependencies, graph, allocator));
           classBuilder.fields.addAll(_buildConstructorFields(componentBuilder));
-
+          _log(
+              'build for component: ${component.element} [${component.element.library.identifier}]');
           classBuilder.methods.addAll(_buildProvideMethods(graph));
 
           classBuilder.methods.add(_buildInitMethod());
@@ -363,7 +376,7 @@ class ComponentBuilder extends Builder {
     final List<Method> newProperties = <Method>[];
 
     for (MethodElement method in methods) {
-      print(
+      _log(
           'build provide method for: ${method.enclosingElement.name}.${method.name}');
       final Method m = Method((MethodBuilder b) {
         b.annotations.add(const CodeExpression(Code('override')));
@@ -423,7 +436,7 @@ class ComponentBuilder extends Builder {
 
       builder.body = Block((BlockBuilder b) {
         for (j.InjectedMember member in visitor.members.toSet()) {
-          print('build provide method for member: ${member.element}');
+          _log('build provide method for member: ${member.element}');
           final String? name = getNamedAnnotation(member.element)?.name;
           b.addExpression(CodeExpression(Block.of(<Code>[
             Code('${parameterElement.name}.${member.element.name}'),
@@ -490,7 +503,7 @@ class ComponentBuilder extends Builder {
     // ignore: unnecessary_parenthesis
     builder.body = Block(((BlockBuilder b) {
       for (Dependency dependency in dependencies) {
-        print(
+        _log(
             'build provider for dependency: ${dependency.enclosingElement.name}.${dependency.element.name}');
         final String? name =
             getNamedAnnotation(dependency.enclosingElement)?.name;
@@ -545,7 +558,7 @@ class ComponentBuilder extends Builder {
 
   void buildProviderFromClass(
       ClassElement element, BlockBuilder b, Graph graph, Allocator allocator) {
-    print('build provider from class: ${element.name}');
+    _log('build provider from class: ${element.name}');
 
     final InjectedConstructorsVisitor visitor = InjectedConstructorsVisitor();
     element.visitChildren(visitor);
@@ -571,7 +584,7 @@ class ComponentBuilder extends Builder {
 
   void buildProviderFromModule(
       MethodElement method, BlockBuilder b, Graph graph, Allocator allocator) {
-    print(
+    _log(
         'build provider from module: ${method.enclosingElement.name}.${method.name}');
     Expression expression;
     if (method.isStatic) {
@@ -626,7 +639,7 @@ class ComponentBuilder extends Builder {
   }
 
   Expression _buildProviderFromAbstractMethod(MethodElement method) {
-    print(
+    _log(
         'build provider from abstract method: ${method.enclosingElement.name}.${method.name}');
 
     check(method.parameters.length == 1,
@@ -727,7 +740,7 @@ class ComponentBuilder extends Builder {
 
   Expression _buildProviderFromStaticMethod(
       MethodElement method, Graph graph, Allocator allocator) {
-    print(
+    _log(
         'build provider from static method: ${method.enclosingElement.name}.${method.name}');
 
     assert(method.returnType.element is ClassElement);
@@ -749,7 +762,7 @@ class ComponentBuilder extends Builder {
 
   Code _buildCallMethodOrConstructor(
       Element element, List<ParameterElement> parameters, Graph graph) {
-    print('build CallMethodOrConstructor for: ${element.name}');
+    _log('build CallMethodOrConstructor for: ${element.name}');
     if (!(element is ClassElement) && !(element is MethodElement)) {
       throw StateError(
         'element${element.name} must be ClassElement or MethodElement',
@@ -879,7 +892,7 @@ class ComponentBuilder extends Builder {
 
   Map<String, Expression> _buildArgumentsExpression(
       Element forElement, List<ParameterElement> parameters, Graph graph) {
-    print('build arguments for ${forElement.name}: $parameters');
+    _log('build arguments for ${forElement.name}: $parameters');
 
     if (parameters.isEmpty) {
       return HashMap<String, Expression>();
@@ -899,4 +912,6 @@ class ComponentBuilder extends Builder {
   bool _isTestAsset(AssetId inputId) {
     return inputId.pathSegments.first == 'test';
   }
+
+  void _log(String value) => _logs.add(value);
 }
