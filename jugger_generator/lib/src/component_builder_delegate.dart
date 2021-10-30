@@ -12,36 +12,12 @@ import 'package:dart_style/dart_style.dart';
 import 'package:jugger_generator/src/utils.dart';
 
 import 'classes.dart' as j;
-import 'graph.dart';
+import 'component_context.dart';
 import 'visitors.dart';
 
-class ComponentBuilder extends Builder {
-  ComponentBuilder();
-
-  @override
-  Future<void> build(BuildStep buildStep) async {
-    final String outputContents = await buildOutput(buildStep);
-    if (outputContents.trim().isEmpty || _isTestAsset(buildStep.inputId)) {
-      return Future<void>.value(null);
-    }
-    final AssetId outputFile =
-        buildStep.inputId.changeExtension('.$outputExtension');
-
-    buildStep.writeAsString(outputFile, outputContents);
-
-    return Future<void>.value(null);
-  }
-
-  @override
-  Map<String, List<String>> get buildExtensions => <String, List<String>>{
-        '.$inputExtension': <String>['.$outputExtension']
-      };
-
-  String get inputExtension => 'dart';
-
-  String get outputExtension => 'jugger.dart';
-
-  late Graph currentGraph;
+class ComponentBuilderDelegate {
+  late ComponentContext _componentContext;
+  late Allocator _allocator;
   final List<String> _logs = <String>[];
 
   Future<String> buildOutput(BuildStep buildStep) async {
@@ -58,7 +34,7 @@ class ComponentBuilder extends Builder {
     final Resolver resolver = buildStep.resolver;
 
     if (await resolver.isLibrary(buildStep.inputId)) {
-      final Allocator allocator = Allocator.simplePrefixing();
+      _allocator = Allocator.simplePrefixing();
 
       final LibraryElement lib = await buildStep.inputLibrary;
 
@@ -83,31 +59,45 @@ class ComponentBuilder extends Builder {
           return b.componentClass.name == component.element.name;
         });
 
-        final Graph graph = Graph.fromComponent(component, componentBuilder);
-        currentGraph = graph;
+        _componentContext = ComponentContext.fromComponent(
+          component: component,
+          componentBuilder: componentBuilder,
+        );
         _logs.clear();
 
         final List<j.ModuleAnnotation> modules = component.modules;
 
         target.body.add(Class((ClassBuilder classBuilder) {
           classBuilder.fields.addAll(
-              _buildProvidesFields(graph.dependencies, graph, allocator));
+            _buildProvidesFields(
+              _componentContext.dependencies,
+              _componentContext,
+              _allocator,
+            ),
+          );
           classBuilder.fields.addAll(_buildConstructorFields(componentBuilder));
           _log(
               'build for component: ${component.element} [${component.element.library.identifier}]');
-          classBuilder.methods.addAll(_buildProvideMethods(graph));
+          classBuilder.methods.addAll(_buildProvideMethods(_componentContext));
 
           classBuilder.methods.add(_buildInitMethod());
 
-          classBuilder.methods.add(_buildInitProvidesMethod(
-              graph.dependencies, modules, graph, allocator));
+          classBuilder.methods.add(
+            _buildInitProvidesMethod(
+              _componentContext.dependencies,
+              modules,
+              _componentContext,
+              _allocator,
+            ),
+          );
 
           if (hasNonLazyProviders()) {
-            classBuilder.methods.add(_buildInitNonLazyMethod(graph));
+            classBuilder.methods
+                .add(_buildInitNonLazyMethod(_componentContext));
           }
 
           classBuilder.methods.addAll(_buildMembersInjectorMethods(
-              component.methods, classBuilder, graph));
+              component.methods, classBuilder, _componentContext));
 
           classBuilder.implements
               .add(Reference(component.element.name, createElementPath(lib)));
@@ -131,7 +121,7 @@ class ComponentBuilder extends Builder {
       }
 
       final String string =
-          target.build().accept(DartEmitter(allocator: allocator)).toString();
+          target.build().accept(DartEmitter(allocator: _allocator)).toString();
 
       final String finalString = string.isEmpty
           ? ''
@@ -148,9 +138,9 @@ class ComponentBuilder extends Builder {
   }
 
   bool _isMustDisposedCurrentComponent() =>
-      currentGraph.dependencies.any((Dependency dependency) {
+      _componentContext.dependencies.any((Dependency dependency) {
         final ProviderSource? provider =
-            currentGraph.findProvider(dependency.element);
+            _componentContext.findProvider(dependency.element);
 
         if ((provider != null && provider is ModuleSource ||
                 provider is BuildInstanceSource) ||
@@ -265,12 +255,15 @@ class ComponentBuilder extends Builder {
   }
 
   List<Field> _buildProvidesFields(
-      List<Dependency> dependencies, Graph graph, Allocator allocator) {
+    List<Dependency> dependencies,
+    ComponentContext _componentContext,
+    Allocator allocator,
+  ) {
     final List<Field> fields = <Field>[];
 
     for (Dependency dependency in dependencies) {
       final ProviderSource? provider =
-          graph.findProvider(dependency.element, dependency.named);
+          _componentContext.findProvider(dependency.element, dependency.named);
 
       if (_isBindDependency(dependency)) {
         continue;
@@ -368,8 +361,9 @@ class ComponentBuilder extends Builder {
     return false;
   }
 
-  List<Method> _buildProvideMethods(Graph graph) {
-    final List<MethodElement> methods = graph.component.provideMethod;
+  List<Method> _buildProvideMethods(ComponentContext _componentContext) {
+    final List<MethodElement> methods =
+        _componentContext.component.provideMethod;
     final List<Method> newProperties = <Method>[];
 
     for (MethodElement method in methods) {
@@ -383,7 +377,7 @@ class ComponentBuilder extends Builder {
 
         final String? name = getNamedAnnotation(method)?.name;
         final ProviderSource? providerSource =
-            graph.findProvider(method.returnType.element!, name);
+            _componentContext.findProvider(method.returnType.element!, name);
 
         check(providerSource != null,
             '${method.returnType.element!.name} not provided');
@@ -411,8 +405,11 @@ class ComponentBuilder extends Builder {
     });
   }
 
-  List<Method> _buildMembersInjectorMethods(List<j.MemberInjectorMethod> fields,
-      ClassBuilder classBuilder, Graph graph) {
+  List<Method> _buildMembersInjectorMethods(
+    List<j.MemberInjectorMethod> fields,
+    ClassBuilder classBuilder,
+    ComponentContext _componentContext,
+  ) {
     return fields.map((j.MemberInjectorMethod method) {
       final MethodBuilder builder = MethodBuilder();
       builder.name = method.element.name;
@@ -457,7 +454,8 @@ class ComponentBuilder extends Builder {
       throw StateError('element[$element] is not ClassElement');
     }
 
-    final ProviderSource? provider = currentGraph.findProvider(element, name);
+    final ProviderSource? provider =
+        _componentContext.findProvider(element, name);
 
     if (provider is BuildInstanceSource) {
       return provider.assignString;
@@ -472,7 +470,7 @@ class ComponentBuilder extends Builder {
 
     if (visitor.injectedConstructors.isEmpty) {
       final j.Method? provideMethod =
-          currentGraph.findProvideMethod(element.thisType, name);
+          _componentContext.findProvideMethod(element.thisType, name);
       check(provideMethod != null,
           'provider for (${element.thisType.name}, name: $name) not found');
     }
@@ -492,8 +490,12 @@ class ComponentBuilder extends Builder {
     return '${uncapitalize(element.thisType.name!)}';
   }
 
-  Method _buildInitProvidesMethod(List<Dependency> dependencies,
-      List<j.ModuleAnnotation> modules, Graph graph, Allocator allocator) {
+  Method _buildInitProvidesMethod(
+    List<Dependency> dependencies,
+    List<j.ModuleAnnotation> modules,
+    ComponentContext _componentContext,
+    Allocator allocator,
+  ) {
     final MethodBuilder builder = MethodBuilder();
     builder.name = '_initProvides';
     builder.returns = const Reference('void');
@@ -506,10 +508,11 @@ class ComponentBuilder extends Builder {
         final String? name =
             getNamedAnnotation(dependency.enclosingElement)?.name;
         final ProviderSource? provider =
-            graph.findProvider(dependency.element, name);
+            _componentContext.findProvider(dependency.element, name);
 
         if (provider is ModuleSource) {
-          buildProviderFromModule(provider.method.element, b, graph, allocator);
+          buildProviderFromModule(
+              provider.method.element, b, _componentContext, allocator);
         } else if (provider is BuildInstanceSource) {
           print('${provider.providedClass} is BuildInstanceSource');
         } else if (provider is AnotherComponentSource) {
@@ -523,19 +526,21 @@ class ComponentBuilder extends Builder {
           if (_isBindDependency(dependency)) {
             continue;
           }
-          buildProviderFromClass(dependency.element, b, graph, allocator);
+          buildProviderFromClass(
+              dependency.element, b, _componentContext, allocator);
         }
       }
     }));
     return builder.build();
   }
 
-  Method _buildInitNonLazyMethod(Graph graph) {
+  Method _buildInitNonLazyMethod(ComponentContext _componentContext) {
     final MethodBuilder builder = MethodBuilder();
     builder.name = '_initNonLazy';
     builder.returns = const Reference('void');
     builder.body = Block((BlockBuilder builder) {
-      final Iterable<ProviderSource> nonLazyProviders = graph.providerSources
+      final Iterable<ProviderSource> nonLazyProviders = _componentContext
+          .providerSources
           .whereType<ModuleSource>()
           .where((ProviderSource source) => source.annotations.any(
               (j.Annotation annotation) => annotation is j.NonLazyAnnotation))
@@ -553,13 +558,17 @@ class ComponentBuilder extends Builder {
   }
 
   bool hasNonLazyProviders() {
-    return currentGraph.providerSources.any((ProviderSource source) => source
-        .annotations
-        .any((j.Annotation annotation) => annotation is j.NonLazyAnnotation));
+    return _componentContext.providerSources.any((ProviderSource source) =>
+        source.annotations.any(
+            (j.Annotation annotation) => annotation is j.NonLazyAnnotation));
   }
 
   void buildProviderFromClass(
-      ClassElement element, BlockBuilder b, Graph graph, Allocator allocator) {
+    ClassElement element,
+    BlockBuilder b,
+    ComponentContext _componentContext,
+    Allocator allocator,
+  ) {
     _log('build provider from class: ${element.name}');
 
     final InjectedConstructorsVisitor visitor = InjectedConstructorsVisitor();
@@ -575,8 +584,9 @@ class ComponentBuilder extends Builder {
     final Expression newInstance =
         getProviderType(injectedConstructor.element, allocator)
             .newInstance(<Expression>[
-      CodeExpression(Block.of(_buildProviderBody(element,
-          <Code>[_buildCallMethodOrConstructor(element, parameters, graph)])))
+      CodeExpression(Block.of(_buildProviderBody(element, <Code>[
+        _buildCallMethodOrConstructor(element, parameters, _componentContext)
+      ])))
     ]);
 
     b.addExpression(CodeExpression(Block.of(<Code>[
@@ -586,14 +596,19 @@ class ComponentBuilder extends Builder {
   }
 
   void buildProviderFromModule(
-      MethodElement method, BlockBuilder b, Graph graph, Allocator allocator) {
+    MethodElement method,
+    BlockBuilder b,
+    ComponentContext _componentContext,
+    Allocator allocator,
+  ) {
     _log(
         'build provider from module: ${method.enclosingElement.name}.${method.name}');
     Expression expression;
     if (method.isStatic) {
-      expression = _buildProviderFromStaticMethod(method, graph, allocator);
+      expression =
+          _buildProviderFromStaticMethod(method, _componentContext, allocator);
     } else if (method.isAbstract) {
-      expression = _buildProviderFromAbstractMethod(method, allocator);
+      expression = _buildProviderFromAbstractMethod(method);
     } else {
       throw StateError(
         'provided method must be abstract or static [${method.enclosingElement.name}.${method.name}]',
@@ -620,11 +635,10 @@ class ComponentBuilder extends Builder {
   ///
   Expression _buildProviderFromAnotherComponent(
     MethodElement method,
-    Allocator allocator,
     AnotherComponentSource provider,
   ) {
     final Expression newInstance =
-        getProviderType(method, allocator).newInstance(
+        getProviderType(method, _allocator).newInstance(
       <Expression>[
         CodeExpression(
           Block.of(
@@ -644,11 +658,10 @@ class ComponentBuilder extends Builder {
 
   Expression _buildProviderFromModule(
     MethodElement method,
-    Allocator allocator,
     ModuleSource provider,
   ) {
     final Expression newInstance =
-        getProviderType(method, allocator).newInstance(
+        getProviderType(method, _allocator).newInstance(
       <Expression>[
         CodeExpression(
           Block.of(
@@ -666,10 +679,7 @@ class ComponentBuilder extends Builder {
     return CodeExpression(ToCodeExpression(newInstance));
   }
 
-  Expression _buildProviderFromAbstractMethod(
-    MethodElement method,
-    Allocator allocator,
-  ) {
+  Expression _buildProviderFromAbstractMethod(MethodElement method) {
     _log(
         'build provider from abstract method: ${method.enclosingElement.name}.${method.name} [${method.library.identifier}]');
 
@@ -687,7 +697,8 @@ class ComponentBuilder extends Builder {
     final InjectedConstructorsVisitor visitor = InjectedConstructorsVisitor();
     parameter.visitChildren(visitor);
 
-    final ProviderSource? provider = currentGraph.findProvider(parameter, null);
+    final ProviderSource? provider =
+        _componentContext.findProvider(parameter, null);
 
     final bool isSupertype = parameter.allSupertypes.any(
         (InterfaceType interfaceType) =>
@@ -696,9 +707,9 @@ class ComponentBuilder extends Builder {
 
     check(isSupertype, '${method.name} bind wrong type ${method.returnType}');
     if (provider is AnotherComponentSource) {
-      return _buildProviderFromAnotherComponent(method, allocator, provider);
+      return _buildProviderFromAnotherComponent(method, provider);
     } else if (provider is ModuleSource) {
-      return _buildProviderFromModule(method, allocator, provider);
+      return _buildProviderFromModule(method, provider);
     }
 
     check(visitor.injectedConstructors.length == 1,
@@ -724,13 +735,14 @@ class ComponentBuilder extends Builder {
     }
 
     final Expression newInstance =
-        getProviderType(method, allocator).newInstance(<Expression>[
+        getProviderType(method, _allocator).newInstance(<Expression>[
       CodeExpression(
         Block.of(
           _buildProviderBody(
             returnClass,
             <Code>[
-              _buildCallMethodOrConstructor(parameter, parameters, currentGraph)
+              _buildCallMethodOrConstructor(
+                  parameter, parameters, _componentContext)
             ],
           ),
         ),
@@ -767,7 +779,10 @@ class ComponentBuilder extends Builder {
   }
 
   Expression _buildProviderFromStaticMethod(
-      MethodElement method, Graph graph, Allocator allocator) {
+    MethodElement method,
+    ComponentContext _componentContext,
+    Allocator allocator,
+  ) {
     _log(
         'build provider from static method: ${method.enclosingElement.name}.${method.name}');
 
@@ -781,7 +796,8 @@ class ComponentBuilder extends Builder {
         ToCodeExpression(
             refer(moduleClass.name!, createElementPath(moduleClass))),
         const Code('.'),
-        _buildCallMethodOrConstructor(method, method.parameters, graph)
+        _buildCallMethodOrConstructor(
+            method, method.parameters, _componentContext)
       ])))
     ]);
 
@@ -789,7 +805,10 @@ class ComponentBuilder extends Builder {
   }
 
   Code _buildCallMethodOrConstructor(
-      Element element, List<ParameterElement> parameters, Graph graph) {
+    Element element,
+    List<ParameterElement> parameters,
+    ComponentContext _componentContext,
+  ) {
     _log('build CallMethodOrConstructor for: ${element.name}');
     if (!(element is ClassElement) && !(element is MethodElement)) {
       throw StateError(
@@ -813,7 +832,8 @@ class ComponentBuilder extends Builder {
     ///   @bind
     ///   IChatUpdatesProvider bindChatUpdatesProvider(UpdatesProvider impl);
     if (element is ClassElement) {
-      final ProviderSource? provider = graph.findProvider(element, null);
+      final ProviderSource? provider =
+          _componentContext.findProvider(element, null);
 
       if (provider is ModuleSource) {
         return Code('${_generateAssignString(provider.providedClass)}');
@@ -838,14 +858,14 @@ class ComponentBuilder extends Builder {
 
     if (isPositional) {
       return ToCodeExpression(r(element.name!).newInstance(
-          _buildArgumentsExpression(element, parameters, graph)
+          _buildArgumentsExpression(element, parameters, _componentContext)
               .values
               .toList()));
     }
 
     if (isNamed) {
       return ToCodeExpression(r(element.name!).newInstance(<Expression>[],
-          _buildArgumentsExpression(element, parameters, graph)));
+          _buildArgumentsExpression(element, parameters, _componentContext)));
     }
 
     throw StateError(
@@ -919,7 +939,10 @@ class ComponentBuilder extends Builder {
   }
 
   Map<String, Expression> _buildArgumentsExpression(
-      Element forElement, List<ParameterElement> parameters, Graph graph) {
+    Element forElement,
+    List<ParameterElement> parameters,
+    ComponentContext _componentContext,
+  ) {
     _log('build arguments for ${forElement.name}: $parameters');
 
     if (parameters.isEmpty) {
@@ -935,10 +958,6 @@ class ComponentBuilder extends Builder {
       return MapEntry<String, Expression>(parameter.name, codeExpression);
     });
     return Map<String, Expression>.fromEntries(map);
-  }
-
-  bool _isTestAsset(AssetId inputId) {
-    return inputId.pathSegments.first == 'test';
   }
 
   void _log(String value) => _logs.add(value);

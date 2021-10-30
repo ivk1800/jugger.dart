@@ -9,10 +9,16 @@ import 'package:jugger_generator/src/utils.dart';
 import 'package:jugger_generator/src/visitors.dart';
 import 'package:quiver/core.dart';
 
-class Graph {
-  Graph(this.component, this.componentBuilder);
+class ComponentContext {
+  ComponentContext({
+    required this.component,
+    required this.componentBuilder,
+  });
 
-  Graph.fromComponent(this.component, this.componentBuilder) {
+  ComponentContext.fromComponent({
+    required this.component,
+    required this.componentBuilder,
+  }) {
     for (j.DependencyAnnotation dep in component.dependencies) {
       final ProvideMethodVisitor v = ProvideMethodVisitor();
       dep.element.visitChildren(v);
