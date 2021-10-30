@@ -26,7 +26,4 @@ class JuggerAppComponent implements _i1.AppComponent {
       return _i1.AppModule.provideLazyRepository();
     });
   }
-
-  @override
-  void dispose() {}
 }

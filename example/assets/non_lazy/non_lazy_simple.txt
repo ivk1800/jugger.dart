@@ -42,7 +42,4 @@ class JuggerAppComponent implements _i1.AppComponent {
   void _initNonLazy() {
     _nonLazyRepositoryProvider.get();
   }
-
-  @override
-  void dispose() {}
 }

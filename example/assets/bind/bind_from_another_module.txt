@@ -42,9 +42,6 @@ class JuggerAppComponent implements _i1.AppComponent {
       return _i1.AppModule.provideMainRouter();
     });
   }
-
-  @override
-  void dispose() {}
 }
 
 class JuggerMyScreenComponent implements _i1.MyScreenComponent {
@@ -65,7 +62,4 @@ class JuggerMyScreenComponent implements _i1.MyScreenComponent {
       return _appComponent.getFoldersRouter();
     });
   }
-
-  @override
-  void dispose() {}
 }

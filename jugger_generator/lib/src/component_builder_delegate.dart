@@ -101,7 +101,7 @@ class ComponentBuilderDelegate {
 
           classBuilder.implements
               .add(Reference(component.element.name, createElementPath(lib)));
-
+/*
           if (_isMustDisposedCurrentComponent()) {
             classBuilder.mixins.add(const Reference(
                 'DisposableBagMixin', 'package:jugger/jugger.dart'));
@@ -113,6 +113,7 @@ class ComponentBuilderDelegate {
               b.body = const Code('');
             }));
           }
+*/
 
           classBuilder.constructors.add(_buildConstructor(componentBuilder));
 
@@ -137,6 +138,7 @@ class ComponentBuilderDelegate {
     return '';
   }
 
+/*
   bool _isMustDisposedCurrentComponent() =>
       _componentContext.dependencies.any((Dependency dependency) {
         final ProviderSource? provider =
@@ -149,6 +151,7 @@ class ComponentBuilderDelegate {
         }
         return false;
       });
+*/
 
   bool _isDisposable(ClassElement element) {
     return element.interfaces.any((InterfaceType element) =>
