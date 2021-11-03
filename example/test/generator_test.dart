@@ -22,6 +22,20 @@ void main() {
       await _checkGenerateCode('non_lazy/non_lazy_without_non_lazy');
     });
   });
+
+  group('provide', () {
+    test('from component params', () async {
+      await _checkGenerateCode('provide/provide_from_component_params');
+    });
+
+    test('from injected constructor', () async {
+      await _checkGenerateCode('provide/provide_from_injected_constructor');
+    });
+
+    test('from module', () async {
+      await _checkGenerateCode('provide/provide_from_module');
+    });
+  });
 }
 
 Future<void> _checkGenerateCode(String fileName) async {
