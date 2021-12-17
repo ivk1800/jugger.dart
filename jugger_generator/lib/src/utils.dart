@@ -94,24 +94,24 @@ List<Annotation> getAnnotations(Element moduleClass) {
               }
               return DependencyAnnotation(element: c);
             }).toList()));
-      } else if (valueElement.name == 'Provide') {
+      } else if (valueElement.name == provide.runtimeType.toString()) {
         annotations.add(ProvideAnnotation());
-      } else if (valueElement.name == 'Inject') {
+      } else if (valueElement.name == inject.runtimeType.toString()) {
         annotations.add(InjectAnnotation());
       } else if (valueElement.name == module.runtimeType.toString()) {
         annotations.add(moduleClass.getModuleAnnotationOfModuleClass());
-      } else if (valueElement.name == 'Singleton') {
+      } else if (valueElement.name == singleton.runtimeType.toString()) {
         annotations.add(SingletonAnnotation());
-      } else if (valueElement.name == 'Bind') {
+      } else if (valueElement.name == bind.runtimeType.toString()) {
         annotations.add(BindAnnotation());
       } else if (valueElement.name == 'Disposable') {
         annotations.add(DisposableAnnotation());
-      } else if (valueElement.name == 'ComponentBuilder') {
+      } else if (valueElement.name == componentBuilder.runtimeType.toString()) {
         if (!(valueElement is ClassElement)) {
           throw StateError('element[$valueElement] is not ClassElement');
         }
         annotations.add(ComponentBuilderAnnotation(valueElement));
-      } else if (valueElement.name == 'Named') {
+      } else if (valueElement.name == (Named).runtimeType.toString()) {
         if (!(valueElement is ClassElement)) {
           throw StateError('element[$valueElement] is not ClassElement');
         }
@@ -121,7 +121,7 @@ List<Annotation> getAnnotations(Element moduleClass) {
                 .computeConstantValue()!
                 .getField('name')!
                 .toStringValue()!));
-      } else if (valueElement.name == 'NonLazy') {
+      } else if (valueElement.name == nonLazy.runtimeType.toString()) {
         annotations.add(NonLazyAnnotation());
       }
     }
