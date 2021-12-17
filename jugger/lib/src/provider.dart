@@ -1,5 +1,3 @@
-import '../jugger.dart';
-
 abstract class IProvider<T> {
   T get();
 }
@@ -28,20 +26,5 @@ class SingletonProvider<T> implements IProvider<T> {
   T get() {
     value ??= _builder();
     return value!;
-  }
-}
-
-class DisposableProvider<T> implements IProvider<T> {
-  DisposableProvider(this._disposableBag, this._sourceProvider);
-
-  final IProvider<T> _sourceProvider;
-  final IDisposableBag _disposableBag;
-
-  @override
-  T get() {
-    final T value = _sourceProvider.get();
-    // ignore: avoid_as
-    _disposableBag.registerDisposable(value as IDisposable);
-    return value;
   }
 }

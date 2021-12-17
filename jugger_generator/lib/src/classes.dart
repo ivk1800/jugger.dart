@@ -117,8 +117,6 @@ class BindAnnotation implements Annotation {}
 
 class NonLazyAnnotation implements Annotation {}
 
-class DisposableAnnotation implements Annotation {}
-
 class ComponentBuilderAnnotation implements Annotation {
   const ComponentBuilderAnnotation(this.element);
 

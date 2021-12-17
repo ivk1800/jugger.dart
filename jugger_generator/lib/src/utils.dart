@@ -30,12 +30,6 @@ NonLazyAnnotation? getNonLazyAnnotation(Element element) {
   return annotation is NonLazyAnnotation ? annotation : null;
 }
 
-DisposableAnnotation? getDisposableAnnotation(Element element) {
-  final Annotation? annotation = getAnnotations(element)
-      .firstWhereOrNull((Annotation a) => a is DisposableAnnotation);
-  return annotation is DisposableAnnotation ? annotation : null;
-}
-
 ProvideAnnotation? getProvideAnnotation(Element element) {
   final Annotation? annotation = getAnnotations(element)
       .firstWhereOrNull((Annotation a) => a is ProvideAnnotation);
@@ -104,8 +98,6 @@ List<Annotation> getAnnotations(Element moduleClass) {
         annotations.add(SingletonAnnotation());
       } else if (valueElement.name == bind.runtimeType.toString()) {
         annotations.add(BindAnnotation());
-      } else if (valueElement.name == 'Disposable') {
-        annotations.add(DisposableAnnotation());
       } else if (valueElement.name == componentBuilder.runtimeType.toString()) {
         if (!(valueElement is ClassElement)) {
           throw StateError('element[$valueElement] is not ClassElement');

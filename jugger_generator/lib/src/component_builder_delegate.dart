@@ -107,19 +107,6 @@ class ComponentBuilderDelegate {
 
           classBuilder.implements
               .add(Reference(component.element.name, createElementPath(lib)));
-/*
-          if (_isMustDisposedCurrentComponent()) {
-            classBuilder.mixins.add(const Reference(
-                'DisposableBagMixin', 'package:jugger/jugger.dart'));
-          } else {
-            classBuilder.methods.add(Method((MethodBuilder b) {
-              b.annotations.add(const CodeExpression(Code('override')));
-              b.name = 'dispose';
-              b.returns = const Reference('void');
-              b.body = const Code('');
-            }));
-          }
-*/
 
           classBuilder.constructors.add(_buildConstructor(componentBuilder));
 
@@ -142,26 +129,6 @@ class ComponentBuilderDelegate {
     }
 
     return '';
-  }
-
-/*
-  bool _isMustDisposedCurrentComponent() =>
-      _componentContext.dependencies.any((Dependency dependency) {
-        final ProviderSource? provider =
-            _componentContext.findProvider(dependency.element);
-
-        if ((provider != null && provider is ModuleSource ||
-                provider is BuildInstanceSource) ||
-            provider == null) {
-          return _isDisposable(dependency.element);
-        }
-        return false;
-      });
-*/
-
-  bool _isDisposable(ClassElement element) {
-    return element.interfaces.any((InterfaceType element) =>
-        element.getDisplayString(withNullability: false) == 'IDisposable');
   }
 
   void _generateComponentBuilders(LibraryBuilder target, LibraryElement lib,
@@ -779,24 +746,12 @@ class ComponentBuilderDelegate {
 
     final ToCodeExpression primaryExpression =
         ToCodeExpression(CodeExpression(Block.of(code)));
-    if (_isDisposable(classElement)) {
-      codes.addAll(<Code>[
-        const Code('() { '),
-        const Code('final v = '),
-        primaryExpression,
-        const Code(';'),
-        const Code('registerDisposable(v);'),
-        const Code('return v;'),
-        const Code('}'),
-      ]);
-    } else {
-      codes.addAll(<Code>[
-        const Code('() { '),
-        const Code('return '),
-        primaryExpression,
-        const Code(';}'),
-      ]);
-    }
+    codes.addAll(<Code>[
+      const Code('() { '),
+      const Code('return '),
+      primaryExpression,
+      const Code(';}'),
+    ]);
     return codes;
   }
 

@@ -13,6 +13,4 @@ export 'src/annotations.dart'
         componentBuilder,
         Named;
 
-export 'src/disposable.dart';
-export 'src/provider.dart'
-    show Provider, SingletonProvider, IProvider, DisposableProvider;
+export 'src/provider.dart' show Provider, SingletonProvider, IProvider;
