@@ -180,13 +180,13 @@ class ComponentBuilderDelegate {
           return Method((MethodBuilder b) {
             b.annotations.add(const CodeExpression(Code('override')));
             b.name = m.name;
-            b.returns = Reference(
-                m.returnType.name, createElementPath(m.returnType.element!));
+            b.returns = Reference(m.returnType.getName(),
+                createElementPath(m.returnType.element!));
             b.requiredParameters.addAll(m.parameters.map((ParameterElement pe) {
               return Parameter((ParameterBuilder parameterBuilder) {
                 parameterBuilder.name = pe.name;
                 parameterBuilder.type = Reference(
-                    pe.type.name, createElementPath(pe.type.element!));
+                    pe.type.getName(), createElementPath(pe.type.element!));
               });
             }));
 
@@ -227,9 +227,9 @@ class ComponentBuilderDelegate {
                   b.addExpression(CodeExpression(value));
                 }
 
-                final Expression newInstance =
-                    refer('${_createComponentName(m.returnType.name!)}._create')
-                        .newInstance(map);
+                final Expression newInstance = refer(
+                        '${_createComponentName(m.returnType.getName())}._create')
+                    .newInstance(map);
 
                 b.addExpression(CodeExpression(Block.of(<Code>[
                   const Code('return '),
@@ -251,7 +251,7 @@ class ComponentBuilderDelegate {
         classBuilder.fields.addAll(componentBuilder.parameters
             .map((j.ComponentBuilderParameter parameter) {
           return Field((FieldBuilder b) {
-            b.type = Reference('${parameter.parameter.type.name}?',
+            b.type = Reference('${parameter.parameter.type.getName()}?',
                 createElementPath(parameter.parameter.type.element!));
             final String? name =
                 getNamedAnnotation(parameter.parameter.enclosingElement!)?.name;
@@ -323,7 +323,7 @@ class ComponentBuilderDelegate {
       return _getNameFromMethod(enclosingElement, allocator);
     }
 
-    return dependency.element.thisType.name!;
+    return dependency.element.thisType.getName();
   }
 
   /// example:
@@ -343,7 +343,7 @@ class ComponentBuilderDelegate {
       Element el, InterfaceType type, Allocator allocator) {
     final List<DartType> arguments = type.typeArguments;
     if (arguments.isNotEmpty) {
-      return '${type.name!}${_getNameFromTypeArguments(arguments, allocator)}';
+      return '${type.getName()}${_getNameFromTypeArguments(arguments, allocator)}';
     }
 
     return type.element.name;
@@ -394,7 +394,7 @@ class ComponentBuilderDelegate {
       final Method m = Method((MethodBuilder b) {
         b.annotations.add(const CodeExpression(Code('override')));
         b.name = method.name;
-        b.returns = Reference(method.returnType.name,
+        b.returns = Reference(method.returnType.getName(),
             createElementPath(method.returnType.element!));
 
         final String? name = getNamedAnnotation(method)?.name;
@@ -444,7 +444,7 @@ class ComponentBuilderDelegate {
 
       builder.requiredParameters.add(Parameter((ParameterBuilder b) {
         b.name = uncapitalize(parameterElement.name);
-        b.type = Reference(parameterElement.type.name,
+        b.type = Reference(parameterElement.type.getName(),
             createElementPath(parameterElement.type.element!));
       }));
 
@@ -494,7 +494,7 @@ class ComponentBuilderDelegate {
       final j.Method? provideMethod =
           _componentContext.findProvideMethod(element.thisType, name);
       check(provideMethod != null,
-          'provider for (${element.thisType.name}, name: $name) not found');
+          'provider for (${element.thisType.getName()}, name: $name) not found');
     }
 
     return '_${_generateName(element.thisType.element, name)}Provider.get()';
@@ -506,10 +506,10 @@ class ComponentBuilderDelegate {
     }
 
     if (name != null) {
-      return '$name${element.thisType.name}';
+      return '$name${element.thisType.getName()}';
     }
 
-    return '${uncapitalize(element.thisType.name!)}';
+    return '${uncapitalize(element.thisType.getName())}';
   }
 
   Method _buildInitProvidesMethod(
@@ -908,8 +908,8 @@ class ComponentBuilderDelegate {
   String _getGeneric(Element element, Allocator allocator) {
     if (element is ConstructorElement) {
       final ClassElement c = element.enclosingElement;
-      return allocator
-          .allocate(Reference(c.thisType.name, c.librarySource.uri.toString()));
+      return allocator.allocate(
+          Reference(c.thisType.getName(), c.librarySource.uri.toString()));
     } else if (element is MethodElement) {
       return allocator.allocate(Reference(
           _getNameFromMethod(element, allocator),
@@ -954,7 +954,7 @@ class ComponentBuilderDelegate {
             getNamedAnnotation(parameter.parameter.enclosingElement!)?.name;
         b.name = '_${_generateName(parameter.parameter.type.element!, name)}';
         b.modifier = FieldModifier.final$;
-        b.type = Reference(parameter.parameter.type.name,
+        b.type = Reference(parameter.parameter.type.getName(),
             createElementPath(parameter.parameter.type.element!));
       }));
     }).toList();

@@ -105,7 +105,7 @@ class InjectedFieldsVisitor extends RecursiveElementVisitor<dynamic> {
 
   @override
   dynamic visitMethodElement(MethodElement element) {
-    if (element.returnType.name != 'void') {
+    if (element.returnType.getName() != 'void') {
       return null;
     }
 
@@ -173,7 +173,7 @@ class ComponentBuildersVisitor extends RecursiveElementVisitor<dynamic> {
         if (methodElement.name == 'build') {
           check(methodElement.parameters.isEmpty, 'build have > 1 parameter');
         } else {
-          check(methodElement.returnType.name == element.name,
+          check(methodElement.returnType.getName() == element.name,
               '(${methodElement.name})  method return wrong type. Expected ${element.name}');
           check(methodElement.parameters.length == 1,
               '${methodElement.name} have > 1 parameter');
@@ -249,7 +249,7 @@ class ProvideMethodVisitor extends RecursiveElementVisitor<dynamic> {
 
   @override
   dynamic visitMethodElement(MethodElement element) {
-    if (element.returnType.name == 'void') {
+    if (element.returnType.getName() == 'void') {
       return null;
     }
 

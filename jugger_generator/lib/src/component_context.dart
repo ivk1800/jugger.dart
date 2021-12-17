@@ -155,7 +155,7 @@ class ComponentContext {
     }
 
     check(visitor.injectedConstructors.length == 1,
-        'too many injected constructors for ${element.type.name}');
+        'too many injected constructors for ${element.type.getName()}');
 
     final j.InjectedConstructor injectedConstructor =
         visitor.injectedConstructors[0];
@@ -197,7 +197,8 @@ class ComponentContext {
 
   j.Method? findProvideMethod(DartType type, [String? name]) {
     return component.provideMethods.firstWhereOrNull((j.Method method) =>
-        method.element.returnType.name == type.name && method.named == name);
+        method.element.returnType.getName() == type.getName() &&
+        method.named == name);
   }
 
   ProviderSource? findProvider(Element element, [String? name]) {
@@ -267,10 +268,10 @@ class _Key {
     final Element? element = type.element;
     if (element is MethodElement) {
       final MethodElement m = element;
-      return m.returnType.name!;
+      return m.returnType.getName();
     } else if (element is ParameterElement) {
       final ParameterElement p = element;
-      return p.type.name!;
+      return p.type.getName();
     }
 
     throw StateError(
@@ -290,7 +291,7 @@ class Dependency {
 
   @override
   String toString() {
-    return element.thisType.name!;
+    return element.thisType.getName();
   }
 }
 
@@ -349,14 +350,14 @@ class BuildInstanceSource extends ProviderSource {
   String get assignString {
     final j.NamedAnnotation? named = namedAnnotation;
     if (named != null) {
-      return '_${named.name}${parameter.type.name}';
+      return '_${named.name}${parameter.type.getName()}';
     }
 
-    return '_${uncapitalize(parameter.type.name!)}';
+    return '_${uncapitalize(parameter.type.getName())}';
   }
 
   @override
-  String get sourceString => '${parameter.type.name} ${parameter.name}';
+  String get sourceString => '${parameter.type.getName()} ${parameter.name}';
 }
 
 class AnotherComponentSource extends ProviderSource {
@@ -381,5 +382,6 @@ class AnotherComponentSource extends ProviderSource {
   }
 
   @override
-  String get sourceString => '${providedClass.thisType.name}.${method.name}';
+  String get sourceString =>
+      '${providedClass.thisType.getName()}.${method.name}';
 }

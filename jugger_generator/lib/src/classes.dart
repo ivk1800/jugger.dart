@@ -86,11 +86,11 @@ class ComponentBuilderParameter {
 
   @override
   String toString() {
-    return parameter.type.name!;
+    return parameter.type.getName();
   }
 
   String get fieldName {
-    return '_${uncapitalize(parameter.type.name!)}';
+    return '_${uncapitalize(parameter.type.getName())}';
   }
 }
 

@@ -1,5 +1,6 @@
 import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
 
 import 'classes.dart';
@@ -84,7 +85,7 @@ List<Annotation> getAnnotations(Element element) {
             modules: modules.map((ClassElement c) {
               if (!c.isAbstract) {
                 throw StateError(
-                  'module must be abstract [${c.thisType.name}]',
+                  'module must be abstract [${c.thisType.getName()}]',
                 );
               }
               return ModuleAnnotation(c);
@@ -92,7 +93,7 @@ List<Annotation> getAnnotations(Element element) {
             dependencies: dependencies.map((ClassElement c) {
               if (!c.isAbstract) {
                 throw StateError(
-                  'dependency must be abstract [${c.thisType.name}]',
+                  'dependency must be abstract [${c.thisType.getName()}]',
                 );
               }
               return DependencyAnnotation(element: c);
@@ -153,5 +154,11 @@ bool isFlutterCore(Element element) {
 void check(bool condition, String message) {
   if (!condition) {
     throw StateError(message);
+  }
+}
+
+extension DartTypeExt on DartType {
+  String getName() {
+    return getDisplayString(withNullability: true);
   }
 }
