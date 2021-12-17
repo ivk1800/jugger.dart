@@ -183,14 +183,14 @@ class ComponentBuildersVisitor extends RecursiveElementVisitor<dynamic> {
       final ComponentAnnotation? componentAnnotation =
           getComponentAnnotation(v.buildMethod.returnType.element!);
 
-      check(componentAnnotation != null, 'build method must retunt component');
+      check(componentAnnotation != null, 'build method must return component');
 
       for (DependencyAnnotation dep in componentAnnotation!.dependencies) {
         final bool dependencyProvided = v.methodElements
             .where((MethodElement me) => me.name != 'build')
             .any((MethodElement me) {
           check(me.parameters.length == 1,
-              'build method (${me.name}) must have 1 paramenter');
+              'build method (${me.name}) must have 1 parameter');
           return me.parameters[0].type.element == dep.element;
         });
 
@@ -219,7 +219,7 @@ class BuildMethodsVisitor extends RecursiveElementVisitor<dynamic> {
           getComponentAnnotation(element.returnType.element!);
       if (componentAnnotation == null) {
         throw StateError(
-          'build $element method must returm component type',
+          'build $element method must return component type',
         );
       }
     }
