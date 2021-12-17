@@ -30,7 +30,7 @@ class Component {
   List<Method> get provideMethods {
     return modules.map((ModuleAnnotation module) {
       final ProvidesVisitor v = ProvidesVisitor();
-      module.element.visitChildren(v);
+      module.moduleElement.visitChildren(v);
       return v.methods;
     }).expand((List<Method> l) {
       return l;
@@ -127,12 +127,13 @@ class ComponentBuilderAnnotation implements Annotation {
 
 class ModuleAnnotation implements Annotation {
   const ModuleAnnotation({
-    required this.element,
+    required this.moduleElement,
   });
 
-  final ClassElement element;
+  /// annotated module class
+  final ClassElement moduleElement;
 
-  bool get isAbstract => element.isAbstract;
+  bool get isAbstract => moduleElement.isAbstract;
 }
 
 class DependencyAnnotation implements Annotation {

@@ -48,10 +48,10 @@ NamedAnnotation? getNamedAnnotation(Element element) {
   return annotation is NamedAnnotation ? annotation : null;
 }
 
-List<Annotation> getAnnotations(Element element) {
+List<Annotation> getAnnotations(Element moduleClass) {
   final List<Annotation> annotations = <Annotation>[];
 
-  final List<ElementAnnotation> resolvedMetadata = element.metadata;
+  final List<ElementAnnotation> resolvedMetadata = moduleClass.metadata;
 
   for (int i = 0; i < resolvedMetadata.length; i++) {
     final ElementAnnotation annotation = resolvedMetadata[i];
@@ -83,13 +83,8 @@ List<Annotation> getAnnotations(Element element) {
 
         annotations.add(ComponentAnnotation(
             element: valueElement,
-            modules: modules.map((ClassElement moduleClass) {
-              if (!moduleClass.isAbstract) {
-                throw StateError(
-                  'module must be abstract [${moduleClass.thisType.getName()}]',
-                );
-              }
-              return ModuleAnnotation(element: moduleClass);
+            modules: modules.map((ClassElement moduleDep) {
+              return moduleDep.getModuleAnnotationOfModuleClass();
             }).toList(),
             dependencies: dependencies.map((ClassElement c) {
               if (!c.isAbstract) {
@@ -104,10 +99,7 @@ List<Annotation> getAnnotations(Element element) {
       } else if (valueElement.name == 'Inject') {
         annotations.add(InjectAnnotation());
       } else if (valueElement.name == module.runtimeType.toString()) {
-        if (!(valueElement is ClassElement)) {
-          throw StateError('element[$valueElement] is not ClassElement');
-        }
-        annotations.add(ModuleAnnotation(element: valueElement));
+        annotations.add(moduleClass.getModuleAnnotationOfModuleClass());
       } else if (valueElement.name == 'Singleton') {
         annotations.add(SingletonAnnotation());
       } else if (valueElement.name == 'Bind') {
@@ -177,4 +169,18 @@ extension ElementExt on Element {
   }
 
   bool hasAnnotatedAsModule() => getModuleAnnotation() != null;
+
+  ModuleAnnotation getModuleAnnotationOfModuleClass() {
+    final Element moduleClass = this;
+
+    if (!(moduleClass is ClassElement)) {
+      throw StateError('element[$moduleClass] is not ClassElement');
+    }
+    if (!moduleClass.isAbstract) {
+      throw StateError(
+        'module must be abstract [${moduleClass.thisType.getName()}] ${moduleClass.library.identifier}',
+      );
+    }
+    return ModuleAnnotation(moduleElement: moduleClass);
+  }
 }
