@@ -126,9 +126,13 @@ class ComponentBuilderAnnotation implements Annotation {
 }
 
 class ModuleAnnotation implements Annotation {
-  const ModuleAnnotation(this.element);
+  const ModuleAnnotation({
+    required this.element,
+  });
 
   final ClassElement element;
+
+  bool get isAbstract => element.isAbstract;
 }
 
 class DependencyAnnotation implements Annotation {

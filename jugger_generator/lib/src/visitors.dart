@@ -60,30 +60,36 @@ class ProvidesVisitor extends RecursiveElementVisitor<dynamic> {
 
   @override
   dynamic visitMethodElement(MethodElement element) {
+    final Element moduleElement = element.enclosingElement;
+    check(
+      moduleElement.hasAnnotatedAsModule(),
+      'class [${moduleElement.name}] ${moduleElement.library!.identifier} must be annotated as module',
+    );
+
     final List<Annotation> annotations = getAnnotations(element);
 
     if (!element.isAbstract && !element.isStatic) {
       throw StateError(
-        'provided method must be abstract or static [${element.enclosingElement.name}.${element.name}]',
+        'provided method must be abstract or static [${moduleElement.name}.${element.name}]',
       );
     }
 
     if (element.isPrivate) {
       throw StateError(
-        'provided method can not be private [${element.enclosingElement.name}.${element.name}]',
+        'provided method can not be private [${moduleElement.name}.${element.name}]',
       );
     }
 
     if (element.isStatic) {
       check(getProvideAnnotation(element) != null,
-          'provide static method [${element.enclosingElement.name}.${element.name}] must be annotated [provide]');
+          'provide static method [${moduleElement.name}.${element.name}] must be annotated [provide]');
     }
 
     if (element.isAbstract) {
       check(getBindAnnotation(element) != null,
-          'provide abstract method [${element.enclosingElement.name}.${element.name}] must be annotated [Bind]');
+          'provide abstract method [${moduleElement.name}.${element.name}] must be annotated [Bind]');
       check(element.parameters.length == 1,
-          'method [${element.enclosingElement.name}.${element.name}] annotates [Bind] must have 1 parameter');
+          'method [${moduleElement.name}.${element.name}] annotates [Bind] must have 1 parameter');
       // ignore: flutter_style_todos
       //TODO: check parameter type must be assignable to the return type
     }
@@ -91,7 +97,7 @@ class ProvidesVisitor extends RecursiveElementVisitor<dynamic> {
     if (getBindAnnotation(element) != null &&
         getProvideAnnotation(element) != null) {
       throw StateError(
-        'provide method [${element.enclosingElement.name}.${element.name}] can not be annotated together [provide] and [bind]',
+        'provide method [${moduleElement.name}.${element.name}] can not be annotated together [provide] and [bind]',
       );
     }
 

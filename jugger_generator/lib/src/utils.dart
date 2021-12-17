@@ -2,6 +2,7 @@ import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
+import 'package:jugger/jugger.dart';
 
 import 'classes.dart';
 
@@ -82,13 +83,13 @@ List<Annotation> getAnnotations(Element element) {
 
         annotations.add(ComponentAnnotation(
             element: valueElement,
-            modules: modules.map((ClassElement c) {
-              if (!c.isAbstract) {
+            modules: modules.map((ClassElement moduleClass) {
+              if (!moduleClass.isAbstract) {
                 throw StateError(
-                  'module must be abstract [${c.thisType.getName()}]',
+                  'module must be abstract [${moduleClass.thisType.getName()}]',
                 );
               }
-              return ModuleAnnotation(c);
+              return ModuleAnnotation(element: moduleClass);
             }).toList(),
             dependencies: dependencies.map((ClassElement c) {
               if (!c.isAbstract) {
@@ -102,6 +103,11 @@ List<Annotation> getAnnotations(Element element) {
         annotations.add(ProvideAnnotation());
       } else if (valueElement.name == 'Inject') {
         annotations.add(InjectAnnotation());
+      } else if (valueElement.name == module.runtimeType.toString()) {
+        if (!(valueElement is ClassElement)) {
+          throw StateError('element[$valueElement] is not ClassElement');
+        }
+        annotations.add(ModuleAnnotation(element: valueElement));
       } else if (valueElement.name == 'Singleton') {
         annotations.add(SingletonAnnotation());
       } else if (valueElement.name == 'Bind') {
@@ -161,4 +167,14 @@ extension DartTypeExt on DartType {
   String getName() {
     return getDisplayString(withNullability: true);
   }
+}
+
+extension ElementExt on Element {
+  ModuleAnnotation? getModuleAnnotation() {
+    final Annotation? annotation = getAnnotations(this)
+        .firstWhereOrNull((Annotation a) => a is ModuleAnnotation);
+    return annotation is ModuleAnnotation ? annotation : null;
+  }
+
+  bool hasAnnotatedAsModule() => getModuleAnnotation() != null;
 }
