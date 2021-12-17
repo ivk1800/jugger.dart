@@ -4,4 +4,5 @@ import 'package:build/build.dart';
 
 import 'src/jugger_builder.dart';
 
-Builder componentBuilder([dynamic _]) => JuggerBuilder();
+Builder componentBuilder(BuilderOptions options) =>
+    JuggerBuilder(options: options);

@@ -5,10 +5,23 @@ import 'dart:async';
 import 'package:build/build.dart';
 import 'package:jugger_generator/src/component_builder_delegate.dart';
 
+import 'global_config.dart';
+
 class JuggerBuilder extends Builder {
+  JuggerBuilder({required this.options});
+
+  final BuilderOptions options;
+
   @override
   Future<void> build(BuildStep buildStep) async {
-    final ComponentBuilderDelegate delegate = ComponentBuilderDelegate();
+    final GlobalConfig globalConfig = GlobalConfig(
+      ignoreInterfacePrefixInComponentName: options
+              .config['ignore_interface_prefix_in_component_name'] as bool? ??
+          false,
+    );
+    final ComponentBuilderDelegate delegate = ComponentBuilderDelegate(
+      globalConfig: globalConfig,
+    );
 
     final String outputContents = await delegate.buildOutput(buildStep);
     if (outputContents.trim().isEmpty || _isTestAsset(buildStep.inputId)) {

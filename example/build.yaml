@@ -1,0 +1,6 @@
+targets:
+  $default:
+    builders:
+      jugger_generator:
+        options:
+          ignore_interface_prefix_in_component_name: true

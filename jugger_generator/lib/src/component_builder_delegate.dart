@@ -13,9 +13,15 @@ import 'package:jugger_generator/src/utils.dart';
 
 import 'classes.dart' as j;
 import 'component_context.dart';
+import 'global_config.dart';
 import 'visitors.dart';
 
 class ComponentBuilderDelegate {
+  ComponentBuilderDelegate({
+    required this.globalConfig,
+  });
+
+  final GlobalConfig globalConfig;
   late ComponentContext _componentContext;
   late Allocator _allocator;
   final List<String> _logs = <String>[];
@@ -117,7 +123,7 @@ class ComponentBuilderDelegate {
 
           classBuilder.constructors.add(_buildConstructor(componentBuilder));
 
-          classBuilder..name = 'Jugger${component.element.name}';
+          classBuilder..name = _createComponentName(component.element.name);
         }));
       }
 
@@ -165,7 +171,7 @@ class ComponentBuilderDelegate {
 
       target.body.add(Class((ClassBuilder classBuilder) {
         classBuilder.name =
-            'Jugger${componentBuilder.componentClass.name}Builder';
+            '${_createComponentName(componentBuilder.componentClass.name)}Builder';
 
         classBuilder.implements.add(
             Reference(componentBuilder.element.name, createElementPath(lib)));
@@ -222,7 +228,7 @@ class ComponentBuilderDelegate {
                 }
 
                 final Expression newInstance =
-                    refer('Jugger${m.returnType.name}._create')
+                    refer('${_createComponentName(m.returnType.name!)}._create')
                         .newInstance(map);
 
                 b.addExpression(CodeExpression(Block.of(<Code>[
@@ -255,6 +261,19 @@ class ComponentBuilderDelegate {
         }));
       }));
     }
+  }
+
+  String _createComponentName(String name) {
+    if (globalConfig.ignoreInterfacePrefixInComponentName || name.length == 1) {
+      return 'Jugger$name';
+    }
+
+    final String nextChar = name[1];
+    if (name.startsWith('I') && nextChar == nextChar.toUpperCase()) {
+      return 'Jugger${name.substring(1, name.length)}';
+    }
+
+    return 'Jugger$name';
   }
 
   List<Field> _buildProvidesFields(
