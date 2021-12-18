@@ -1,7 +1,5 @@
 ## jugger.dart - Dependency Injection for Flutter and Dart
 
-## docs is outdated, see [diff](https://github.com/ivk1800/diff) as example of using
-
 jugger:
 
 [![pub package](https://img.shields.io/pub/v/jugger.svg?style=plastic&logo=appveyor)](https://pub.dartlang.org/packages/jugger)
@@ -21,11 +19,9 @@ In your flutter or dart project add the dependency:
 
 ```yml
 dependencies:
-  ...
   jugger: any
 
 dev_dependencies:
-  ...
   build_runner: any
   dev_dependencies: any
 ```
@@ -33,119 +29,99 @@ dev_dependencies:
 #### Usage example
 Define your component and module for the dependency provider, it is recommended to do this in a separate file:
 ```dart
+// ignore_for_file: avoid_classes_with_only_static_members
+
 import 'package:jugger/jugger.dart';
 
-import 'main.dart';
-
-@Component([MyModule])
+@Component(modules: <Type>[MyModule])
 abstract class MyComponent {
-  ///
-  /// inject default page state from new flutter project
-  /// 
-  void injectMyHomePageState(MyHomePageState target);
+  String get helloString;
+
+  String getHelloString();
 }
 
 @module
 abstract class MyModule {
+  @provide
   static String provideString() {
     return 'hello';
   }
 }
 ```
 
-Declare variable and annotate its with @inject:
-```dart
-...
-class MyHomePageState extends State<MyHomePage> {
-
-  @inject
-  String injectedString;
-...
-```
-
 Now you need to execute the command
 ```
 flutter packages pub run build_runner build
 ```
-A file with the implemented component will be generated, for example ```inject.jugger.dart```
-
-Now you need to directly inject your class:
-```dart
-...
-import 'inject.jugger.dart';
-...
-
-...
-  @override
-  void initState() {
-    JuggerMyComponent myComponent = JuggerMyComponent.create();
-    myComponent.injectMyHomePageState(this);
-    super.initState();
-  }
-...
-
+or for dart
+```
+dart run build_runner build --delete-conflicting-outputs
 ```
 
-#### Limitations:
-not allowed inject Functions, example:
+A file with the implemented component will be generated, for example ```main.jugger.dart```
+
+And use component as:
 ```dart
-typedef Click<T> = void Function(T result); 
+void main() {
+  final MyComponent myComponent = JuggerMyComponent.create();
+  print(myComponent.helloString);
+  print(myComponent.getHelloString());
+}
 ```
 
 #### SubComponents:
 example:
 ```dart
-@Component(
-    modules: <Type>[RegisterScreenModule], dependencies: <Type>[AppComponent])
-abstract class RegisterScreenComponent {
-  void inject(RegisterPageState target);
-}
+// ignore_for_file: avoid_classes_with_only_static_members
 
-@componentBuilder
-abstract class RegisterScreenComponentBuilder {
-  RegisterScreenComponentBuilder appComponent(AppComponent component);
+import 'package:jugger/jugger.dart';
 
-  RegisterScreenComponentBuilder screen(RegisterPageState screen);
-
-  RegisterScreenComponent build();
+@Component(modules: <Type>[AppModule])
+abstract class AppComponent {
+  int get appVersion;
 }
 
 @module
-abstract class RegisterScreenModule {
+abstract class AppModule {
   @provide
-  static ResultDispatcher<UserCredentials> provideResultDispatcher(
-      RegisterPageState screen) {
-    return screen;
+  static int provideAppVersion() => 1;
+}
+
+@Component(
+  dependencies: <Type>[AppComponent],
+  modules: <Type>[MyModule],
+)
+abstract class MyComponent {
+  String get myHelloString;
+}
+
+@module
+abstract class MyModule {
+  @provide
+  static String provideMyHelloString(int appVersion) {
+    return 'hello app with version: $appVersion';
   }
 }
 
-extension RegisterScreenInject on RegisterPageState {
-  void inject() {
-        JuggerRegisterScreenComponentBuilder()
-            .screen(this)
-            .appComponent(appComponent)
-            .build().inject(this);
-  }
+@componentBuilder
+abstract class MyComponentBuilder {
+  MyComponentBuilder appComponent(AppComponent component);
+
+  MyComponent build();
+}
+
+void main() {
+  final AppComponent appComponent = JuggerAppComponent.create();
+
+  final MyComponent myComponent =
+  JuggerMyComponentBuilder().appComponent(appComponent).build();
+
+  print(myComponent.myHelloString);
 }
 ```
 
-#### Annotations
-| Name | Description |
-|---|---|
-|  @Component |  TODO | 
-| @Module  |  TODO |
-|  @Singleton | TODO  |
-|  @Provide | TODO  |
-|  @Inject |  TODO |
-|  @Bind |  TODO |
-|  @ComponentBuilder |  TODO |
-|  @Named |  TODO |
-
-#### Powerful example
-In this repo you can find Best practice [example1](example/example1) of jugger with multiple dependencies and using all annotations.
-
 #### Bugs
-the library is in alpha version, if you find a bug, you can create a [issue](https://github.com/ivk1800/jugger.dart/issues/new)
+If you find a bug, you can create a [issue](https://github.com/ivk1800/jugger.dart/issues/new)
 
 #### Contributions
 Contributions are welcome!

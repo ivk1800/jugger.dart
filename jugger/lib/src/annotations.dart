@@ -1,8 +1,5 @@
-// ignore_for_file: flutter_style_todos
-
-///
-/// TODO(): write documentation
-///
+/// Annotates an abstract class for which a dependency-injected implementation
+/// is to be generated from a set of modules.
 class Component {
   const factory Component({List<Type> modules, List<Type> dependencies}) =
       Component._;
@@ -14,68 +11,41 @@ class Component {
   final List<Type> dependencies;
 }
 
-const Module module = Module._();
-
-///
-/// TODO(): write documentation
-///
+/// Annotates a class that contributes to the object graph.
 class Module {
   const Module._();
 }
 
-const Singleton singleton = Singleton._();
-
-///
-/// TODO(): write documentation
-///
+/// Identifies a type that the injector only instantiates once.
 class Singleton {
   const Singleton._();
 }
 
-const Provide provide = Provide._();
-
-///
-/// TODO(): write documentation
-///
+/// Annotates methods of a module to create a provider method binding.
 class Provide {
   const Provide._();
 }
 
-///
-/// TODO(): write documentation
-///
+/// Identifies injectable constructors, methods, and fields.
 class Inject {
   const factory Inject() = Inject._;
 
   const Inject._();
 }
 
-///
-/// TODO(): write documentation
-///
-const Inject inject = Inject();
-
-const Bind bind = Bind._();
-
-///
-/// TODO(): write documentation
-///
+/// Annotates abstract methods of a module that delegate bindings.
 class Bind {
   const Bind._();
 }
 
 const ComponentBuilder componentBuilder = ComponentBuilder._();
 
-///
-/// TODO(): write documentation
-///
+/// Annotates a class that contributes to create a component.
 class ComponentBuilder {
   const ComponentBuilder._();
 }
 
-///
-/// TODO(): write documentation
-///
+/// String-based qualifier.
 class Named {
   const factory Named(String name) = Named._;
 
@@ -84,16 +54,21 @@ class Named {
   final String name;
 }
 
-///
-/// TODO(): write documentation
-///
+/// A handle to a non lazily-computed value. Computed on create component.
 class NonLazy {
   const factory NonLazy() = NonLazy._;
 
   const NonLazy._();
 }
 
-///
-/// TODO(): write documentation
-///
-const NonLazy nonLazy = NonLazy();
+const NonLazy nonLazy = NonLazy._();
+
+const Provide provide = Provide._();
+
+const Module module = Module._();
+
+const Singleton singleton = Singleton._();
+
+const Inject inject = Inject._();
+
+const Bind bind = Bind._();
