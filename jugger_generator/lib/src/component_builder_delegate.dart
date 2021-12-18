@@ -9,6 +9,7 @@ import 'package:build/build.dart';
 import 'package:code_builder/code_builder.dart';
 import 'package:collection/collection.dart';
 import 'package:dart_style/dart_style.dart';
+import 'package:jugger/jugger.dart' as jugger;
 import 'package:jugger_generator/src/utils.dart';
 
 import 'classes.dart' as j;
@@ -698,7 +699,7 @@ class ComponentBuilderDelegate {
         'build provider from abstract method: ${method.enclosingElement.name}.${method.name} [${method.library.identifier}]');
 
     check(method.parameters.length == 1,
-        'method annotates [Bind] must have 1 parameter');
+        'method annotates [${jugger.bind.runtimeType}] must have 1 parameter');
 
     final Element rawParameter = method.parameters[0].type.element!;
     final ClassElement parameter;
