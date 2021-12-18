@@ -20,16 +20,31 @@ class ComponentContext {
     required this.componentBuilder,
   }) {
     for (j.DependencyAnnotation dep in component.dependencies) {
-      final ProvideMethodVisitor v = ProvideMethodVisitor();
-      dep.element.visitChildren(v);
+      final ProvideMethodVisitor methodVisitor = ProvideMethodVisitor();
+      dep.element.visitChildren(methodVisitor);
 
-      for (MethodElement m in v.methods) {
+      final ProvidePropertyVisitor propertyVisitor = ProvidePropertyVisitor();
+      dep.element.visitChildren(propertyVisitor);
+
+      for (MethodElement m in methodVisitor.methods) {
         providerSources.add(AnotherComponentSource(
             // ignore: avoid_as
             providedClass: m.returnType.element as ClassElement,
-            method: m,
+            element: m,
             dependencyClass: dep.element,
             annotations: getAnnotations(m)));
+      }
+
+      for (PropertyAccessorElement property in propertyVisitor.properties) {
+        providerSources.add(
+          AnotherComponentSource(
+            // ignore: avoid_as
+            providedClass: property.returnType.element as ClassElement,
+            element: property,
+            dependencyClass: dep.element,
+            annotations: getAnnotations(property),
+          ),
+        );
       }
     }
 
@@ -361,27 +376,34 @@ class BuildInstanceSource extends ProviderSource {
 }
 
 class AnotherComponentSource extends ProviderSource {
+  /// [element] method or property
   AnotherComponentSource({
     required ClassElement providedClass,
-    required this.method,
+    required this.element,
     required this.dependencyClass,
     required List<j.Annotation> annotations,
-  }) : super(providedClass, annotations);
+  })  : assert(element is MethodElement || element is PropertyAccessorElement),
+        super(providedClass, annotations);
 
   ///
   /// example: _appComponent
   ///
   final ClassElement dependencyClass;
-  final MethodElement method;
+  final Element element;
 
   ///
   /// example: _appComponent.getFoldersRouter()
+  /// or for property
+  /// example: _appComponent.foldersRouter
   ///
   String get assignString {
-    return '_${uncapitalize(dependencyClass.name)}.${method.name}()';
+    final String base =
+        '_${uncapitalize(dependencyClass.name)}.${element.name}';
+    final String postfix = '${element is MethodElement ? '()' : ''}';
+    return '$base$postfix';
   }
 
   @override
   String get sourceString =>
-      '${providedClass.thisType.getName()}.${method.name}';
+      '${providedClass.thisType.getName()}.${element.name}';
 }

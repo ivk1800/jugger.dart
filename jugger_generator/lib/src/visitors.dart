@@ -269,3 +269,21 @@ class ProvideMethodVisitor extends RecursiveElementVisitor<dynamic> {
     return null;
   }
 }
+
+class ProvidePropertyVisitor extends RecursiveElementVisitor<dynamic> {
+  List<PropertyAccessorElement> properties = <PropertyAccessorElement>[];
+
+  @override
+  dynamic visitFieldElement(FieldElement element) {
+    return null;
+  }
+
+  @override
+  dynamic visitPropertyAccessorElement(PropertyAccessorElement element) {
+    if (element.isGetter) {
+      properties.add(element);
+    }
+
+    return null;
+  }
+}

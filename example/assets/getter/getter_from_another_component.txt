@@ -1,0 +1,62 @@
+// ignore_for_file: implementation_imports
+// ignore_for_file: prefer_const_constructors
+// ignore_for_file: always_specify_types
+// ignore_for_file: directives_ordering
+import 'package:example/getter/getter_from_another_component.dart' as _i1;
+import 'package:jugger/jugger.dart' as _i2;
+
+class JuggerMyScreenComponentBuilder implements _i1.MyScreenComponentBuilder {
+  _i1.AppComponent? _appComponent;
+
+  @override
+  _i1.MyScreenComponentBuilder appComponent(_i1.AppComponent foldersComponent) {
+    _appComponent = foldersComponent;
+    return this;
+  }
+
+  @override
+  _i1.MyScreenComponent build() {
+    assert(_appComponent != null);
+    return JuggerMyScreenComponent._create(_appComponent!);
+  }
+}
+
+class JuggerAppComponent implements _i1.AppComponent {
+  JuggerAppComponent.create() {
+    _init();
+  }
+
+  late _i2.IProvider<_i1.AppConfig> _appConfigProvider;
+
+  @override
+  _i1.AppConfig get appConfig => _appConfigProvider.get();
+  void _init() {
+    _initProvides();
+  }
+
+  void _initProvides() {
+    _appConfigProvider = _i2.Provider<_i1.AppConfig>(() {
+      return _i1.AppModule.provideAppConfig();
+    });
+  }
+}
+
+class JuggerMyScreenComponent implements _i1.MyScreenComponent {
+  JuggerMyScreenComponent._create(this._appComponent) {
+    _init();
+  }
+
+  late _i2.IProvider<String> _stringProvider;
+
+  final _i1.AppComponent _appComponent;
+
+  void _init() {
+    _initProvides();
+  }
+
+  void _initProvides() {
+    _stringProvider = _i2.SingletonProvider<String>(() {
+      return _i1.MyScreenModule.provideScreenName(_appComponent.appConfig);
+    });
+  }
+}

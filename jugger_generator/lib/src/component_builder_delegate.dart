@@ -25,6 +25,8 @@ class ComponentBuilderDelegate {
   late ComponentContext _componentContext;
   late Allocator _allocator;
   final List<String> _logs = <String>[];
+  final Expression _overrideAnnotationExpression =
+      const CodeExpression(Code('override'));
 
   Future<String> buildOutput(BuildStep buildStep) async {
     try {
@@ -85,6 +87,8 @@ class ComponentBuilderDelegate {
           _log(
               'build for component: ${component.element} [${component.element.library.identifier}]');
           classBuilder.methods.addAll(_buildProvideMethods(_componentContext));
+          classBuilder.methods
+              .addAll(_buildProvideProperties(_componentContext));
 
           classBuilder.methods.add(_buildInitMethod());
 
@@ -145,7 +149,7 @@ class ComponentBuilderDelegate {
         classBuilder.methods
             .addAll(componentBuilder.methods.map((MethodElement m) {
           return Method((MethodBuilder b) {
-            b.annotations.add(const CodeExpression(Code('override')));
+            b.annotations.add(_overrideAnnotationExpression);
             b.name = m.name;
             b.returns = Reference(m.returnType.getName(),
                 createElementPath(m.returnType.element!));
@@ -350,6 +354,28 @@ class ComponentBuilderDelegate {
     return false;
   }
 
+  List<Method> _buildProvideProperties(ComponentContext _componentContext) {
+    final List<PropertyAccessorElement> properties =
+        _componentContext.component.provideProperties;
+
+    return properties.map((PropertyAccessorElement property) {
+      _log(
+          'build property for: ${property.enclosingElement.name}.${property.name}');
+      return Method((MethodBuilder builder) {
+        builder
+          ..annotations.add(_overrideAnnotationExpression)
+          ..name = property.name
+          ..lambda = true
+          ..body = Code(_generateAssignString(property.returnType.element!))
+          ..type = MethodType.getter
+          ..returns = refer(
+            property.returnType.getName(),
+            createElementPath(property.returnType.element!),
+          );
+      });
+    }).toList();
+  }
+
   List<Method> _buildProvideMethods(ComponentContext _componentContext) {
     final List<MethodElement> methods =
         _componentContext.component.provideMethod;
@@ -359,7 +385,7 @@ class ComponentBuilderDelegate {
       _log(
           'build provide method for: ${method.enclosingElement.name}.${method.name}');
       final Method m = Method((MethodBuilder b) {
-        b.annotations.add(const CodeExpression(Code('override')));
+        b.annotations.add(_overrideAnnotationExpression);
         b.name = method.name;
         b.returns = Reference(method.returnType.getName(),
             createElementPath(method.returnType.element!));
@@ -402,7 +428,7 @@ class ComponentBuilderDelegate {
     return fields.map((j.MemberInjectorMethod method) {
       final MethodBuilder builder = MethodBuilder();
       builder.name = method.element.name;
-      builder.annotations.add(const CodeExpression(Code('override')));
+      builder.annotations.add(_overrideAnnotationExpression);
       builder.returns = const Reference('void');
       check(method.element.parameters.length == 1,
           'method ${method.element.name} must have 1 parameter');

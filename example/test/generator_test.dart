@@ -36,6 +36,15 @@ void main() {
       await _checkGenerateCode('provide/provide_from_module');
     });
   });
+
+  group('component getter', () {
+    test('simple', () async {
+      await _checkGenerateCode('getter/simple_getter');
+    });
+    test('from another component', () async {
+      await _checkGenerateCode('getter/getter_from_another_component');
+    });
+  });
 }
 
 Future<void> _checkGenerateCode(String fileName) async {

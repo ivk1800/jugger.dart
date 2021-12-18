@@ -53,6 +53,14 @@ class Component {
     return v.methods
       ..sort((MethodElement a, MethodElement b) => a.name.compareTo(b.name));
   }
+
+  List<PropertyAccessorElement> get provideProperties {
+    final ProvidePropertyVisitor v = ProvidePropertyVisitor();
+    element.visitChildren(v);
+    return v.properties
+      ..sort((PropertyAccessorElement a, PropertyAccessorElement b) =>
+          a.name.compareTo(b.name));
+  }
 }
 
 class ComponentBuilder {
