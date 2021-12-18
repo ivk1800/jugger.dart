@@ -273,8 +273,7 @@ class ComponentBuilderDelegate {
               _getNameFromDependency(allocator, dependency),
               dependency.element.thisType.element.librarySource.uri
                   .toString()));
-          // TODO(Ivan): temporary
-          b.docs.add('late');
+          b.late = true;
           b.type =
               Reference('IProvider<$generic>', 'package:jugger/jugger.dart');
         }));
