@@ -45,6 +45,25 @@ void main() {
       await _checkGenerateCode('getter/getter_from_another_component');
     });
   });
+
+  group('qualifier', () {
+    test('custom qualifier', () async {
+      await _checkGenerateCode('qualifier/custom/custom_qualifier');
+    });
+    test('multiple custom qualifiers', () async {
+      await _checkGenerateCode('qualifier/custom/multiple_custom_qualifiers');
+    });
+    test('multiple named qualifiers', () async {
+      await _checkGenerateCode('qualifier/named/multiple_named_qualifiers');
+    });
+    test('named qualifier and default', () async {
+      await _checkGenerateCode('qualifier/named/named_qualifier_and_default');
+    });
+    test('named qualifier provides param', () async {
+      await _checkGenerateCode(
+          'qualifier/named/named_qualifier_provides_param');
+    });
+  });
 }
 
 Future<void> _checkGenerateCode(String fileName) async {

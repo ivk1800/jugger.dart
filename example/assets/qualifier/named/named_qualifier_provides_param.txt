@@ -1,0 +1,32 @@
+// ignore_for_file: implementation_imports
+// ignore_for_file: prefer_const_constructors
+// ignore_for_file: always_specify_types
+// ignore_for_file: directives_ordering
+import 'package:example/qualifier/named/named_qualifier_provides_param.dart'
+    as _i1;
+import 'package:jugger/jugger.dart' as _i2;
+
+class JuggerAppComponent implements _i1.AppComponent {
+  JuggerAppComponent.create() {
+    _init();
+  }
+
+  late _i2.IProvider<_i1.AppConfig> _qNameddevAppConfigProvider;
+
+  late _i2.IProvider<String> _stringProvider;
+
+  @override
+  String get appVersion => _stringProvider.get();
+  void _init() {
+    _initProvides();
+  }
+
+  void _initProvides() {
+    _stringProvider = _i2.SingletonProvider<String>(() {
+      return _i1.AppModule.provideAppVersion(_qNameddevAppConfigProvider.get());
+    });
+    _qNameddevAppConfigProvider = _i2.SingletonProvider<_i1.AppConfig>(() {
+      return _i1.AppModule.provideDevAppConfig();
+    });
+  }
+}

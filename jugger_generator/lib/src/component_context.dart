@@ -104,14 +104,13 @@ class ComponentContext {
   final List<ProviderSource> providerSources = <ProviderSource>[];
 
   List<Dependency> get dependencies => _dependencies.values.toList()
-    ..sort((Dependency a, Dependency b) =>
-        a.element.name.compareTo(b.element.name));
+    ..sort((Dependency a, Dependency b) => a.compareTo(b));
 
   List<ClassElement> get dependenciesClasses =>
       _dependencies.values.map((Dependency d) => d.element).toList();
 
   Dependency _registerDependency(Element element) {
-    final String? named = getNamedAnnotation(element)?.name;
+    final String? named = getQualifierAnnotation(element)?.tag;
 
     final _Key key = _Key.of(element, named);
 
@@ -143,7 +142,7 @@ class ComponentContext {
       throw StateError('element[$element] is not VariableElement');
     }
 
-    final String? named = getNamedAnnotation(element)?.name;
+    final String? named = getQualifierAnnotation(element)?.tag;
 
     final _Key key = _Key.of(element, named);
 
@@ -216,12 +215,12 @@ class ComponentContext {
         method.named == name);
   }
 
-  ProviderSource? findProvider(Element element, [String? name]) {
+  ProviderSource? findProvider(Element element, [String? tag]) {
     if (!(element is ClassElement)) {
       throw StateError('element[$element] is not ClassElement');
     }
     return providerSources.firstWhereOrNull((ProviderSource source) {
-      return source.providedClass == element && source.named == name;
+      return source.providedClass == element && source.tag == tag;
     });
   }
 
@@ -295,9 +294,13 @@ class _Key {
   }
 }
 
-class Dependency {
+class Dependency implements Comparable<Dependency> {
   const Dependency(
-      this.named, this.element, this.dependencies, this.enclosingElement);
+    this.named,
+    this.element,
+    this.dependencies,
+    this.enclosingElement,
+  );
 
   final ClassElement element;
   final Element enclosingElement;
@@ -308,6 +311,12 @@ class Dependency {
   String toString() {
     return element.thisType.getName();
   }
+
+  @override
+  int compareTo(Dependency other) {
+    return '${named ?? ''}_${element.name}'
+        .compareTo('${other.named ?? ''}_${other.element.name}');
+  }
 }
 
 abstract class ProviderSource {
@@ -315,22 +324,22 @@ abstract class ProviderSource {
 
   final ClassElement providedClass;
 
-  dynamic get key {
-    final j.NamedAnnotation? named = namedAnnotation;
-    if (named != null) {
-      return '${named.name}_${createElementPath(providedClass)}/${providedClass.name}';
+  Object get key {
+    final j.QualifierAnnotation? qualifier = qualifierAnnotation;
+    if (qualifier != null) {
+      return '${qualifier.tag}_${createElementPath(providedClass)}/${providedClass.name}';
     }
 
     return providedClass;
   }
 
-  j.NamedAnnotation? get namedAnnotation {
+  j.QualifierAnnotation? get qualifierAnnotation {
     final Annotation? annotation = annotations
-        .firstWhereOrNull((j.Annotation a) => a is j.NamedAnnotation);
-    return annotation is NamedAnnotation ? annotation : null;
+        .firstWhereOrNull((j.Annotation a) => a is j.QualifierAnnotation);
+    return annotation is QualifierAnnotation ? annotation : null;
   }
 
-  String? get named => namedAnnotation?.name;
+  String? get tag => qualifierAnnotation?.tag;
 
   String get sourceString;
 
@@ -363,9 +372,9 @@ class BuildInstanceSource extends ProviderSource {
   final ParameterElement parameter;
 
   String get assignString {
-    final j.NamedAnnotation? named = namedAnnotation;
-    if (named != null) {
-      return '_${named.name}${parameter.type.getName()}';
+    final j.QualifierAnnotation? qualifier = qualifierAnnotation;
+    if (qualifier != null) {
+      return '_${qualifier.tag}${parameter.type.getName()}';
     }
 
     return '_${uncapitalize(parameter.type.getName())}';

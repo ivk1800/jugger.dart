@@ -148,14 +148,19 @@ class DependencyAnnotation implements Annotation {
   final ClassElement element;
 }
 
-class NamedAnnotation implements Annotation {
-  const NamedAnnotation({
-    required this.element,
-    required this.name,
+class QualifierAnnotation implements Annotation {
+  const QualifierAnnotation({
+    required this.tag,
   });
 
-  final ClassElement element;
-  final String name;
+  final String tag;
+
+  @override
+  int get hashCode => tag.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      other is QualifierAnnotation && other.tag == tag;
 }
 
 class Method {
@@ -165,13 +170,13 @@ class Method {
 
   final List<Annotation> annotations;
 
-  NamedAnnotation? get _namedAnnotation {
-    final Annotation? annotation =
-        annotations.firstWhereOrNull((Annotation a) => a is NamedAnnotation);
-    return annotation is NamedAnnotation ? annotation : null;
+  QualifierAnnotation? get _namedAnnotation {
+    final Annotation? annotation = annotations
+        .firstWhereOrNull((Annotation a) => a is QualifierAnnotation);
+    return annotation is QualifierAnnotation ? annotation : null;
   }
 
-  String? get named => _namedAnnotation?.name;
+  String? get named => _namedAnnotation?.tag;
 }
 
 class MemberInjectorMethod {

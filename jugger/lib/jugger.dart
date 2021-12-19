@@ -11,6 +11,7 @@ export 'src/annotations.dart'
         bind,
         nonLazy,
         componentBuilder,
+        qualifier,
         Named;
 
 export 'src/provider.dart' show Provider, SingletonProvider, IProvider;

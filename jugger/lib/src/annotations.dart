@@ -11,6 +11,11 @@ class Component {
   final List<Type> dependencies;
 }
 
+/// Identifies qualifier annotations.
+class Qualifier {
+  const Qualifier._();
+}
+
 /// Annotates a class that contributes to the object graph.
 class Module {
   const Module._();
@@ -46,6 +51,7 @@ class ComponentBuilder {
 }
 
 /// String-based qualifier.
+@qualifier
 class Named {
   const factory Named(String name) = Named._;
 
@@ -72,3 +78,5 @@ const Singleton singleton = Singleton._();
 const Inject inject = Inject._();
 
 const Bind bind = Bind._();
+
+const Qualifier qualifier = Qualifier._();

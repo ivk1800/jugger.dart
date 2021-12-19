@@ -36,14 +36,47 @@ ProvideAnnotation? getProvideAnnotation(Element element) {
   return annotation is ProvideAnnotation ? annotation : null;
 }
 
-NamedAnnotation? getNamedAnnotation(Element element) {
+QualifierAnnotation? getQualifierAnnotation(Element element) {
   final Annotation? annotation = getAnnotations(element)
-      .firstWhereOrNull((Annotation a) => a is NamedAnnotation);
-  return annotation is NamedAnnotation ? annotation : null;
+      .firstWhereOrNull((Annotation a) => a is QualifierAnnotation);
+  return annotation is QualifierAnnotation ? annotation : null;
 }
 
 List<Annotation> getAnnotations(Element moduleClass) {
   final List<Annotation> annotations = <Annotation>[];
+
+  for (int i = 0; i < moduleClass.metadata.length; i++) {
+    final ElementAnnotation annotation = moduleClass.metadata[i];
+
+    final Element? annotationElement = annotation.element;
+
+    if (annotationElement is PropertyAccessorElement) {
+      final ClassElement annotationClassElement =
+          annotationElement.variable.type.element as ClassElement;
+      final bool isQualifier = annotationClassElement.metadata.isQualifier();
+
+      if (isQualifier) {
+        annotations.add(
+          QualifierAnnotation(
+            tag: 'q${annotationClassElement.name}',
+          ),
+        );
+      }
+    } else if (annotationElement is ConstructorElement) {
+      final ClassElement annotationClassElement =
+          annotationElement.enclosingElement;
+      final bool isQualifier = annotationClassElement.metadata.isQualifier();
+      if (isQualifier) {
+        annotations.add(
+          QualifierAnnotation(
+            tag: annotationClassElement.name == 'Named'
+                ? 'qNamed${annotation.computeConstantValue()!.getField('name')!.toStringValue()!}'
+                : 'q${annotationClassElement.name}',
+          ),
+        );
+      }
+    }
+  }
 
   final List<ElementAnnotation> resolvedMetadata = moduleClass.metadata;
 
@@ -103,16 +136,6 @@ List<Annotation> getAnnotations(Element moduleClass) {
           throw StateError('element[$valueElement] is not ClassElement');
         }
         annotations.add(ComponentBuilderAnnotation(valueElement));
-      } else if (valueElement.name == (Named).runtimeType.toString()) {
-        if (!(valueElement is ClassElement)) {
-          throw StateError('element[$valueElement] is not ClassElement');
-        }
-        annotations.add(NamedAnnotation(
-            element: valueElement,
-            name: annotation
-                .computeConstantValue()!
-                .getField('name')!
-                .toStringValue()!));
       } else if (valueElement.name == nonLazy.runtimeType.toString()) {
         annotations.add(NonLazyAnnotation());
       }
@@ -175,4 +198,9 @@ extension ElementExt on Element {
     }
     return ModuleAnnotation(moduleElement: moduleClass);
   }
+}
+
+extension ElementAnnotationExt on List<ElementAnnotation> {
+  bool isQualifier() =>
+      any((ElementAnnotation a) => a.element!.name == 'qualifier');
 }
