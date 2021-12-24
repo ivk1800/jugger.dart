@@ -11,7 +11,7 @@ class MainRouter implements IMainRouter {}
 
 @Component(modules: <Type>[AppModule])
 abstract class AppComponent {
-  IMainRouter getFoldersRouter();
+  IMainRouter getMainRouter();
 }
 
 @module

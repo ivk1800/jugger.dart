@@ -7,26 +7,18 @@ import 'package:example/qualifier/named/named_qualifier_provides_param.dart'
 import 'package:jugger/jugger.dart' as _i2;
 
 class JuggerAppComponent implements _i1.AppComponent {
-  JuggerAppComponent.create() {
-    _init();
-  }
+  JuggerAppComponent.create();
 
-  late _i2.IProvider<_i1.AppConfig> _qNameddevAppConfigProvider;
+  late final _i2.IProvider<_i1.AppConfig> _qNameddevAppConfigProvider =
+      _i2.SingletonProvider<_i1.AppConfig>(() {
+    return _i1.AppModule.provideDevAppConfig();
+  });
 
-  late _i2.IProvider<String> _stringProvider;
+  late final _i2.IProvider<String> _stringProvider =
+      _i2.SingletonProvider<String>(() {
+    return _i1.AppModule.provideAppVersion(_qNameddevAppConfigProvider.get());
+  });
 
   @override
   String get appVersion => _stringProvider.get();
-  void _init() {
-    _initProvides();
-  }
-
-  void _initProvides() {
-    _stringProvider = _i2.SingletonProvider<String>(() {
-      return _i1.AppModule.provideAppVersion(_qNameddevAppConfigProvider.get());
-    });
-    _qNameddevAppConfigProvider = _i2.SingletonProvider<_i1.AppConfig>(() {
-      return _i1.AppModule.provideDevAppConfig();
-    });
-  }
 }

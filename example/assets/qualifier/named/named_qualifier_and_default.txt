@@ -7,13 +7,17 @@ import 'package:example/qualifier/named/named_qualifier_and_default.dart'
 import 'package:jugger/jugger.dart' as _i2;
 
 class JuggerAppComponent implements _i1.AppComponent {
-  JuggerAppComponent.create() {
-    _init();
-  }
+  JuggerAppComponent.create();
 
-  late _i2.IProvider<_i1.AppConfig> _appConfigProvider;
+  late final _i2.IProvider<_i1.AppConfig> _appConfigProvider =
+      _i2.SingletonProvider<_i1.AppConfig>(() {
+    return _i1.AppModule.provideAppConfig();
+  });
 
-  late _i2.IProvider<_i1.AppConfig> _qNameddevAppConfigProvider;
+  late final _i2.IProvider<_i1.AppConfig> _qNameddevAppConfigProvider =
+      _i2.SingletonProvider<_i1.AppConfig>(() {
+    return _i1.AppModule.provideDevAppConfig();
+  });
 
   @override
   _i1.AppConfig getDevAppConfig() {
@@ -29,16 +33,4 @@ class JuggerAppComponent implements _i1.AppComponent {
   _i1.AppConfig get devAppConfig => _qNameddevAppConfigProvider.get();
   @override
   _i1.AppConfig get prodAppConfig => _appConfigProvider.get();
-  void _init() {
-    _initProvides();
-  }
-
-  void _initProvides() {
-    _appConfigProvider = _i2.SingletonProvider<_i1.AppConfig>(() {
-      return _i1.AppModule.provideAppConfig();
-    });
-    _qNameddevAppConfigProvider = _i2.SingletonProvider<_i1.AppConfig>(() {
-      return _i1.AppModule.provideDevAppConfig();
-    });
-  }
 }

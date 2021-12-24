@@ -74,7 +74,7 @@ class ComponentBuilderDelegate {
         );
         _logs.clear();
 
-        final List<j.ModuleAnnotation> modules = component.modules;
+        // final List<j.ModuleAnnotation> modules = component.modules;
 
         target.body.add(Class((ClassBuilder classBuilder) {
           classBuilder.fields.addAll(
@@ -91,16 +91,16 @@ class ComponentBuilderDelegate {
           classBuilder.methods
               .addAll(_buildProvideProperties(_componentContext));
 
-          classBuilder.methods.add(_buildInitMethod());
+          // classBuilder.methods.add(_buildInitMethod());
 
-          classBuilder.methods.add(
-            _buildInitProvidesMethod(
-              _componentContext.dependencies,
-              modules,
-              _componentContext,
-              _allocator,
-            ),
-          );
+          // classBuilder.methods.add(
+          //   _buildInitProvidesMethod(
+          //     _componentContext.dependencies,
+          //     modules,
+          //     _componentContext,
+          //     _allocator,
+          //   ),
+          // );
 
           if (hasNonLazyProviders()) {
             classBuilder.methods
@@ -276,6 +276,28 @@ class ComponentBuilderDelegate {
               dependency.element.thisType.element.librarySource.uri
                   .toString()));
           b.late = true;
+          b.modifier = FieldModifier.final$;
+
+          final ProviderSource? provider =
+              _componentContext.findProvider(dependency.element, tag);
+
+          if (provider is ModuleSource) {
+            b.assignment = _buildProviderFromModuleAssignCode(
+              provider.method.element,
+            );
+          } else {
+            if (isCore(dependency.element) || dependency.element.isAbstract) {
+              throw StateError(
+                '${dependency.enclosingElement.name}.${dependency.element.name} (qualifier: $tag) not provided',
+              );
+            }
+            // if (_isBindDependency(dependency)) {
+            //   continue;
+            // }
+            b.assignment =
+                _buildProviderFromClassAssignCode(dependency.element);
+          }
+
           b.type =
               Reference('IProvider<$generic>', 'package:jugger/jugger.dart');
         }));
@@ -414,6 +436,7 @@ class ComponentBuilderDelegate {
       ..sort((Method a, Method b) => a.name!.compareTo(b.name!));
   }
 
+  /*
   Method _buildInitMethod() {
     return Method((MethodBuilder b) {
       b.name = '_init';
@@ -426,6 +449,7 @@ class ComponentBuilderDelegate {
       b.returns = const Reference('void');
     });
   }
+  */
 
   List<Method> _buildMembersInjectorMethods(
     List<j.MemberInjectorMethod> fields,
@@ -512,6 +536,7 @@ class ComponentBuilderDelegate {
     return '${uncapitalize(element.thisType.getName())}';
   }
 
+  /*
   Method _buildInitProvidesMethod(
     List<Dependency> dependencies,
     List<j.ModuleAnnotation> modules,
@@ -533,8 +558,11 @@ class ComponentBuilderDelegate {
             _componentContext.findProvider(dependency.element, tag);
 
         if (provider is ModuleSource) {
-          buildProviderFromModule(
-              provider.method.element, b, _componentContext, allocator);
+          b.addExpression(
+            _buildProviderFromModuleAssignExpression(
+              provider.method.element,
+            ),
+          );
         } else if (provider is BuildInstanceSource) {
           print('${provider.providedClass} is BuildInstanceSource');
         } else if (provider is AnotherComponentSource) {
@@ -548,13 +576,15 @@ class ComponentBuilderDelegate {
           if (_isBindDependency(dependency)) {
             continue;
           }
-          buildProviderFromClass(
-              dependency.element, b, _componentContext, allocator);
+          b.addExpression(
+            _buildProviderFromClassAssignExpression(dependency.element),
+          );
         }
       }
     }));
     return builder.build();
   }
+  */
 
   Method _buildInitNonLazyMethod(ComponentContext _componentContext) {
     final MethodBuilder builder = MethodBuilder();
@@ -589,14 +619,23 @@ class ComponentBuilderDelegate {
             (j.Annotation annotation) => annotation is j.NonLazyAnnotation));
   }
 
-  void buildProviderFromClass(
-    ClassElement element,
-    BlockBuilder b,
-    ComponentContext _componentContext,
-    Allocator allocator,
-  ) {
+  /*
+  /// example: _myProvider = SingletonProvider<MyProvider>(() => AppModule.provideMyProvider());
+  Expression _buildProviderFromClassAssignExpression(ClassElement element) {
     _log('build provider from class: ${element.name}');
+    return CodeExpression(
+      Block.of(
+        <Code>[
+          Code('_${uncapitalize(element.name)}Provider = '),
+          _buildProviderFromClassAssignCode(element),
+        ],
+      ),
+    );
+  }
+  */
 
+  /// example: SingletonProvider<MyProvider>(() => AppModule.provideMyProvider());
+  Code _buildProviderFromClassAssignCode(ClassElement element) {
     final InjectedConstructorsVisitor visitor = InjectedConstructorsVisitor();
     element.visitChildren(visitor);
 
@@ -608,31 +647,44 @@ class ComponentBuilderDelegate {
         injectedConstructor.element.parameters;
 
     final Expression newInstance =
-        getProviderType(injectedConstructor.element, allocator)
+        getProviderType(injectedConstructor.element, _allocator)
             .newInstance(<Expression>[
       CodeExpression(Block.of(_buildProviderBody(element, <Code>[
         _buildCallMethodOrConstructor(element, parameters, _componentContext)
       ])))
     ]);
 
-    b.addExpression(CodeExpression(Block.of(<Code>[
-      Code('_${uncapitalize(element.name)}Provider = '),
-      ToCodeExpression(newInstance),
-    ])));
+    return ToCodeExpression(newInstance);
   }
 
-  void buildProviderFromModule(
-    MethodElement method,
-    BlockBuilder b,
-    ComponentContext _componentContext,
-    Allocator allocator,
-  ) {
+  /*
+  /// example: _myProvider = SingletonProvider<MyProvider>(() => AppModule.provideMyProvider());
+  Expression _buildProviderFromModuleAssignExpression(MethodElement method) {
     _log(
         'build provider from module: ${method.enclosingElement.name}.${method.name}');
+
+    final String? tag = getQualifierAnnotation(method)?.tag;
+
+    return CodeExpression(
+      Block.of(
+        <Code>[
+          Code('_${_generateName(method.returnType.element!, tag)}Provider = '),
+          _buildProviderFromModuleAssignCode(method),
+        ],
+      ),
+    );
+  }
+  */
+
+  /// example: SingletonProvider<MyProvider>(() => AppModule.provideMyProvider());
+  Code _buildProviderFromModuleAssignCode(MethodElement method) {
     Expression expression;
     if (method.isStatic) {
-      expression =
-          _buildProviderFromStaticMethod(method, _componentContext, allocator);
+      expression = _buildProviderFromStaticMethod(
+        method,
+        _componentContext,
+        _allocator,
+      );
     } else if (method.isAbstract) {
       expression = _buildProviderFromAbstractMethod(method);
     } else {
@@ -640,13 +692,7 @@ class ComponentBuilderDelegate {
         'provided method must be abstract or static [${method.enclosingElement.name}.${method.name}]',
       );
     }
-
-    final String? tag = getQualifierAnnotation(method)?.tag;
-
-    b.addExpression(CodeExpression(Block.of(<Code>[
-      Code('_${_generateName(method.returnType.element!, tag)}Provider = '),
-      ToCodeExpression(expression),
-    ])));
+    return ToCodeExpression(expression);
   }
 
   ///
@@ -659,6 +705,7 @@ class ComponentBuilderDelegate {
   /// IFoldersScreenRouter bindFoldersScreenRouter(IFoldersRouter router);
   /// ```
   ///
+  // todo refactor as AssignCode, must return Code
   Expression _buildProviderFromAnotherComponent(
     MethodElement method,
     AnotherComponentSource provider,
@@ -682,6 +729,7 @@ class ComponentBuilderDelegate {
     return CodeExpression(ToCodeExpression(newInstance));
   }
 
+  // todo refactor as AssignCode, must return Code
   Expression _buildProviderFromModule(
     MethodElement method,
     ModuleSource provider,
@@ -708,6 +756,7 @@ class ComponentBuilderDelegate {
     return CodeExpression(ToCodeExpression(newInstance));
   }
 
+  // todo refactor as AssignCode, must return Code
   Expression _buildProviderFromAbstractMethod(MethodElement method) {
     _log(
         'build provider from abstract method: ${method.enclosingElement.name}.${method.name} [${method.library.identifier}]');
@@ -795,6 +844,7 @@ class ComponentBuilderDelegate {
     return codes;
   }
 
+  // todo refactor as AssignCode, must return Code
   Expression _buildProviderFromStaticMethod(
     MethodElement method,
     ComponentContext _componentContext,
@@ -919,7 +969,10 @@ class ComponentBuilderDelegate {
 
   Constructor _buildConstructor(j.ComponentBuilder? componentBuilder) {
     return Constructor((ConstructorBuilder constructorBuilder) {
-      constructorBuilder.body = const Code('_init();');
+      // constructorBuilder.body = const Code('_init();');
+      if (hasNonLazyProviders()) {
+        constructorBuilder.body = const Code('_initNonLazy();');
+      }
 
       if (componentBuilder == null) {
         constructorBuilder.name = 'create';

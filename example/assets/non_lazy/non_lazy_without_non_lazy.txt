@@ -6,24 +6,15 @@ import 'package:example/non_lazy/non_lazy_without_non_lazy.dart' as _i1;
 import 'package:jugger/jugger.dart' as _i2;
 
 class JuggerAppComponent implements _i1.AppComponent {
-  JuggerAppComponent.create() {
-    _init();
-  }
+  JuggerAppComponent.create();
 
-  late _i2.IProvider<_i1.LazyRepository> _lazyRepositoryProvider;
+  late final _i2.IProvider<_i1.LazyRepository> _lazyRepositoryProvider =
+      _i2.SingletonProvider<_i1.LazyRepository>(() {
+    return _i1.AppModule.provideLazyRepository();
+  });
 
   @override
   _i1.LazyRepository getLazyRepository() {
     return _lazyRepositoryProvider.get();
-  }
-
-  void _init() {
-    _initProvides();
-  }
-
-  void _initProvides() {
-    _lazyRepositoryProvider = _i2.SingletonProvider<_i1.LazyRepository>(() {
-      return _i1.AppModule.provideLazyRepository();
-    });
   }
 }

@@ -7,12 +7,18 @@ import 'package:jugger/jugger.dart' as _i2;
 
 class JuggerAppComponent implements _i1.AppComponent {
   JuggerAppComponent.create() {
-    _init();
+    _initNonLazy();
   }
 
-  late _i2.IProvider<_i1.LazyRepository> _lazyRepositoryProvider;
+  late final _i2.IProvider<_i1.LazyRepository> _lazyRepositoryProvider =
+      _i2.SingletonProvider<_i1.LazyRepository>(() {
+    return _i1.AppModule.provideLazyRepository();
+  });
 
-  late _i2.IProvider<_i1.NonLazyRepository> _nonLazyRepositoryProvider;
+  late final _i2.IProvider<_i1.NonLazyRepository> _nonLazyRepositoryProvider =
+      _i2.SingletonProvider<_i1.NonLazyRepository>(() {
+    return _i1.AppModule.provideNonLazyRepository();
+  });
 
   @override
   _i1.LazyRepository getLazyRepository() {
@@ -22,21 +28,6 @@ class JuggerAppComponent implements _i1.AppComponent {
   @override
   _i1.NonLazyRepository getNonLazyRepository() {
     return _nonLazyRepositoryProvider.get();
-  }
-
-  void _init() {
-    _initProvides();
-    _initNonLazy();
-  }
-
-  void _initProvides() {
-    _lazyRepositoryProvider = _i2.SingletonProvider<_i1.LazyRepository>(() {
-      return _i1.AppModule.provideLazyRepository();
-    });
-    _nonLazyRepositoryProvider =
-        _i2.SingletonProvider<_i1.NonLazyRepository>(() {
-      return _i1.AppModule.provideNonLazyRepository();
-    });
   }
 
   void _initNonLazy() {

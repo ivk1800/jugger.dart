@@ -6,11 +6,12 @@ import 'package:example/qualifier/custom/custom_qualifier.dart' as _i1;
 import 'package:jugger/jugger.dart' as _i2;
 
 class JuggerAppComponent implements _i1.AppComponent {
-  JuggerAppComponent.create() {
-    _init();
-  }
+  JuggerAppComponent.create();
 
-  late _i2.IProvider<_i1.AppConfig> _qMyQualifierAppConfigProvider;
+  late final _i2.IProvider<_i1.AppConfig> _qMyQualifierAppConfigProvider =
+      _i2.SingletonProvider<_i1.AppConfig>(() {
+    return _i1.AppModule.provideAppConfig();
+  });
 
   @override
   _i1.AppConfig getAppConfig() {
@@ -26,13 +27,4 @@ class JuggerAppComponent implements _i1.AppComponent {
   _i1.AppConfig get appConfig => _qMyQualifierAppConfigProvider.get();
   @override
   _i1.AppConfig get appConfig2 => _qMyQualifierAppConfigProvider.get();
-  void _init() {
-    _initProvides();
-  }
-
-  void _initProvides() {
-    _qMyQualifierAppConfigProvider = _i2.SingletonProvider<_i1.AppConfig>(() {
-      return _i1.AppModule.provideAppConfig();
-    });
-  }
 }

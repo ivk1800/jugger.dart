@@ -7,29 +7,20 @@ import 'package:example/provides/provides_from_injected_constructor.dart'
 import 'package:jugger/jugger.dart' as _i2;
 
 class JuggerAppComponent implements _i1.AppComponent {
-  JuggerAppComponent.create() {
-    _init();
-  }
+  JuggerAppComponent.create();
 
-  late _i2.IProvider<_i1.MainRouter> _mainRouterProvider;
+  late final _i2.IProvider<_i1.MainRouter> _mainRouterProvider =
+      _i2.Provider<_i1.MainRouter>(() {
+    return _i1.MainRouter();
+  });
 
-  late _i2.IProvider<_i1.MainViewModel> _mainViewModelProvider;
+  late final _i2.IProvider<_i1.MainViewModel> _mainViewModelProvider =
+      _i2.SingletonProvider<_i1.MainViewModel>(() {
+    return _i1.AppModule.provideMainViewModel(_mainRouterProvider.get());
+  });
 
   @override
   _i1.MainViewModel getMainViewModel() {
     return _mainViewModelProvider.get();
-  }
-
-  void _init() {
-    _initProvides();
-  }
-
-  void _initProvides() {
-    _mainRouterProvider = _i2.Provider<_i1.MainRouter>(() {
-      return _i1.MainRouter();
-    });
-    _mainViewModelProvider = _i2.SingletonProvider<_i1.MainViewModel>(() {
-      return _i1.AppModule.provideMainViewModel(_mainRouterProvider.get());
-    });
   }
 }

@@ -21,9 +21,7 @@ class JuggerAppComponentBuilder implements _i1.AppComponentBuilder {
 }
 
 class JuggerAppComponent implements _i1.AppComponent {
-  JuggerAppComponent._create(this._mainRouter) {
-    _init();
-  }
+  JuggerAppComponent._create(this._mainRouter);
 
   final _i1.MainRouter _mainRouter;
 
@@ -31,10 +29,4 @@ class JuggerAppComponent implements _i1.AppComponent {
   _i1.MainRouter getMainRouter() {
     return _mainRouter;
   }
-
-  void _init() {
-    _initProvides();
-  }
-
-  void _initProvides() {}
 }

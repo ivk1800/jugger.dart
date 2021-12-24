@@ -6,24 +6,15 @@ import 'package:example/provides/provides_from_module.dart' as _i1;
 import 'package:jugger/jugger.dart' as _i2;
 
 class JuggerAppComponent implements _i1.AppComponent {
-  JuggerAppComponent.create() {
-    _init();
-  }
+  JuggerAppComponent.create();
 
-  late _i2.IProvider<_i1.MainRouter> _mainRouterProvider;
+  late final _i2.IProvider<_i1.MainRouter> _mainRouterProvider =
+      _i2.SingletonProvider<_i1.MainRouter>(() {
+    return _i1.AppModule.provideMainRouter();
+  });
 
   @override
   _i1.MainRouter getMainRouter() {
     return _mainRouterProvider.get();
-  }
-
-  void _init() {
-    _initProvides();
-  }
-
-  void _initProvides() {
-    _mainRouterProvider = _i2.SingletonProvider<_i1.MainRouter>(() {
-      return _i1.AppModule.provideMainRouter();
-    });
   }
 }

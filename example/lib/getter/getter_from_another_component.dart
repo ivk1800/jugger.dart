@@ -25,7 +25,9 @@ abstract class AppModule {
   dependencies: <Type>[AppComponent],
   modules: <Type>[MyScreenModule],
 )
-abstract class MyScreenComponent {}
+abstract class MyScreenComponent {
+  String get screenName;
+}
 
 @module
 abstract class MyScreenModule {

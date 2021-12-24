@@ -13,7 +13,7 @@ class MainRouter implements IMainRouter {}
 
 @Component(modules: <Type>[AppModule])
 abstract class AppComponent {
-  IMainRouter getFoldersRouter();
+  IMainRouter getMainRouter();
 }
 
 @module
@@ -29,7 +29,9 @@ abstract class AppModule {
   dependencies: <Type>[AppComponent],
   modules: <Type>[MyScreenModule],
 )
-abstract class MyScreenComponent {}
+abstract class MyScreenComponent {
+  IMyScreenRouter get myScreenRouter;
+}
 
 @module
 abstract class MyScreenModule {
