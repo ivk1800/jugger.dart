@@ -24,12 +24,12 @@ abstract class AppComponent {
 @module
 abstract class AppModule {
   @singleton
-  @provide
+  @provides
   @prod
   static AppConfig provideProdAppConfig() => AppConfig();
 
   @singleton
-  @provide
+  @provides
   @dev
   static AppConfig provideDevAppConfig() => AppConfig();
 }

@@ -2,7 +2,8 @@
 // ignore_for_file: prefer_const_constructors
 // ignore_for_file: always_specify_types
 // ignore_for_file: directives_ordering
-import 'package:example/bind/bind_from_module.dart' as _i1;
+import 'package:example/provides/provides_from_injected_constructor.dart'
+    as _i1;
 import 'package:jugger/jugger.dart' as _i2;
 
 class JuggerAppComponent implements _i1.AppComponent {
@@ -10,13 +11,13 @@ class JuggerAppComponent implements _i1.AppComponent {
     _init();
   }
 
-  late _i2.IProvider<_i1.IMainRouter> _iMainRouterProvider;
-
   late _i2.IProvider<_i1.MainRouter> _mainRouterProvider;
 
+  late _i2.IProvider<_i1.MainViewModel> _mainViewModelProvider;
+
   @override
-  _i1.IMainRouter getFoldersRouter() {
-    return _iMainRouterProvider.get();
+  _i1.MainViewModel getMainViewModel() {
+    return _mainViewModelProvider.get();
   }
 
   void _init() {
@@ -24,11 +25,11 @@ class JuggerAppComponent implements _i1.AppComponent {
   }
 
   void _initProvides() {
-    _iMainRouterProvider = _i2.SingletonProvider<_i1.IMainRouter>(() {
-      return _mainRouterProvider.get();
+    _mainRouterProvider = _i2.Provider<_i1.MainRouter>(() {
+      return _i1.MainRouter();
     });
-    _mainRouterProvider = _i2.SingletonProvider<_i1.MainRouter>(() {
-      return _i1.AppModule.provideMainRouter();
+    _mainViewModelProvider = _i2.SingletonProvider<_i1.MainViewModel>(() {
+      return _i1.AppModule.provideMainViewModel(_mainRouterProvider.get());
     });
   }
 }

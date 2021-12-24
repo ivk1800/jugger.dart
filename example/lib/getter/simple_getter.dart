@@ -14,6 +14,6 @@ abstract class AppComponent {
 @module
 abstract class AppModule {
   @singleton
-  @provide
+  @provides
   static MainRouter provideMainRouter() => MainRouter();
 }

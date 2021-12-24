@@ -18,12 +18,12 @@ abstract class AppComponent {
 @module
 abstract class AppModule {
   @singleton
-  @provide
+  @provides
   @Named('dev')
   static AppConfig provideDevAppConfig() => AppConfig('1.0');
 
   @singleton
-  @provide
+  @provides
   static String provideAppVersion(
     @Named('dev') AppConfig appConfig,
   ) =>

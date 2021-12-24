@@ -24,7 +24,7 @@ abstract class AppComponent {
 @module
 abstract class AppModule {
   @singleton
-  @provide
+  @provides
   @myQualifier
   static AppConfig provideAppConfig() => AppConfig();
 }

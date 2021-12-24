@@ -3,12 +3,12 @@ library jugger;
 export 'src/annotations.dart'
     show
         module,
-        provide,
+        provides,
         singleton,
         inject,
         Component,
         Inject,
-        bind,
+        binds,
         nonLazy,
         componentBuilder,
         qualifier,

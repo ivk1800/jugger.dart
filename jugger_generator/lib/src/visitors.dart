@@ -83,14 +83,14 @@ class ProvidesVisitor extends RecursiveElementVisitor<dynamic> {
 
     if (element.isStatic) {
       check(getProvideAnnotation(element) != null,
-          'provide static method [${moduleElement.name}.${element.name}] must be annotated [${j.provide.runtimeType}]');
+          'provide static method [${moduleElement.name}.${element.name}] must be annotated [${j.provides.runtimeType}]');
     }
 
     if (element.isAbstract) {
       check(getBindAnnotation(element) != null,
-          'provide abstract method [${moduleElement.name}.${element.name}] must be annotated [${j.bind.runtimeType}]');
+          'provide abstract method [${moduleElement.name}.${element.name}] must be annotated [${j.binds.runtimeType}]');
       check(element.parameters.length == 1,
-          'method [${moduleElement.name}.${element.name}] annotates [${j.bind.runtimeType}] must have 1 parameter');
+          'method [${moduleElement.name}.${element.name}] annotates [${j.binds.runtimeType}] must have 1 parameter');
       // ignore: flutter_style_todos
       //TODO: check parameter type must be assignable to the return type
     }
@@ -98,7 +98,7 @@ class ProvidesVisitor extends RecursiveElementVisitor<dynamic> {
     if (getBindAnnotation(element) != null &&
         getProvideAnnotation(element) != null) {
       throw StateError(
-        'provide method [${moduleElement.name}.${element.name}] can not be annotated together [${j.provide.runtimeType}] and [${j.bind.runtimeType}]',
+        'provide method [${moduleElement.name}.${element.name}] can not be annotated together [${j.provides.runtimeType}] and [${j.binds.runtimeType}]',
       );
     }
 

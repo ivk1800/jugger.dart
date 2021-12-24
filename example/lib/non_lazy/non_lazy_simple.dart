@@ -16,11 +16,11 @@ abstract class AppComponent {
 @module
 abstract class AppModule {
   @singleton
-  @provide
+  @provides
   @nonLazy
   static NonLazyRepository provideNonLazyRepository() => NonLazyRepository();
 
   @singleton
-  @provide
+  @provides
   static LazyRepository provideLazyRepository() => LazyRepository();
 }

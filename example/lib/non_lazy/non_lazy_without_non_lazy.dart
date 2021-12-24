@@ -12,6 +12,6 @@ abstract class AppComponent {
 @module
 abstract class AppModule {
   @singleton
-  @provide
+  @provides
   static LazyRepository provideLazyRepository() => LazyRepository();
 }

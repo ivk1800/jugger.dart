@@ -121,7 +121,7 @@ List<Annotation> getAnnotations(Element moduleClass) {
               }
               return DependencyAnnotation(element: c);
             }).toList()));
-      } else if (valueElement.name == provide.runtimeType.toString()) {
+      } else if (valueElement.name == provides.runtimeType.toString()) {
         annotations.add(ProvideAnnotation());
       } else if (valueElement.name == inject.runtimeType.toString()) {
         annotations.add(InjectAnnotation());
@@ -129,7 +129,7 @@ List<Annotation> getAnnotations(Element moduleClass) {
         annotations.add(moduleClass.getModuleAnnotationOfModuleClass());
       } else if (valueElement.name == singleton.runtimeType.toString()) {
         annotations.add(SingletonAnnotation());
-      } else if (valueElement.name == bind.runtimeType.toString()) {
+      } else if (valueElement.name == binds.runtimeType.toString()) {
         annotations.add(BindAnnotation());
       } else if (valueElement.name == componentBuilder.runtimeType.toString()) {
         if (!(valueElement is ClassElement)) {

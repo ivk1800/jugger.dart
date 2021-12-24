@@ -27,8 +27,8 @@ class Singleton {
 }
 
 /// Annotates methods of a module to create a provider method binding.
-class Provide {
-  const Provide._();
+class Provides {
+  const Provides._();
 }
 
 /// Identifies injectable constructors, methods, and fields.
@@ -39,8 +39,8 @@ class Inject {
 }
 
 /// Annotates abstract methods of a module that delegate bindings.
-class Bind {
-  const Bind._();
+class Binds {
+  const Binds._();
 }
 
 const ComponentBuilder componentBuilder = ComponentBuilder._();
@@ -69,7 +69,7 @@ class NonLazy {
 
 const NonLazy nonLazy = NonLazy._();
 
-const Provide provide = Provide._();
+const Provides provides = Provides._();
 
 const Module module = Module._();
 
@@ -77,6 +77,6 @@ const Singleton singleton = Singleton._();
 
 const Inject inject = Inject._();
 
-const Bind bind = Bind._();
+const Binds binds = Binds._();
 
 const Qualifier qualifier = Qualifier._();

@@ -15,7 +15,7 @@ abstract class AppComponent {
 
 @module
 abstract class AppModule {
-  @provide
+  @provides
   static AppConfig provideAppConfig() => AppConfig();
 }
 
@@ -30,7 +30,7 @@ abstract class MyScreenComponent {}
 @module
 abstract class MyScreenModule {
   @singleton
-  @provide
+  @provides
   static String provideScreenName(AppConfig config) => config.myScreenName;
 }
 

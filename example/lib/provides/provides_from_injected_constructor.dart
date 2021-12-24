@@ -3,18 +3,30 @@
 
 import 'package:jugger/jugger.dart';
 
-class MainRouter {}
+class MainRouter {
+  @inject
+  MainRouter();
+}
+
+class MainViewModel {
+  MainViewModel(this.router);
+
+  final MainRouter router;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @Component(modules: <Type>[AppModule])
 abstract class AppComponent {
-  MainRouter getMainRouter();
+  MainViewModel getMainViewModel();
 }
 
 @module
 abstract class AppModule {
   @singleton
-  @provide
-  static MainRouter provideMainRouter() => MainRouter();
+  @provides
+  static MainViewModel provideMainViewModel(
+    MainRouter router,
+  ) =>
+      MainViewModel(router);
 }

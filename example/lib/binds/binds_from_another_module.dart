@@ -19,7 +19,7 @@ abstract class AppComponent {
 @module
 abstract class AppModule {
   @singleton
-  @provide
+  @provides
   static IMainRouter provideMainRouter() => MainRouter();
 }
 
@@ -34,7 +34,7 @@ abstract class MyScreenComponent {}
 @module
 abstract class MyScreenModule {
   @singleton
-  @bind
+  @binds
   IMyScreenRouter bindFoldersScreenRouter(IMainRouter router);
 }
 

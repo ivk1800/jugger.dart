@@ -2,7 +2,7 @@
 // ignore_for_file: prefer_const_constructors
 // ignore_for_file: always_specify_types
 // ignore_for_file: directives_ordering
-import 'package:example/provide/provide_from_module.dart' as _i1;
+import 'package:example/provides/provides_from_module.dart' as _i1;
 import 'package:jugger/jugger.dart' as _i2;
 
 class JuggerAppComponent implements _i1.AppComponent {

@@ -17,10 +17,10 @@ abstract class AppComponent {
 @module
 abstract class AppModule {
   @singleton
-  @provide
+  @provides
   static MainRouter provideMainRouter() => MainRouter();
 
   @singleton
-  @bind
+  @binds
   IMainRouter bindMainRouter(MainRouter impl);
 }
