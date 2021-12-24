@@ -11,7 +11,7 @@ jugger_generator:
 
 Compile-time dependency injection for Dart and Flutter.
 
-Android developers will easily understand the use of the library, jagger similar [Dagger2](https://github.com/google/dagger)
+Android developers will easily understand the use of the library, jugger similar [Dagger2](https://github.com/google/dagger)
 
 #### Getting Started
 
