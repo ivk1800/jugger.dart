@@ -5,6 +5,3 @@ homepage: https://github.com/ivk1800/jugger.dart
 
 environment:
   sdk: ">=2.12.0-0 <3.0.0"
-
-dependencies:
-  meta: ^1.3.0
