@@ -29,7 +29,7 @@ class ComponentContext {
       for (MethodElement m in methodVisitor.methods) {
         providerSources.add(AnotherComponentSource(
             // ignore: avoid_as
-            providedClass: m.returnType.element as ClassElement,
+            type: m.returnType,
             element: m,
             dependencyClass: dep.element,
             annotations: getAnnotations(m)));
@@ -39,7 +39,7 @@ class ComponentContext {
         providerSources.add(
           AnotherComponentSource(
             // ignore: avoid_as
-            providedClass: property.returnType.element as ClassElement,
+            type: property.returnType,
             element: property,
             dependencyClass: dep.element,
             annotations: getAnnotations(property),
@@ -62,7 +62,7 @@ class ComponentContext {
           // ignore: avoid_as
           moduleClass: element.enclosingElement as ClassElement,
           // ignore: avoid_as
-          providedClass: element.returnType.element as ClassElement,
+          type: element.returnType,
           method: method,
           annotations: getAnnotations(element)));
     }
@@ -72,7 +72,7 @@ class ComponentContext {
       providerSources.add(BuildInstanceSource(
           parameter: parameter,
           // ignore: avoid_as
-          providedClass: parameter.type.element as ClassElement,
+          type: parameter.type,
           annotations: getAnnotations(parameter.enclosingElement!)));
     }
 
@@ -106,8 +106,8 @@ class ComponentContext {
   List<Dependency> get dependencies => _dependencies.values.toList()
     ..sort((Dependency a, Dependency b) => a.compareTo(b));
 
-  List<ClassElement> get dependenciesClasses =>
-      _dependencies.values.map((Dependency d) => d.element).toList();
+  // List<ClassElement> get dependenciesClasses =>
+  //     _dependencies.values.map((Dependency d) => d.element).toList();
 
   Dependency _registerDependency(Element element) {
     final String? named = getQualifierAnnotation(element)?.tag;
@@ -121,8 +121,7 @@ class ComponentContext {
     if (element is MethodElement) {
       final Dependency dependency = Dependency(
         named,
-        // ignore: avoid_as
-        element.returnType.element as ClassElement,
+        element.returnType,
         _registerMethodDependencies(element),
         element,
       );
@@ -159,8 +158,7 @@ class ComponentContext {
     if (visitor.injectedConstructors.isEmpty) {
       final Dependency dependency = Dependency(
         named,
-        // ignore: avoid_as
-        element.type.element as ClassElement,
+        element.type,
         <Dependency>[],
         element.enclosingElement!,
       );
@@ -199,8 +197,7 @@ class ComponentContext {
 
     final Dependency dependency = Dependency(
       named,
-      // ignore: avoid_as
-      element.type.element as ClassElement,
+      element.type,
       dependencies,
       element,
     );
@@ -227,25 +224,25 @@ class ComponentContext {
   }
 
   j.Method? findProvideMethod(DartType type, [String? name]) {
-    return component.provideMethods.firstWhereOrNull((j.Method method) =>
-        method.element.returnType.getName() == type.getName() &&
-        method.named == name);
-  }
-
-  ProviderSource? findProvider(Element element, [String? tag]) {
-    if (!(element is ClassElement)) {
-      throw StateError('element[$element] is not ClassElement');
-    }
-    return providerSources.firstWhereOrNull((ProviderSource source) {
-      return source.providedClass == element && source.tag == tag;
+    return component.provideMethods.firstWhereOrNull((j.Method method) {
+      return method.element.returnType == type && method.named == name;
     });
   }
 
-  List<ProviderSource> findProviders(ClassElement element) {
-    return providerSources.where((ProviderSource source) {
-      return source.providedClass == element;
-    }).toList();
+  ProviderSource? findProvider(DartType type, [String? tag]) {
+    // if (!(element is ClassElement)) {
+    //   throw StateError('element[$element] is not ClassElement');
+    // }
+    return providerSources.firstWhereOrNull((ProviderSource source) {
+      return source.type == type && source.tag == tag;
+    });
   }
+
+  // List<ProviderSource> findProviders(ClassElement element) {
+  //   return providerSources.where((ProviderSource source) {
+  //     return source.providedClass == element;
+  //   }).toList();
+  // }
 
   void _validateProviderSources() {
     final Map<dynamic, List<ProviderSource>> groupBy2 =
@@ -314,40 +311,40 @@ class _Key {
 class Dependency implements Comparable<Dependency> {
   const Dependency(
     this.named,
-    this.element,
+    this.type,
     this.dependencies,
     this.enclosingElement,
   );
 
-  final ClassElement element;
+  final DartType type;
   final Element enclosingElement;
   final List<Dependency> dependencies;
   final String? named;
 
   @override
   String toString() {
-    return element.thisType.getName();
+    return type.getName();
   }
 
   @override
   int compareTo(Dependency other) {
-    return '${named ?? ''}_${element.name}'
-        .compareTo('${other.named ?? ''}_${other.element.name}');
+    return '${named ?? ''}_${type.getName()}'
+        .compareTo('${other.named ?? ''}_${other.type.getName()}');
   }
 }
 
 abstract class ProviderSource {
-  ProviderSource(this.providedClass, this.annotations);
+  ProviderSource(this.type, this.annotations);
 
-  final ClassElement providedClass;
+  final DartType type;
 
   Object get key {
     final j.QualifierAnnotation? qualifier = qualifierAnnotation;
     if (qualifier != null) {
-      return '${qualifier.tag}_${createElementPath(providedClass)}/${providedClass.name}';
+      return '${qualifier.tag}_${createElementPath(type.element!)}/${type.getName()}';
     }
 
-    return providedClass;
+    return type;
   }
 
   j.QualifierAnnotation? get qualifierAnnotation {
@@ -366,10 +363,10 @@ abstract class ProviderSource {
 class ModuleSource extends ProviderSource {
   ModuleSource({
     required this.moduleClass,
-    required ClassElement providedClass,
+    required DartType type,
     required List<j.Annotation> annotations,
     required this.method,
-  }) : super(providedClass, annotations);
+  }) : super(type, annotations);
 
   final ClassElement moduleClass;
 
@@ -381,10 +378,10 @@ class ModuleSource extends ProviderSource {
 
 class BuildInstanceSource extends ProviderSource {
   BuildInstanceSource({
-    required ClassElement providedClass,
+    required DartType type,
     required this.parameter,
     required List<j.Annotation> annotations,
-  }) : super(providedClass, annotations);
+  }) : super(type, annotations);
 
   final ParameterElement parameter;
 
@@ -404,12 +401,12 @@ class BuildInstanceSource extends ProviderSource {
 class AnotherComponentSource extends ProviderSource {
   /// [element] method or property
   AnotherComponentSource({
-    required ClassElement providedClass,
+    required DartType type,
     required this.element,
     required this.dependencyClass,
     required List<j.Annotation> annotations,
   })  : assert(element is MethodElement || element is PropertyAccessorElement),
-        super(providedClass, annotations);
+        super(type, annotations);
 
   ///
   /// example: _appComponent
@@ -430,6 +427,5 @@ class AnotherComponentSource extends ProviderSource {
   }
 
   @override
-  String get sourceString =>
-      '${providedClass.thisType.getName()}.${element.name}';
+  String get sourceString => '${type.getName()}.${element.name}';
 }
