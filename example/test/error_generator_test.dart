@@ -187,4 +187,35 @@ class MyClass {
       );
     });
   });
+
+  group('circular dependency', () {
+    test('should failed if two providers depend on each other', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[AppModule])
+abstract class AppComponent {
+  String get appName;
+  int get appVersion;
+}
+
+@module
+abstract class AppModule {
+  @provides
+  static String provideAppName(int appVersion) => '';
+
+  @provides
+  static int provideAppVersion(String appName) => 1;
+}
+        ''',
+        onError: (Object error) {
+          assert(
+            // TODO(Ivan): https://github.com/ivk1800/jugger.dart/issues/3
+            error.toString() == 'Stack Overflow',
+          );
+        },
+      );
+    });
+  });
 }
