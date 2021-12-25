@@ -2,6 +2,7 @@
 // ignore_for_file: prefer_const_constructors
 // ignore_for_file: always_specify_types
 // ignore_for_file: directives_ordering
+// ignore_for_file: non_constant_identifier_names
 import 'package:example/qualifier/named/named_qualifier_and_default.dart'
     as _i1;
 import 'package:jugger/jugger.dart' as _i2;

@@ -70,4 +70,18 @@ void main() {
       await checkBuilderOfFile('inject/constructor/empty_injected_contructor');
     });
   });
+
+  group('generics', () {
+    test('provide simple list', () async {
+      await checkBuilderOfFile('generics/provide_simple_list');
+    });
+
+    test('provide simple map', () async {
+      await checkBuilderOfFile('generics/provide_simple_map');
+    });
+
+    test('provide complex generic', () async {
+      await checkBuilderOfFile('generics/provide_complex_generic_type');
+    });
+  });
 }

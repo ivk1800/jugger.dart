@@ -29,6 +29,14 @@ class ComponentBuilderDelegate {
   final Expression _overrideAnnotationExpression =
       const CodeExpression(Code('override'));
 
+  static const List<String> Ignores = <String>[
+    'ignore_for_file: implementation_imports',
+    'ignore_for_file: prefer_const_constructors',
+    'ignore_for_file: always_specify_types',
+    'ignore_for_file: directives_ordering',
+    'ignore_for_file: non_constant_identifier_names',
+  ];
+
   Future<String> buildOutput(BuildStep buildStep) async {
     try {
       return await _buildOutput(buildStep);
@@ -119,18 +127,13 @@ class ComponentBuilderDelegate {
         }));
       }
 
-      final String string =
+      final String fileText =
           target.build().accept(DartEmitter(allocator: _allocator)).toString();
 
-      final String finalString = string.isEmpty
+      final String finalFileText = fileText.isEmpty
           ? ''
-          : '// ignore_for_file: implementation_imports \n'
-              '// ignore_for_file: prefer_const_constructors \n'
-              '// ignore_for_file: always_specify_types \n'
-              '// ignore_for_file: directives_ordering \n'
-              ' $string';
-
-      return DartFormatter().format(finalString);
+          : '${Ignores.map((String line) => '// $line').join('\n')}\n$fileText';
+      return DartFormatter().format(finalFileText);
     }
 
     return '';
@@ -270,9 +273,9 @@ class ComponentBuilderDelegate {
               getQualifierAnnotation(dependency.enclosingElement)?.tag;
           b.name = '_${_generateName(dependency.type, tag)}Provider';
 
-          final String generic = allocator.allocate(Reference(
-              _getNameFromDependency(allocator, dependency),
-              dependency.type.element!.librarySource!.uri.toString()));
+          final String generic = allocator.allocate(
+            refer(_allocateDependencyTypeName(dependency)),
+          );
           b.late = true;
           b.modifier = FieldModifier.final$;
 
@@ -309,61 +312,33 @@ class ComponentBuilderDelegate {
     return fields..sort((Field a, Field b) => a.name.compareTo(b.name));
   }
 
-  /// example:
-  /// ResultDispatcher
-  String _getNameFromDependency(Allocator allocator, Dependency dependency) {
+  String _allocateDependencyTypeName(Dependency dependency) {
     final Element enclosingElement = dependency.enclosingElement;
     if (enclosingElement is MethodElement) {
-      return _getNameFromMethod(enclosingElement, allocator);
+      return _allocateTypeName(enclosingElement.returnType);
     }
 
-    return dependency.type.getName();
+    return _allocateTypeName(dependency.type);
   }
 
-  /// example:
-  /// ResultDispatcher<_i1.UserCredentials>
-  /// ResultDispatcher
-  String _getNameFromMethod(MethodElement element, Allocator allocator) {
-    final DartType returnType = element.returnType;
+  String _allocateTypeName(DartType type) {
+    assert(type is InterfaceType, 'type [$type] not supported');
+    type as InterfaceType;
 
-    if (returnType is InterfaceType) {
-      return _getNameFromInterface(element, returnType, allocator);
+    final String name = _allocator.allocate(
+      Reference(
+        type.element.name,
+        type.element.librarySource.uri.toString(),
+      ),
+    );
+
+    if (type.typeArguments.isEmpty) {
+      return name;
     }
 
-    return element.returnType.element!.name!;
-  }
-
-  String _getNameFromInterface(
-      Element el, InterfaceType type, Allocator allocator) {
-    final List<DartType> arguments = type.typeArguments;
-    if (arguments.isNotEmpty) {
-      return '${type.getName()}${_getNameFromTypeArguments(arguments, allocator)}';
-    }
-
-    return type.element.name;
-  }
-
-  /// example:
-  /// Map<int, List<String>>
-  String _getNameFromTypeArguments(
-      List<DartType> arguments, Allocator allocator) {
-    final String join = '<${arguments.map((DartType e) {
-      final Element? element2 = e.element;
-      final ClassElement classElement = element2 is ClassElement
-          ? element2
-          : throw StateError('element is not ClassElement');
-
-      String name;
-      if (e is InterfaceType) {
-        name = _getNameFromInterface(classElement, e, allocator);
-      } else {
-        name = classElement.name;
-      }
-
-      return allocator.allocate(Reference(
-          name, classElement.thisType.element.librarySource.uri.toString()));
+    return '$name<${type.typeArguments.map((DartType type) {
+      return _allocateTypeName(type as InterfaceType);
     }).join(',')}>';
-    return join;
   }
 
   bool _isBindDependency(Dependency dependency) {
@@ -395,10 +370,7 @@ class ComponentBuilderDelegate {
             tag,
           ))
           ..type = MethodType.getter
-          ..returns = refer(
-            property.returnType.getName(),
-            createElementPath(property.returnType.element!),
-          );
+          ..returns = refer(_allocateTypeName(property.returnType));
       });
     }).toList();
   }
@@ -414,8 +386,7 @@ class ComponentBuilderDelegate {
       final Method m = Method((MethodBuilder b) {
         b.annotations.add(_overrideAnnotationExpression);
         b.name = method.name;
-        b.returns = Reference(method.returnType.getName(),
-            createElementPath(method.returnType.element!));
+        b.returns = refer(_allocateTypeName(method.returnType));
 
         final String? tag = getQualifierAnnotation(method)?.tag;
         final ProviderSource? providerSource =
@@ -523,15 +494,17 @@ class ComponentBuilderDelegate {
   }
 
   String _generateName(DartType type, String? name) {
-    // if (!(element is ClassElement)) {
-    //   throw StateError('element[$element] is not ClassElement');
-    // }
-
+    final String typeName = type
+        .getName()
+        .replaceAll('<', '_')
+        .replaceAll('>', '_')
+        .replaceAll(' ', '')
+        .replaceAll(',', '_');
     if (name != null) {
-      return '$name${type.getName()}';
+      return '$name$typeName';
     }
 
-    return '${uncapitalize(type.getName())}';
+    return '${uncapitalize(typeName)}';
   }
 
   /*
@@ -958,9 +931,7 @@ class ComponentBuilderDelegate {
       return allocator.allocate(
           Reference(c.thisType.getName(), c.librarySource.uri.toString()));
     } else if (element is MethodElement) {
-      return allocator.allocate(Reference(
-          _getNameFromMethod(element, allocator),
-          element.returnType.element!.librarySource!.uri.toString()));
+      return allocator.allocate(refer(_allocateTypeName(element.returnType)));
     }
     throw StateError(
         'unsupported type: ${element.name}, ${element.runtimeType}');

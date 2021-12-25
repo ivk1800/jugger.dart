@@ -3,17 +3,22 @@
 // ignore_for_file: always_specify_types
 // ignore_for_file: directives_ordering
 // ignore_for_file: non_constant_identifier_names
-import 'package:example/getter/simple_getter.dart' as _i1;
+import 'package:example/generics/provide_simple_list.dart' as _i1;
 import 'package:jugger/jugger.dart' as _i2;
 
 class JuggerAppComponent implements _i1.AppComponent {
   JuggerAppComponent.create();
 
-  late final _i2.IProvider<_i1.MainRouter> _mainRouterProvider =
-      _i2.SingletonProvider<_i1.MainRouter>(() {
-    return _i1.AppModule.provideMainRouter();
+  late final _i2.IProvider<List<_i1.Item>> _list_Item_Provider =
+      _i2.Provider<List<_i1.Item>>(() {
+    return _i1.AppModule.provideItems();
   });
 
   @override
-  _i1.MainRouter get mainRouter => _mainRouterProvider.get();
+  List<_i1.Item> getItems() {
+    return _list_Item_Provider.get();
+  }
+
+  @override
+  List<_i1.Item> get items => _list_Item_Provider.get();
 }
