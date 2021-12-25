@@ -174,8 +174,25 @@ class ComponentContext {
     final j.InjectedConstructor injectedConstructor =
         visitor.injectedConstructors[0];
 
-    final List<Dependency> dependencies = injectedConstructor.element.parameters
-        .map((ParameterElement parameter) {
+    final ConstructorElement constructorElement = injectedConstructor.element;
+    late final String constructorLogName =
+        '${element.type.getName()}.${constructorElement.name}';
+
+    check(
+      !constructorElement.isPrivate,
+      'constructor can not be private [$constructorLogName]',
+    );
+    check(
+      !constructorElement.isFactory,
+      'factory constructor not supported [$constructorLogName]',
+    );
+    check(
+      constructorElement.name.isEmpty,
+      'named constructor not supported [$constructorLogName]',
+    );
+
+    final List<Dependency> dependencies =
+        constructorElement.parameters.map((ParameterElement parameter) {
       _registerParamDependencyIfNeed(parameter);
       return _registerDependency(parameter);
     }).toList();

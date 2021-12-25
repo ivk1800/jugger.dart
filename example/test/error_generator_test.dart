@@ -29,4 +29,162 @@ abstract class AppModule {
       );
     });
   });
+
+  group('constructor', () {
+    test('should failed if single private constructor', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[AppModule])
+abstract class AppComponent {
+  String get hello;
+}
+
+@module
+abstract class AppModule {
+  @provides
+  static String provideHello(MyClass myClass) => myClass.toString();
+}
+
+class MyClass {
+  @inject
+  MyClass._();
+}
+        ''',
+        onError: (Object error) {
+          assert(
+            error.toString() ==
+                'Bad state: constructor can not be private [MyClass._]',
+          );
+        },
+      );
+    });
+
+    test('should failed if not injected constructor', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[AppModule])
+abstract class AppComponent {
+  String get hello;
+}
+
+@module
+abstract class AppModule {
+  @provides
+  static String provideHello(MyClass myClass) => myClass.toString();
+}
+
+class MyClass {
+  MyClass();
+}
+        ''',
+        onError: (Object error) {
+          assert(
+            error.toString() ==
+                'Bad state: not found injected constructor for MyClass',
+          );
+        },
+      );
+    });
+
+    test('should failed if multiple injected constructors', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[AppModule])
+abstract class AppComponent {
+  String get hello;
+}
+
+@module
+abstract class AppModule {
+  @provides
+  static String provideHello(MyClass myClass) => myClass.toString();
+}
+
+class MyClass {
+  @inject
+  MyClass();
+  
+  @inject
+  MyClass.create();
+}
+        ''',
+        onError: (Object error) {
+          assert(
+            error.toString() ==
+                'Bad state: too many injected constructors for MyClass',
+          );
+        },
+      );
+    });
+
+    test('should failed if injected factory constructor', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[AppModule])
+abstract class AppComponent {
+  String get hello;
+}
+
+@module
+abstract class AppModule {
+  @provides
+  static String provideHello(MyClass myClass) => myClass.toString();
+}
+
+class MyClass {
+  MyClass._();
+  
+  @inject
+  factory MyClass.create() {
+    return MyClass._();
+  }
+}
+        ''',
+        onError: (Object error) {
+          assert(
+            error.toString() ==
+                'Bad state: factory constructor not supported [MyClass.create]',
+          );
+        },
+      );
+    });
+
+    test('should failed if injected named constructor', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[AppModule])
+abstract class AppComponent {
+  String get hello;
+}
+
+@module
+abstract class AppModule {
+  @provides
+  static String provideHello(MyClass myClass) => myClass.toString();
+}
+
+class MyClass {
+  @inject
+  MyClass.create();
+}
+        ''',
+        onError: (Object error) {
+          assert(
+            error.toString() ==
+                'Bad state: named constructor not supported [MyClass.create]',
+          );
+        },
+      );
+    });
+  });
 }

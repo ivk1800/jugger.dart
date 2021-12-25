@@ -64,4 +64,10 @@ void main() {
           'qualifier/named/named_qualifier_provides_param');
     });
   });
+
+  group('inject', () {
+    test('empty injected constructor', () async {
+      await checkBuilderOfFile('inject/constructor/empty_injected_contructor');
+    });
+  });
 }
