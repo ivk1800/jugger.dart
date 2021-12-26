@@ -1,13 +1,8 @@
 **/.dart_tool/
 **/.packages
-**/.pub/
-*/build/
-*/*/build/
 **/pubspec.lock
 *.jugger.dart
 
 # IntelliJ related
 *.iml
-*.ipr
-*.iws
 .idea/
