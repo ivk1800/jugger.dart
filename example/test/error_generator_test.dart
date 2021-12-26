@@ -217,5 +217,47 @@ abstract class AppModule {
         },
       );
     });
+
+    group('annotation', () {
+      test('should failed if inject annotation not from jugger library',
+          () async {
+        await checkBuilderError(
+          codeContent: '''
+import 'package:jugger/jugger.dart' as j;
+
+@j.Component(modules: <Type>[AppModule])
+abstract class AppComponent {
+  String get hello;
+}
+
+@j.module
+abstract class AppModule {
+  @j.provides
+  static String provideHello(MyClass myClass) => myClass.toString();
+}
+
+class MyClass {
+  @inject
+  MyClass._();
+}
+
+class Inject {
+  const factory Inject() = Inject._;
+
+  const Inject._();
+}
+
+const Inject inject = Inject._();
+
+        ''',
+          onError: (Object error) {
+            assert(
+              error.toString() ==
+                  'Bad state: not found injected constructor for MyClass',
+            );
+          },
+        );
+      });
+    });
   });
 }

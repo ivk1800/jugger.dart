@@ -5,6 +5,7 @@ import 'package:collection/collection.dart';
 import 'package:jugger/jugger.dart';
 
 import 'classes.dart';
+import 'library_ext.dart';
 
 ComponentAnnotation? getComponentAnnotation(Element element) {
   final Annotation? annotation = getAnnotations(element)
@@ -85,11 +86,17 @@ List<Annotation> getAnnotations(Element moduleClass) {
     final Element? valueElement =
         annotation.computeConstantValue()?.type?.element;
 
+    if (!annotation.element!.library!.isJuggerLibrary) {
+      continue;
+    }
+
     if (valueElement == null) {
       // ignore: flutter_style_todos
       //TODO
     } else {
-      if (valueElement.name == 'Component') {
+      final bool isJuggerLibrary = valueElement.library!.isJuggerLibrary;
+
+      if (isJuggerLibrary && valueElement.name == 'Component') {
         final List<ClassElement> modules = annotation
             .computeConstantValue()!
             .getField('modules')!
@@ -201,6 +208,9 @@ extension ElementExt on Element {
 }
 
 extension ElementAnnotationExt on List<ElementAnnotation> {
-  bool isQualifier() =>
-      any((ElementAnnotation a) => a.element!.name == 'qualifier');
+  bool isQualifier() => any(
+        (ElementAnnotation a) =>
+            a.element!.library!.isJuggerLibrary &&
+            a.element!.name == 'qualifier',
+      );
 }
