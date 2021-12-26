@@ -67,7 +67,17 @@ void main() {
 
   group('inject', () {
     test('empty injected constructor', () async {
-      await checkBuilderOfFile('inject/constructor/empty_injected_contructor');
+      await checkBuilderOfFile('inject/constructor/empty_injected_constructor');
+    });
+
+    test('empty injected const constructor', () async {
+      await checkBuilderOfFile(
+          'inject/constructor/empty_injected_const_constructor');
+    });
+
+    test('injected const constructor with params', () async {
+      await checkBuilderOfFile(
+          'inject/constructor/injected_const_constructor_with_params');
     });
   });
 

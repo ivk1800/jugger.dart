@@ -843,6 +843,7 @@ class ComponentBuilderDelegate {
     return CodeExpression(ToCodeExpression(newInstance));
   }
 
+  // TODO(Ivan): split to two methods
   Code _buildCallMethodOrConstructor(
     Element element,
     List<ParameterElement> parameters,
@@ -883,7 +884,16 @@ class ComponentBuilderDelegate {
     }
 
     if (parameters.isEmpty) {
-      return ToCodeExpression(r(element.name!).newInstance(<Expression>[]));
+      final Reference reference = r(element.name!);
+      late final Expression instance;
+      if (element is ClassElement &&
+          element.constructors.first.isConst &&
+          element.constructors.first.parameters.isEmpty) {
+        instance = reference.constInstance(<Expression>[]);
+      } else {
+        instance = reference.newInstance(<Expression>[]);
+      }
+      return ToCodeExpression(instance);
     }
 
     final bool isPositional = parameters
