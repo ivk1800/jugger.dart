@@ -186,6 +186,49 @@ class MyClass {
         },
       );
     });
+
+    test('should failed if injected constructor with named param', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[AppModule])
+abstract class AppComponent {
+  String get hello;
+}
+
+@module
+abstract class AppModule {
+  @provides
+  static String provideHello(MyClass myClass) => myClass.toString();
+
+  @provides
+  static int provideNumberInt() => 1;
+
+  @provides
+  static double provideNumberDouble() => 1;
+}
+
+class MyClass {
+  @inject
+  const MyClass(
+    this.numberInt, {
+    required this.numberDouble,
+  });
+
+  final int numberInt;
+  final double numberDouble;
+}
+        ''',
+        onError: (Object error) {
+          print(error);
+          expect(
+            error.toString(),
+            'Bad state: all parameters must be Positional or Named [MyClass]',
+          );
+        },
+      );
+    });
   });
 
   group('circular dependency', () {

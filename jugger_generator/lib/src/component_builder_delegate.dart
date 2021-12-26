@@ -896,11 +896,9 @@ class ComponentBuilderDelegate {
       return ToCodeExpression(instance);
     }
 
-    final bool isPositional = parameters
-        .map((ParameterElement p) => p.isPositional)
-        .any((bool b) => b);
-    final bool isNamed =
-        parameters.map((ParameterElement p) => p.isNamed).any((bool b) => b);
+    final bool isPositional =
+        parameters.any((ParameterElement p) => p.isPositional);
+    final bool isNamed = parameters.any((ParameterElement p) => p.isNamed);
 
     if (isPositional && isNamed) {
       throw StateError(
