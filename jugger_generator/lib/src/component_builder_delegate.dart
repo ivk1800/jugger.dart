@@ -619,8 +619,7 @@ class ComponentBuilderDelegate {
         injectedConstructor.element.parameters;
 
     final Expression newInstance =
-        getProviderType(injectedConstructor.element, _allocator)
-            .newInstance(<Expression>[
+        getProviderType(injectedConstructor.element).newInstance(<Expression>[
       CodeExpression(Block.of(_buildProviderBody(element, <Code>[
         _buildCallMethodOrConstructor(element, parameters, _componentContext)
       ])))
@@ -682,8 +681,7 @@ class ComponentBuilderDelegate {
     MethodElement method,
     AnotherComponentSource provider,
   ) {
-    final Expression newInstance =
-        getProviderType(method, _allocator).newInstance(
+    final Expression newInstance = getProviderType(method).newInstance(
       <Expression>[
         CodeExpression(
           Block.of(
@@ -706,8 +704,7 @@ class ComponentBuilderDelegate {
     MethodElement method,
     ModuleSource provider,
   ) {
-    final Expression newInstance =
-        getProviderType(method, _allocator).newInstance(
+    final Expression newInstance = getProviderType(method).newInstance(
       <Expression>[
         CodeExpression(
           Block.of(
@@ -785,7 +782,7 @@ class ComponentBuilderDelegate {
     }
 
     final Expression newInstance =
-        getProviderType(method, _allocator).newInstance(<Expression>[
+        getProviderType(method).newInstance(<Expression>[
       CodeExpression(
         Block.of(
           _buildProviderBody(
@@ -830,7 +827,7 @@ class ComponentBuilderDelegate {
     final ClassElement returnClass = method.returnType.element as ClassElement;
     final Element moduleClass = method.enclosingElement;
     final Expression newInstance =
-        getProviderType(method, allocator).newInstance(<Expression>[
+        getProviderType(method).newInstance(<Expression>[
       CodeExpression(Block.of(_buildProviderBody(returnClass, <Code>[
         ToCodeExpression(
             refer(moduleClass.name!, createElementPath(moduleClass))),
@@ -923,23 +920,38 @@ class ComponentBuilderDelegate {
     );
   }
 
-  Reference getProviderType(Element element, Allocator allocator) {
-    final String generic = _getGeneric(element, allocator);
+  Reference getProviderType(Element element) {
+    assert(element is MethodElement || element is ConstructorElement);
+
+    final String generic = _getGeneric(element);
+
+    if (element is ConstructorElement) {
+      return getProviderReference(
+        generic: generic,
+        singleton: element.enclosingElement.hasAnnotatedAsSingleton(),
+      );
+    }
+
+    return getProviderReference(
+      generic: generic,
+      singleton: element.hasAnnotatedAsSingleton(),
+    );
+  }
+
+  Reference getProviderReference(
+      {required String generic, required bool singleton}) {
     return refer(
-        getAnnotations(element)
-                .any((j.Annotation a) => a is j.SingletonAnnotation)
-            ? 'SingletonProvider<$generic>'
-            : 'Provider<$generic>',
+        singleton ? 'SingletonProvider<$generic>' : 'Provider<$generic>',
         'package:jugger/jugger.dart');
   }
 
-  String _getGeneric(Element element, Allocator allocator) {
+  String _getGeneric(Element element) {
     if (element is ConstructorElement) {
       final ClassElement c = element.enclosingElement;
-      return allocator.allocate(
+      return _allocator.allocate(
           Reference(c.thisType.getName(), c.librarySource.uri.toString()));
     } else if (element is MethodElement) {
-      return allocator.allocate(refer(_allocateTypeName(element.returnType)));
+      return _allocator.allocate(refer(_allocateTypeName(element.returnType)));
     }
     throw StateError(
         'unsupported type: ${element.name}, ${element.runtimeType}');

@@ -79,6 +79,11 @@ void main() {
       await checkBuilderOfFile(
           'inject/constructor/injected_const_constructor_with_params');
     });
+
+    test('injected constructor with singleton scope', () async {
+      await checkBuilderOfFile(
+          'inject/constructor/injected_constructor_with_singleton_scope');
+    });
   });
 
   group('generics', () {

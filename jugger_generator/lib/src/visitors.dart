@@ -1,10 +1,8 @@
-import 'dart:math';
-
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:analyzer/dart/element/visitor.dart';
-import 'package:jugger/jugger.dart' as j;
 import 'package:collection/collection.dart';
+import 'package:jugger/jugger.dart' as j;
 
 import 'classes.dart';
 import 'utils.dart';

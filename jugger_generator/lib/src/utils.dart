@@ -196,6 +196,9 @@ extension ElementExt on Element {
 
   bool hasAnnotatedAsModule() => getModuleAnnotation() != null;
 
+  bool hasAnnotatedAsSingleton() =>
+      getAnnotations(this).any((Annotation a) => a is SingletonAnnotation);
+
   ModuleAnnotation getModuleAnnotationOfModuleClass() {
     final Element moduleClass = this;
 
