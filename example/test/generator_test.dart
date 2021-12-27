@@ -94,4 +94,17 @@ void main() {
       await checkBuilderOfFile('generics/provide_complex_generic_type');
     });
   });
+
+  group('component', () {
+    test('simple', () async {
+      await checkBuilderOfFile('subcomponent/simple_subcomponent');
+    });
+  });
+
+  group('subcomponent', () {
+    test('build instance dependency', () async {
+      await checkBuilderOfFile(
+          'component/component_with_build_instance_dependency');
+    });
+  });
 }

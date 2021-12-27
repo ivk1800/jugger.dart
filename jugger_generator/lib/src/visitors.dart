@@ -1,7 +1,10 @@
+import 'dart:math';
+
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:analyzer/dart/element/visitor.dart';
 import 'package:jugger/jugger.dart' as j;
+import 'package:collection/collection.dart';
 
 import 'classes.dart';
 import 'utils.dart';
@@ -187,8 +190,14 @@ class ComponentBuildersVisitor extends RecursiveElementVisitor<dynamic> {
         }
       }
 
+      late final MethodElement buildMethod;
+      final MethodElement? buildMethodNullable = v.buildMethod;
+      check(buildMethodNullable != null,
+          'not found build method for [${createClassNameWithPath(element)}');
+      buildMethod = buildMethodNullable!;
+
       final ComponentAnnotation? componentAnnotation =
-          getComponentAnnotation(v.buildMethod.returnType.element!);
+          getComponentAnnotation(buildMethod.returnType.element!);
 
       check(componentAnnotation != null, 'build method must return component');
 
@@ -209,7 +218,7 @@ class ComponentBuildersVisitor extends RecursiveElementVisitor<dynamic> {
           element: element,
           methods: v.methodElements,
           // ignore: avoid_as
-          componentClass: v.buildMethod.returnType.element as ClassElement));
+          componentClass: buildMethod.returnType.element as ClassElement));
     }
 
     return null;
@@ -234,8 +243,8 @@ class BuildMethodsVisitor extends RecursiveElementVisitor<dynamic> {
     return null;
   }
 
-  MethodElement get buildMethod {
-    return methodElements.firstWhere((MethodElement m) {
+  MethodElement? get buildMethod {
+    return methodElements.firstWhereOrNull((MethodElement m) {
       return m.name == 'build';
     });
   }

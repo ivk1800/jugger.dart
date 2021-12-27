@@ -171,6 +171,10 @@ bool isFlutterCore(Element element) {
   return element.librarySource!.fullName.startsWith('/flutter');
 }
 
+String createClassNameWithPath(ClassElement element) {
+  return '${element.name}] ${element.library.identifier}';
+}
+
 void check(bool condition, String message) {
   if (!condition) {
     throw StateError(message);

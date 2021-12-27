@@ -253,7 +253,7 @@ class ComponentContext {
 
     groupBy2.forEach((dynamic key, List<ProviderSource> p) {
       check(p.length == 1,
-          '$key has several providers: ${p.map((ProviderSource s) => s.sourceString).join(', ')}');
+          '$key provides multiple time: ${p.map((ProviderSource s) => s.sourceString).join(', ')}');
     });
   }
 }

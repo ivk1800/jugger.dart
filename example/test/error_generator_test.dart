@@ -357,4 +357,270 @@ const Inject inject = Inject._();
       });
     });
   });
+
+  group('subcomponent', () {
+    test('should failed if component builder not found', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+class AppConfig {
+  AppConfig(this.hello);
+
+  final String hello;
+}
+
+@Component(modules: <Type>[AppModule])
+abstract class AppComponent {
+  AppConfig get appConfig;
+}
+
+@module
+abstract class AppModule {
+  @singleton
+  @provides
+  static AppConfig provideAppConfig() => AppConfig('hello');
+}
+
+@Component(
+  dependencies: <Type>[AppComponent],
+  modules: <Type>[MyModule],
+)
+abstract class MyComponent {
+  String get helloString;
+}
+
+@module
+abstract class MyModule {
+  @provides
+  static String provideHelloString(AppConfig config) => config.hello;
+}
+        ''',
+        onError: (Object error) {
+          print(error);
+          expect(
+            error.toString(),
+            'Bad state: you need provide dependencies by builder. component: MyComponent, dependencies: AppComponent',
+          );
+        },
+      );
+    });
+
+    test('should failed if build method not found', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+class AppConfig {
+  AppConfig(this.hello);
+
+  final String hello;
+}
+
+@Component(modules: <Type>[AppModule])
+abstract class AppComponent {
+  AppConfig get appConfig;
+}
+
+@module
+abstract class AppModule {
+  @singleton
+  @provides
+  static AppConfig provideAppConfig() => AppConfig('hello');
+}
+
+@Component(
+  dependencies: <Type>[AppComponent],
+  modules: <Type>[MyModule],
+)
+abstract class MyComponent {
+  String get helloString;
+}
+
+@componentBuilder
+abstract class MyComponentBuilder {
+  MyComponentBuilder appComponent(AppComponent appComponent);
+}
+
+@module
+abstract class MyModule {
+  @provides
+  static String provideHelloString(AppConfig config) => config.hello;
+}
+        ''',
+        onError: (Object error) {
+          print(error);
+          expect(
+            error.toString(),
+            'Bad state: not found build method for [MyComponentBuilder] package:example/test.dart.dart',
+          );
+        },
+      );
+    });
+
+    test('should failed if build method return not component type', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+class AppConfig {
+  AppConfig(this.hello);
+
+  final String hello;
+}
+
+@Component(modules: <Type>[AppModule])
+abstract class AppComponent {
+  AppConfig get appConfig;
+}
+
+@module
+abstract class AppModule {
+  @singleton
+  @provides
+  static AppConfig provideAppConfig() => AppConfig('hello');
+}
+
+@Component(
+  dependencies: <Type>[AppComponent],
+  modules: <Type>[MyModule],
+)
+abstract class MyComponent {
+  String get helloString;
+}
+
+@componentBuilder
+abstract class MyComponentBuilder {
+  MyComponentBuilder appComponent(AppComponent appComponent);
+  
+  MyComponentBuilder build();
+}
+
+@module
+abstract class MyModule {
+  @provides
+  static String provideHelloString(AppConfig config) => config.hello;
+}
+        ''',
+        onError: (Object error) {
+          print(error);
+          expect(
+            error.toString(),
+            'Bad state: build MyComponentBuilder build() method must return component type',
+          );
+        },
+      );
+    });
+
+    test('should failed if dependency not provided by build method', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+class AppConfig {
+  AppConfig(this.hello);
+
+  final String hello;
+}
+
+@Component(modules: <Type>[AppModule])
+abstract class AppComponent {
+  AppConfig get appConfig;
+}
+
+@module
+abstract class AppModule {
+  @singleton
+  @provides
+  static AppConfig provideAppConfig() => AppConfig('hello');
+}
+
+@Component(
+  dependencies: <Type>[AppComponent],
+  modules: <Type>[MyModule],
+)
+abstract class MyComponent {
+  String get helloString;
+}
+
+@componentBuilder
+abstract class MyComponentBuilder {
+  MyComponentBuilder build();
+}
+
+@module
+abstract class MyModule {
+  @provides
+  static String provideHelloString(AppConfig config) => config.hello;
+}
+        ''',
+        onError: (Object error) {
+          print(error);
+          expect(
+            error.toString(),
+            'Bad state: build MyComponentBuilder build() method must return component type',
+          );
+        },
+      );
+    });
+
+    test(
+        'should failed if dependency provided multiple time from parent component and module',
+        () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+class AppConfig {
+  AppConfig(this.hello);
+
+  final String hello;
+}
+
+@Component(modules: <Type>[AppModule])
+abstract class AppComponent {
+  AppConfig get appConfig;
+}
+
+@module
+abstract class AppModule {
+  @singleton
+  @provides
+  static AppConfig provideAppConfig() => AppConfig('hello');
+}
+
+@Component(
+  dependencies: <Type>[AppComponent],
+  modules: <Type>[MyModule],
+)
+abstract class MyComponent {
+  String get helloString;
+}
+
+@componentBuilder
+abstract class MyComponentBuilder {
+  MyComponentBuilder appComponent(AppComponent appComponent);
+
+  MyComponent build();
+}
+
+@module
+abstract class MyModule {
+  @provides
+  static AppConfig provideAppConfig() => AppConfig('hello');
+
+  @provides
+  static String provideHelloString(AppConfig config) => config.hello;
+}
+        ''',
+        onError: (Object error) {
+          print(error);
+          expect(
+            error.toString(),
+            'Bad state: AppConfig provides multiple time: AppConfig.appConfig, MyModule.provideAppConfig',
+          );
+        },
+      );
+    });
+  });
 }
