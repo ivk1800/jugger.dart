@@ -231,6 +231,60 @@ class MyClass {
     });
   });
 
+  group('inject', () {
+    test('should failed if injected class from core', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[AppModule])
+abstract class AppComponent {
+  List<String> get strings;
+}
+
+@module
+abstract class AppModule {
+  @provides
+  static List<String> provideStrings(String s) => <String>[s];
+}
+        ''',
+        onError: (Object error) {
+          print(error);
+          expect(
+            error.toString(),
+            'Bad state: provider for (String, qualifier: null) not found',
+          );
+        },
+      );
+    });
+
+    test('should failed if injected abstract class from core', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[AppModule])
+abstract class AppComponent {
+  List<String> get strings;
+}
+
+@module
+abstract class AppModule {
+  @provides
+  static List<String> provideStrings(Future<String> f) => <String>[f.toString()];
+}
+        ''',
+        onError: (Object error) {
+          print(error);
+          expect(
+            error.toString(),
+            'Bad state: provideStrings.Future<String> (qualifier: null) not provided',
+          );
+        },
+      );
+    });
+  });
+
   group('circular dependency', () {
     test('should failed if two providers depend on each other', () async {
       await checkBuilderError(

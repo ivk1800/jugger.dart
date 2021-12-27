@@ -1,0 +1,28 @@
+// ignore_for_file: implementation_imports
+// ignore_for_file: prefer_const_constructors
+// ignore_for_file: always_specify_types
+// ignore_for_file: directives_ordering
+// ignore_for_file: non_constant_identifier_names
+import 'dart:async' as _i1;
+import 'package:example/generics/provide_type_with_different_generic.dart'
+    as _i2;
+import 'package:jugger/jugger.dart' as _i3;
+
+class JuggerAppComponent implements _i2.AppComponent {
+  JuggerAppComponent.create();
+
+  late final _i3.IProvider<_i1.Future<String>> _future_String_Provider =
+      _i3.Provider<_i1.Future<String>>(() {
+    return _i2.AppModule.provideStringFuture();
+  });
+
+  late final _i3.IProvider<_i1.Future<int>> _future_int_Provider =
+      _i3.Provider<_i1.Future<int>>(() {
+    return _i2.AppModule.provideIntFuture();
+  });
+
+  @override
+  _i1.Future<int> get intFuture => _future_int_Provider.get();
+  @override
+  _i1.Future<String> get stringFuture => _future_String_Provider.get();
+}
