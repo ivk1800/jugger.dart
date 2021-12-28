@@ -4,7 +4,10 @@ import 'package:build/build.dart';
 import 'package:build_test/build_test.dart';
 import 'package:jugger_generator/src/jugger_builder.dart';
 
-Future<void> checkBuilderOfFile(String fileName) async {
+Future<void> checkBuilderOfFile(
+  String fileName, [
+  BuilderOptions options = BuilderOptions.empty,
+]) async {
   final File resultContentFile =
       File('${Directory.current.path}/assets/$fileName.txt');
   final File codeContentFile =
@@ -23,6 +26,7 @@ Future<void> checkBuilderOfFile(String fileName) async {
     fileName: fileName,
     codeContent: codeContent,
     resultContent: resultContent,
+    options: options,
   );
 }
 
@@ -31,11 +35,12 @@ Future<void> checkBuilderContent({
   required String resultContent,
   required String codeContent,
   void Function(Object error)? onError,
+  BuilderOptions options = BuilderOptions.empty,
 }) async {
   try {
     await testBuilder(
       JuggerBuilder(
-        options: BuilderOptions.empty,
+        options: options,
       ),
       <String, String>{'example|lib/$fileName.dart': codeContent},
       outputs: <String, Object>{

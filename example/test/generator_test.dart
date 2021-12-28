@@ -1,4 +1,5 @@
 import 'package:test/test.dart';
+import 'package:build/build.dart';
 
 import 'utils.dart';
 
@@ -110,6 +111,30 @@ void main() {
     test('build instance dependency', () async {
       await checkBuilderOfFile(
           'component/component_with_build_instance_dependency');
+    });
+  });
+
+  group('interface prefix', () {
+    test('ignore interface prefix', () async {
+      await checkBuilderOfFile(
+        'build_config/ignore_interface_prefix',
+        const BuilderOptions(
+          <String, dynamic>{
+            'ignore_interface_prefix_in_component_name': true,
+          },
+        ),
+      );
+    });
+
+    test('not ignore interface prefix', () async {
+      await checkBuilderOfFile(
+        'build_config/not_ignore_interface_prefix',
+        const BuilderOptions(
+          <String, dynamic>{
+            'ignore_interface_prefix_in_component_name': false,
+          },
+        ),
+      );
     });
   });
 }

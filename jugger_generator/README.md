@@ -120,6 +120,31 @@ void main() {
 }
 ```
 
+#### interface prefix:
+If interface have prefix 'I' you can ignore his during generation:
+
+build.yaml
+```yaml
+targets:
+  $default:
+    builders:
+      jugger_generator:
+        options:
+          ignore_interface_prefix_in_component_name: false
+```
+```dart
+@Component(modules: <Type>[AppModule])
+abstract class IAppComponent {}
+```
+and use as:
+```dart
+var component = JuggerMyComponent.create();
+```
+instead:
+```dart
+var component = JuggerIMyComponent.create();
+```
+
 #### Bugs
 If you find a bug, you can create a [issue](https://github.com/ivk1800/jugger.dart/issues/new)
 
