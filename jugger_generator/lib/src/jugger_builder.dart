@@ -18,6 +18,8 @@ class JuggerBuilder extends Builder {
       ignoreInterfacePrefixInComponentName: options
               .config['ignore_interface_prefix_in_component_name'] as bool? ??
           false,
+      checkUnusedProviders:
+          options.config['check_unused_providers'] as bool? ?? false,
     );
     final ComponentBuilderDelegate delegate = ComponentBuilderDelegate(
       globalConfig: globalConfig,

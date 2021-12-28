@@ -1,3 +1,4 @@
+import 'package:build/build.dart';
 import 'package:test/test.dart';
 
 import 'utils.dart';
@@ -620,6 +621,39 @@ abstract class MyModule {
             'Bad state: AppConfig provides multiple time: AppConfig.appConfig, MyModule.provideAppConfig',
           );
         },
+      );
+    });
+  });
+
+  group('build config', () {
+    test('should failed if found unused providers', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+class MainRouter {}
+
+@Component(modules: <Type>[AppModule])
+abstract class AppComponent {}
+
+@module
+abstract class AppModule {
+  @provides
+  static String provideString() => '';
+}
+        ''',
+        onError: (Object error) {
+          print(error);
+          expect(
+            error.toString(),
+            'Bad state: found unused generated providers: _stringProvider',
+          );
+        },
+        options: const BuilderOptions(
+          <String, dynamic>{
+            'check_unused_providers': true,
+          },
+        ),
       );
     });
   });

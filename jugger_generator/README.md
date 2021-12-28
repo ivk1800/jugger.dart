@@ -120,6 +120,19 @@ void main() {
 }
 ```
 
+#### Unused generated providers:
+Fails build if generated provider not used, by default disabled.
+
+build.yaml
+```yaml
+targets:
+  $default:
+    builders:
+      jugger_generator:
+        options:
+          check_unused_providers: true
+```
+
 #### interface prefix:
 If interface have prefix 'I' you can ignore his during generation:
 

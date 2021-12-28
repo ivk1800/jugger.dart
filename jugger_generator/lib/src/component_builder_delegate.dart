@@ -12,6 +12,7 @@ import 'package:dart_style/dart_style.dart';
 import 'package:jugger/jugger.dart' as jugger;
 import 'package:jugger_generator/src/utils.dart';
 
+import 'check_unused_providers.dart';
 import 'classes.dart' as j;
 import 'component_context.dart';
 import 'global_config.dart';
@@ -129,6 +130,10 @@ class ComponentBuilderDelegate {
 
       final String fileText =
           target.build().accept(DartEmitter(allocator: _allocator)).toString();
+
+      if (globalConfig.checkUnusedProviders) {
+        checkUnusedProviders(fileText);
+      }
 
       final String finalFileText = fileText.isEmpty
           ? ''

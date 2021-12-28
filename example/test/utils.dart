@@ -60,14 +60,13 @@ Future<void> checkBuilderContent({
 Future<void> checkBuilderError({
   required String codeContent,
   required void Function(Object error) onError,
+  BuilderOptions options = BuilderOptions.empty,
 }) async {
   const String fileName = 'test.dart';
   const String resultContent = '';
   try {
     await testBuilder(
-      JuggerBuilder(
-        options: BuilderOptions.empty,
-      ),
+      JuggerBuilder(options: options),
       <String, String>{'example|lib/$fileName.dart': codeContent},
       outputs: <String, Object>{
         'example|lib/$fileName.jugger.dart': resultContent,

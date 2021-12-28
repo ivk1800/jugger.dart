@@ -1,5 +1,5 @@
-import 'package:test/test.dart';
 import 'package:build/build.dart';
+import 'package:test/test.dart';
 
 import 'utils.dart';
 
