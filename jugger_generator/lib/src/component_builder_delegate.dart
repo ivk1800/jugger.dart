@@ -174,9 +174,8 @@ class ComponentBuilderDelegate {
               if (m.name == 'build') {
                 final Iterable<Expression> map = componentBuilder.parameters
                     .map((j.ComponentBuilderParameter parameter) {
-                  final String? tag = getQualifierAnnotation(
-                          parameter.parameter.enclosingElement!)
-                      ?.tag;
+                  final String? tag =
+                      parameter.parameter.enclosingElement!.getQualifierTag();
                   final Element? classElement =
                       parameter.parameter.type.element;
                   if (!(classElement is ClassElement)) {
@@ -188,7 +187,7 @@ class ComponentBuilderDelegate {
                       CodeExpression(Block.of(<Code>[
                     Code('_${_generateName(
                       classElement.thisType,
-                      tag,
+                      tag?._toAssignTag(),
                     )}!'),
                   ]));
                   return codeExpression;
@@ -196,11 +195,12 @@ class ComponentBuilderDelegate {
 
                 final List<Code> assertCodes = componentBuilder.parameters
                     .map((j.ComponentBuilderParameter parameter) {
-                  final String? tag = getQualifierAnnotation(
-                          parameter.parameter.enclosingElement!)
-                      ?.tag;
-                  return Code(
-                      'assert(_${_generateName(parameter.parameter.type, tag)} != null) ');
+                  final String? tag =
+                      parameter.parameter.enclosingElement!.getQualifierTag();
+                  return Code('assert(_${_generateName(
+                    parameter.parameter.type,
+                    tag?._toAssignTag(),
+                  )} != null) ');
                 }).toList();
 
                 for (Code value in assertCodes) {
@@ -219,10 +219,12 @@ class ComponentBuilderDelegate {
                 final j.ComponentBuilderParameter p =
                     j.ComponentBuilderParameter(parameter: m.parameters[0]);
                 final String? tag =
-                    getQualifierAnnotation(p.parameter.enclosingElement!)?.tag;
+                    p.parameter.enclosingElement!.getQualifierTag();
                 b.addExpression(CodeExpression(Block.of(<Code>[
-                  Code(
-                      '_${_generateName(p.parameter.type, tag)} = ${p.parameter.name}; return this'),
+                  Code('_${_generateName(
+                    p.parameter.type,
+                    tag?._toAssignTag(),
+                  )} = ${p.parameter.name}; return this'),
                 ])));
               }
             });
@@ -234,9 +236,11 @@ class ComponentBuilderDelegate {
             b.type = Reference('${parameter.parameter.type.getName()}?',
                 createElementPath(parameter.parameter.type.element!));
             final String? tag =
-                getQualifierAnnotation(parameter.parameter.enclosingElement!)
-                    ?.tag;
-            b.name = '_${_generateName(parameter.parameter.type, tag)}';
+                parameter.parameter.enclosingElement!.getQualifierTag();
+            b.name = '_${_generateName(
+              parameter.parameter.type,
+              tag?._toAssignTag(),
+            )}';
           });
         }));
       }));
@@ -274,9 +278,11 @@ class ComponentBuilderDelegate {
       if (!(provider is BuildInstanceSource) &&
           !(provider is AnotherComponentSource)) {
         fields.add(Field((FieldBuilder b) {
-          final String? tag =
-              getQualifierAnnotation(dependency.enclosingElement)?.tag;
-          b.name = '_${_generateName(dependency.type, tag)}Provider';
+          final String? tag = dependency.enclosingElement.getQualifierTag();
+          b.name = '_${_generateName(
+            dependency.type,
+            tag?._toAssignTag(),
+          )}Provider';
 
           final String generic = allocator.allocate(
             refer(_allocateDependencyTypeName(dependency)),
@@ -365,7 +371,7 @@ class ComponentBuilderDelegate {
       _log(
           'build property for: ${property.enclosingElement.name}.${property.name}');
       return Method((MethodBuilder builder) {
-        final String? tag = getQualifierAnnotation(property)?.tag;
+        final String? tag = property.getQualifierTag();
         builder
           ..annotations.add(_overrideAnnotationExpression)
           ..name = property.name
@@ -393,17 +399,19 @@ class ComponentBuilderDelegate {
         b.name = method.name;
         b.returns = refer(_allocateTypeName(method.returnType));
 
-        final String? tag = getQualifierAnnotation(method)?.tag;
+        final String? tag = method.getQualifierTag();
         final ProviderSource? providerSource =
             _componentContext.findProvider(method.returnType, tag);
 
         check(providerSource != null,
             '[${method.returnType.element!.name}, qualifier: $tag] not provided');
 
-        b.body = Code('return ${_generateAssignString(
-          method.returnType,
-          tag,
-        )};');
+        b.body = Code(
+          'return ${_generateAssignString(
+            method.returnType,
+            tag,
+          )};',
+        );
       });
       newProperties.add(m);
     }
@@ -454,7 +462,7 @@ class ComponentBuilderDelegate {
       builder.body = Block((BlockBuilder b) {
         for (j.InjectedMember member in visitor.members.toSet()) {
           _log('build provide method for member: ${member.element}');
-          final String? tag = getQualifierAnnotation(member.element)?.tag;
+          final String? tag = member.element.getQualifierTag();
           b.addExpression(CodeExpression(Block.of(<Code>[
             Code('${parameterElement.name}.${member.element.name}'),
             Code(' = ${_generateAssignString(member.element.type, tag)}'),
@@ -495,7 +503,15 @@ class ComponentBuilderDelegate {
           'provider for (${type.getName()}, qualifier: $name) not found');
     }
 
-    return '_${_generateName(type, name)}Provider.get()';
+    final String? finalSting;
+
+    if (name == null) {
+      finalSting = null;
+    } else {
+      finalSting = generateMd5(name);
+    }
+
+    return '_${_generateName(type, finalSting)}Provider.get()';
   }
 
   String _generateName(DartType type, String? name) {
@@ -506,7 +522,7 @@ class ComponentBuilderDelegate {
         .replaceAll(' ', '')
         .replaceAll(',', '_');
     if (name != null) {
-      return '$name$typeName';
+      return 'named_${name}_$typeName';
     }
 
     return '${uncapitalize(typeName)}';
@@ -978,9 +994,11 @@ class ComponentBuilderDelegate {
           return Parameter((ParameterBuilder b) {
             b.toThis = true;
             final String? tag =
-                getQualifierAnnotation(parameter.parameter.enclosingElement!)
-                    ?.tag;
-            b.name = '_${_generateName(parameter.parameter.type, tag)}';
+                parameter.parameter.enclosingElement!.getQualifierTag();
+            b.name = '_${_generateName(
+              parameter.parameter.type,
+              tag?._toAssignTag(),
+            )}';
           });
         }));
       }
@@ -997,8 +1015,11 @@ class ComponentBuilderDelegate {
       // ignore: unnecessary_parenthesis
       return (Field((FieldBuilder b) {
         final String? tag =
-            getQualifierAnnotation(parameter.parameter.enclosingElement!)?.tag;
-        b.name = '_${_generateName(parameter.parameter.type, tag)}';
+            parameter.parameter.enclosingElement!.getQualifierTag();
+        b.name = '_${_generateName(
+          parameter.parameter.type,
+          tag?._toAssignTag(),
+        )}';
         b.modifier = FieldModifier.final$;
         b.type = Reference(parameter.parameter.type.getName(),
             createElementPath(parameter.parameter.type.element!));
@@ -1035,4 +1056,8 @@ class ComponentBuilderDelegate {
   }
 
   void _log(String value) => _logs.add(value);
+}
+
+extension _StringExt on String {
+  String _toAssignTag() => generateMd5(this);
 }

@@ -1,7 +1,10 @@
+import 'dart:convert';
+
 import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
+import 'package:crypto/crypto.dart';
 import 'package:jugger/jugger.dart';
 
 import 'classes.dart';
@@ -43,6 +46,8 @@ QualifierAnnotation? getQualifierAnnotation(Element element) {
   return annotation is QualifierAnnotation ? annotation : null;
 }
 
+String generateMd5(String input) => md5.convert(utf8.encode(input)).toString();
+
 List<Annotation> getAnnotations(Element moduleClass) {
   final List<Annotation> annotations = <Annotation>[];
 
@@ -59,7 +64,7 @@ List<Annotation> getAnnotations(Element moduleClass) {
       if (isQualifier) {
         annotations.add(
           QualifierAnnotation(
-            tag: 'q${annotationClassElement.name}',
+            tag: '${annotationClassElement.name}',
           ),
         );
       }
@@ -71,8 +76,8 @@ List<Annotation> getAnnotations(Element moduleClass) {
         annotations.add(
           QualifierAnnotation(
             tag: annotationClassElement.name == 'Named'
-                ? 'qNamed${annotation.computeConstantValue()!.getField('name')!.toStringValue()!}'
-                : 'q${annotationClassElement.name}',
+                ? '${annotation.computeConstantValue()!.getField('name')!.toStringValue()!}'
+                : '${annotationClassElement.name}',
           ),
         );
       }
@@ -212,6 +217,8 @@ extension ElementExt on Element {
     }
     return ModuleAnnotation(moduleElement: moduleClass);
   }
+
+  String? getQualifierTag() => getQualifierAnnotation(this)?.tag;
 }
 
 extension ElementAnnotationExt on List<ElementAnnotation> {

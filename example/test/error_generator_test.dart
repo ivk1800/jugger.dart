@@ -657,4 +657,65 @@ abstract class AppModule {
       );
     });
   });
+
+  group('qualifier', () {
+    test('should failed if named qualifier not found', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+class AppConfig {}
+
+@Component(modules: <Type>[AppModule])
+abstract class AppComponent {
+  @Named('my')
+  String getString();
+}
+
+@module
+abstract class AppModule {}
+        ''',
+        onError: (Object error) {
+          print(error);
+          expect(
+            error.toString(),
+            'Bad state: [String, qualifier: my] not provided',
+          );
+        },
+      );
+    });
+
+    test('should failed if qualifier not found', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+class AppConfig {}
+
+@Component(modules: <Type>[AppModule])
+abstract class AppComponent {
+  @my
+  String getString();
+}
+
+@module
+abstract class AppModule {}
+
+@qualifier
+class My {
+  const My();
+}
+
+const My my = My();
+        ''',
+        onError: (Object error) {
+          print(error);
+          expect(
+            error.toString(),
+            'Bad state: [String, qualifier: My] not provided',
+          );
+        },
+      );
+    });
+  });
 }
