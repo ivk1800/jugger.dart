@@ -332,9 +332,9 @@ class ComponentBuilderDelegate {
     return _allocateTypeName(dependency.type);
   }
 
-  String _allocateTypeName(DartType type) {
-    assert(type is InterfaceType, 'type [$type] not supported');
-    type as InterfaceType;
+  String _allocateTypeName(DartType t) {
+    check(t is InterfaceType, 'type [$t] not supported');
+    final InterfaceType type = t as InterfaceType;
 
     final String name = _allocator.allocate(
       Reference(
@@ -790,11 +790,17 @@ class ComponentBuilderDelegate {
     final ClassElement returnClass;
     if (getBindAnnotation(method) != null) {
       final Element? bindedElement = method.parameters[0].type.element;
-      assert(bindedElement is ClassElement);
+      check(
+        bindedElement is ClassElement,
+        '$bindedElement not supported.',
+      );
       // ignore: avoid_as
       returnClass = bindedElement as ClassElement;
     } else if (getProvideAnnotation(method) != null) {
-      assert(method.returnType.element is ClassElement);
+      check(
+        method.returnType.element is ClassElement,
+        '${method.returnType.element} not supported.',
+      );
       // ignore: avoid_as
       returnClass = method.returnType.element as ClassElement;
     } else {
@@ -843,7 +849,10 @@ class ComponentBuilderDelegate {
     _log(
         'build provider from static method: ${method.enclosingElement.name}.${method.name}');
 
-    assert(method.returnType.element is ClassElement);
+    check(
+      method.returnType.element is ClassElement,
+      '${method.returnType.element} not supported.',
+    );
     // ignore: avoid_as
     final ClassElement returnClass = method.returnType.element as ClassElement;
     final Element moduleClass = method.enclosingElement;
@@ -942,7 +951,10 @@ class ComponentBuilderDelegate {
   }
 
   Reference getProviderType(Element element) {
-    assert(element is MethodElement || element is ConstructorElement);
+    check(
+      element is MethodElement || element is ConstructorElement,
+      '$element not supported',
+    );
 
     final String generic = _getGeneric(element);
 

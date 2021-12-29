@@ -28,7 +28,6 @@ class ComponentContext {
 
       for (MethodElement m in methodVisitor.methods) {
         providerSources.add(AnotherComponentSource(
-            // ignore: avoid_as
             type: m.returnType,
             element: m,
             dependencyClass: dep.element,
@@ -38,7 +37,6 @@ class ComponentContext {
       for (PropertyAccessorElement property in propertyVisitor.properties) {
         providerSources.add(
           AnotherComponentSource(
-            // ignore: avoid_as
             type: property.returnType,
             element: property,
             dependencyClass: dep.element,
