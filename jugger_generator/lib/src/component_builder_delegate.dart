@@ -94,8 +94,7 @@ class ComponentBuilderDelegate {
             ),
           );
           classBuilder.fields.addAll(_buildConstructorFields(componentBuilder));
-          _log(
-              'build for component: ${component.element} [${component.element.library.identifier}]');
+          _log('build for component: ${component.element.toNameWithPath()}');
           classBuilder.methods.addAll(_buildProvideMethods(_componentContext));
           classBuilder.methods
               .addAll(_buildProvideProperties(_componentContext));
@@ -268,6 +267,10 @@ class ComponentBuilderDelegate {
     final List<Field> fields = <Field>[];
 
     for (Dependency dependency in dependencies) {
+      _log(
+        'process: ${dependency.enclosingElement.toNameWithPath()}',
+      );
+
       final ProviderSource? provider =
           _componentContext.findProvider(dependency.type, dependency.named);
 
@@ -315,8 +318,6 @@ class ComponentBuilderDelegate {
           b.type =
               Reference('IProvider<$generic>', 'package:jugger/jugger.dart');
         }));
-      } else {
-        print('skip generation provide field for $provider');
       }
     }
 
@@ -629,6 +630,9 @@ class ComponentBuilderDelegate {
   /// example: SingletonProvider<MyProvider>(() => AppModule.provideMyProvider());
   // TODO(Ivan): pass DartType instead ClassElement
   Code _buildProviderFromClassAssignCode(ClassElement element) {
+    _log(
+      'build provider from class: ${element.toNameWithPath()}',
+    );
     final InjectedConstructorsVisitor visitor = InjectedConstructorsVisitor();
     element.visitChildren(visitor);
 
@@ -670,6 +674,9 @@ class ComponentBuilderDelegate {
 
   /// example: SingletonProvider<MyProvider>(() => AppModule.provideMyProvider());
   Code _buildProviderFromModuleAssignCode(MethodElement method) {
+    _log(
+      'build provider from module: ${method.toNameWithPath()}',
+    );
     Expression expression;
     if (method.isStatic) {
       expression = _buildProviderFromStaticMethod(
@@ -749,7 +756,7 @@ class ComponentBuilderDelegate {
   // todo refactor as AssignCode, must return Code
   Expression _buildProviderFromAbstractMethod(MethodElement method) {
     _log(
-        'build provider from abstract method: ${method.enclosingElement.name}.${method.name} [${method.library.identifier}]');
+        'build provider from abstract method: ${method.enclosingElement.toNameWithPath()}');
 
     check(method.parameters.length == 1,
         'method annotates [${jugger.binds.runtimeType}] must have 1 parameter');

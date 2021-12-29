@@ -219,6 +219,8 @@ extension ElementExt on Element {
   }
 
   String? getQualifierTag() => getQualifierAnnotation(this)?.tag;
+
+  String toNameWithPath() => '$name] ${library?.identifier}';
 }
 
 extension ElementAnnotationExt on List<ElementAnnotation> {
