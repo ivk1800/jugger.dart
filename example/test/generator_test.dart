@@ -137,4 +137,23 @@ void main() {
       );
     });
   });
+
+  group('injectable field', () {
+    test('simple injectable field', () async {
+      await checkBuilderOfFile(
+        'injectable_field/simple_injectable_field',
+      );
+    });
+
+    test('not ignore interface prefix', () async {
+      await checkBuilderOfFile(
+        'build_config/not_ignore_interface_prefix',
+        const BuilderOptions(
+          <String, dynamic>{
+            'ignore_interface_prefix_in_component_name': false,
+          },
+        ),
+      );
+    });
+  });
 }

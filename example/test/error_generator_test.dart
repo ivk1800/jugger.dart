@@ -718,4 +718,44 @@ const My my = My();
       );
     });
   });
+
+  group('injectable field', () {
+    test('private injectable field', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+class InjectableClass {
+  @inject
+  late String _helloString;
+}
+
+@Component(modules: <Type>[AppModule])
+abstract class AppComponent {
+  void inject(InjectableClass c);
+}
+
+@module
+abstract class AppModule {
+  @singleton
+  @provides
+  static String provideString() => 'hello';
+}
+
+        ''',
+        onError: (Object error) {
+          print(error);
+          expect(
+            error.toString(),
+            'Bad state: field _helloString must be only public',
+          );
+        },
+        options: const BuilderOptions(
+          <String, dynamic>{
+            'check_unused_providers': true,
+          },
+        ),
+      );
+    });
+  });
 }
