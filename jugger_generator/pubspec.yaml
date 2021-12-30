@@ -8,14 +8,11 @@ environment:
 
 dependencies:
   analyzer: ^3.0.0
-  build: ^2.2.1
-  code_builder: ^4.1.0
+  build: ^2.0.0
+  code_builder: ^4.0.0
   collection: ^1.15.0
-  crypto: ^3.0.1
-  dart_style: ^2.2.1
+  crypto: ^3.0.0
+  dart_style: ^2.0.0
   jugger:
-    git:
-      url: git@github.com:ivk1800/jugger.dart.git
-      path: jugger
-      ref: 9e9f4e9beb08951b37ec8592147ba52979c33d30
-  quiver: ^3.0.1+1
+    path: ../jugger
+  quiver: ^3.0.0
