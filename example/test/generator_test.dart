@@ -12,6 +12,16 @@ void main() {
     test('from module', () async {
       await checkBuilderOfFile('binds/binds_from_module');
     });
+
+    test('from injected constructor', () async {
+      await checkBuilderOfFile('binds/binds_from_injected_constructor');
+    });
+
+    test('from injected constructor with singleton scope', () async {
+      await checkBuilderOfFile(
+        'binds/binds_from_injected_constructor_with_singleton_scope',
+      );
+    });
   });
 
   group('non lazy', () {

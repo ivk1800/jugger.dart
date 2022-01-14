@@ -768,7 +768,6 @@ import 'package:jugger/jugger.dart';
 abstract class IMainRouter {}
 
 class MainRouter implements IMainRouter {
-  @inject
   const MainRouter();
 }
 
@@ -800,6 +799,38 @@ abstract class AppModule {
             'check_unused_providers': true,
           },
         ),
+      );
+    });
+
+    test('binds class without injected constructor', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+abstract class IMainRouter {}
+
+class MainRouter implements IMainRouter {
+  const MainRouter();
+}
+
+@Component(modules: <Type>[AppModule])
+abstract class AppComponent {
+  IMainRouter getMainRouter();
+}
+
+@module
+abstract class AppModule {
+  @binds
+  IMainRouter bindMainRouter(MainRouter impl);
+}
+        ''',
+        onError: (Object error) {
+          print(error);
+          expect(
+            error.toString(),
+            'Bad state: not found injected constructor for MainRouter',
+          );
+        },
       );
     });
   });
