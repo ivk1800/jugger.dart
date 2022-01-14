@@ -36,6 +36,10 @@ void main() {
     test('from module', () async {
       await checkBuilderOfFile('provides/provides_from_module');
     });
+
+    test('component as method param', () async {
+      await checkBuilderOfFile('provides/provides_component_as_method_param');
+    });
   });
 
   group('component getter', () {

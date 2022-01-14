@@ -26,6 +26,7 @@ class ComponentBuilderDelegate {
   final GlobalConfig globalConfig;
   late ComponentContext _componentContext;
   late Allocator _allocator;
+  late DartType _componentType;
   final List<String> _logs = <String>[];
   final Expression _overrideAnnotationExpression =
       const CodeExpression(Code('override'));
@@ -70,6 +71,7 @@ class ComponentBuilderDelegate {
 
       for (int i = 0; i < visitor.components.length; i++) {
         final j.Component component = visitor.components[i];
+        _componentType = component.element.thisType;
 
         final j.ComponentBuilder? componentBuilder = componentBuildersVisitor
             .componentBuilders
@@ -260,6 +262,17 @@ class ComponentBuilderDelegate {
     return 'Jugger$name';
   }
 
+  Iterable<Dependency> _filterDependenciesForFields(
+      List<Dependency> dependencies) {
+    return dependencies.where((Dependency dependency) {
+      final ClassElement typeElement = dependency.type.element as ClassElement;
+      final bool isCurrentComponent =
+          getComponentAnnotation(typeElement) != null &&
+              dependency.type == _componentType;
+      return !isCurrentComponent;
+    });
+  }
+
   List<Field> _buildProvidesFields(
     List<Dependency> dependencies,
     ComponentContext _componentContext,
@@ -267,7 +280,7 @@ class ComponentBuilderDelegate {
   ) {
     final List<Field> fields = <Field>[];
 
-    for (Dependency dependency in dependencies) {
+    for (Dependency dependency in _filterDependenciesForFields(dependencies)) {
       _log(
         'process: ${dependency.enclosingElement.toNameWithPath()}',
       );
@@ -302,9 +315,10 @@ class ComponentBuilderDelegate {
               provider.method.element,
             );
           } else {
-            final Element typeElement = dependency.type.element!;
-            if (isCore(typeElement) ||
-                (typeElement is ClassElement && typeElement.isAbstract)) {
+            final ClassElement typeElement =
+                dependency.type.element as ClassElement;
+
+            if (isCore(typeElement) || typeElement.isAbstract) {
               throw StateError(
                 '${dependency.enclosingElement.name}.${dependency.type.getName()} (qualifier: $tag) not provided',
               );
@@ -312,8 +326,7 @@ class ComponentBuilderDelegate {
             // if (_isBindDependency(dependency)) {
             //   continue;
             // }
-            b.assignment = _buildProviderFromClassAssignCode(
-                dependency.type.element! as ClassElement);
+            b.assignment = _buildProviderFromClassAssignCode(typeElement);
           }
 
           b.type =
@@ -482,6 +495,10 @@ class ComponentBuilderDelegate {
   /// Return example: '_myRepositoryProvider.get()
   ///
   String _generateAssignString(DartType type, String? name) {
+    if (type == _componentType) {
+      return 'this';
+    }
+
     // if (!(element is ClassElement)) {
     //   throw StateError('element[$element] is not ClassElement');
     // }
