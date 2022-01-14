@@ -758,4 +758,49 @@ abstract class AppModule {
       );
     });
   });
+
+  group('binds', () {
+    test('binds wrong type', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+abstract class IMainRouter {}
+
+class MainRouter implements IMainRouter {
+  @inject
+  const MainRouter();
+}
+
+@Component(modules: <Type>[AppModule])
+abstract class AppComponent {
+  IMainRouter getMainRouter();
+}
+
+@module
+abstract class AppModule {
+  @singleton
+  @provides
+  static MainRouter provideMainRouter() => const MainRouter();
+
+  @singleton
+  @binds
+  IMainRouter bindMainRouter(String impl);
+}
+        ''',
+        onError: (Object error) {
+          print(error);
+          expect(
+            error.toString(),
+            'Bad state: bindMainRouter bind wrong type IMainRouter',
+          );
+        },
+        options: const BuilderOptions(
+          <String, dynamic>{
+            'check_unused_providers': true,
+          },
+        ),
+      );
+    });
+  });
 }

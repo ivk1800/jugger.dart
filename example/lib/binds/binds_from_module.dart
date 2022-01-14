@@ -5,7 +5,10 @@ import 'package:jugger/jugger.dart';
 
 abstract class IMainRouter {}
 
-class MainRouter implements IMainRouter {}
+class MainRouter implements IMainRouter {
+  @inject
+  const MainRouter();
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -18,7 +21,7 @@ abstract class AppComponent {
 abstract class AppModule {
   @singleton
   @provides
-  static MainRouter provideMainRouter() => MainRouter();
+  static MainRouter provideMainRouter() => const MainRouter();
 
   @singleton
   @binds
