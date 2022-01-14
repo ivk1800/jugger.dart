@@ -3,7 +3,7 @@
 // ignore_for_file: always_specify_types
 // ignore_for_file: directives_ordering
 // ignore_for_file: non_constant_identifier_names
-import 'package:example/build_config/ignore_interface_prefix.dart' as _i1;
+import 'package:example/build_config/not_remove_interface_prefix.dart' as _i1;
 import 'package:jugger/jugger.dart' as _i2;
 
 class JuggerIAppComponent implements _i1.IAppComponent {

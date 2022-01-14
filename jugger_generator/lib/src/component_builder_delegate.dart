@@ -247,7 +247,8 @@ class ComponentBuilderDelegate {
   }
 
   String _createComponentName(String name) {
-    if (globalConfig.ignoreInterfacePrefixInComponentName || name.length == 1) {
+    if (!globalConfig.removeInterfacePrefixFromComponentName ||
+        name.length == 1) {
       return 'Jugger$name';
     }
 

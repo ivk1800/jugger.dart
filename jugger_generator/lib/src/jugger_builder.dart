@@ -15,9 +15,9 @@ class JuggerBuilder extends Builder {
   @override
   Future<void> build(BuildStep buildStep) async {
     final GlobalConfig globalConfig = GlobalConfig(
-      ignoreInterfacePrefixInComponentName: options
-              .config['ignore_interface_prefix_in_component_name'] as bool? ??
-          false,
+      removeInterfacePrefixFromComponentName: options
+              .config['remove_interface_prefix_from_component_name'] as bool? ??
+          true,
       checkUnusedProviders:
           options.config['check_unused_providers'] as bool? ?? false,
     );

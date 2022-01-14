@@ -3,5 +3,5 @@ targets:
     builders:
       jugger_generator:
         options:
-          ignore_interface_prefix_in_component_name: true
+          remove_interface_prefix_from_component_name: true
           check_unused_providers: true

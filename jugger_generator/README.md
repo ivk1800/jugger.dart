@@ -143,7 +143,7 @@ targets:
     builders:
       jugger_generator:
         options:
-          ignore_interface_prefix_in_component_name: false
+          remove_interface_prefix_from_component_name: true
 ```
 ```dart
 @Component(modules: <Type>[AppModule])
