@@ -22,6 +22,12 @@ void main() {
         'binds/binds_from_injected_constructor_with_singleton_scope',
       );
     });
+
+    test('binds as dependency in multiple different places', () async {
+      await checkBuilderOfFile(
+        'binds/binds_as_dependency_in_multiple_different_places',
+      );
+    });
   });
 
   group('non lazy', () {

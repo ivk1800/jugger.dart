@@ -288,10 +288,6 @@ class ComponentBuilderDelegate {
       final ProviderSource? provider =
           _componentContext.findProvider(dependency.type, dependency.named);
 
-      if (_isBindDependency(dependency)) {
-        continue;
-      }
-
       if (!(provider is BuildInstanceSource) &&
           !(provider is AnotherComponentSource)) {
         fields.add(Field((FieldBuilder b) {
@@ -822,6 +818,23 @@ class ComponentBuilderDelegate {
       );
       // ignore: avoid_as
       returnClass = bindedElement as ClassElement;
+      final Expression newInstance = getProviderType(
+        method,
+      ).newInstance(
+        <Expression>[
+          CodeExpression(
+            Block.of(
+              _buildProviderBody(
+                returnClass,
+                <Code>[
+                  Code(_generateAssignString(bindedElement.thisType, null)),
+                ],
+              ),
+            ),
+          )
+        ],
+      );
+      return CodeExpression(ToCodeExpression(newInstance));
     } else if (getProvideAnnotation(method) != null) {
       check(
         method.returnType.element is ClassElement,
