@@ -41,9 +41,15 @@ ProvideAnnotation? getProvideAnnotation(Element element) {
 }
 
 QualifierAnnotation? getQualifierAnnotation(Element element) {
-  final Annotation? annotation = getAnnotations(element)
+  final List<QualifierAnnotation> qualifierAnnotation =
+      getAnnotations(element).whereType<QualifierAnnotation>().toList();
+  check(
+    qualifierAnnotation.length <= 1,
+    'multiple qualifiers not allowed [${element.enclosingElement?.name}.${element.name}]',
+  );
+
+  return qualifierAnnotation
       .firstWhereOrNull((Annotation a) => a is QualifierAnnotation);
-  return annotation is QualifierAnnotation ? annotation : null;
 }
 
 String generateMd5(String input) => md5.convert(utf8.encode(input)).toString();

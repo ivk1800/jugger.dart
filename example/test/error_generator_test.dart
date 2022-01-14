@@ -717,6 +717,37 @@ const My my = My();
         },
       );
     });
+
+    test('should failed if multiple qualifiers', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+class AppConfig {}
+
+@Component(modules: <Type>[AppModule])
+abstract class AppComponent {
+  @Named('name')
+  @Named('name1')
+  AppConfig get appConfig;
+}
+
+@module
+abstract class AppModule {
+  @provides
+  @Named('name')
+  static AppConfig provideAppConfig() => AppConfig();
+}
+        ''',
+        onError: (Object error) {
+          print(error);
+          expect(
+            error.toString(),
+            'Bad state: multiple qualifiers not allowed [AppComponent.appConfig]',
+          );
+        },
+      );
+    });
   });
 
   group('injectable field', () {
