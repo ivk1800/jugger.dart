@@ -12,14 +12,11 @@ class JuggerAppComponent implements _i2.AppComponent {
   JuggerAppComponent.create();
 
   late final _i3.IProvider<_i1.Future<String>> _future_String_Provider =
-      _i3.Provider<_i1.Future<String>>(() {
-    return _i2.AppModule.provideStringFuture();
-  });
+      _i3.Provider<_i1.Future<String>>(
+          () => _i2.AppModule.provideStringFuture());
 
   late final _i3.IProvider<_i1.Future<int>> _future_int_Provider =
-      _i3.Provider<_i1.Future<int>>(() {
-    return _i2.AppModule.provideIntFuture();
-  });
+      _i3.Provider<_i1.Future<int>>(() => _i2.AppModule.provideIntFuture());
 
   @override
   _i1.Future<int> get intFuture => _future_int_Provider.get();

@@ -10,17 +10,12 @@ class JuggerAppComponent implements _i1.AppComponent {
   JuggerAppComponent.create();
 
   late final _i2.IProvider<_i1.IMainRouter> _iMainRouterProvider =
-      _i2.SingletonProvider<_i1.IMainRouter>(() {
-    return _mainRouterProvider.get();
-  });
+      _i2.SingletonProvider<_i1.IMainRouter>(() => _mainRouterProvider.get());
 
   late final _i2.IProvider<_i1.MainRouter> _mainRouterProvider =
-      _i2.SingletonProvider<_i1.MainRouter>(() {
-    return _i1.AppModule.provideMainRouter();
-  });
+      _i2.SingletonProvider<_i1.MainRouter>(
+          () => _i1.AppModule.provideMainRouter());
 
   @override
-  _i1.IMainRouter getMainRouter() {
-    return _iMainRouterProvider.get();
-  }
+  _i1.IMainRouter getMainRouter() => _iMainRouterProvider.get();
 }

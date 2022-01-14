@@ -11,26 +11,20 @@ class JuggerAppComponent implements _i1.AppComponent {
 
   late final _i2.IProvider<_i1.AppConfig>
       _named_d6e4a9b6646c62fc48baa6dd6150d1f7_AppConfigProvider =
-      _i2.SingletonProvider<_i1.AppConfig>(() {
-    return _i1.AppModule.provideProdAppConfig();
-  });
+      _i2.SingletonProvider<_i1.AppConfig>(
+          () => _i1.AppModule.provideProdAppConfig());
 
   late final _i2.IProvider<_i1.AppConfig>
       _named_e77989ed21758e78331b20e477fc5582_AppConfigProvider =
-      _i2.SingletonProvider<_i1.AppConfig>(() {
-    return _i1.AppModule.provideDevAppConfig();
-  });
+      _i2.SingletonProvider<_i1.AppConfig>(
+          () => _i1.AppModule.provideDevAppConfig());
 
   @override
-  _i1.AppConfig getDevAppConfig() {
-    return _named_e77989ed21758e78331b20e477fc5582_AppConfigProvider.get();
-  }
-
+  _i1.AppConfig getDevAppConfig() =>
+      _named_e77989ed21758e78331b20e477fc5582_AppConfigProvider.get();
   @override
-  _i1.AppConfig getProdAppConfig() {
-    return _named_d6e4a9b6646c62fc48baa6dd6150d1f7_AppConfigProvider.get();
-  }
-
+  _i1.AppConfig getProdAppConfig() =>
+      _named_d6e4a9b6646c62fc48baa6dd6150d1f7_AppConfigProvider.get();
   @override
   _i1.AppConfig get devAppConfig =>
       _named_e77989ed21758e78331b20e477fc5582_AppConfigProvider.get();

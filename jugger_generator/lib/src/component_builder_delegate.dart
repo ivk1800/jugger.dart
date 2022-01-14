@@ -408,11 +408,12 @@ class ComponentBuilderDelegate {
         check(providerSource != null,
             '[${method.returnType.element!.name}, qualifier: $tag] not provided');
 
+        b.lambda = true;
         b.body = Code(
-          'return ${_generateAssignString(
+          _generateAssignString(
             method.returnType,
             tag,
-          )};',
+          ),
         );
       });
       newProperties.add(m);
@@ -840,10 +841,8 @@ class ComponentBuilderDelegate {
     final ToCodeExpression primaryExpression =
         ToCodeExpression(CodeExpression(Block.of(code)));
     codes.addAll(<Code>[
-      const Code('() { '),
-      const Code('return '),
+      const Code('() => '),
       primaryExpression,
-      const Code(';}'),
     ]);
     return codes;
   }

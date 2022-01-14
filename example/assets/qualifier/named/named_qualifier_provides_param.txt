@@ -12,15 +12,12 @@ class JuggerAppComponent implements _i1.AppComponent {
 
   late final _i2.IProvider<_i1.AppConfig>
       _named_e77989ed21758e78331b20e477fc5582_AppConfigProvider =
-      _i2.SingletonProvider<_i1.AppConfig>(() {
-    return _i1.AppModule.provideDevAppConfig();
-  });
+      _i2.SingletonProvider<_i1.AppConfig>(
+          () => _i1.AppModule.provideDevAppConfig());
 
   late final _i2.IProvider<String> _stringProvider =
-      _i2.SingletonProvider<String>(() {
-    return _i1.AppModule.provideAppVersion(
-        _named_e77989ed21758e78331b20e477fc5582_AppConfigProvider.get());
-  });
+      _i2.SingletonProvider<String>(() => _i1.AppModule.provideAppVersion(
+          _named_e77989ed21758e78331b20e477fc5582_AppConfigProvider.get()));
 
   @override
   String get appVersion => _stringProvider.get();

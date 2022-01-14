@@ -27,7 +27,5 @@ class JuggerAppComponent implements _i1.AppComponent {
   final _i1.MainRouter _mainRouter;
 
   @override
-  _i1.MainRouter getMainRouter() {
-    return _mainRouter;
-  }
+  _i1.MainRouter getMainRouter() => _mainRouter;
 }

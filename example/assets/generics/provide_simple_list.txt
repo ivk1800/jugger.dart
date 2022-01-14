@@ -10,15 +10,10 @@ class JuggerAppComponent implements _i1.AppComponent {
   JuggerAppComponent.create();
 
   late final _i2.IProvider<List<_i1.Item>> _list_Item_Provider =
-      _i2.Provider<List<_i1.Item>>(() {
-    return _i1.AppModule.provideItems();
-  });
+      _i2.Provider<List<_i1.Item>>(() => _i1.AppModule.provideItems());
 
   @override
-  List<_i1.Item> getItems() {
-    return _list_Item_Provider.get();
-  }
-
+  List<_i1.Item> getItems() => _list_Item_Provider.get();
   @override
   List<_i1.Item> get items => _list_Item_Provider.get();
 }

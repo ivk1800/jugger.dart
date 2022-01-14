@@ -11,13 +11,10 @@ class JuggerAppComponent implements _i1.AppComponent {
   JuggerAppComponent.create();
 
   late final _i2.IProvider<_i1.MyClass> _myClassProvider =
-      _i2.SingletonProvider<_i1.MyClass>(() {
-    return const _i1.MyClass();
-  });
+      _i2.SingletonProvider<_i1.MyClass>(() => const _i1.MyClass());
 
-  late final _i2.IProvider<String> _stringProvider = _i2.Provider<String>(() {
-    return _i1.AppModule.provideHello(_myClassProvider.get());
-  });
+  late final _i2.IProvider<String> _stringProvider = _i2.Provider<String>(
+      () => _i1.AppModule.provideHello(_myClassProvider.get()));
 
   @override
   String get hello => _stringProvider.get();

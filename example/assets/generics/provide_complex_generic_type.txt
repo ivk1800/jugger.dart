@@ -13,15 +13,12 @@ class JuggerAppComponent implements _i1.AppComponent {
           Map<Map<String, _i1.Item>, Map<String, Map<String, _i1.Item>>>>
       _map_Map_String_Item__Map_String_Map_String_Item___Provider =
       _i2.Provider<
-          Map<Map<String, _i1.Item>, Map<String, Map<String, _i1.Item>>>>(() {
-    return _i1.AppModule.provideItems();
-  });
+              Map<Map<String, _i1.Item>, Map<String, Map<String, _i1.Item>>>>(
+          () => _i1.AppModule.provideItems());
 
   @override
-  Map<Map<String, _i1.Item>, Map<String, Map<String, _i1.Item>>> getItems() {
-    return _map_Map_String_Item__Map_String_Map_String_Item___Provider.get();
-  }
-
+  Map<Map<String, _i1.Item>, Map<String, Map<String, _i1.Item>>> getItems() =>
+      _map_Map_String_Item__Map_String_Map_String_Item___Provider.get();
   @override
   Map<Map<String, _i1.Item>, Map<String, Map<String, _i1.Item>>> get items =>
       _map_Map_String_Item__Map_String_Map_String_Item___Provider.get();

@@ -101,13 +101,13 @@ void main() {
     });
   });
 
-  group('component', () {
+  group('subcomponent', () {
     test('simple', () async {
       await checkBuilderOfFile('subcomponent/simple_subcomponent');
     });
   });
 
-  group('subcomponent', () {
+  group('component', () {
     test('build instance dependency', () async {
       await checkBuilderOfFile(
           'component/component_with_build_instance_dependency');

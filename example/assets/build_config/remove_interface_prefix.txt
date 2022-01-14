@@ -9,9 +9,8 @@ import 'package:jugger/jugger.dart' as _i2;
 class JuggerAppComponent implements _i1.IAppComponent {
   JuggerAppComponent.create();
 
-  late final _i2.IProvider<String> _stringProvider = _i2.Provider<String>(() {
-    return _i1.AppModule.provideHello();
-  });
+  late final _i2.IProvider<String> _stringProvider =
+      _i2.Provider<String>(() => _i1.AppModule.provideHello());
 
   @override
   String get hello => _stringProvider.get();

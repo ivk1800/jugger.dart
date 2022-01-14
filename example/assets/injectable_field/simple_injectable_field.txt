@@ -10,9 +10,7 @@ class JuggerAppComponent implements _i1.AppComponent {
   JuggerAppComponent.create();
 
   late final _i2.IProvider<String> _stringProvider =
-      _i2.SingletonProvider<String>(() {
-    return _i1.AppModule.provideString();
-  });
+      _i2.SingletonProvider<String>(() => _i1.AppModule.provideString());
 
   @override
   void inject(_i1.InjectableClass c) {

@@ -12,25 +12,18 @@ class JuggerAppComponent implements _i1.AppComponent {
   }
 
   late final _i2.IProvider<_i1.LazyRepository> _lazyRepositoryProvider =
-      _i2.SingletonProvider<_i1.LazyRepository>(() {
-    return _i1.AppModule.provideLazyRepository();
-  });
+      _i2.SingletonProvider<_i1.LazyRepository>(
+          () => _i1.AppModule.provideLazyRepository());
 
   late final _i2.IProvider<_i1.NonLazyRepository> _nonLazyRepositoryProvider =
-      _i2.SingletonProvider<_i1.NonLazyRepository>(() {
-    return _i1.AppModule.provideNonLazyRepository();
-  });
+      _i2.SingletonProvider<_i1.NonLazyRepository>(
+          () => _i1.AppModule.provideNonLazyRepository());
 
   @override
-  _i1.LazyRepository getLazyRepository() {
-    return _lazyRepositoryProvider.get();
-  }
-
+  _i1.LazyRepository getLazyRepository() => _lazyRepositoryProvider.get();
   @override
-  _i1.NonLazyRepository getNonLazyRepository() {
-    return _nonLazyRepositoryProvider.get();
-  }
-
+  _i1.NonLazyRepository getNonLazyRepository() =>
+      _nonLazyRepositoryProvider.get();
   void _initNonLazy() {
     _nonLazyRepositoryProvider.get();
   }

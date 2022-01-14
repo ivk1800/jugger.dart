@@ -26,23 +26,19 @@ class JuggerAppComponent implements _i1.AppComponent {
   JuggerAppComponent.create();
 
   late final _i2.IProvider<_i1.IMainRouter> _iMainRouterProvider =
-      _i2.SingletonProvider<_i1.IMainRouter>(() {
-    return _i1.AppModule.provideMainRouter();
-  });
+      _i2.SingletonProvider<_i1.IMainRouter>(
+          () => _i1.AppModule.provideMainRouter());
 
   @override
-  _i1.IMainRouter getMainRouter() {
-    return _iMainRouterProvider.get();
-  }
+  _i1.IMainRouter getMainRouter() => _iMainRouterProvider.get();
 }
 
 class JuggerMyScreenComponent implements _i1.MyScreenComponent {
   JuggerMyScreenComponent._create(this._appComponent);
 
   late final _i2.IProvider<_i1.IMyScreenRouter> _iMyScreenRouterProvider =
-      _i2.SingletonProvider<_i1.IMyScreenRouter>(() {
-    return _appComponent.getMainRouter();
-  });
+      _i2.SingletonProvider<_i1.IMyScreenRouter>(
+          () => _appComponent.getMainRouter());
 
   final _i1.AppComponent _appComponent;
 
