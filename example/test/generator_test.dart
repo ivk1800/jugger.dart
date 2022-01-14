@@ -85,6 +85,11 @@ void main() {
       await checkBuilderOfFile(
           'inject/constructor/injected_constructor_with_singleton_scope');
     });
+
+    test('injected constructor with positional params', () async {
+      await checkBuilderOfFile(
+          'inject/constructor/injected_constructor_with_positional_params');
+    });
   });
 
   group('generics', () {
