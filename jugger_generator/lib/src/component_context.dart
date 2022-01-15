@@ -106,6 +106,8 @@ class ComponentContext {
   List<Dependency> get dependencies => _dependencies.values.toList()
     ..sort((Dependency a, Dependency b) => a.compareTo(b));
 
+  final Queue<_Key> _dependenciesQueue = Queue<_Key>();
+
   // List<ClassElement> get dependenciesClasses =>
   //     _dependencies.values.map((Dependency d) => d.element).toList();
 
@@ -114,7 +116,16 @@ class ComponentContext {
 
     final _Key key = _Key.of(element, named);
 
+    if (_dependenciesQueue.contains(key)) {
+      _dependenciesQueue.addFirst(key);
+      throw JuggerError(
+        'Found circular dependency! ${_dependenciesQueue.toList().reversed.join('->')}',
+      );
+    }
+    _dependenciesQueue.addFirst(key);
+
     if (_dependencies.containsKey(key)) {
+      _dependenciesQueue.removeFirst();
       return _dependencies[key]!;
     }
 
@@ -126,8 +137,10 @@ class ComponentContext {
         element,
       );
       _dependencies[key] = dependency;
+      _dependenciesQueue.removeFirst();
       return dependency;
     } else if (element is ParameterElement || element is FieldElement) {
+      _dependenciesQueue.removeFirst();
       return _registerVariableElementDependency(element);
     }
 
@@ -259,20 +272,28 @@ class ComponentContext {
 }
 
 class _Key {
-  _Key({required this.named, required this.type, required this.path})
-      : assert(type.element is ClassElement);
+  _Key({
+    required this.named,
+    required this.type,
+    required this.element,
+    required this.path,
+  }) : assert(type.element is ClassElement);
 
   factory _Key.of(Element element, String? named) {
     if (element is MethodElement) {
       return _Key(
-          named: named,
-          type: element.returnType,
-          path: createElementPath(element.returnType.element!));
+        named: named,
+        element: element,
+        type: element.returnType,
+        path: createElementPath(element.returnType.element!),
+      );
     } else if (element is VariableElement) {
       return _Key(
-          named: named,
-          type: element.type,
-          path: createElementPath(element.type.element!));
+        named: named,
+        element: element,
+        type: element.type,
+        path: createElementPath(element.type.element!),
+      );
     }
 
     throw JuggerError(
@@ -280,6 +301,7 @@ class _Key {
     );
   }
 
+  final Element element;
   final DartType type;
   final String path;
   final String? named;
@@ -292,20 +314,7 @@ class _Key {
   int get hashCode => hash3(type.hashCode, path.hashCode, named.hashCode);
 
   @override
-  String toString() {
-    final Element? element = type.element;
-    if (element is MethodElement) {
-      final MethodElement m = element;
-      return m.returnType.getName();
-    } else if (element is ParameterElement) {
-      final ParameterElement p = element;
-      return p.type.getName();
-    }
-
-    throw JuggerError(
-      'field ${element!.name} unsupported type',
-    );
-  }
+  String toString() => '${element.name}';
 }
 
 class Dependency implements Comparable<Dependency> {

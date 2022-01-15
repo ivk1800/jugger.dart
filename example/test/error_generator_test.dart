@@ -305,9 +305,83 @@ abstract class AppModule {
 }
         ''',
         onError: (Object error) {
-          assert(
-            // TODO(Ivan): https://github.com/ivk1800/jugger.dart/issues/3
-            error.toString() == 'Stack Overflow',
+          expect(
+            error.toString(),
+            'error: Found circular dependency! provideAppName->provideAppVersion->provideAppName',
+          );
+        },
+      );
+    });
+
+    test('should failed if depend through binds type', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+class Router implements IRouter {
+  @inject
+  Router(String s);
+}
+
+
+abstract class IRouter {}
+
+@Component(modules: <Type>[AppModule])
+abstract class AppComponent {
+  String get hello;
+}
+
+@module
+abstract class AppModule {
+  @provides
+  static String provideHello(IRouter router) => router.toString();
+
+  @binds
+  IRouter bindRouter(Router impl);
+}
+
+class MyClass {
+  @inject
+  MyClass();
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: Found circular dependency! provideHello->bindRouter->provideHello',
+          );
+        },
+      );
+    });
+
+    test('should failed if depend through injected constructor', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[AppModule])
+abstract class AppComponent {
+  String get hello;
+}
+
+@module
+abstract class AppModule {
+  @provides
+  static int provideInt(String string) => string.length;
+
+  @provides
+  static String provideHello(MyClass myClass) => myClass.toString();
+}
+
+class MyClass {
+  @inject
+  MyClass(int number);
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: Found circular dependency! provideInt->provideHello->provideInt',
           );
         },
       );
