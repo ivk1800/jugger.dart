@@ -40,6 +40,20 @@ void main() {
     });
   });
 
+  group('provider', () {
+    test('provider as dependency of constructor', () async {
+      await checkBuilderOfFile(
+        'provider/provider_as_dependency_of_constructor',
+      );
+    });
+
+    test('provider as dependency of provides method', () async {
+      await checkBuilderOfFile(
+        'provider/provider_as_dependency_of_provides_method',
+      );
+    });
+  });
+
   group('provides', () {
     test('from component params', () async {
       await checkBuilderOfFile('provides/provides_from_component_params');

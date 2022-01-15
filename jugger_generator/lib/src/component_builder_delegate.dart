@@ -8,6 +8,7 @@ import 'package:code_builder/code_builder.dart';
 import 'package:collection/collection.dart';
 import 'package:dart_style/dart_style.dart';
 import 'package:jugger/jugger.dart' as jugger;
+import 'package:jugger_generator/src/dart_type_ext.dart';
 import 'package:jugger_generator/src/utils.dart';
 
 import 'check_unused_providers.dart';
@@ -285,6 +286,12 @@ class ComponentBuilderDelegate {
         'process: ${dependency.enclosingElement.toNameWithPath()}',
       );
 
+      final bool isProvider = dependency.type.isProvider;
+
+      if (isProvider) {
+        continue;
+      }
+
       final ProviderSource? provider =
           _componentContext.findProvider(dependency.type, dependency.named);
 
@@ -486,12 +493,31 @@ class ComponentBuilderDelegate {
   }
 
   ///
-  /// [element] element of provider
   /// Return example: '_myRepositoryProvider.get()
+  /// or _myRepositoryProvider if callGet passed as false
   ///
-  String _generateAssignString(DartType type, String? name) {
+  String _generateAssignString(
+    DartType type,
+    String? name, [
+    bool callGet = true,
+  ]) {
     if (type == _componentType) {
       return 'this';
+    }
+
+    if (type.isProvider) {
+      final InterfaceType interfaceType = type as InterfaceType;
+      assert(interfaceType.typeArguments.length == 1);
+
+      final DartType depType = interfaceType.typeArguments.first;
+      final ProviderSource? provider =
+          _componentContext.findProvider(depType, name);
+      check(provider != null, 'provide for [$depType] not found');
+      return _generateAssignString(
+        provider!.type,
+        provider.tag,
+        false,
+      );
     }
 
     // if (!(element is ClassElement)) {
@@ -526,7 +552,7 @@ class ComponentBuilderDelegate {
       finalSting = generateMd5(name);
     }
 
-    return '_${_generateName(type, finalSting)}Provider.get()';
+    return '_${_generateName(type, finalSting)}Provider${callGet ? '.get()' : ''}';
   }
 
   String _generateName(DartType type, String? name) {
