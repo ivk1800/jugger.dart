@@ -1,5 +1,3 @@
-// ignore_for_file: invalid_use_of_visible_for_testing_member
-
 import 'dart:async';
 import 'dart:collection';
 
@@ -216,7 +214,7 @@ class ComponentBuilderDelegate {
 
                 b.addExpression(CodeExpression(Block.of(<Code>[
                   const Code('return '),
-                  ToCodeExpression(newInstance),
+                  newInstance.code,
                 ])));
               } else {
                 final j.ComponentBuilderParameter p =
@@ -666,7 +664,7 @@ class ComponentBuilderDelegate {
       ])))
     ]);
 
-    return ToCodeExpression(newInstance);
+    return newInstance.code;
   }
 
   /*
@@ -707,7 +705,7 @@ class ComponentBuilderDelegate {
         'provided method must be abstract or static [${method.enclosingElement.name}.${method.name}]',
       );
     }
-    return ToCodeExpression(expression);
+    return expression.code;
   }
 
   ///
@@ -740,7 +738,7 @@ class ComponentBuilderDelegate {
       ],
     );
 
-    return CodeExpression(ToCodeExpression(newInstance));
+    return CodeExpression(newInstance.code);
   }
 
   // todo refactor as AssignCode, must return Code
@@ -766,7 +764,7 @@ class ComponentBuilderDelegate {
       ],
     );
 
-    return CodeExpression(ToCodeExpression(newInstance));
+    return CodeExpression(newInstance.code);
   }
 
   // todo refactor as AssignCode, must return Code
@@ -835,7 +833,7 @@ class ComponentBuilderDelegate {
           )
         ],
       );
-      return CodeExpression(ToCodeExpression(newInstance));
+      return CodeExpression(newInstance.code);
     } else if (getProvideAnnotation(method) != null) {
       check(
         method.returnType.element is ClassElement,
@@ -863,14 +861,13 @@ class ComponentBuilderDelegate {
       )
     ]);
 
-    return CodeExpression(ToCodeExpression(newInstance));
+    return CodeExpression(newInstance.code);
   }
 
   List<Code> _buildProviderBody(ClassElement classElement, List<Code> code) {
     final List<Code> codes = <Code>[];
 
-    final ToCodeExpression primaryExpression =
-        ToCodeExpression(CodeExpression(Block.of(code)));
+    final Code primaryExpression = CodeExpression(Block.of(code)).code;
     codes.addAll(<Code>[
       const Code('() => '),
       primaryExpression,
@@ -897,15 +894,14 @@ class ComponentBuilderDelegate {
     final Expression newInstance =
         getProviderType(method).newInstance(<Expression>[
       CodeExpression(Block.of(_buildProviderBody(returnClass, <Code>[
-        ToCodeExpression(
-            refer(moduleClass.name!, createElementPath(moduleClass))),
+        refer(moduleClass.name!, createElementPath(moduleClass)).code,
         const Code('.'),
         _buildCallMethodOrConstructor(
             method, method.parameters, _componentContext)
       ])))
     ]);
 
-    return CodeExpression(ToCodeExpression(newInstance));
+    return CodeExpression(newInstance.code);
   }
 
   // TODO(Ivan): split to two methods
@@ -957,7 +953,7 @@ class ComponentBuilderDelegate {
       } else {
         instance = reference.newInstance(<Expression>[]);
       }
-      return ToCodeExpression(instance);
+      return instance.code;
     }
 
     final bool isPositional =
@@ -970,15 +966,20 @@ class ComponentBuilderDelegate {
     );
 
     if (isPositional) {
-      return ToCodeExpression(r(element.name!).newInstance(
-          _buildArgumentsExpression(element, parameters, _componentContext)
-              .values
-              .toList()));
+      return r(element.name!)
+          .newInstance(
+            _buildArgumentsExpression(element, parameters, _componentContext)
+                .values
+                .toList(),
+          )
+          .code;
     }
 
     if (isNamed) {
-      return ToCodeExpression(r(element.name!).newInstance(<Expression>[],
-          _buildArgumentsExpression(element, parameters, _componentContext)));
+      return r(element.name!).newInstance(
+        <Expression>[],
+        _buildArgumentsExpression(element, parameters, _componentContext),
+      ).code;
     }
 
     throw JuggerError('unexpected state');
