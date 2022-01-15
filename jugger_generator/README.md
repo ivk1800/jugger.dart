@@ -20,7 +20,7 @@ dependencies:
 
 dev_dependencies:
   build_runner: any
-  dev_dependencies: any
+  jugger_generator: any
 ```
 
 #### Usage example
