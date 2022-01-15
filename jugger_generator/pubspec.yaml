@@ -1,6 +1,6 @@
 name: jugger_generator
-description: Generates dependency injection code using the jugger package.
-version: 1.1.0+4-alpha
+description: Compile-time dependency injection for Dart and Flutter.
+version: 2.0.0
 homepage: https://github.com/ivk1800/jugger.dart
 
 environment:
@@ -13,9 +13,5 @@ dependencies:
   collection: ^1.15.0
   crypto: ^3.0.0
   dart_style: ^2.0.0
-  jugger:
-    git:
-      url: git@github.com:ivk1800/jugger.dart.git
-      path: jugger
-      ref: 9e9f4e9beb08951b37ec8592147ba52979c33d30
+  jugger: ^2.0.0
   quiver: ^3.0.0

@@ -1,3 +1,7 @@
+## 2.0.0
+
+jugger_generator is now stable
+
 ## 1.1.0+4-alpha
 
 * support nullsafety

@@ -1,3 +1,4 @@
-# jugger
+Annotations for [jugger_generator].\
+This package does nothing without [jugger_generator].
 
-Documentation available [this](https://github.com/ivk1800/jugger.dart).
+[jugger_generator]: https://pub.dev/packages/jugger_generator
