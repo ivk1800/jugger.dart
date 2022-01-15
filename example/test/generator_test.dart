@@ -94,6 +94,11 @@ void main() {
     test('named qualifier and default', () async {
       await checkBuilderOfFile('qualifier/named/named_qualifier_and_default');
     });
+    test('different types with same qualifier', () async {
+      await checkBuilderOfFile(
+        'qualifier/named/different_types_with_same_qualifier',
+      );
+    });
     test('named qualifier provides param', () async {
       await checkBuilderOfFile(
           'qualifier/named/named_qualifier_provides_param');
