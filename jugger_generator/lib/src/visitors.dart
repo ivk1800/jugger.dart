@@ -5,6 +5,7 @@ import 'package:collection/collection.dart';
 import 'package:jugger/jugger.dart' as j;
 
 import 'classes.dart';
+import 'jugger_error.dart';
 import 'utils.dart';
 
 class InjectedMembersVisitor extends RecursiveElementVisitor<dynamic> {
@@ -18,7 +19,7 @@ class InjectedMembersVisitor extends RecursiveElementVisitor<dynamic> {
       // ignore: flutter_style_todos
       //TODO: check another dynamic states
       if (!element.isPublic || element.isStatic) {
-        throw StateError(
+        throw JuggerError(
           'field ${element.name} must be only public',
         );
       }
@@ -71,13 +72,13 @@ class ProvidesVisitor extends RecursiveElementVisitor<dynamic> {
     final List<Annotation> annotations = getAnnotations(element);
 
     if (!element.isAbstract && !element.isStatic) {
-      throw StateError(
+      throw JuggerError(
         'provided method must be abstract or static [${moduleElement.name}.${element.name}]',
       );
     }
 
     if (element.isPrivate) {
-      throw StateError(
+      throw JuggerError(
         'provided method can not be private [${moduleElement.name}.${element.name}]',
       );
     }
@@ -98,7 +99,7 @@ class ProvidesVisitor extends RecursiveElementVisitor<dynamic> {
 
     if (getBindAnnotation(element) != null &&
         getProvideAnnotation(element) != null) {
-      throw StateError(
+      throw JuggerError(
         'provide method [${moduleElement.name}.${element.name}] can not be annotated together [${j.provides.runtimeType}] and [${j.binds.runtimeType}]',
       );
     }
@@ -118,7 +119,7 @@ class InjectedFieldsVisitor extends RecursiveElementVisitor<dynamic> {
     }
 
     if (element.parameters.length != 1) {
-      throw StateError(
+      throw JuggerError(
         'method ${element.name} must have 1 parameter',
       );
     }
@@ -232,7 +233,7 @@ class BuildMethodsVisitor extends RecursiveElementVisitor<dynamic> {
       final ComponentAnnotation? componentAnnotation =
           getComponentAnnotation(element.returnType.element!);
       if (componentAnnotation == null) {
-        throw StateError(
+        throw JuggerError(
           'build $element method must return component type',
         );
       }
@@ -268,7 +269,7 @@ class ProvideMethodVisitor extends RecursiveElementVisitor<dynamic> {
     }
 
     if (!element.isAbstract) {
-      throw StateError(
+      throw JuggerError(
         '${element.name} not abstract',
       );
     }

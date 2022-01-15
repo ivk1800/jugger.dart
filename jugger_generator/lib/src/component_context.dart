@@ -9,6 +9,8 @@ import 'package:jugger_generator/src/utils.dart';
 import 'package:jugger_generator/src/visitors.dart';
 import 'package:quiver/core.dart';
 
+import 'jugger_error.dart';
+
 class ComponentContext {
   ComponentContext({
     required this.component,
@@ -129,14 +131,14 @@ class ComponentContext {
       return _registerVariableElementDependency(element);
     }
 
-    throw StateError(
+    throw JuggerError(
       'field ${element.name} unsupported type',
     );
   }
 
   Dependency _registerVariableElementDependency(Element element) {
     if (!(element is VariableElement)) {
-      throw StateError('element[$element] is not VariableElement');
+      throw JuggerError('element[$element] is not VariableElement');
     }
 
     final String? named = getQualifierAnnotation(element)?.tag;
@@ -229,7 +231,7 @@ class ComponentContext {
 
   ProviderSource? findProvider(DartType type, [String? tag]) {
     // if (!(element is ClassElement)) {
-    //   throw StateError('element[$element] is not ClassElement');
+    //   throw JuggerError('element[$element] is not ClassElement');
     // }
     return providerSources.firstWhereOrNull((ProviderSource source) {
       return source.type == type && source.tag == tag;
@@ -273,7 +275,7 @@ class _Key {
           path: createElementPath(element.type.element!));
     }
 
-    throw StateError(
+    throw JuggerError(
       'field ${element.name} unsupported type',
     );
   }
@@ -300,7 +302,7 @@ class _Key {
       return p.type.getName();
     }
 
-    throw StateError(
+    throw JuggerError(
       'field ${element!.name} unsupported type',
     );
   }

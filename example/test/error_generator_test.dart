@@ -22,9 +22,9 @@ abstract class AppModule {
 }
         ''',
         onError: (Object error) {
-          assert(
-            error.toString() ==
-                'Bad state: provided method must be abstract or static [AppModule.provideTestString]',
+          expect(
+            error.toString(),
+            'error: provided method must be abstract or static [AppModule.provideTestString]',
           );
         },
       );
@@ -54,9 +54,9 @@ class MyClass {
 }
         ''',
         onError: (Object error) {
-          assert(
-            error.toString() ==
-                'Bad state: constructor can not be private [MyClass._]',
+          expect(
+            error.toString(),
+            'error: constructor can not be private [MyClass._]',
           );
         },
       );
@@ -83,9 +83,9 @@ class MyClass {
 }
         ''',
         onError: (Object error) {
-          assert(
-            error.toString() ==
-                'Bad state: not found injected constructor for MyClass',
+          expect(
+            error.toString(),
+            'error: not found injected constructor for MyClass',
           );
         },
       );
@@ -116,9 +116,9 @@ class MyClass {
 }
         ''',
         onError: (Object error) {
-          assert(
-            error.toString() ==
-                'Bad state: too many injected constructors for MyClass',
+          expect(
+            error.toString(),
+            'error: too many injected constructors for MyClass',
           );
         },
       );
@@ -150,9 +150,9 @@ class MyClass {
 }
         ''',
         onError: (Object error) {
-          assert(
-            error.toString() ==
-                'Bad state: factory constructor not supported [MyClass.create]',
+          expect(
+            error.toString(),
+            'error: factory constructor not supported [MyClass.create]',
           );
         },
       );
@@ -180,9 +180,9 @@ class MyClass {
 }
         ''',
         onError: (Object error) {
-          assert(
-            error.toString() ==
-                'Bad state: named constructor not supported [MyClass.create]',
+          expect(
+            error.toString(),
+            'error: named constructor not supported [MyClass.create]',
           );
         },
       );
@@ -222,10 +222,9 @@ class MyClass {
 }
         ''',
         onError: (Object error) {
-          print(error);
           expect(
             error.toString(),
-            'Bad state: all parameters must be Positional or Named [MyClass]',
+            'error: all parameters must be Positional or Named [MyClass]',
           );
         },
       );
@@ -250,10 +249,9 @@ abstract class AppModule {
 }
         ''',
         onError: (Object error) {
-          print(error);
           expect(
             error.toString(),
-            'Bad state: provider for (String, qualifier: null) not found',
+            'error: provider for (String, qualifier: null) not found',
           );
         },
       );
@@ -276,10 +274,9 @@ abstract class AppModule {
 }
         ''',
         onError: (Object error) {
-          print(error);
           expect(
             error.toString(),
-            'Bad state: provideStrings.Future<String> (qualifier: null) not provided',
+            'error: provideStrings.Future<String> (qualifier: null) not provided',
           );
         },
       );
@@ -349,9 +346,9 @@ const Inject inject = Inject._();
 
         ''',
           onError: (Object error) {
-            assert(
-              error.toString() ==
-                  'Bad state: not found injected constructor for MyClass',
+            expect(
+              error.toString(),
+              'error: not found injected constructor for MyClass',
             );
           },
         );
@@ -398,10 +395,10 @@ abstract class MyModule {
 }
         ''',
         onError: (Object error) {
-          print(error);
+          (error);
           expect(
             error.toString(),
-            'Bad state: you need provide dependencies by builder. component: MyComponent, dependencies: AppComponent',
+            'error: you need provide dependencies by builder. component: MyComponent, dependencies: AppComponent',
           );
         },
       );
@@ -450,10 +447,9 @@ abstract class MyModule {
 }
         ''',
         onError: (Object error) {
-          print(error);
           expect(
             error.toString(),
-            'Bad state: not found build method for [MyComponentBuilder] package:example/test.dart.dart',
+            'error: not found build method for [MyComponentBuilder] package:example/test.dart.dart',
           );
         },
       );
@@ -504,10 +500,9 @@ abstract class MyModule {
 }
         ''',
         onError: (Object error) {
-          print(error);
           expect(
             error.toString(),
-            'Bad state: build MyComponentBuilder build() method must return component type',
+            'error: build MyComponentBuilder build() method must return component type',
           );
         },
       );
@@ -556,10 +551,9 @@ abstract class MyModule {
 }
         ''',
         onError: (Object error) {
-          print(error);
           expect(
             error.toString(),
-            'Bad state: build MyComponentBuilder build() method must return component type',
+            'error: build MyComponentBuilder build() method must return component type',
           );
         },
       );
@@ -615,10 +609,9 @@ abstract class MyModule {
 }
         ''',
         onError: (Object error) {
-          print(error);
           expect(
             error.toString(),
-            'Bad state: AppConfig provides multiple time: AppConfig.appConfig, MyModule.provideAppConfig',
+            'error: AppConfig provides multiple time: AppConfig.appConfig, MyModule.provideAppConfig',
           );
         },
       );
@@ -643,10 +636,9 @@ abstract class AppModule {
 }
         ''',
         onError: (Object error) {
-          print(error);
           expect(
             error.toString(),
-            'Bad state: found unused generated providers: _stringProvider',
+            'error: found unused generated providers: _stringProvider',
           );
         },
         options: const BuilderOptions(
@@ -676,10 +668,9 @@ abstract class AppComponent {
 abstract class AppModule {}
         ''',
         onError: (Object error) {
-          print(error);
           expect(
             error.toString(),
-            'Bad state: [String, qualifier: my] not provided',
+            'error: [String, qualifier: my] not provided',
           );
         },
       );
@@ -709,10 +700,9 @@ class My {
 const My my = My();
         ''',
         onError: (Object error) {
-          print(error);
           expect(
             error.toString(),
-            'Bad state: [String, qualifier: My] not provided',
+            'error: [String, qualifier: My] not provided',
           );
         },
       );
@@ -740,10 +730,9 @@ abstract class AppModule {
 }
         ''',
         onError: (Object error) {
-          print(error);
           expect(
             error.toString(),
-            'Bad state: multiple qualifiers not allowed [AppComponent.appConfig]',
+            'error: multiple qualifiers not allowed [AppComponent.appConfig]',
           );
         },
       );
@@ -775,10 +764,9 @@ abstract class AppModule {
 
         ''',
         onError: (Object error) {
-          print(error);
           expect(
             error.toString(),
-            'Bad state: field _helloString must be only public',
+            'error: field _helloString must be only public',
           );
         },
         options: const BuilderOptions(
@@ -819,10 +807,9 @@ abstract class AppModule {
 }
         ''',
         onError: (Object error) {
-          print(error);
           expect(
             error.toString(),
-            'Bad state: bindMainRouter bind wrong type IMainRouter',
+            'error: bindMainRouter bind wrong type IMainRouter',
           );
         },
         options: const BuilderOptions(
@@ -856,10 +843,9 @@ abstract class AppModule {
 }
         ''',
         onError: (Object error) {
-          print(error);
           expect(
             error.toString(),
-            'Bad state: not found injected constructor for MainRouter',
+            'error: not found injected constructor for MainRouter',
           );
         },
       );

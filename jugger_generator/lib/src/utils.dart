@@ -6,6 +6,7 @@ import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
 import 'package:crypto/crypto.dart';
 import 'package:jugger/jugger.dart';
+import 'package:jugger_generator/src/jugger_error.dart';
 
 import 'classes.dart';
 import 'library_ext.dart';
@@ -133,7 +134,7 @@ List<Annotation> getAnnotations(Element moduleClass) {
             }).toList(),
             dependencies: dependencies.map((ClassElement c) {
               if (!c.isAbstract) {
-                throw StateError(
+                throw JuggerError(
                   'dependency must be abstract [${c.thisType.getName()}]',
                 );
               }
@@ -151,7 +152,7 @@ List<Annotation> getAnnotations(Element moduleClass) {
         annotations.add(BindAnnotation());
       } else if (valueElement.name == componentBuilder.runtimeType.toString()) {
         if (!(valueElement is ClassElement)) {
-          throw StateError('element[$valueElement] is not ClassElement');
+          throw JuggerError('element[$valueElement] is not ClassElement');
         }
         annotations.add(ComponentBuilderAnnotation(valueElement));
       } else if (valueElement.name == nonLazy.runtimeType.toString()) {
@@ -188,7 +189,7 @@ String createClassNameWithPath(ClassElement element) {
 
 void check(bool condition, String message) {
   if (!condition) {
-    throw StateError(message);
+    throw JuggerError(message);
   }
 }
 
@@ -214,10 +215,10 @@ extension ElementExt on Element {
     final Element moduleClass = this;
 
     if (!(moduleClass is ClassElement)) {
-      throw StateError('element[$moduleClass] is not ClassElement');
+      throw JuggerError('element[$moduleClass] is not ClassElement');
     }
     if (!moduleClass.isAbstract) {
-      throw StateError(
+      throw JuggerError(
         'module must be abstract [${moduleClass.thisType.getName()}] ${moduleClass.library.identifier}',
       );
     }

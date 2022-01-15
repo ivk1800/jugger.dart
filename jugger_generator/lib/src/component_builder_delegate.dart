@@ -16,6 +16,7 @@ import 'check_unused_providers.dart';
 import 'classes.dart' as j;
 import 'component_context.dart';
 import 'global_config.dart';
+import 'jugger_error.dart';
 import 'visitors.dart';
 
 class ComponentBuilderDelegate {
@@ -179,15 +180,16 @@ class ComponentBuilderDelegate {
                       parameter.parameter.enclosingElement!.getQualifierTag();
                   final Element? classElement =
                       parameter.parameter.type.element;
-                  if (!(classElement is ClassElement)) {
-                    throw StateError(
-                        'element[$classElement] is not ClassElement');
-                  }
+
+                  check(
+                    classElement is ClassElement,
+                    'element[$classElement] is not ClassElement',
+                  );
 
                   final CodeExpression codeExpression =
                       CodeExpression(Block.of(<Code>[
                     Code('_${_generateName(
-                      classElement.thisType,
+                      (classElement as ClassElement).thisType,
                       tag?._toAssignTag(),
                     )}!'),
                   ]));
@@ -314,11 +316,10 @@ class ComponentBuilderDelegate {
             final ClassElement typeElement =
                 dependency.type.element as ClassElement;
 
-            if (isCore(typeElement) || typeElement.isAbstract) {
-              throw StateError(
-                '${dependency.enclosingElement.name}.${dependency.type.getName()} (qualifier: $tag) not provided',
-              );
-            }
+            check(
+              !(isCore(typeElement) || typeElement.isAbstract),
+              '${dependency.enclosingElement.name}.${dependency.type.getName()} (qualifier: $tag) not provided',
+            );
             // if (_isBindDependency(dependency)) {
             //   continue;
             // }
@@ -496,7 +497,7 @@ class ComponentBuilderDelegate {
     }
 
     // if (!(element is ClassElement)) {
-    //   throw StateError('element[$element] is not ClassElement');
+    //   throw JuggerError('element[$element] is not ClassElement');
     // }
 
     final ProviderSource? provider = _componentContext.findProvider(type, name);
@@ -577,7 +578,7 @@ class ComponentBuilderDelegate {
           print('${provider.providedClass} is AnotherComponentSource');
         } else {
           if (isCore(dependency.element) || dependency.element.isAbstract) {
-            throw StateError(
+            throw JuggerError(
               '${dependency.enclosingElement.name}.${dependency.element.name} (qualifier: $tag) not provided',
             );
           }
@@ -702,7 +703,7 @@ class ComponentBuilderDelegate {
     } else if (method.isAbstract) {
       expression = _buildProviderFromAbstractMethod(method);
     } else {
-      throw StateError(
+      throw JuggerError(
         'provided method must be abstract or static [${method.enclosingElement.name}.${method.name}]',
       );
     }
@@ -781,7 +782,7 @@ class ComponentBuilderDelegate {
     if (rawParameter is ClassElement) {
       parameter = rawParameter;
     } else {
-      throw StateError('parameter must be class [${rawParameter.name}]');
+      throw JuggerError('parameter must be class [${rawParameter.name}]');
     }
 
     final InjectedConstructorsVisitor visitor = InjectedConstructorsVisitor();
@@ -843,7 +844,7 @@ class ComponentBuilderDelegate {
       // ignore: avoid_as
       returnClass = method.returnType.element as ClassElement;
     } else {
-      throw StateError(
+      throw JuggerError(
           'unknown provided type of method ${method.getDisplayString(withNullability: false)}');
     }
 
@@ -914,11 +915,10 @@ class ComponentBuilderDelegate {
     ComponentContext _componentContext,
   ) {
     _log('build CallMethodOrConstructor for: ${element.name}');
-    if (!(element is ClassElement) && !(element is MethodElement)) {
-      throw StateError(
-        'element${element.name} must be ClassElement or MethodElement',
-      );
-    }
+    check(
+      (element is ClassElement) || (element is MethodElement),
+      'element${element.name} must be ClassElement or MethodElement',
+    );
 
     Reference r(String symbol) {
       if (element is MethodElement) {
@@ -964,11 +964,10 @@ class ComponentBuilderDelegate {
         parameters.any((ParameterElement p) => p.isPositional);
     final bool isNamed = parameters.any((ParameterElement p) => p.isNamed);
 
-    if (isPositional && isNamed) {
-      throw StateError(
-        'all parameters must be Positional or Named [${element.name}]',
-      );
-    }
+    check(
+      !(isPositional && isNamed),
+      'all parameters must be Positional or Named [${element.name}]',
+    );
 
     if (isPositional) {
       return ToCodeExpression(r(element.name!).newInstance(
@@ -982,9 +981,7 @@ class ComponentBuilderDelegate {
           _buildArgumentsExpression(element, parameters, _componentContext)));
     }
 
-    throw StateError(
-      '????',
-    );
+    throw JuggerError('unexpected state');
   }
 
   Reference getProviderType(Element element) {
@@ -1023,7 +1020,7 @@ class ComponentBuilderDelegate {
     } else if (element is MethodElement) {
       return _allocator.allocate(refer(_allocateTypeName(element.returnType)));
     }
-    throw StateError(
+    throw JuggerError(
         'unsupported type: ${element.name}, ${element.runtimeType}');
   }
 
