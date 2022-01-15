@@ -251,7 +251,7 @@ abstract class AppModule {
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: provider for (String, qualifier: null) not found',
+            'error: Provider for (String) not found',
           );
         },
       );

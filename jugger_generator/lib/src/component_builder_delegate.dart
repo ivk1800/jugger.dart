@@ -16,6 +16,7 @@ import 'classes.dart' as j;
 import 'component_context.dart';
 import 'global_config.dart';
 import 'jugger_error.dart';
+import 'messages.dart';
 import 'visitors.dart';
 
 class ComponentBuilderDelegate {
@@ -512,7 +513,10 @@ class ComponentBuilderDelegate {
       final DartType depType = interfaceType.typeArguments.first;
       final ProviderSource? provider =
           _componentContext.findProvider(depType, name);
-      check(provider != null, 'provide for [$depType] not found');
+      check2(
+        provider != null,
+        () => providerNotFound(depType, name),
+      );
       return _generateAssignString(
         provider!.type,
         provider.tag,
@@ -540,8 +544,10 @@ class ComponentBuilderDelegate {
     if (visitor.injectedConstructors.isEmpty) {
       final j.Method? provideMethod =
           _componentContext.findProvideMethod(type, name);
-      check(provideMethod != null,
-          'provider for (${type.getName()}, qualifier: $name) not found');
+      check2(
+        provideMethod != null,
+        () => providerNotFound(type, name),
+      );
     }
 
     final String? finalSting;
@@ -676,8 +682,10 @@ class ComponentBuilderDelegate {
     final InjectedConstructorsVisitor visitor = InjectedConstructorsVisitor();
     element.visitChildren(visitor);
 
-    check(visitor.injectedConstructors.length == 1,
-        'not found injected constructor for ${element.name}');
+    check2(
+      visitor.injectedConstructors.length == 1,
+      () => injectedConstructorNotFound(element),
+    );
     final j.InjectedConstructor injectedConstructor =
         visitor.injectedConstructors[0];
     final List<ParameterElement> parameters =
@@ -820,15 +828,20 @@ class ComponentBuilderDelegate {
             interfaceType.element.name ==
             method.returnType.getDisplayString(withNullability: false));
 
-    check(isSupertype, '${method.name} bind wrong type ${method.returnType}');
+    check2(
+      isSupertype,
+      () => bindWrongType(method),
+    );
     if (provider is AnotherComponentSource) {
       return _buildProviderFromAnotherComponent(method, provider);
     } else if (provider is ModuleSource) {
       return _buildProviderFromModule(method, provider);
     }
 
-    check(visitor.injectedConstructors.length == 1,
-        'not found injected constructor for ${parameter.name}');
+    check2(
+      visitor.injectedConstructors.length == 1,
+      () => injectedConstructorNotFound(parameter),
+    );
     final j.InjectedConstructor injectedConstructor =
         visitor.injectedConstructors[0];
     final List<ParameterElement> parameters =

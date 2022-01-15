@@ -193,6 +193,12 @@ void check(bool condition, String message) {
   }
 }
 
+void check2(bool condition, String Function() message) {
+  if (!condition) {
+    throw JuggerError(message.call());
+  }
+}
+
 extension DartTypeExt on DartType {
   String getName() {
     return getDisplayString(withNullability: true);
