@@ -46,9 +46,9 @@ ProvideAnnotation? getProvideAnnotation(Element element) {
 QualifierAnnotation? getQualifierAnnotation(Element element) {
   final List<QualifierAnnotation> qualifierAnnotation =
       getAnnotations(element).whereType<QualifierAnnotation>().toList();
-  check(
+  check2(
     qualifierAnnotation.length <= 1,
-    'multiple qualifiers not allowed [${element.enclosingElement?.name}.${element.name}]',
+    () => multipleQualifiersNotAllowed(element),
   );
 
   return qualifierAnnotation
@@ -105,8 +105,7 @@ List<Annotation> getAnnotations(Element moduleClass) {
     }
 
     if (valueElement == null) {
-      // ignore: flutter_style_todos
-      //TODO
+      throw JuggerError('value if annotation [$annotation] is null');
     } else {
       final bool isJuggerLibrary = valueElement.library!.isJuggerLibrary;
 
@@ -135,11 +134,7 @@ List<Annotation> getAnnotations(Element moduleClass) {
               return moduleDep.getModuleAnnotationOfModuleClass();
             }).toList(),
             dependencies: dependencies.map((ClassElement c) {
-              if (!c.isAbstract) {
-                throw JuggerError(
-                  'dependency must be abstract [${c.thisType.getName()}]',
-                );
-              }
+              check2(c.isAbstract, () => dependencyMustBeAbstract(c.thisType));
               return DependencyAnnotation(element: c);
             }).toList()));
       } else if (valueElement.name == provides.runtimeType.toString()) {
@@ -236,11 +231,7 @@ extension ElementExt on Element {
     if (!(moduleClass is ClassElement)) {
       throw JuggerError('element[$moduleClass] is not ClassElement');
     }
-    if (!moduleClass.isAbstract) {
-      throw JuggerError(
-        'module must be abstract [${moduleClass.thisType.getName()}] ${moduleClass.library.identifier}',
-      );
-    }
+    check2(moduleClass.isAbstract, () => moduleMustBeAbstract(moduleClass));
     return ModuleAnnotation(moduleElement: moduleClass);
   }
 

@@ -20,3 +20,19 @@ String providerNotAllowed(DartType type) {
 String bindWrongType(MethodElement method) {
   return '${method.name} bind wrong type ${method.returnType}';
 }
+
+String dependencyMustBeAbstract(DartType type) {
+  return 'dependency must be abstract [${type.getName()}]';
+}
+
+String multipleQualifiersNotAllowed(Element element) {
+  return 'multiple qualifiers not allowed [${element.enclosingElement?.name}.${element.name}]';
+}
+
+String moduleMustBeAbstract(ClassElement moduleClass) {
+  return 'module must be abstract [${moduleClass.thisType.getName()}] ${moduleClass.library.identifier}';
+}
+
+String foundUnusedGeneratedProviders(Iterable<String> variables) {
+  return 'found unused generated providers: ${variables.join(', ')}';
+}

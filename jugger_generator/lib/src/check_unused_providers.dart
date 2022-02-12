@@ -3,14 +3,16 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:jugger_generator/src/utils.dart';
 
+import 'messages.dart';
+
 void checkUnusedProviders(String content) {
   final CompilationUnit unit = parseString(content: content).unit;
   final _Visitor visitor = _Visitor(rawContent: content);
   unit.visitChildren(visitor);
 
-  check(
+  check2(
     visitor.variables.isEmpty,
-    'found unused generated providers: ${visitor.variables.join(', ')}',
+    () => foundUnusedGeneratedProviders(visitor.variables),
   );
 }
 

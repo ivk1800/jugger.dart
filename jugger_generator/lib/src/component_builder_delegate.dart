@@ -182,9 +182,9 @@ class ComponentBuilderDelegate {
                   final Element? classElement =
                       parameter.parameter.type.element;
 
-                  check(
+                  check2(
                     classElement is ClassElement,
-                    'element[$classElement] is not ClassElement',
+                    () => 'element[$classElement] is not ClassElement',
                   );
 
                   final CodeExpression codeExpression =
@@ -842,9 +842,9 @@ class ComponentBuilderDelegate {
     final ClassElement returnClass;
     if (getBindAnnotation(method) != null) {
       final Element? bindedElement = method.parameters[0].type.element;
-      check(
+      check2(
         bindedElement is ClassElement,
-        '$bindedElement not supported.',
+        () => '$bindedElement not supported.',
       );
       // ignore: avoid_as
       returnClass = bindedElement as ClassElement;
