@@ -7,4 +7,11 @@ extension DartTypeExt on DartType {
         ) &&
         element!.name == 'IProvider';
   }
+
+  DartType get providerType {
+    final InterfaceType interfaceType = this as InterfaceType;
+    assert(interfaceType.typeArguments.length == 1);
+
+    return interfaceType.typeArguments.first;
+  }
 }

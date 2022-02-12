@@ -52,6 +52,24 @@ void main() {
         'provider/provider_as_dependency_of_provides_method',
       );
     });
+
+    test('provider and class as dependency together', () async {
+      await checkBuilderOfFile(
+        'provider/provider_and_class_as_dependency_together',
+      );
+    });
+
+    test('only provider as dependency', () async {
+      await checkBuilderOfFile(
+        'provider/only_provider_as_dependency',
+      );
+    });
+
+    test('multi providers as dependency', () async {
+      await checkBuilderOfFile(
+        'provider/multi_providers_as_dependency',
+      );
+    });
   });
 
   group('provides', () {

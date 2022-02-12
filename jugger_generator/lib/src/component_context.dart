@@ -5,6 +5,7 @@ import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
 import 'package:jugger_generator/src/classes.dart';
 import 'package:jugger_generator/src/classes.dart' as j;
+import 'package:jugger_generator/src/dart_type_ext.dart';
 import 'package:jugger_generator/src/utils.dart';
 import 'package:jugger_generator/src/visitors.dart';
 import 'package:quiver/core.dart';
@@ -136,7 +137,7 @@ class ComponentContext {
         _registerMethodDependencies(element),
         element,
       );
-      _dependencies[key] = dependency;
+      _registerAndValidateDependency(key, dependency);
       _dependenciesQueue.removeFirst();
       return dependency;
     } else if (element is ParameterElement || element is FieldElement) {
@@ -147,6 +148,19 @@ class ComponentContext {
     throw JuggerError(
       'field ${element.name} unsupported type',
     );
+  }
+
+  void _registerAndValidateDependency(_Key key, Dependency dependency) {
+    if (dependency.type.isProvider) {
+      dependency = Dependency(
+        dependency.named,
+        dependency.type.providerType,
+        dependency.dependencies,
+        dependency.enclosingElement,
+      );
+    }
+
+    _dependencies[key] = dependency;
   }
 
   Dependency _registerVariableElementDependency(Element element) {
@@ -175,7 +189,7 @@ class ComponentContext {
         <Dependency>[],
         element.enclosingElement!,
       );
-      _dependencies[key] = dependency;
+      _registerAndValidateDependency(key, dependency);
       return dependency;
     }
 
@@ -214,7 +228,7 @@ class ComponentContext {
       dependencies,
       element,
     );
-    _dependencies[key] = dependency;
+    _registerAndValidateDependency(key, dependency);
     return dependency;
   }
 
@@ -288,6 +302,15 @@ class _Key {
         path: createElementPath(element.returnType.element!),
       );
     } else if (element is VariableElement) {
+      if (element.type.isProvider) {
+        return _Key(
+          named: named,
+          element: element,
+          type: element.type.providerType,
+          path: createElementPath(element.type.providerType.element!),
+        );
+      }
+
       return _Key(
         named: named,
         element: element,

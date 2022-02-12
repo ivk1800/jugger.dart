@@ -13,6 +13,10 @@ String injectedConstructorNotFound(ClassElement element) {
   return 'not found injected constructor for ${element.name}';
 }
 
+String providerNotAllowed(DartType type) {
+  return 'found registered dependency of provider [${type.getName()}]';
+}
+
 String bindWrongType(MethodElement method) {
   return '${method.name} bind wrong type ${method.returnType}';
 }

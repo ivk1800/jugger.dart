@@ -46,6 +46,7 @@ class ComponentBuilderDelegate {
     } catch (e) {
       final String message = '${_logs.join('\n')}\n$e';
       print('\x1B[94m$message\x1B[0m');
+      print((e as Error).stackTrace);
       rethrow;
     }
   }
@@ -282,16 +283,18 @@ class ComponentBuilderDelegate {
   ) {
     final List<Field> fields = <Field>[];
 
-    for (Dependency dependency in _filterDependenciesForFields(dependencies)) {
+    final Iterable<Dependency> filteredDependencies =
+        _filterDependenciesForFields(dependencies);
+
+    for (Dependency dependency in filteredDependencies) {
       _log(
         'process: ${dependency.enclosingElement.toNameWithPath()}',
       );
 
-      final bool isProvider = dependency.type.isProvider;
-
-      if (isProvider) {
-        continue;
-      }
+      check2(
+        !dependency.type.isProvider,
+        () => providerNotAllowed(dependency.type),
+      );
 
       final ProviderSource? provider =
           _componentContext.findProvider(dependency.type, dependency.named);
@@ -342,11 +345,6 @@ class ComponentBuilderDelegate {
   }
 
   String _allocateDependencyTypeName(Dependency dependency) {
-    final Element enclosingElement = dependency.enclosingElement;
-    if (enclosingElement is MethodElement) {
-      return _allocateTypeName(enclosingElement.returnType);
-    }
-
     return _allocateTypeName(dependency.type);
   }
 
@@ -368,17 +366,6 @@ class ComponentBuilderDelegate {
     return '$name<${type.typeArguments.map((DartType type) {
       return _allocateTypeName(type as InterfaceType);
     }).join(',')}>';
-  }
-
-  bool _isBindDependency(Dependency dependency) {
-    if (dependency.enclosingElement is ParameterElement) {
-      if (dependency.enclosingElement.enclosingElement is MethodElement) {
-        return getBindAnnotation(
-                dependency.enclosingElement.enclosingElement!) !=
-            null;
-      }
-    }
-    return false;
   }
 
   List<Method> _buildProvideProperties(ComponentContext _componentContext) {
@@ -507,10 +494,7 @@ class ComponentBuilderDelegate {
     }
 
     if (type.isProvider) {
-      final InterfaceType interfaceType = type as InterfaceType;
-      assert(interfaceType.typeArguments.length == 1);
-
-      final DartType depType = interfaceType.typeArguments.first;
+      final DartType depType = type.providerType;
       final ProviderSource? provider =
           _componentContext.findProvider(depType, name);
 
