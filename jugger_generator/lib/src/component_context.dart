@@ -349,6 +349,14 @@ class Dependency implements Comparable<Dependency> {
   );
 
   final DartType type;
+
+  /// enclosing element of dependency. Depends by provider type.
+  /// examples:
+  /// 1. if dependency is a variable of method, enclosing element will be
+  /// method.
+  /// 2. if dependency is type of method, enclosing element will be method.
+  /// 3. if dependency is parameter of constructor, enclosing element will be
+  /// parameter.
   final Element enclosingElement;
   final List<Dependency> dependencies;
   final String? named;
