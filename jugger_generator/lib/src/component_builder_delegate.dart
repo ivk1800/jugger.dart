@@ -513,6 +513,14 @@ class ComponentBuilderDelegate {
       final DartType depType = interfaceType.typeArguments.first;
       final ProviderSource? provider =
           _componentContext.findProvider(depType, name);
+
+      if (provider == null && depType.hasInjectedConstructor()) {
+        return _generateAssignString(
+          depType,
+          null,
+          false,
+        );
+      }
       check2(
         provider != null,
         () => providerNotFound(depType, name),

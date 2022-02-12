@@ -10,6 +10,8 @@ import 'package:jugger_generator/src/jugger_error.dart';
 
 import 'classes.dart';
 import 'library_ext.dart';
+import 'messages.dart';
+import 'visitors.dart';
 
 ComponentAnnotation? getComponentAnnotation(Element element) {
   final Annotation? annotation = getAnnotations(element)
@@ -202,6 +204,17 @@ void check2(bool condition, String Function() message) {
 extension DartTypeExt on DartType {
   String getName() {
     return getDisplayString(withNullability: true);
+  }
+
+  bool hasInjectedConstructor() {
+    final InjectedConstructorsVisitor visitor = InjectedConstructorsVisitor();
+    element!.visitChildren(visitor);
+
+    check2(
+      visitor.injectedConstructors.length < 2,
+      () => 'too many injected constructors of [${getName()}]',
+    );
+    return visitor.injectedConstructors.length == 1;
   }
 }
 
