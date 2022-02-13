@@ -113,9 +113,9 @@ class ComponentContext {
   //     _dependencies.values.map((Dependency d) => d.element).toList();
 
   Dependency _registerDependency(Element element) {
-    final String? named = getQualifierAnnotation(element)?.tag;
+    final String? qualifier = element.getQualifierTag();
 
-    final _Key key = _Key.of(element, named);
+    final _Key key = _Key.of(element, qualifier);
 
     if (_dependenciesQueue.contains(key)) {
       _dependenciesQueue.addFirst(key);
@@ -132,10 +132,9 @@ class ComponentContext {
 
     if (element is MethodElement) {
       final Dependency dependency = Dependency(
-        named,
+        qualifier,
         element.returnType,
         _registerMethodDependencies(element),
-        element,
       );
       _registerAndValidateDependency(key, dependency);
       _dependenciesQueue.removeFirst();
@@ -153,10 +152,9 @@ class ComponentContext {
   void _registerAndValidateDependency(_Key key, Dependency dependency) {
     if (dependency.type.isProvider) {
       dependency = Dependency(
-        dependency.named,
+        dependency.qualifier,
         dependency.type.providerType,
         dependency.dependencies,
-        dependency.enclosingElement,
       );
     }
 
@@ -168,7 +166,7 @@ class ComponentContext {
       throw JuggerError('element[$element] is not VariableElement');
     }
 
-    final String? named = getQualifierAnnotation(element)?.tag;
+    final String? named = element.getQualifierTag();
 
     final _Key key = _Key.of(element, named);
 
@@ -187,7 +185,6 @@ class ComponentContext {
         named,
         element.type,
         <Dependency>[],
-        element.enclosingElement!,
       );
       _registerAndValidateDependency(key, dependency);
       return dependency;
@@ -226,7 +223,6 @@ class ComponentContext {
       named,
       element.type,
       dependencies,
-      element,
     );
     _registerAndValidateDependency(key, dependency);
     return dependency;
@@ -342,24 +338,15 @@ class _Key {
 
 class Dependency implements Comparable<Dependency> {
   const Dependency(
-    this.named,
+    this.qualifier,
     this.type,
     this.dependencies,
-    this.enclosingElement,
   );
 
   final DartType type;
 
-  /// enclosing element of dependency. Depends by provider type.
-  /// examples:
-  /// 1. if dependency is a variable of method, enclosing element will be
-  /// method.
-  /// 2. if dependency is type of method, enclosing element will be method.
-  /// 3. if dependency is parameter of constructor, enclosing element will be
-  /// parameter.
-  final Element enclosingElement;
   final List<Dependency> dependencies;
-  final String? named;
+  final String? qualifier;
 
   @override
   String toString() {
@@ -368,8 +355,8 @@ class Dependency implements Comparable<Dependency> {
 
   @override
   int compareTo(Dependency other) {
-    return '${named ?? ''}_${type.getName()}'
-        .compareTo('${other.named ?? ''}_${other.type.getName()}');
+    return '${qualifier ?? ''}_${type.getName()}'
+        .compareTo('${other.qualifier ?? ''}_${other.type.getName()}');
   }
 }
 

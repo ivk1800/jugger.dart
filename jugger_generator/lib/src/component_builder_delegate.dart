@@ -287,25 +287,21 @@ class ComponentBuilderDelegate {
         _filterDependenciesForFields(dependencies);
 
     for (Dependency dependency in filteredDependencies) {
-      _log(
-        'process: ${dependency.enclosingElement.toNameWithPath()}',
-      );
-
       check2(
         !dependency.type.isProvider,
         () => providerNotAllowed(dependency.type),
       );
 
       final ProviderSource? provider =
-          _componentContext.findProvider(dependency.type, dependency.named);
+          _componentContext.findProvider(dependency.type, dependency.qualifier);
 
       if (!(provider is BuildInstanceSource) &&
           !(provider is AnotherComponentSource)) {
         fields.add(Field((FieldBuilder b) {
-          final String? tag = dependency.enclosingElement.getQualifierTag();
+          final String? qualifier = dependency.qualifier;
           b.name = '_${_generateName(
             dependency.type,
-            tag?._toAssignTag(),
+            qualifier?._toAssignTag(),
           )}Provider';
 
           final String generic = allocator.allocate(
@@ -315,7 +311,7 @@ class ComponentBuilderDelegate {
           b.modifier = FieldModifier.final$;
 
           final ProviderSource? provider =
-              _componentContext.findProvider(dependency.type, tag);
+              _componentContext.findProvider(dependency.type, qualifier);
 
           if (provider is ModuleSource) {
             b.assignment = _buildProviderFromModuleAssignCode(
@@ -327,7 +323,7 @@ class ComponentBuilderDelegate {
 
             check(
               !(isCore(typeElement) || typeElement.isAbstract),
-              '${dependency.enclosingElement.name}.${dependency.type.getName()} (qualifier: $tag) not provided',
+              '${dependency.type.getName()} (qualifier: $qualifier) not provided',
             );
             // if (_isBindDependency(dependency)) {
             //   continue;

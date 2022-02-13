@@ -276,7 +276,7 @@ abstract class AppModule {
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: provideStrings.Future<String> (qualifier: null) not provided',
+            'error: Future<String> (qualifier: null) not provided',
           );
         },
       );
