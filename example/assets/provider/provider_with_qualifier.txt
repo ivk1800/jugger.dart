@@ -1,0 +1,26 @@
+// ignore_for_file: implementation_imports
+// ignore_for_file: prefer_const_constructors
+// ignore_for_file: always_specify_types
+// ignore_for_file: directives_ordering
+// ignore_for_file: non_constant_identifier_names
+import 'package:example/provider/provider_with_qualifier.dart' as _i1;
+import 'package:jugger/jugger.dart' as _i2;
+
+class JuggerAppComponent implements _i1.AppComponent {
+  JuggerAppComponent.create();
+
+  late final _i2.IProvider<_i1.Config> _configProvider =
+      _i2.Provider<_i1.Config>(() => _i1.AppModule.provideConfig2(
+          _named_5a617031198a96edac6e2027520aa652_ConfigProvider));
+
+  late final _i2.IProvider<_i1.Config>
+      _named_5a617031198a96edac6e2027520aa652_ConfigProvider =
+      _i2.Provider<_i1.Config>(
+          () => _i1.AppModule.provideConfig1(_configProvider));
+
+  @override
+  _i1.Config getConfig1() =>
+      _named_5a617031198a96edac6e2027520aa652_ConfigProvider.get();
+  @override
+  _i1.Config getConfig2() => _configProvider.get();
+}

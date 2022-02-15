@@ -70,6 +70,12 @@ void main() {
         'provider/multi_providers_as_dependency',
       );
     });
+
+    test('provider with qualifier', () async {
+      await checkBuilderOfFile(
+        'provider/provider_with_qualifier',
+      );
+    });
   });
 
   group('provides', () {
