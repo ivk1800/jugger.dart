@@ -170,9 +170,13 @@ void main() {
   });
 
   group('component', () {
-    test('build instance dependency', () async {
+    test('component with build instance dependency', () async {
       await checkBuilderOfFile(
           'component/component_with_build_instance_dependency');
+    });
+
+    test('component without module', () async {
+      await checkBuilderOfFile('component/component_without_module');
     });
   });
 

@@ -56,7 +56,7 @@ class ComponentContext {
           'component: ${component.element.name}, dependencies: ${component.dependencies.map((j.DependencyAnnotation de) => de.element.name).join(',')}');
     }
 
-    for (j.Method method in component.provideMethods) {
+    for (j.Method method in component.modulesProvideMethods) {
       final MethodElement element = method.element;
 
       providerSources.add(ModuleSource(
@@ -79,10 +79,13 @@ class ComponentContext {
 
     _validateProviderSources();
 
-    for (j.Method method in component.provideMethods) {
+    for (j.Method method in component.modulesProvideMethods) {
       final MethodElement element = method.element;
       _registerDependency(element);
     }
+
+    component.provideMethods.forEach(_registerDependency);
+    component.provideProperties.forEach(_registerDependency);
 
     for (j.MemberInjectorMethod method in component.methods) {
       final MethodElement element = method.element;
@@ -142,10 +145,19 @@ class ComponentContext {
     } else if (element is ParameterElement || element is FieldElement) {
       _dependenciesQueue.removeFirst();
       return _registerVariableElementDependency(element);
+    } else if (element is PropertyAccessorElement) {
+      final Dependency dependency = Dependency(
+        qualifier,
+        element.returnType,
+        <Dependency>[],
+      );
+      _registerAndValidateDependency(key, dependency);
+      _dependenciesQueue.removeFirst();
+      return dependency;
     }
 
     throw JuggerError(
-      'field ${element.name} unsupported type',
+      'field ${element.name} unsupported type [${element.runtimeType}]',
     );
   }
 
@@ -247,7 +259,7 @@ class ComponentContext {
   }
 
   j.Method? findProvideMethod(DartType type, [String? name]) {
-    return component.provideMethods.firstWhereOrNull((j.Method method) {
+    return component.modulesProvideMethods.firstWhereOrNull((j.Method method) {
       return method.element.returnType == type && method.named == name;
     });
   }
@@ -313,10 +325,17 @@ class _Key {
         type: element.type,
         path: createElementPath(element.type.element!),
       );
+    } else if (element is PropertyAccessorElement) {
+      return _Key(
+        named: named,
+        element: element,
+        type: element.returnType,
+        path: createElementPath(element.returnType.element!),
+      );
     }
 
     throw JuggerError(
-      'field ${element.name} unsupported type',
+      'field [${element.name}] unsupported type [${element.runtimeType}]',
     );
   }
 

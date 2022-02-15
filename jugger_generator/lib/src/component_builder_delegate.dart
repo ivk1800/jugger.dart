@@ -323,7 +323,7 @@ class ComponentBuilderDelegate {
 
             check(
               !(isCore(typeElement) || typeElement.isAbstract),
-              '${dependency.type.getName()} (qualifier: $qualifier) not provided',
+              '[${dependency.type.getName()}, qualifier: $qualifier] not provided',
             );
             // if (_isBindDependency(dependency)) {
             //   continue;
@@ -389,7 +389,7 @@ class ComponentBuilderDelegate {
 
   List<Method> _buildProvideMethods(ComponentContext _componentContext) {
     final List<MethodElement> methods =
-        _componentContext.component.provideMethod;
+        _componentContext.component.provideMethods;
     final List<Method> newProperties = <Method>[];
 
     for (MethodElement method in methods) {
@@ -404,8 +404,11 @@ class ComponentBuilderDelegate {
         final ProviderSource? providerSource =
             _componentContext.findProvider(method.returnType, tag);
 
-        check(providerSource != null,
-            '[${method.returnType.element!.name}, qualifier: $tag] not provided');
+        check2(
+          providerSource != null || method.returnType.hasInjectedConstructor(),
+          () => 'not found inject constructor for [${method.runtimeType}]\n'
+              '[${method.returnType.element!.name}, qualifier: $tag] not provided',
+        );
 
         b.lambda = true;
         b.body = Code(

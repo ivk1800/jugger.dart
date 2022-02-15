@@ -27,7 +27,7 @@ class Component {
     return annotation is ComponentAnnotation ? annotation : null;
   }
 
-  List<Method> get provideMethods {
+  List<Method> get modulesProvideMethods {
     return modules.map((ModuleAnnotation module) {
       final ProvidesVisitor v = ProvidesVisitor();
       module.moduleElement.visitChildren(v);
@@ -47,7 +47,7 @@ class Component {
         .toList();
   }
 
-  List<MethodElement> get provideMethod {
+  List<MethodElement> get provideMethods {
     final ProvideMethodVisitor v = ProvideMethodVisitor();
     element.visitChildren(v);
     return v.methods
