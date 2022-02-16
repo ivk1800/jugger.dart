@@ -2,6 +2,10 @@ import 'package:analyzer/dart/element/type.dart';
 
 extension DartTypeExt on DartType {
   bool get isProvider {
+    if (element == null) {
+      return false;
+    }
+
     return element!.library!.location!.components.any(
           (String component) => component == 'package:jugger/src/provider.dart',
         ) &&

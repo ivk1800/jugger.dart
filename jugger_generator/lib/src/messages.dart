@@ -36,3 +36,7 @@ String moduleMustBeAbstract(ClassElement moduleClass) {
 String foundUnusedGeneratedProviders(Iterable<String> variables) {
   return 'found unused generated providers: ${variables.join(', ')}';
 }
+
+String typeNotSupported(DartType type) {
+  return 'type [$type] not supported';
+}

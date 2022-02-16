@@ -1,4 +1,5 @@
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:analyzer/dart/element/visitor.dart';
 import 'package:collection/collection.dart';
@@ -6,6 +7,7 @@ import 'package:jugger/jugger.dart' as j;
 
 import 'classes.dart';
 import 'jugger_error.dart';
+import 'messages.dart';
 import 'utils.dart';
 
 class InjectedMembersVisitor extends RecursiveElementVisitor<dynamic> {
@@ -200,10 +202,12 @@ class ComponentBuildersVisitor extends RecursiveElementVisitor<dynamic> {
 
       check(componentAnnotation != null, 'build method must return component');
 
+      final Iterable<MethodElement> externalDependenciesMethods = v
+          .methodElements
+          .where((MethodElement me) => me.name != BuildMethodName);
       for (DependencyAnnotation dep in componentAnnotation!.dependencies) {
-        final bool dependencyProvided = v.methodElements
-            .where((MethodElement me) => me.name != 'build')
-            .any((MethodElement me) {
+        final bool dependencyProvided =
+            externalDependenciesMethods.any((MethodElement me) {
           check(me.parameters.length == 1,
               'build method (${me.name}) must have 1 parameter');
           return me.parameters[0].type.element == dep.element;
@@ -211,6 +215,10 @@ class ComponentBuildersVisitor extends RecursiveElementVisitor<dynamic> {
 
         check(dependencyProvided,
             'dependency (${dep.element.name}) must provided by build method');
+      }
+
+      for (MethodElement element in externalDependenciesMethods) {
+        element.parameters.first.type.checkUnsupportedType();
       }
 
       componentBuilders.add(ComponentBuilder(
@@ -222,6 +230,8 @@ class ComponentBuildersVisitor extends RecursiveElementVisitor<dynamic> {
 
     return null;
   }
+
+  static const String BuildMethodName = 'build';
 }
 
 class BuildMethodsVisitor extends RecursiveElementVisitor<dynamic> {

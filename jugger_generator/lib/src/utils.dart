@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
 import 'package:crypto/crypto.dart';
@@ -210,6 +211,13 @@ extension DartTypeExt on DartType {
       () => 'too many injected constructors of [${getName()}]',
     );
     return visitor.injectedConstructors.length == 1;
+  }
+
+  void checkUnsupportedType() {
+    check2(
+      nullabilitySuffix == NullabilitySuffix.none && !(this is FunctionType),
+      () => typeNotSupported(this),
+    );
   }
 }
 

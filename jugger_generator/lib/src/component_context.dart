@@ -1,6 +1,7 @@
 import 'dart:collection';
 
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
 import 'package:jugger_generator/src/classes.dart';
@@ -11,6 +12,7 @@ import 'package:jugger_generator/src/visitors.dart';
 import 'package:quiver/core.dart';
 
 import 'jugger_error.dart';
+import 'messages.dart';
 
 class ComponentContext {
   ComponentContext({
@@ -162,6 +164,8 @@ class ComponentContext {
   }
 
   void _registerAndValidateDependency(_Key key, Dependency dependency) {
+    key.type.checkUnsupportedType();
+
     if (dependency.type.isProvider) {
       dependency = Dependency(
         dependency.qualifier,
@@ -190,7 +194,8 @@ class ComponentContext {
 //    }
 
     final InjectedConstructorsVisitor visitor = InjectedConstructorsVisitor();
-    element.type.element!.visitChildren(visitor);
+    // FunctionType with nullable element
+    element.type.element?.visitChildren(visitor);
 
     if (visitor.injectedConstructors.isEmpty) {
       final Dependency dependency = Dependency(
@@ -298,8 +303,7 @@ class _Key {
     required this.named,
     required this.type,
     required this.element,
-    required this.path,
-  }) : assert(type.element is ClassElement);
+  });
 
   factory _Key.of(Element element, String? named) {
     if (element is MethodElement) {
@@ -307,7 +311,6 @@ class _Key {
         named: named,
         element: element,
         type: element.returnType,
-        path: createElementPath(element.returnType.element!),
       );
     } else if (element is VariableElement) {
       if (element.type.isProvider) {
@@ -315,7 +318,6 @@ class _Key {
           named: named,
           element: element,
           type: element.type.providerType,
-          path: createElementPath(element.type.providerType.element!),
         );
       }
 
@@ -323,14 +325,12 @@ class _Key {
         named: named,
         element: element,
         type: element.type,
-        path: createElementPath(element.type.element!),
       );
     } else if (element is PropertyAccessorElement) {
       return _Key(
         named: named,
         element: element,
         type: element.returnType,
-        path: createElementPath(element.returnType.element!),
       );
     }
 
@@ -341,15 +341,14 @@ class _Key {
 
   final Element element;
   final DartType type;
-  final String path;
   final String? named;
 
   @override
   bool operator ==(dynamic o) =>
-      o is _Key && type == o.type && path == o.path && named == o.named;
+      o is _Key && type == o.type && named == o.named;
 
   @override
-  int get hashCode => hash3(type.hashCode, path.hashCode, named.hashCode);
+  int get hashCode => hash2(type.hashCode, named.hashCode);
 
   @override
   String toString() => '${element.name}';

@@ -925,4 +925,347 @@ abstract class AppModule {
       );
     });
   });
+
+  group('unsupported type', () {
+    test('nullable component getter with String type', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component()
+abstract class AppComponent {
+  String? get name;
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: type [String?] not supported',
+          );
+        },
+        options: const BuilderOptions(
+          <String, dynamic>{
+            'check_unused_providers': true,
+          },
+        ),
+      );
+    });
+
+    test('nullable component getter with Function type', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component()
+abstract class AppComponent {
+  void Function() get name;
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: type [void Function()] not supported',
+          );
+        },
+        options: const BuilderOptions(
+          <String, dynamic>{
+            'check_unused_providers': true,
+          },
+        ),
+      );
+    });
+
+    test('nullable parameter in injected constructor', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component()
+abstract class AppComponent {
+  Config get config;
+}
+
+class Config {
+  @inject
+  const Config(this.name);
+
+  final String? name;
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: type [String?] not supported',
+          );
+        },
+        options: const BuilderOptions(
+          <String, dynamic>{
+            'check_unused_providers': true,
+          },
+        ),
+      );
+    });
+
+    test('function parameter in injected constructor', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component()
+abstract class AppComponent {
+  Config get config;
+}
+
+class Config {
+  @inject
+  const Config(this.nameProvider);
+
+  final String Function() nameProvider;
+}        
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: type [String Function()] not supported',
+          );
+        },
+        options: const BuilderOptions(
+          <String, dynamic>{
+            'check_unused_providers': true,
+          },
+        ),
+      );
+    });
+
+    test('provider method return nullable type', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[AppModule])
+abstract class AppComponent {}
+
+@module
+abstract class AppModule {
+  @provides
+  static int? provideInt() => 0;
+}
+        
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: type [int?] not supported',
+          );
+        },
+        options: const BuilderOptions(
+          <String, dynamic>{
+            'check_unused_providers': true,
+          },
+        ),
+      );
+    });
+
+    test('provider method return function type', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[AppModule])
+abstract class AppComponent {}
+
+@module
+abstract class AppModule {
+  @provides
+  static int Function() provideInt() => () => 0;
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: type [int Function()] not supported',
+          );
+        },
+        options: const BuilderOptions(
+          <String, dynamic>{
+            'check_unused_providers': true,
+          },
+        ),
+      );
+    });
+
+    test('nullable parameter in provide method', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[AppModule])
+abstract class AppComponent {}
+
+@module
+abstract class AppModule {
+  @provides
+  static int provideInt(String? version) => 0;
+}        
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: type [String?] not supported',
+          );
+        },
+        options: const BuilderOptions(
+          <String, dynamic>{
+            'check_unused_providers': true,
+          },
+        ),
+      );
+    });
+
+    test('function parameter in provide method', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[AppModule])
+abstract class AppComponent {}
+
+@module
+abstract class AppModule {
+  @provides
+  static int provideInt(int Function() version) => 0;
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: type [int Function()] not supported',
+          );
+        },
+        options: const BuilderOptions(
+          <String, dynamic>{
+            'check_unused_providers': true,
+          },
+        ),
+      );
+    });
+
+    test('build instance nullable type', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component()
+abstract class AppComponent {
+  String get string;
+}
+
+@componentBuilder
+abstract class MyComponentBuilder {
+  MyComponentBuilder appComponent(String? s);
+
+  AppComponent build();
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: type [String?] not supported',
+          );
+        },
+        options: const BuilderOptions(
+          <String, dynamic>{
+            'check_unused_providers': true,
+          },
+        ),
+      );
+    });
+
+    test('build instance function type', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component()
+abstract class AppComponent {
+  String get string;
+}
+
+@componentBuilder
+abstract class MyComponentBuilder {
+  MyComponentBuilder appComponent(int Function() s);
+
+  AppComponent build();
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: type [int Function()] not supported',
+          );
+        },
+        options: const BuilderOptions(
+          <String, dynamic>{
+            'check_unused_providers': true,
+          },
+        ),
+      );
+    });
+
+    test('binds nullable type', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[AppModule])
+abstract class AppComponent {}
+
+@module
+abstract class AppModule {
+  @binds
+  String? bindString(String impl);
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: type [String?] not supported',
+          );
+        },
+        options: const BuilderOptions(
+          <String, dynamic>{
+            'check_unused_providers': true,
+          },
+        ),
+      );
+    });
+
+    test('binds impl nullable type', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[AppModule])
+abstract class AppComponent {}
+
+@module
+abstract class AppModule {
+  @binds
+  String bindString(String? impl);
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: type [String?] not supported',
+          );
+        },
+        options: const BuilderOptions(
+          <String, dynamic>{
+            'check_unused_providers': true,
+          },
+        ),
+      );
+    });
+  });
 }
