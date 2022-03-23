@@ -979,15 +979,15 @@ class ComponentBuilderDelegate {
 
     if (parameters.isEmpty) {
       final Reference reference = r(element.name!);
-      late final Expression instance;
+      late final Expression instanceExpression;
       if (element is ClassElement &&
           element.constructors.first.isConst &&
           element.constructors.first.parameters.isEmpty) {
-        instance = reference.constInstance(<Expression>[]);
+        instanceExpression = reference.constInstance(<Expression>[]);
       } else {
-        instance = reference.newInstance(<Expression>[]);
+        instanceExpression = reference.newInstance(<Expression>[]);
       }
-      return instance.code;
+      return _callInjectedMethodsIfNeeded(instanceExpression, element).code;
     }
 
     final bool isPositional =
@@ -1000,23 +1000,54 @@ class ComponentBuilderDelegate {
     );
 
     if (isPositional) {
-      return r(element.name!)
-          .newInstance(
-            _buildArgumentsExpression(element, parameters, _componentContext)
-                .values
-                .toList(),
-          )
-          .code;
+      final Expression newInstanceExpression = r(element.name!).newInstance(
+        _buildArgumentsExpression(element, parameters, _componentContext)
+            .values
+            .toList(),
+      );
+      return _callInjectedMethodsIfNeeded(newInstanceExpression, element).code;
     }
 
     if (isNamed) {
-      return r(element.name!).newInstance(
+      final Expression newInstance = r(element.name!).newInstance(
         <Expression>[],
         _buildArgumentsExpression(element, parameters, _componentContext),
-      ).code;
+      );
+      return _callInjectedMethodsIfNeeded(newInstance, element).code;
     }
 
     throw JuggerError('unexpected state');
+  }
+
+  Expression _callInjectedMethodsIfNeeded(
+    Expression initialExpression,
+    Element element,
+  ) {
+    if (element is ClassElement) {
+      final InjectedMethodsVisitor injectedMethodsVisitor =
+          InjectedMethodsVisitor();
+      element.visitChildren(injectedMethodsVisitor);
+
+      final Set<MethodElement> methods = injectedMethodsVisitor.methods;
+      if (methods.isNotEmpty) {
+        final List<Code> methodsCalls = methods.expand((MethodElement method) {
+          final Code methodCall = _buildCallMethodOrConstructor(
+              method, method.parameters, _componentContext);
+          return <Code>[
+            const Code('..'),
+            methodCall,
+          ];
+        }).toList();
+        return CodeExpression(Block.of(
+          <Code>[
+            initialExpression.code,
+            ...methodsCalls,
+          ],
+        ));
+      }
+    }
+
+    return initialExpression;
   }
 
   Reference getProviderType(Element element) {

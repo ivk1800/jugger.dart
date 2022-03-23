@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
@@ -164,6 +166,44 @@ class InjectedConstructorsVisitor extends RecursiveElementVisitor<dynamic> {
   List<InjectedConstructor> get injectedConstructors => _constructors
       .where((InjectedConstructor constructor) => constructor.isInjected)
       .toList();
+}
+
+///
+/// collect unique methods without repeating
+///
+class InjectedMethodsVisitor extends RecursiveElementVisitor<dynamic> {
+  final Set<MethodElement> methods = <MethodElement>{};
+
+  @override
+  dynamic visitMethodElement(MethodElement element) {
+    final List<Annotation> annotations = getAnnotations(element);
+
+    if (annotations
+        .any((Annotation annotation) => annotation is InjectAnnotation)) {
+      if (!methods.any((MethodElement collectedMethod) =>
+          collectedMethod.name == element.name)) {
+        methods.add(element);
+      }
+    }
+
+    return null;
+  }
+
+  @override
+  dynamic visitConstructorElement(ConstructorElement element) {
+    final List<InterfaceType> allSupertypes =
+        element.enclosingElement.allSupertypes;
+
+    for (InterfaceType interfaceType in allSupertypes) {
+      final Element element = interfaceType.element;
+      if (isFlutterCore(element) || isCore(element)) {
+        continue;
+      }
+
+      element.visitChildren(this);
+    }
+    return null;
+  }
 }
 
 class ComponentBuildersVisitor extends RecursiveElementVisitor<dynamic> {

@@ -217,4 +217,66 @@ void main() {
       );
     });
   });
+
+  group('injected method', () {
+    test('injected deep parent methods and self', () async {
+      await checkBuilderOfFile(
+        'injected_method/injected_deep_parent_methods_and_self',
+      );
+    });
+
+    test('injected empty method', () async {
+      await checkBuilderOfFile(
+        'injected_method/injected_empty_method',
+      );
+    });
+
+    test('injected_method', () async {
+      await checkBuilderOfFile(
+        'injected_method/injected_method',
+      );
+    });
+
+    test('injected method with multiple parameters', () async {
+      await checkBuilderOfFile(
+        'injected_method/injected_method_with_multiple_parameters',
+      );
+    });
+
+    test('injected method with not empty constructor', () async {
+      await checkBuilderOfFile(
+        'injected_method/injected_method_with_not_empty_constructor',
+      );
+    });
+
+    test('injected multiple methods', () async {
+      await checkBuilderOfFile(
+        'injected_method/injected_multiple_methods',
+      );
+    });
+
+    test('injected multiple parent methods', () async {
+      await checkBuilderOfFile(
+        'injected_method/injected_multiple_parent_methods',
+      );
+    });
+
+    test('injected overrided parent method', () async {
+      await checkBuilderOfFile(
+        'injected_method/injected_overrided_parent_method',
+      );
+    });
+
+    test('injected parent method', () async {
+      await checkBuilderOfFile(
+        'injected_method/injected_parent_method',
+      );
+    });
+
+    test('injected parent method and self', () async {
+      await checkBuilderOfFile(
+        'injected_method/injected_parent_method_and_self',
+      );
+    });
+  });
 }
