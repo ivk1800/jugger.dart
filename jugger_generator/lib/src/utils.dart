@@ -214,8 +214,10 @@ extension DartTypeExt on DartType {
   }
 
   void checkUnsupportedType() {
+    check2(this is InterfaceType, () => 'type [$this] not supported');
+
     check2(
-      nullabilitySuffix == NullabilitySuffix.none && !(this is FunctionType),
+      nullabilitySuffix == NullabilitySuffix.none,
       () => typeNotSupported(this),
     );
   }
