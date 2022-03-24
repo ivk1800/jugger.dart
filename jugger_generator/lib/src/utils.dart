@@ -129,11 +129,24 @@ List<Annotation> getAnnotations(Element moduleClass) {
             .map((DartObject o) => o.toTypeValue()!.element as ClassElement)
             .toList();
 
+        final List<ModuleAnnotation> modulesAnnotations =
+            modules.map((ClassElement moduleDep) {
+          return moduleDep.getModuleAnnotationOfModuleClass();
+        }).toList();
+
+        final Map<InterfaceType, List<ModuleAnnotation>> groupedAnnotations =
+            modulesAnnotations.groupListsBy((ModuleAnnotation annotation) =>
+                annotation.moduleElement.thisType);
+        for (List<ModuleAnnotation> group in groupedAnnotations.values) {
+          check2(
+            group.length == 1,
+            () => repeatedModules(group.first.moduleElement.thisType),
+          );
+        }
+
         annotations.add(ComponentAnnotation(
             element: valueElement,
-            modules: modules.map((ClassElement moduleDep) {
-              return moduleDep.getModuleAnnotationOfModuleClass();
-            }).toList(),
+            modules: modulesAnnotations,
             dependencies: dependencies.map((ClassElement c) {
               check2(c.isAbstract, () => dependencyMustBeAbstract(c.thisType));
               return DependencyAnnotation(element: c);

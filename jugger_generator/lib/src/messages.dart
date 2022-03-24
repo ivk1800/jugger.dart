@@ -40,3 +40,7 @@ String foundUnusedGeneratedProviders(Iterable<String> variables) {
 String typeNotSupported(DartType type) {
   return 'type [$type] not supported';
 }
+
+String repeatedModules(DartType type) {
+  return 'repeated modules [$type] not allowed';
+}

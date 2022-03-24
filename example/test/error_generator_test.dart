@@ -1295,4 +1295,31 @@ abstract class Module {
       );
     });
   });
+
+  group('component', () {
+    test('repeated modules', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[AppModule, AppModule])
+abstract class AppComponent {
+  String getString();
+}
+
+@module
+abstract class AppModule {
+  @provides
+  static String provideString() => '';
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: repeated modules [AppModule] not allowed',
+          );
+        },
+      );
+    });
+  });
 }
