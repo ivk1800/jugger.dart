@@ -167,6 +167,10 @@ void main() {
     test('provide complex generic', () async {
       await checkBuilderOfFile('generics/provide_complex_generic_type');
     });
+
+    test('provide generic build instance', () async {
+      await checkBuilderOfFile('generics/provide_generic_build_instance');
+    });
   });
 
   group('subcomponent', () {

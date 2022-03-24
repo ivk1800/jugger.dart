@@ -170,8 +170,7 @@ class ComponentBuilderDelegate {
             b.requiredParameters.addAll(m.parameters.map((ParameterElement pe) {
               return Parameter((ParameterBuilder parameterBuilder) {
                 parameterBuilder.name = pe.name;
-                parameterBuilder.type = Reference(
-                    pe.type.getName(), createElementPath(pe.type.element!));
+                parameterBuilder.type = refer(_allocateTypeName(pe.type));
               });
             }));
 
@@ -181,18 +180,10 @@ class ComponentBuilderDelegate {
                     .map((j.ComponentBuilderParameter parameter) {
                   final String? tag =
                       parameter.parameter.enclosingElement!.getQualifierTag();
-                  final Element? classElement =
-                      parameter.parameter.type.element;
-
-                  check2(
-                    classElement is ClassElement,
-                    () => 'element[$classElement] is not ClassElement',
-                  );
-
                   final CodeExpression codeExpression =
                       CodeExpression(Block.of(<Code>[
                     Code('_${_generateName(
-                      (classElement as ClassElement).thisType,
+                      parameter.parameter._tryGetType(),
                       tag?._toAssignTag(),
                     )}!'),
                   ]));
@@ -239,8 +230,7 @@ class ComponentBuilderDelegate {
         classBuilder.fields.addAll(componentBuilder.parameters
             .map((j.ComponentBuilderParameter parameter) {
           return Field((FieldBuilder b) {
-            b.type = Reference('${parameter.parameter.type.getName()}?',
-                createElementPath(parameter.parameter.type.element!));
+            b.type = refer('${_allocateTypeName(parameter.parameter.type)}?');
             final String? tag =
                 parameter.parameter.enclosingElement!.getQualifierTag();
             b.name = '_${_generateName(
@@ -526,7 +516,15 @@ class ComponentBuilderDelegate {
     final ProviderSource? provider = _componentContext.findProvider(type, name);
 
     if (provider is BuildInstanceSource) {
-      return provider.assignString;
+      final String? finalSting;
+
+      if (name == null) {
+        finalSting = null;
+      } else {
+        finalSting = generateMd5(name);
+      }
+
+      return '_${_generateName(type, finalSting)}';
     }
 
     if (provider is AnotherComponentSource) {
@@ -545,6 +543,18 @@ class ComponentBuilderDelegate {
       );
     }
 
+    return _generateProviderCall(
+      name: name,
+      type: type,
+      callGet: callGet,
+    );
+  }
+
+  String _generateProviderCall({
+    required String? name,
+    required DartType type,
+    required bool callGet,
+  }) {
     final String? finalSting;
 
     if (name == null) {
@@ -1133,8 +1143,7 @@ class ComponentBuilderDelegate {
           tag?._toAssignTag(),
         )}';
         b.modifier = FieldModifier.final$;
-        b.type = Reference(parameter.parameter.type.getName(),
-            createElementPath(parameter.parameter.type.element!));
+        b.type = refer(_allocateTypeName(parameter.parameter.type));
       }));
     }).toList();
   }
@@ -1172,4 +1181,17 @@ class ComponentBuilderDelegate {
 
 extension _StringExt on String {
   String _toAssignTag() => generateMd5(this);
+}
+
+extension ElementExt on Element {
+  DartType _tryGetType() {
+    final Element element = this;
+    if (element is ClassElement) {
+      return element.thisType;
+    } else if (element is ParameterElement) {
+      return element.type;
+    }
+
+    throw JuggerError('unable get type of [$element]');
+  }
 }
