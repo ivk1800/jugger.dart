@@ -1268,4 +1268,31 @@ abstract class AppModule {
       );
     });
   });
+
+  group('module', () {
+    test('abstract provide method', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[Module])
+abstract class AppComponent {
+  String getString();
+}
+
+@module
+abstract class Module {
+  @provides
+  String provideString();
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: provide abstract method [Module.provideString] must be annotated [Binds]',
+          );
+        },
+      );
+    });
+  });
 }
