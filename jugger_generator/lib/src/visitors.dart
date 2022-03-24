@@ -178,6 +178,14 @@ class InjectedMethodsVisitor extends RecursiveElementVisitor<dynamic> {
         .any((Annotation annotation) => annotation is InjectAnnotation)) {
       if (!methods.any((MethodElement collectedMethod) =>
           collectedMethod.name == element.name)) {
+        check2(
+          !element.isStatic,
+          () => 'injected method [${element.name}] can not be static',
+        );
+        check2(
+          !element.isAbstract,
+          () => 'injected method [${element.name}] can not be abstract',
+        );
         methods.add(element);
       }
     }

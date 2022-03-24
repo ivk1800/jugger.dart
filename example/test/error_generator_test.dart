@@ -1321,4 +1321,79 @@ abstract class AppModule {
       );
     });
   });
+
+  group('injected method', () {
+    test('static method', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[AppModule])
+abstract class AppComponent {
+  MyClass getMyClass();
+}
+
+@module
+abstract class AppModule {
+  @provides
+  static int provideInt() => 0;
+}
+
+class MyClass {
+  @inject
+  const MyClass();
+
+  @inject
+  static void init(int i) {}
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: injected method [init] can not be static',
+          );
+        },
+      );
+    });
+
+    test('abstract method', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[AppModule])
+abstract class AppComponent {
+  MyClass getMyClass();
+}
+
+@module
+abstract class AppModule {
+  @provides
+  static int provideInt() => 0;
+}
+
+class MyClass extends BaseClass {
+  @inject
+  const MyClass();
+
+  @override
+  void init(int i) {}
+}
+
+abstract class BaseClass {
+  const BaseClass();
+
+  @inject
+  void init(int i);
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: injected method [init] can not be abstract',
+          );
+        },
+      );
+    });
+  });
 }
