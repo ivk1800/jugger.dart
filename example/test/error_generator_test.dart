@@ -469,7 +469,6 @@ abstract class MyModule {
 }
         ''',
         onError: (Object error) {
-          (error);
           expect(
             error.toString(),
             'error: you need provide dependencies by builder. component: MyComponent, dependencies: AppComponent',

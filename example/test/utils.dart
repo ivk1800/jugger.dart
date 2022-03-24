@@ -74,10 +74,6 @@ Future<void> checkBuilderError({
       reader: await PackageAssetReader.currentIsolate(),
     );
   } catch (e) {
-    if (onError != null) {
-      onError.call(e);
-    } else {
-      rethrow;
-    }
+    onError.call(e);
   }
 }

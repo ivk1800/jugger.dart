@@ -2,9 +2,7 @@ import 'dart:async';
 import 'dart:collection';
 
 import 'package:analyzer/dart/element/element.dart';
-import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
-import 'package:analyzer/dart/element/type.dart' as t;
 import 'package:build/build.dart';
 import 'package:code_builder/code_builder.dart';
 import 'package:collection/collection.dart';
@@ -89,8 +87,6 @@ class ComponentBuilderDelegate {
         );
         _logs.clear();
 
-        // final List<j.ModuleAnnotation> modules = component.modules;
-
         target.body.add(Class((ClassBuilder classBuilder) {
           classBuilder.fields.addAll(
             _buildProvidesFields(
@@ -104,17 +100,6 @@ class ComponentBuilderDelegate {
           classBuilder.methods.addAll(_buildProvideMethods(_componentContext));
           classBuilder.methods
               .addAll(_buildProvideProperties(_componentContext));
-
-          // classBuilder.methods.add(_buildInitMethod());
-
-          // classBuilder.methods.add(
-          //   _buildInitProvidesMethod(
-          //     _componentContext.dependencies,
-          //     modules,
-          //     _componentContext,
-          //     _allocator,
-          //   ),
-          // );
 
           if (hasNonLazyProviders()) {
             classBuilder.methods
@@ -317,9 +302,6 @@ class ComponentBuilderDelegate {
               !(isCore(typeElement) || typeElement.isAbstract),
               '[${dependency.type.getName()}, qualifier: $qualifier] not provided',
             );
-            // if (_isBindDependency(dependency)) {
-            //   continue;
-            // }
             b.assignment = _buildProviderFromClassAssignCode(typeElement);
           }
 
@@ -417,21 +399,6 @@ class ComponentBuilderDelegate {
       ..sort((Method a, Method b) => a.name!.compareTo(b.name!));
   }
 
-  /*
-  Method _buildInitMethod() {
-    return Method((MethodBuilder b) {
-      b.name = '_init';
-      b.body = Block((BlockBuilder builder) {
-        builder.statements.add(const Code('_initProvides();'));
-        if (hasNonLazyProviders()) {
-          builder.statements.add(const Code('_initNonLazy();'));
-        }
-      });
-      b.returns = const Reference('void');
-    });
-  }
-  */
-
   List<Method> _buildMembersInjectorMethods(
     List<j.MemberInjectorMethod> fields,
     ClassBuilder classBuilder,
@@ -509,10 +476,6 @@ class ComponentBuilderDelegate {
       );
     }
 
-    // if (!(element is ClassElement)) {
-    //   throw JuggerError('element[$element] is not ClassElement');
-    // }
-
     final ProviderSource? provider = _componentContext.findProvider(type, name);
 
     if (provider is BuildInstanceSource) {
@@ -580,56 +543,6 @@ class ComponentBuilderDelegate {
     return '${uncapitalize(typeName)}';
   }
 
-  /*
-  Method _buildInitProvidesMethod(
-    List<Dependency> dependencies,
-    List<j.ModuleAnnotation> modules,
-    ComponentContext _componentContext,
-    Allocator allocator,
-  ) {
-    final MethodBuilder builder = MethodBuilder();
-    builder.name = '_initProvides';
-    builder.returns = const Reference('void');
-
-    // ignore: unnecessary_parenthesis
-    builder.body = Block(((BlockBuilder b) {
-      for (Dependency dependency in dependencies) {
-        _log(
-            'build provider for dependency: ${dependency.enclosingElement.name}.${dependency.element.name}');
-        final String? tag =
-            getQualifierAnnotation(dependency.enclosingElement)?.tag;
-        final ProviderSource? provider =
-            _componentContext.findProvider(dependency.element, tag);
-
-        if (provider is ModuleSource) {
-          b.addExpression(
-            _buildProviderFromModuleAssignExpression(
-              provider.method.element,
-            ),
-          );
-        } else if (provider is BuildInstanceSource) {
-          print('${provider.providedClass} is BuildInstanceSource');
-        } else if (provider is AnotherComponentSource) {
-          print('${provider.providedClass} is AnotherComponentSource');
-        } else {
-          if (isCore(dependency.element) || dependency.element.isAbstract) {
-            throw JuggerError(
-              '${dependency.enclosingElement.name}.${dependency.element.name} (qualifier: $tag) not provided',
-            );
-          }
-          if (_isBindDependency(dependency)) {
-            continue;
-          }
-          b.addExpression(
-            _buildProviderFromClassAssignExpression(dependency.element),
-          );
-        }
-      }
-    }));
-    return builder.build();
-  }
-  */
-
   Method _buildInitNonLazyMethod(ComponentContext _componentContext) {
     final MethodBuilder builder = MethodBuilder();
     builder.name = '_initNonLazy';
@@ -663,21 +576,6 @@ class ComponentBuilderDelegate {
             (j.Annotation annotation) => annotation is j.NonLazyAnnotation));
   }
 
-  /*
-  /// example: _myProvider = SingletonProvider<MyProvider>(() => AppModule.provideMyProvider());
-  Expression _buildProviderFromClassAssignExpression(ClassElement element) {
-    _log('build provider from class: ${element.name}');
-    return CodeExpression(
-      Block.of(
-        <Code>[
-          Code('_${uncapitalize(element.name)}Provider = '),
-          _buildProviderFromClassAssignCode(element),
-        ],
-      ),
-    );
-  }
-  */
-
   /// example: SingletonProvider<MyProvider>(() => AppModule.provideMyProvider());
   // TODO(Ivan): pass DartType instead ClassElement
   Code _buildProviderFromClassAssignCode(ClassElement element) {
@@ -705,25 +603,6 @@ class ComponentBuilderDelegate {
 
     return newInstance.code;
   }
-
-  /*
-  /// example: _myProvider = SingletonProvider<MyProvider>(() => AppModule.provideMyProvider());
-  Expression _buildProviderFromModuleAssignExpression(MethodElement method) {
-    _log(
-        'build provider from module: ${method.enclosingElement.name}.${method.name}');
-
-    final String? tag = getQualifierAnnotation(method)?.tag;
-
-    return CodeExpression(
-      Block.of(
-        <Code>[
-          Code('_${_generateName(method.returnType.element!, tag)}Provider = '),
-          _buildProviderFromModuleAssignCode(method),
-        ],
-      ),
-    );
-  }
-  */
 
   /// example: SingletonProvider<MyProvider>(() => AppModule.provideMyProvider());
   Code _buildProviderFromModuleAssignCode(MethodElement method) {

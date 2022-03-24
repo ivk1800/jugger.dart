@@ -1,7 +1,4 @@
-import 'dart:math';
-
 import 'package:analyzer/dart/element/element.dart';
-import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:analyzer/dart/element/visitor.dart';
 import 'package:collection/collection.dart';
@@ -9,7 +6,6 @@ import 'package:jugger/jugger.dart' as j;
 
 import 'classes.dart';
 import 'jugger_error.dart';
-import 'messages.dart';
 import 'utils.dart';
 
 class InjectedMembersVisitor extends RecursiveElementVisitor<dynamic> {

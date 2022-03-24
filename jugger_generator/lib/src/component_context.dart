@@ -1,7 +1,6 @@
 import 'dart:collection';
 
 import 'package:analyzer/dart/element/element.dart';
-import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
 import 'package:jugger_generator/src/classes.dart';
@@ -12,7 +11,6 @@ import 'package:jugger_generator/src/visitors.dart';
 import 'package:quiver/core.dart';
 
 import 'jugger_error.dart';
-import 'messages.dart';
 
 class ComponentContext {
   ComponentContext({
