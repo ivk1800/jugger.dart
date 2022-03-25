@@ -286,5 +286,11 @@ void main() {
         'injected_method/injected_parent_method_and_self',
       );
     });
+
+    test('injected method with qualifier parameters', () async {
+      await checkBuilderOfFile(
+        'injected_method/injected_method_with_qualifier_parameters',
+      );
+    });
   });
 }
