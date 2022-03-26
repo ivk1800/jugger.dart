@@ -2,6 +2,8 @@
 
 Compile-time dependency injection for Dart and Flutter. Inspired by [inject.dart](https://github.com/google/inject.dart) and [Dagger 2](https://github.com/google/dagger).
 
+Jugger's feature is that it generates boilerplate code. You just need to provide dependencies and how they will be used in graph.
+
 jugger:
 
 [![pub package](https://img.shields.io/pub/v/jugger.svg?style=plastic&logo=appveyor)](https://pub.dartlang.org/packages/jugger)
@@ -10,10 +12,32 @@ jugger_generator:
 
 [![pub package](https://img.shields.io/pub/v/jugger_generator.svg?style=plastic&logo=appveyor)](https://pub.dartlang.org/packages/jugger_generator)
 
-#### Getting Started
+# Index
+- [Index](#index)
+- [How to use](#how-to-use)
+    - [Install](#install)
+    - [Run the generator](#run-the-generator)
+- [The features](#the-features)
+    - [The syntax](#the-syntax)
+        - [Basics](#basics)
+        - [Component](#component)
+        - [Component builder](#component-builder)
+        - [Component as dependency](#component-as-dependency)
+        - [Module](#module)
+        - [Provide method](#provide-method)
+        - [Bind method](#bind-method)
+        - [Singleton](#singleton)
+        - [Inject](#inject)
+        - [Injected constructor](#injected-constructor)
+    - [build.yaml](#buildyaml)
+        - [remove_interface_prefix_from_component_name](#remove_interface_prefix_from_component_name)
+        - [check_unused_providers](#check_unused_providers)
 
-In your flutter or dart project add the dependency:
 
+# How to use
+
+## Install
+To use this plugin, add `jugger` and `jugger_generator` as a dependency in your pubspec.yaml file.
 ```yml
 dependencies:
   jugger: any
@@ -23,117 +47,370 @@ dev_dependencies:
   jugger_generator: any
 ```
 
-#### Usage example
-Define your component and module for the dependency provider, it is recommended to do this in a separate file:
+## Run the generator
+
+To run the code generator you have two possibilities:
+
+- If your package depends on Flutter:
+    - `flutter pub run build_runner build`
+- If your package _does not_ depend on Flutter:
+    - `dart pub run build_runner build`
+
+# The features
+
+## The syntax
+
+### Basics
+
+The following example shows how to use jugger:
+
 ```dart
 // ignore_for_file: avoid_classes_with_only_static_members
 
+import 'package:example/main.jugger.dart';
 import 'package:jugger/jugger.dart';
 
-@Component(modules: <Type>[MyModule])
-abstract class MyComponent {
-  String get helloString;
-
-  String getHelloString();
-}
-
-@module
-abstract class MyModule {
-  @provide
-  static String provideString() {
-    return 'hello';
-  }
-}
-```
-
-Now you need to execute the command
-```
-flutter packages pub run build_runner build
-```
-or for dart
-```
-dart run build_runner build --delete-conflicting-outputs
-```
-
-A file with the implemented component will be generated, for example ```main.jugger.dart```
-
-And use component as:
-```dart
 void main() {
   final MyComponent myComponent = JuggerMyComponent.create();
-  print(myComponent.helloString);
-  print(myComponent.getHelloString());
-}
-```
-
-#### SubComponents:
-example:
-```dart
-// ignore_for_file: avoid_classes_with_only_static_members
-
-import 'package:jugger/jugger.dart';
-
-@Component(modules: <Type>[AppModule])
-abstract class AppComponent {
-  int get appVersion;
-}
-
-@module
-abstract class AppModule {
-  @provide
-  static int provideAppVersion() => 1;
+  print(myComponent.getString());
 }
 
 @Component(
-  dependencies: <Type>[AppComponent],
   modules: <Type>[MyModule],
 )
 abstract class MyComponent {
-  String get myHelloString;
+  String getString();
 }
 
 @module
 abstract class MyModule {
-  @provide
-  static String provideMyHelloString(int appVersion) {
-    return 'hello app with version: $appVersion';
-  }
+  @provides
+  static String provideSting() => 'hello!';
+}
+```
+
+### Component
+`Component` are connecting links between `Modules` and dependants. When we need some object we ask the Component. The Component knows which module can create the needed object and return it to the dependant.
+
+A component can have `modules` and `other components` that it requests dependencies on:
+
+```dart
+@Component(
+  modules: <Type>[...],
+  dependencies: <Type>[...]
+)
+```
+
+### Component builder
+
+The component may need external objects to use for the dependency graph. To do this, you need to use a `component builder`. Declare an abstract class annotated with the `@componentBuilder` annotation. It must contain a requered `build()` method with a return type of the component. For each external dependency, you need to declare a method with a builder return type and which contains a single parameter.
+
+```dart
+// ignore_for_file: avoid_classes_with_only_static_members
+
+import 'package:example/main.jugger.dart';
+import 'package:jugger/jugger.dart';
+
+void main() {
+  final MyComponent myComponent =
+      JuggerMyComponentBuilder().helloString('hello').build();
+
+  print(myComponent.getString());
+}
+
+@Component()
+abstract class MyComponent {
+  String getString();
 }
 
 @componentBuilder
 abstract class MyComponentBuilder {
-  MyComponentBuilder appComponent(AppComponent component);
+  MyComponentBuilder helloString(String s);
+
+  MyComponent build();
+}
+```
+Dependencies provided by the builder are used in the dependency graph to construct other dependencies.
+
+```dart
+...
+@componentBuilder
+abstract class MyComponentBuilder {
+  MyComponentBuilder setDouble(double d);
 
   MyComponent build();
 }
 
+@module
+abstract class MyModule {
+  @provides
+  @singleton
+  static int provideInteger() => 0;
+
+  @provides
+  static String provideSting(
+    int i, // used from this module
+    double d, // user from component builder
+  ) =>
+      '$i, $d';
+}
+```
+### Component as dependency
+
+A component can depend on other components in order to use its returned objects as dependencies.
+
+```dart
+// ignore_for_file: avoid_classes_with_only_static_members
+
+import 'package:example/main.jugger.dart';
+import 'package:jugger/jugger.dart';
+
 void main() {
-  final AppComponent appComponent = JuggerAppComponent.create();
+  // creates the first component
+  final FirstComponent firstComponent = JuggerFirstComponent.create();
 
-  final MyComponent myComponent =
-  JuggerMyComponentBuilder().appComponent(appComponent).build();
+  final SecondComponent secondComponent = JuggerSecondComponentBuilder()
+      // passing an instance of the first component
+      .setFirstComponent(firstComponent)
+      .build();
 
-  print(myComponent.myHelloString);
+  print(secondComponent.getString());
+}
+
+@Component(
+  modules: <Type>[FirstModule],
+)
+abstract class FirstComponent {
+  // important! in order for the second component to use it to build objects,
+  // you need to add a method that returns it.
+  int getInt();
+}
+
+@module
+abstract class FirstModule {
+  @provides
+  @singleton
+  static int provideInteger() => 0;
+}
+
+@Component(
+  // specify that use the first component as a dependency
+  dependencies: <Type>[FirstComponent],
+  modules: <Type>[SecondModule],
+)
+abstract class SecondComponent {
+  String getString();
+}
+
+// Component builder is required if you use the component as a dependency.
+@componentBuilder
+abstract class SecondComponentBuilder {
+  // set the first component
+  SecondComponentBuilder setFirstComponent(FirstComponent component);
+
+  SecondComponent build();
+}
+
+@module
+abstract class SecondModule {
+  @provides
+  @singleton
+  static double provideDouble() => 0.0;
+
+  @provides
+  static String provideSting(
+    int i, // used from first component
+    double d, // used from this module
+  ) =>
+      '$i, $d';
 }
 ```
 
-#### Unused generated providers:
-Fails build if generated provider not used, by default disabled.
+### Module
 
-build.yaml
-```yaml
-targets:
-  $default:
-    builders:
-      jugger_generator:
-        options:
-          check_unused_providers: true
+`Module` are a simple class which contain logic for creating objects. Modules only contain methods which provide dependency. Generally, each Module includes objects which relate to some part of the application’s logic.
+
+
+```dart
+@module
+abstract class <ModuleName> {
+  ...
+  provide and binds methods
+  ...
+}
 ```
 
-#### interface prefix:
-If interface have prefix 'I' you can ignore his during generation:
+`Module` must be abstract and contains only static or abstact methods.
 
-build.yaml
+### Provide method
+
+Method annotated with the `@provides` annotation return instances of classes that which are used in the dependency graph.
+
+```dart
+@provides
+static String provideSting() => 'hello';
+```
+
+A method can contain parameters that construct the object it returns. "dependencies" must also be provided in the same or another module.
+
+```dart
+@provides
+static int provideInteger() => 0;
+
+@provides
+static double provideDouble() => 0.0;
+  
+@provides
+static String provideSting(int i, double d) => '$i, $d';
+```
+
+### Bind method
+A `@binds` method is the same as `@provides`, but it binds the interface to the implementation. The method must be abstract and have one parameter that implements the return type.
+
+```dart
+abstract class MyInterface { }
+
+class MyImplementation implements MyInterface {
+  @inject
+  const MyImplementation();
+}
+
+@module
+abstract class MyModule {
+  @binds
+  MyInterface provideMyClass(MyImplementation impl);
+}
+```
+
+### Singleton
+This annotation is used to indicate only a single instance of dependency object is created.
+NOTE: this scope is applied for each module separately!
+
+Can be applied to methods in a module and to a class constructor.
+
+```dart
+@provides
+@singleton // Tell the graph that there can be only single instance.
+static int provideInteger() => 0;
+```
+
+```dart
+@singleton // Will be used if there is no provider for this class.
+class MyClass {
+  @inject
+  const MyClass();
+}
+```
+
+### Inject
+
+The annotation told the jugger whether the annotated would be used when building the graph.
+
+### Injected constructor
+
+The annotation told the jugger whether the given class would be used when building the graph.
+
+```dart
+class MyClass {
+  @inject
+  const MyClass();
+}
+```
+
+For such a class, you can not declare a provider method in the module, the jugger will understand this and generate it himself.
+
+```dart 
+// ignore_for_file: avoid_classes_with_only_static_members
+
+import 'package:example/main.jugger.dart';
+import 'package:jugger/jugger.dart';
+
+void main() {
+  final MyComponent firstComponent = JuggerMyComponent.create();
+  print(firstComponent.getStringProvider().getString());
+}
+
+@Component(
+  modules: <Type>[MyModule],
+)
+abstract class MyComponent {
+  StringProvider getStringProvider();
+}
+
+@module
+abstract class MyModule {
+  @provides
+  static int provideInteger() => 0;
+
+  @provides
+  static double provideDouble() => 0.0;
+}
+
+class StringProvider {
+  // inject the constructor, the jugger itself creates a provider for this class
+  @inject
+  // will use dependencies from the module in which it is used
+  const StringProvider(this.d, this.i);
+
+  final int i;
+  final double d;
+
+  String getString() => '$i, $d';
+}
+```
+
+### injected method
+
+The method can also be injected. it will be called when the jugger creates an instance of the class.
+
+```dart
+// ignore_for_file: avoid_classes_with_only_static_members
+
+import 'package:example/main.jugger.dart';
+import 'package:jugger/jugger.dart';
+
+void main() {
+  final MyComponent firstComponent = JuggerMyComponent.create();
+  print(firstComponent.getStringProvider().getString());
+}
+
+@Component(
+  modules: <Type>[MyModule],
+)
+abstract class MyComponent {
+  StringProvider getStringProvider();
+}
+
+@module
+abstract class MyModule {
+  @provides
+  static int provideInteger() => 0;
+
+  @provides
+  static double provideDouble() => 0.0;
+}
+
+class StringProvider {
+  @inject
+  StringProvider(this.d);
+
+  final double d;
+
+  String? _s;
+
+  // inject the method
+  @inject
+  // will use dependencies from the module in which it is used
+  void init(int i) {
+    _s = '$i, $d';
+  }
+
+  String getString() => _s ?? '';
+}
+```
+
+## build.yaml
+
 ```yaml
 targets:
   $default:
@@ -141,24 +418,21 @@ targets:
       jugger_generator:
         options:
           remove_interface_prefix_from_component_name: true
+          check_unused_providers: true
 ```
+
+### remove_interface_prefix_from_component_name
+
+If your components have a prefix in the name, then when creating the jagger class, it will be removed. By default it is turned on.
+
 ```dart
-@Component(modules: <Type>[AppModule])
-abstract class IAppComponent {}
-```
-and use as:
-```dart
-var component = JuggerMyComponent.create();
+  final IMyComponent myComponent = JuggerMyComponent.create();
 ```
 instead:
 ```dart
-var component = JuggerIMyComponent.create();
+  final IMyComponent myComponent = JuggerIMyComponent.create();
 ```
 
-#### Bugs
-If you find a bug, you can create a [issue](https://github.com/ivk1800/jugger.dart/issues/new)
+### check_unused_providers:
 
-#### Contributions
-Contributions are welcome!
-
-If you fixed a bug or implemented a new feature, please send a pull [request](https://github.com/ivk1800/jugger.dart/pulls).
+If there are classes in the graph that are not used, the generation will fall. By default it is turned on.
