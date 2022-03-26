@@ -1,6 +1,8 @@
 name: jugger_generator
-description: Compile-time dependency injection for Dart and Flutter.
-version: 2.0.0
+description: >
+  Compile-time dependency injection for Dart and Flutter.
+  Jugger's feature is that it generates boilerplate code.
+version: 2.1.0
 homepage: https://github.com/ivk1800/jugger.dart
 
 environment:
@@ -9,7 +11,7 @@ environment:
 dependencies:
   analyzer: ^3.0.0
   build: ^2.0.0
-  code_builder: ^4.0.0
+  code_builder: ^4.1.0
   collection: ^1.15.0
   crypto: ^3.0.0
   dart_style: ^2.0.0

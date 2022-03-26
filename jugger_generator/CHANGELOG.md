@@ -1,3 +1,12 @@
+## 2.1.0
+
+Fix generation issues.
+Check unsupported types and fails build.
+Feature: Injected Method.
+Added more tests.
+Update documentation.
+check_unused_providers true by default.
+
 ## 2.0.0
 
 jugger_generator is now stable

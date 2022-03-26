@@ -19,7 +19,7 @@ class JuggerBuilder extends Builder {
               .config['remove_interface_prefix_from_component_name'] as bool? ??
           true,
       checkUnusedProviders:
-          options.config['check_unused_providers'] as bool? ?? false,
+          options.config['check_unused_providers'] as bool? ?? true,
     );
     final ComponentBuilderDelegate delegate = ComponentBuilderDelegate(
       globalConfig: globalConfig,
