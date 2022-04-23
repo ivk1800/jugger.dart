@@ -12,6 +12,7 @@ import 'package:jugger_generator/src/jugger_error.dart';
 import 'classes.dart';
 import 'library_ext.dart';
 import 'messages.dart';
+import 'module_extractor.dart';
 import 'visitors.dart';
 
 ComponentAnnotation? getComponentAnnotation(Element element) {
@@ -111,28 +112,29 @@ List<Annotation> getAnnotations(Element moduleClass) {
       final bool isJuggerLibrary = valueElement.library!.isJuggerLibrary;
 
       if (isJuggerLibrary && valueElement.name == 'Component') {
-        final List<ClassElement> modules = annotation
-            .computeConstantValue()!
-            .getField('modules')!
-            .toListValue()!
-            .cast<DartObject>()
-            // ignore: avoid_as
-            .map((DartObject o) => o.toTypeValue()!.element as ClassElement)
-            .toList();
+        final List<ClassElement> modules = getClassListFromField(
+          annotation,
+          'modules',
+        );
 
-        final List<ClassElement> dependencies = annotation
-            .computeConstantValue()!
-            .getField('dependencies')!
-            .toListValue()!
-            .cast<DartObject>()
-            // ignore: avoid_as
-            .map((DartObject o) => o.toTypeValue()!.element as ClassElement)
-            .toList();
+        final List<ClassElement> dependencies = getClassListFromField(
+          annotation,
+          'dependencies',
+        );
 
         final List<ModuleAnnotation> modulesAnnotations =
             modules.map((ClassElement moduleDep) {
-          return moduleDep.getModuleAnnotationOfModuleClass();
+          return ModuleExtractor().getModuleAnnotationOfModuleClass(moduleDep);
         }).toList();
+
+        final Set<ModuleAnnotation> allModules =
+            modulesAnnotations.expand((ModuleAnnotation module) {
+          checkUniqueClasses(
+            module.includes
+                .map((ModuleAnnotation annotation) => annotation.moduleElement),
+          );
+          return List<ModuleAnnotation>.from(module.includes)..add(module);
+        }).toSet();
 
         final Map<InterfaceType, List<ModuleAnnotation>> groupedAnnotations =
             modulesAnnotations.groupListsBy((ModuleAnnotation annotation) =>
@@ -146,7 +148,7 @@ List<Annotation> getAnnotations(Element moduleClass) {
 
         annotations.add(ComponentAnnotation(
             element: valueElement,
-            modules: modulesAnnotations,
+            modules: allModules.toList(),
             dependencies: dependencies.map((ClassElement c) {
               check2(c.isAbstract, () => dependencyMustBeAbstract(c.thisType));
               return DependencyAnnotation(element: c);
@@ -156,7 +158,9 @@ List<Annotation> getAnnotations(Element moduleClass) {
       } else if (valueElement.name == inject.runtimeType.toString()) {
         annotations.add(InjectAnnotation());
       } else if (valueElement.name == module.runtimeType.toString()) {
-        annotations.add(moduleClass.getModuleAnnotationOfModuleClass());
+        annotations.add(
+          ModuleExtractor().getModuleAnnotationOfModuleClass(moduleClass),
+        );
       } else if (valueElement.name == singleton.runtimeType.toString()) {
         annotations.add(SingletonAnnotation());
       } else if (valueElement.name == binds.runtimeType.toString()) {
@@ -172,6 +176,33 @@ List<Annotation> getAnnotations(Element moduleClass) {
     }
   }
   return annotations;
+}
+
+void checkUniqueClasses(Iterable<ClassElement> classes) {
+  final Map<InterfaceType, List<ClassElement>> groupedAnnotations =
+      classes.groupListsBy((ClassElement annotation) => annotation.thisType);
+  for (List<ClassElement> group in groupedAnnotations.values) {
+    check2(
+      group.length == 1,
+      () => repeatedModules(group.first.thisType),
+    );
+  }
+}
+
+List<ClassElement> getClassListFromField(
+  ElementAnnotation annotation,
+  String name,
+) {
+  final List<ClassElement>? result = annotation
+      .computeConstantValue()
+      ?.getField(name)
+      ?.toListValue()
+      ?.cast<DartObject>()
+      // ignore: avoid_as
+      .map((DartObject o) => o.toTypeValue()!.element as ClassElement)
+      .toList();
+  check2(result != null, () => 'unable get $name from annotation');
+  return result!;
 }
 
 String uncapitalize(String name) {
@@ -245,21 +276,21 @@ extension ElementExt on Element {
     return annotation is ModuleAnnotation ? annotation : null;
   }
 
-  bool hasAnnotatedAsModule() => getModuleAnnotation() != null;
+  bool hasAnnotatedAsModule() {
+    final Element element = this;
+    if (element is ClassElement) {
+      final List<ElementAnnotation> resolvedMetadata = element.metadata;
+      final ElementAnnotation moduleAnnotation = resolvedMetadata.first;
+      final Element? valueElement =
+          moduleAnnotation.computeConstantValue()?.type?.element;
+
+      return valueElement!.name == module.runtimeType.toString();
+    }
+    return false;
+  }
 
   bool hasAnnotatedAsSingleton() =>
       getAnnotations(this).any((Annotation a) => a is SingletonAnnotation);
-
-  ModuleAnnotation getModuleAnnotationOfModuleClass() {
-    final Element moduleClass = this;
-
-    if (!(moduleClass is ClassElement)) {
-      throw JuggerError('element[$moduleClass] is not ClassElement');
-    }
-    check2(moduleClass.isAbstract, () => moduleMustBeAbstract(moduleClass));
-    check2(moduleClass.isPublic, () => publicModule(moduleClass));
-    return ModuleAnnotation(moduleElement: moduleClass);
-  }
 
   String? getQualifierTag() => getQualifierAnnotation(this)?.tag;
 

@@ -105,10 +105,11 @@ class ComponentBuilderParameter {
 abstract class Annotation {}
 
 class ComponentAnnotation implements Annotation {
-  const ComponentAnnotation(
-      {required this.element,
-      required this.modules,
-      required this.dependencies});
+  const ComponentAnnotation({
+    required this.element,
+    required this.modules,
+    required this.dependencies,
+  });
 
   final Element element;
   final List<ModuleAnnotation> modules;
@@ -134,10 +135,12 @@ class ComponentBuilderAnnotation implements Annotation {
 class ModuleAnnotation implements Annotation {
   const ModuleAnnotation({
     required this.moduleElement,
+    required this.includes,
   });
 
   /// annotated module class
   final ClassElement moduleElement;
+  final List<ModuleAnnotation> includes;
 
   bool get isAbstract => moduleElement.isAbstract;
 }

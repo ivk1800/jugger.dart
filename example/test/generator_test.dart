@@ -312,4 +312,24 @@ void main() {
       );
     });
   });
+
+  group('module', () {
+    test('module included by another modules', () async {
+      await checkBuilderOfFile(
+        'module/module_included_by_another_modules',
+      );
+    });
+
+    test('module with includes', () async {
+      await checkBuilderOfFile(
+        'module/module_with_includes',
+      );
+    });
+
+    test('module includes by another module and component', () async {
+      await checkBuilderOfFile(
+        'module/module_includes_by_another_module_and_component',
+      );
+    });
+  });
 }

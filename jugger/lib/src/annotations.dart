@@ -18,7 +18,11 @@ class Qualifier {
 
 /// Annotates a class that contributes to the object graph.
 class Module {
-  const Module._();
+  const factory Module({List<Type> includes}) = Module._;
+
+  const Module._({this.includes = const <Type>[]});
+
+  final List<Type> includes;
 }
 
 /// Identifies a type that the injector only instantiates once.

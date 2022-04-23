@@ -1,0 +1,21 @@
+// ignore_for_file: implementation_imports
+// ignore_for_file: prefer_const_constructors
+// ignore_for_file: always_specify_types
+// ignore_for_file: directives_ordering
+// ignore_for_file: non_constant_identifier_names
+import 'package:example/module/module_includes_by_another_module_and_component.dart'
+    as _i1;
+import 'package:jugger/jugger.dart' as _i2;
+
+class JuggerAppComponent implements _i1.AppComponent {
+  JuggerAppComponent.create();
+
+  late final _i2.IProvider<int> _intProvider =
+      _i2.Provider<int>(() => _i1.Module2.providerInt());
+
+  late final _i2.IProvider<String> _stringProvider = _i2.Provider<String>(
+      () => _i1.Module1.providerString(_intProvider.get()));
+
+  @override
+  String get string => _stringProvider.get();
+}

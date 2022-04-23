@@ -29,6 +29,40 @@ abstract class AppModule {
         },
       );
     });
+
+    test('circular includes', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(
+  modules: <Type>[Module1],
+)
+abstract class AppComponent {
+  String get string;
+}
+
+@Module(includes: <Type>[Module2])
+abstract class Module1 {
+  @provides
+  static String providerString(int i) => '';
+}
+
+@Module(includes: <Type>[Module1])
+abstract class Module2 {
+  @provides
+  static int providerInt() => 0;
+}
+
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: Found circular included modules!',
+          );
+        },
+      );
+    });
   });
 
   group('constructor', () {

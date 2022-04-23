@@ -1,5 +1,6 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
+import 'package:jugger/jugger.dart';
 import 'package:jugger_generator/src/utils.dart';
 
 String providerNotFound(
@@ -55,4 +56,8 @@ String publicModule(ClassElement element) {
 
 String publicComponentBuilder(ClassElement element) {
   return 'Component builder [$element] must be public';
+}
+
+String moduleAnnotationRequired(ClassElement element) {
+  return 'class [${element.name}] ${element.library.identifier} must be annotated as ${module.runtimeType}';
 }

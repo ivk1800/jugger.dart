@@ -3,6 +3,7 @@ library jugger;
 export 'src/annotations.dart'
     show
         module,
+        Module,
         provides,
         singleton,
         inject,

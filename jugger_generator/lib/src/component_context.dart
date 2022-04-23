@@ -59,13 +59,16 @@ class ComponentContext {
     for (j.Method method in component.modulesProvideMethods) {
       final MethodElement element = method.element;
 
-      providerSources.add(ModuleSource(
+      providerSources.add(
+        ModuleSource(
           // ignore: avoid_as
           moduleClass: element.enclosingElement as ClassElement,
           // ignore: avoid_as
           type: element.returnType,
           method: method,
-          annotations: getAnnotations(element)));
+          annotations: getAnnotations(element),
+        ),
+      );
     }
 
     for (ParameterElement parameter
@@ -105,7 +108,7 @@ class ComponentContext {
   final j.Component component;
   final j.ComponentBuilder? componentBuilder;
 
-  final List<ProviderSource> providerSources = <ProviderSource>[];
+  final Set<ProviderSource> providerSources = <ProviderSource>{};
 
   List<Dependency> get dependencies => _dependencies.values.toList()
     ..sort((Dependency a, Dependency b) => a.compareTo(b));
@@ -305,22 +308,18 @@ class ComponentContext {
     });
   }
 
-  // List<ProviderSource> findProviders(ClassElement element) {
-  //   return providerSources.where((ProviderSource source) {
-  //     return source.providedClass == element;
-  //   }).toList();
-  // }
-
   void _validateProviderSources() {
-    final Map<dynamic, List<ProviderSource>> groupBy2 =
+    final Map<dynamic, List<ProviderSource>> grouped =
         groupBy<ProviderSource, dynamic>(providerSources,
             (ProviderSource source) {
       return source.key;
     });
 
-    groupBy2.forEach((dynamic key, List<ProviderSource> p) {
-      check(p.length == 1,
-          '$key provides multiple time: ${p.map((ProviderSource s) => s.sourceString).join(', ')}');
+    grouped.forEach((dynamic key, List<ProviderSource> p) {
+      check(
+        p.length == 1,
+        '$key provides multiple time: ${p.map((ProviderSource s) => s.sourceString).join(', ')}',
+      );
     });
   }
 }
@@ -430,6 +429,21 @@ abstract class ProviderSource {
   String get sourceString;
 
   final List<j.Annotation> annotations;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other.runtimeType == runtimeType &&
+          other is ProviderSource &&
+          other.type == type &&
+          other.key == key);
+
+  @override
+  int get hashCode => Object.hash(
+        runtimeType,
+        type.hashCode,
+        key.hashCode,
+      );
 }
 
 class ModuleSource extends ProviderSource {

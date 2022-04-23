@@ -65,9 +65,9 @@ class ProvidesVisitor extends RecursiveElementVisitor<dynamic> {
   @override
   dynamic visitMethodElement(MethodElement element) {
     final Element moduleElement = element.enclosingElement;
-    check(
+    check2(
       moduleElement.hasAnnotatedAsModule(),
-      'class [${moduleElement.name}] ${moduleElement.library!.identifier} must be annotated as ${j.module.runtimeType}',
+      () => moduleAnnotationRequired(moduleElement as ClassElement),
     );
 
     final List<Annotation> annotations = getAnnotations(element);
