@@ -257,6 +257,7 @@ extension ElementExt on Element {
       throw JuggerError('element[$moduleClass] is not ClassElement');
     }
     check2(moduleClass.isAbstract, () => moduleMustBeAbstract(moduleClass));
+    check2(moduleClass.isPublic, () => publicModule(moduleClass));
     return ModuleAnnotation(moduleElement: moduleClass);
   }
 

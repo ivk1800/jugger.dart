@@ -1293,6 +1293,26 @@ abstract class Module {
         },
       );
     });
+
+    test('public module', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[_Module])
+abstract class AppComponent {}
+
+@module
+abstract class _Module {}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: Module [abstract class _Module] must be public',
+          );
+        },
+      );
+    });
   });
 
   group('component', () {
@@ -1316,6 +1336,45 @@ abstract class AppModule {
           expect(
             error.toString(),
             'error: repeated modules [AppModule] not allowed',
+          );
+        },
+      );
+    });
+
+    test('public component', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[])
+abstract class _Component {}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: Component [abstract class _Component] must be public',
+          );
+        },
+      );
+    });
+
+    test('public component builder', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[])
+abstract class AppComponent {}
+
+@componentBuilder
+abstract class _MyComponentBuilder {
+  AppComponent build();
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: Component builder [abstract class _MyComponentBuilder] must be public',
           );
         },
       );

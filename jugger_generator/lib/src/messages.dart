@@ -44,3 +44,15 @@ String typeNotSupported(DartType type) {
 String repeatedModules(DartType type) {
   return 'repeated modules [$type] not allowed';
 }
+
+String publicComponent(ClassElement element) {
+  return 'Component [$element] must be public';
+}
+
+String publicModule(ClassElement element) {
+  return 'Module [$element] must be public';
+}
+
+String publicComponentBuilder(ClassElement element) {
+  return 'Component builder [$element] must be public';
+}

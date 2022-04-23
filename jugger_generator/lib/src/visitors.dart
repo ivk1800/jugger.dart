@@ -6,6 +6,7 @@ import 'package:jugger/jugger.dart' as j;
 
 import 'classes.dart';
 import 'jugger_error.dart';
+import 'messages.dart';
 import 'utils.dart';
 
 class InjectedMembersVisitor extends RecursiveElementVisitor<dynamic> {
@@ -137,6 +138,8 @@ class ComponentsVisitor extends RecursiveElementVisitor<dynamic> {
     final ComponentAnnotation? component = getComponentAnnotation(element);
 
     if (component != null) {
+      check2(element.isPublic, () => publicComponent(element));
+
       final InjectedFieldsVisitor fieldsVisitor = InjectedFieldsVisitor();
       element.visitChildren(fieldsVisitor);
       components.add(
@@ -219,6 +222,7 @@ class ComponentBuildersVisitor extends RecursiveElementVisitor<dynamic> {
         getComponentBuilderAnnotation(element);
 
     if (annotation != null) {
+      check2(element.isPublic, () => publicComponentBuilder(element));
       final BuildMethodsVisitor v = BuildMethodsVisitor();
       element.visitChildren(v);
 
