@@ -146,10 +146,14 @@ class ComponentContext {
       _dependenciesQueue.removeFirst();
       return _registerVariableElementDependency(element);
     } else if (element is PropertyAccessorElement) {
+      final ConstructorElement? injectedConstructor =
+          element.returnType.getInjectedConstructorOrNull();
       final Dependency dependency = Dependency(
         qualifier,
         element.returnType,
-        <Dependency>[],
+        injectedConstructor != null
+            ? _registerConstructorDependencies(injectedConstructor)
+            : <Dependency>[],
       );
       _registerAndValidateDependency(key, dependency);
       _dependenciesQueue.removeFirst();
@@ -165,10 +169,27 @@ class ComponentContext {
     key.type.checkUnsupportedType();
 
     if (dependency.type.isProvider) {
+      check2(
+        dependency.dependencies.isEmpty,
+        () => 'provider with dependencies!',
+      );
+      final DartType providerType = dependency.type.providerType;
+
+      List<Dependency> dependencies = dependency.dependencies;
+
+      if (providerType.hasInjectedConstructor()) {
+        final InjectedConstructorsVisitor visitor =
+            InjectedConstructorsVisitor();
+        providerType.element!.visitChildren(visitor);
+        dependencies = _registerConstructorDependencies(
+          providerType.getRequiredInjectedConstructor(),
+        );
+      }
+
       dependency = Dependency(
         dependency.qualifier,
-        dependency.type.providerType,
-        dependency.dependencies,
+        providerType,
+        dependencies,
       );
     }
 
@@ -229,10 +250,7 @@ class ComponentContext {
     );
 
     final List<Dependency> dependencies =
-        constructorElement.parameters.map((ParameterElement parameter) {
-      _registerParamDependencyIfNeed(parameter);
-      return _registerDependency(parameter);
-    }).toList();
+        _registerConstructorDependencies(constructorElement);
 
     final Dependency dependency = Dependency(
       named,
@@ -241,6 +259,17 @@ class ComponentContext {
     );
     _registerAndValidateDependency(key, dependency);
     return dependency;
+  }
+
+  List<Dependency> _registerConstructorDependencies(
+      ConstructorElement element) {
+    final List<Dependency> dependencies =
+        element.parameters.map((ParameterElement parameter) {
+      _registerParamDependencyIfNeed(parameter);
+      return _registerDependency(parameter);
+    }).toList();
+
+    return dependencies;
   }
 
   List<Dependency> _registerMethodDependencies(MethodElement element) {

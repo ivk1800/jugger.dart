@@ -216,6 +216,8 @@ extension DartTypeExt on DartType {
   }
 
   bool hasInjectedConstructor() {
+    checkUnsupportedType();
+
     final InjectedConstructorsVisitor visitor = InjectedConstructorsVisitor();
     element!.visitChildren(visitor);
 

@@ -162,6 +162,16 @@ void main() {
       await checkBuilderOfFile(
           'inject/constructor/injected_constructor_with_positional_params');
     });
+
+    test('injected constructor deep tree', () async {
+      await checkBuilderOfFile(
+          'inject/constructor/injected_constructor_deep_tree');
+    });
+
+    test('injected constructor deep tree 2', () async {
+      await checkBuilderOfFile(
+          'inject/constructor/injected_constructor_deep_tree_2');
+    });
   });
 
   group('generics', () {
