@@ -94,6 +94,15 @@ void main() {
     test('component as method param', () async {
       await checkBuilderOfFile('provides/provides_component_as_method_param');
     });
+
+    test(
+      'should use provide method in priority than injected constructor',
+      () async {
+        await checkBuilderOfFile(
+          'provides/provides_method_priority_injected_constructor',
+        );
+      },
+    );
   });
 
   group('component getter', () {
