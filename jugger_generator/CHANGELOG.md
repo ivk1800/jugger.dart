@@ -1,3 +1,13 @@
+## 2.2.0
+
+* Add includes for module
+```dart
+@Module(includes: <Type>[Module2, Module3])
+abstract class Module1 {
+...
+```
+* Fix generation of class with injected constructor
+
 ## 2.1.0
 
 Fix generation issues.

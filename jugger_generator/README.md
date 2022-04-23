@@ -24,6 +24,7 @@ jugger_generator:
         - [Component builder](#component-builder)
         - [Component as dependency](#component-as-dependency)
         - [Module](#module)
+        - [Included modules](#included-modules)
         - [Provide method](#provide-method)
         - [Bind method](#bind-method)
         - [Singleton](#singleton)
@@ -230,7 +231,6 @@ abstract class SecondModule {
 
 `Module` are a simple class which contain logic for creating objects. Modules only contain methods which provide dependency. Generally, each Module includes objects which relate to some part of the application’s logic.
 
-
 ```dart
 @module
 abstract class <ModuleName> {
@@ -241,6 +241,14 @@ abstract class <ModuleName> {
 ```
 
 `Module` must be abstract and contains only static or abstact methods.
+
+### Included modules
+Additional modules contributions of the modules in `includes`, and of their inclusions recursively, are all contributed to the object graph.
+```dart
+@Module(includes: <Type>[Module2, Module3])
+abstract class Module1 {
+...
+```
 
 ### Provide method
 
