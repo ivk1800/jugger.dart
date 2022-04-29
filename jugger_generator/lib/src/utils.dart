@@ -280,11 +280,11 @@ extension ElementExt on Element {
     final Element element = this;
     if (element is ClassElement) {
       final List<ElementAnnotation> resolvedMetadata = element.metadata;
-      final ElementAnnotation moduleAnnotation = resolvedMetadata.first;
+      final ElementAnnotation? moduleAnnotation = resolvedMetadata.firstOrNull;
       final Element? valueElement =
-          moduleAnnotation.computeConstantValue()?.type?.element;
+          moduleAnnotation?.computeConstantValue()?.type?.element;
 
-      return valueElement!.name == module.runtimeType.toString();
+      return valueElement?.name == module.runtimeType.toString();
     }
     return false;
   }
