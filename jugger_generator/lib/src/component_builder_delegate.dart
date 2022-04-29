@@ -499,7 +499,7 @@ class ComponentBuilderDelegate {
 
     if (visitor.injectedConstructors.isEmpty) {
       final j.Method? provideMethod =
-          _componentContext.findProvideMethod(type, name);
+          _componentContext.findProvideMethod(type: type, name: name);
       check2(
         provideMethod != null,
         () => providerNotFound(type, name),

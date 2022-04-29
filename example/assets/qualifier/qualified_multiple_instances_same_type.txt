@@ -1,0 +1,29 @@
+// ignore_for_file: implementation_imports
+// ignore_for_file: prefer_const_constructors
+// ignore_for_file: always_specify_types
+// ignore_for_file: directives_ordering
+// ignore_for_file: non_constant_identifier_names
+import 'package:example/qualifier/qualified_multiple_instances_same_type.dart'
+    as _i1;
+import 'package:jugger/jugger.dart' as _i2;
+
+class JuggerAppComponent implements _i1.AppComponent {
+  JuggerAppComponent.create();
+
+  late final _i2.IProvider<_i1.AppConfig> _appConfigProvider =
+      _i2.SingletonProvider<_i1.AppConfig>(() => _i1.AppModule.provideAppConfig(
+          _named_e77989ed21758e78331b20e477fc5582_AppConfigProvider.get(),
+          _named_123fead50246387983ee340507115ef4_AppConfigProvider.get()));
+
+  late final _i2.IProvider<_i1.AppConfig>
+      _named_123fead50246387983ee340507115ef4_AppConfigProvider =
+      _i2.Provider<_i1.AppConfig>(
+          () => _i1.AppModule.provideReleaseAppConfig());
+
+  late final _i2.IProvider<_i1.AppConfig>
+      _named_e77989ed21758e78331b20e477fc5582_AppConfigProvider =
+      _i2.Provider<_i1.AppConfig>(() => _i1.AppModule.provideDevAppConfig());
+
+  @override
+  _i1.AppConfig getConfig() => _appConfigProvider.get();
+}

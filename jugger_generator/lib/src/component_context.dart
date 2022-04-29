@@ -286,14 +286,17 @@ class ComponentContext {
   }
 
   void _registerParamDependencyIfNeed(ParameterElement parameter) {
-    final j.Method? provideMethod = findProvideMethod(parameter.type);
+    final j.Method? provideMethod = findProvideMethod(
+      type: parameter.type,
+      name: parameter.getQualifierTag(),
+    );
 
     if (provideMethod != null) {
       _registerDependency(provideMethod.element);
     }
   }
 
-  j.Method? findProvideMethod(DartType type, [String? name]) {
+  j.Method? findProvideMethod({required DartType type, required String? name}) {
     return component.modulesProvideMethods.firstWhereOrNull((j.Method method) {
       return method.element.returnType == type && method.named == name;
     });

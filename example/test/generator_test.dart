@@ -136,6 +136,11 @@ void main() {
       await checkBuilderOfFile(
           'qualifier/named/named_qualifier_provides_param');
     });
+
+    test('qualified multiple instances same type', () async {
+      await checkBuilderOfFile(
+          'qualifier/qualified_multiple_instances_same_type');
+    });
   });
 
   group('inject', () {
