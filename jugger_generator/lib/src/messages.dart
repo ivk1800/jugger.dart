@@ -10,6 +10,10 @@ String providerNotFound(
   return 'Provider for (${type.getName()}${qualifier != null ? ', qualifier: $qualifier' : ''}) not found';
 }
 
+String notProvided(DartType type, String? qualifier) {
+  return '[${type.getName()}, qualifier: $qualifier] not provided';
+}
+
 String injectedConstructorNotFound(ClassElement element) {
   return 'not found injected constructor for ${element.name}';
 }

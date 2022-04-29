@@ -272,6 +272,12 @@ class ComponentBuilderDelegate {
       final ProviderSource? provider =
           _componentContext.findProvider(dependency.type, dependency.qualifier);
 
+      if (provider == null && dependency.qualifier != null) {
+        throw JuggerError(
+          notProvided(dependency.type, dependency.qualifier),
+        );
+      }
+
       if (!(provider is BuildInstanceSource) &&
           !(provider is AnotherComponentSource)) {
         fields.add(Field((FieldBuilder b) {
@@ -300,7 +306,7 @@ class ComponentBuilderDelegate {
 
             check(
               !(isCore(typeElement) || typeElement.isAbstract),
-              '[${dependency.type.getName()}, qualifier: $qualifier] not provided',
+              notProvided(dependency.type, qualifier),
             );
             b.assignment = _buildProviderFromClassAssignCode(typeElement);
           }
@@ -381,7 +387,7 @@ class ComponentBuilderDelegate {
         check2(
           providerSource != null || method.returnType.hasInjectedConstructor(),
           () => 'not found inject constructor for [${method.runtimeType}]\n'
-              '[${method.returnType.element!.name}, qualifier: $tag] not provided',
+              '${notProvided(method.returnType, tag)}',
         );
 
         b.lambda = true;

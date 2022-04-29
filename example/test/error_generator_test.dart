@@ -1350,6 +1350,34 @@ abstract class _Module {}
   });
 
   group('component', () {
+    test(
+      'should fail if class with qualifier, but constructor is injected',
+      () async {
+        await checkBuilderError(
+          codeContent: '''
+import 'package:jugger/jugger.dart';
+
+class MyClass {
+  @inject
+  const MyClass();
+}
+
+@Component()
+abstract class AppComponent {
+  @Named('test')
+  MyClass getMyClass();
+}
+        ''',
+          onError: (Object error) {
+            expect(
+              error.toString(),
+              'error: [MyClass, qualifier: test] not provided',
+            );
+          },
+        );
+      },
+    );
+
     test('repeated modules', () async {
       await checkBuilderError(
         codeContent: '''
