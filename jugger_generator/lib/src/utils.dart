@@ -8,6 +8,7 @@ import 'package:collection/collection.dart';
 import 'package:crypto/crypto.dart';
 import 'package:jugger/jugger.dart';
 import 'package:jugger_generator/src/jugger_error.dart';
+import 'package:jugger_generator/src/tag.dart';
 
 import 'classes.dart';
 import 'library_ext.dart';
@@ -75,7 +76,7 @@ List<Annotation> getAnnotations(Element moduleClass) {
       if (isQualifier) {
         annotations.add(
           QualifierAnnotation(
-            tag: '${annotationClassElement.name}',
+            tag: Tag.ofString('${annotationClassElement.name}'),
           ),
         );
       }
@@ -87,8 +88,9 @@ List<Annotation> getAnnotations(Element moduleClass) {
         annotations.add(
           QualifierAnnotation(
             tag: annotationClassElement.name == 'Named'
-                ? '${annotation.computeConstantValue()!.getField('name')!.toStringValue()!}'
-                : '${annotationClassElement.name}',
+                ? Tag.ofString(
+                    '${annotation.computeConstantValue()!.getField('name')!.toStringValue()!}')
+                : Tag.ofString('${annotationClassElement.name}'),
           ),
         );
       }
@@ -292,7 +294,7 @@ extension ElementExt on Element {
   bool hasAnnotatedAsSingleton() =>
       getAnnotations(this).any((Annotation a) => a is SingletonAnnotation);
 
-  String? getQualifierTag() => getQualifierAnnotation(this)?.tag;
+  Tag? getQualifierTag() => getQualifierAnnotation(this)?.tag;
 
   String toNameWithPath() => '$name] ${library?.identifier}';
 }

@@ -3,15 +3,17 @@ import 'package:analyzer/dart/element/type.dart';
 import 'package:jugger/jugger.dart';
 import 'package:jugger_generator/src/utils.dart';
 
+import 'tag.dart';
+
 String providerNotFound(
   DartType type,
-  String? qualifier,
+  Tag? tag,
 ) {
-  return 'Provider for (${type.getName()}${qualifier != null ? ', qualifier: $qualifier' : ''}) not found';
+  return 'Provider for (${type.getName()}${tag != null ? ', qualifier: $tag' : ''}) not found';
 }
 
-String notProvided(DartType type, String? qualifier) {
-  return '[${type.getName()}, qualifier: $qualifier] not provided';
+String notProvided(DartType type, Tag? tag) {
+  return '[${type.getName()}, qualifier: $tag] not provided';
 }
 
 String injectedConstructorNotFound(ClassElement element) {

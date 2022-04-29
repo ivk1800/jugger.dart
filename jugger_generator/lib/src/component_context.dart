@@ -12,6 +12,7 @@ import 'package:quiver/core.dart';
 
 import 'dependency_place.dart';
 import 'jugger_error.dart';
+import 'tag.dart';
 
 class ComponentContext {
   ComponentContext({
@@ -125,9 +126,9 @@ class ComponentContext {
     Element element, [
     DependencyPlace? dependencyPlace,
   ]) {
-    final String? qualifier = element.getQualifierTag();
+    final Tag? tag = element.getQualifierTag();
 
-    final _Key key = _Key.of(element, qualifier);
+    final _Key key = _Key.of(element, tag);
 
     if (_dependenciesQueue.contains(key)) {
       _dependenciesQueue.addFirst(key);
@@ -152,7 +153,7 @@ class ComponentContext {
             element.returnType.getInjectedConstructorOrNull();
 
         final Dependency dependency = Dependency(
-          qualifier,
+          tag,
           element.returnType,
           injectedConstructor != null
               ? _registerConstructorDependencies(injectedConstructor)
@@ -164,7 +165,7 @@ class ComponentContext {
       }
 
       final Dependency dependency = Dependency(
-        qualifier,
+        tag,
         element.returnType,
         _registerMethodDependencies(element),
       );
@@ -178,7 +179,7 @@ class ComponentContext {
       final ConstructorElement? injectedConstructor =
           element.returnType.getInjectedConstructorOrNull();
       final Dependency dependency = Dependency(
-        qualifier,
+        tag,
         element.returnType,
         injectedConstructor != null
             ? _registerConstructorDependencies(injectedConstructor)
@@ -216,7 +217,7 @@ class ComponentContext {
       }
 
       dependency = Dependency(
-        dependency.qualifier,
+        dependency.tag,
         providerType,
         dependencies,
       );
@@ -230,9 +231,9 @@ class ComponentContext {
       throw JuggerError('element[$element] is not VariableElement');
     }
 
-    final String? named = element.getQualifierTag();
+    final Tag? tag = element.getQualifierTag();
 
-    final _Key key = _Key.of(element, named);
+    final _Key key = _Key.of(element, tag);
 
 //    if (isCore(element.type.element)) {
 //      final _Dependency dependency =
@@ -247,7 +248,7 @@ class ComponentContext {
 
     if (visitor.injectedConstructors.isEmpty) {
       final Dependency dependency = Dependency(
-        named,
+        tag,
         element.type,
         <Dependency>[],
       );
@@ -282,7 +283,7 @@ class ComponentContext {
         _registerConstructorDependencies(constructorElement);
 
     final Dependency dependency = Dependency(
-      named,
+      tag,
       element.type,
       dependencies,
     );
@@ -314,7 +315,7 @@ class ComponentContext {
   void _registerParamDependencyIfNeed(ParameterElement parameter) {
     final j.Method? provideMethod = findProvideMethod(
       type: parameter.type,
-      name: parameter.getQualifierTag(),
+      tag: parameter.getQualifierTag(),
     );
 
     if (provideMethod != null) {
@@ -322,13 +323,13 @@ class ComponentContext {
     }
   }
 
-  j.Method? findProvideMethod({required DartType type, required String? name}) {
+  j.Method? findProvideMethod({required DartType type, required Tag? tag}) {
     return component.modulesProvideMethods.firstWhereOrNull((j.Method method) {
-      return method.element.returnType == type && method.named == name;
+      return method.element.returnType == type && method.tag == tag;
     });
   }
 
-  ProviderSource? findProvider(DartType type, [String? tag]) {
+  ProviderSource? findProvider(DartType type, [Tag? tag]) {
     // if (!(element is ClassElement)) {
     //   throw JuggerError('element[$element] is not ClassElement');
     // }
@@ -355,35 +356,35 @@ class ComponentContext {
 
 class _Key {
   _Key({
-    required this.named,
+    required this.tag,
     required this.type,
     required this.element,
   });
 
-  factory _Key.of(Element element, String? named) {
+  factory _Key.of(Element element, Tag? tag) {
     if (element is MethodElement) {
       return _Key(
-        named: named,
+        tag: tag,
         element: element,
         type: element.returnType,
       );
     } else if (element is VariableElement) {
       if (element.type.isProvider) {
         return _Key(
-          named: named,
+          tag: tag,
           element: element,
           type: element.type.providerType,
         );
       }
 
       return _Key(
-        named: named,
+        tag: tag,
         element: element,
         type: element.type,
       );
     } else if (element is PropertyAccessorElement) {
       return _Key(
-        named: named,
+        tag: tag,
         element: element,
         type: element.returnType,
       );
@@ -396,14 +397,13 @@ class _Key {
 
   final Element element;
   final DartType type;
-  final String? named;
+  final Tag? tag;
 
   @override
-  bool operator ==(dynamic o) =>
-      o is _Key && type == o.type && named == o.named;
+  bool operator ==(dynamic o) => o is _Key && type == o.type && tag == o.tag;
 
   @override
-  int get hashCode => hash2(type.hashCode, named.hashCode);
+  int get hashCode => hash2(type.hashCode, tag.hashCode);
 
   @override
   String toString() => '${element.name}';
@@ -411,7 +411,7 @@ class _Key {
 
 class Dependency implements Comparable<Dependency> {
   const Dependency(
-    this.qualifier,
+    this.tag,
     this.type,
     this.dependencies,
   );
@@ -419,7 +419,7 @@ class Dependency implements Comparable<Dependency> {
   final DartType type;
 
   final List<Dependency> dependencies;
-  final String? qualifier;
+  final Tag? tag;
 
   @override
   String toString() {
@@ -428,8 +428,8 @@ class Dependency implements Comparable<Dependency> {
 
   @override
   int compareTo(Dependency other) {
-    return '${qualifier ?? ''}_${type.getName()}'
-        .compareTo('${other.qualifier ?? ''}_${other.type.getName()}');
+    return '${tag ?? ''}_${type.getName()}'
+        .compareTo('${other.tag ?? ''}_${other.type.getName()}');
   }
 }
 
@@ -453,7 +453,7 @@ abstract class ProviderSource {
     return annotation is QualifierAnnotation ? annotation : null;
   }
 
-  String? get tag => qualifierAnnotation?.tag;
+  Tag? get tag => qualifierAnnotation?.tag;
 
   String get sourceString;
 

@@ -18,6 +18,7 @@ import 'component_context.dart';
 import 'global_config.dart';
 import 'jugger_error.dart';
 import 'messages.dart';
+import 'tag.dart';
 import 'visitors.dart';
 
 class ComponentBuilderDelegate {
@@ -164,7 +165,7 @@ class ComponentBuilderDelegate {
               if (m.name == 'build') {
                 final Iterable<Expression> map = componentBuilder.parameters
                     .map((j.ComponentBuilderParameter parameter) {
-                  final String? tag =
+                  final Tag? tag =
                       parameter.parameter.enclosingElement!.getQualifierTag();
                   final CodeExpression codeExpression =
                       CodeExpression(Block.of(<Code>[
@@ -178,7 +179,7 @@ class ComponentBuilderDelegate {
 
                 final List<Code> assertCodes = componentBuilder.parameters
                     .map((j.ComponentBuilderParameter parameter) {
-                  final String? tag =
+                  final Tag? tag =
                       parameter.parameter.enclosingElement!.getQualifierTag();
                   return Code('assert(_${_generateName(
                     parameter.parameter.type,
@@ -201,7 +202,7 @@ class ComponentBuilderDelegate {
               } else {
                 final j.ComponentBuilderParameter p =
                     j.ComponentBuilderParameter(parameter: m.parameters[0]);
-                final String? tag =
+                final Tag? tag =
                     p.parameter.enclosingElement!.getQualifierTag();
                 b.addExpression(CodeExpression(Block.of(<Code>[
                   Code('_${_generateName(
@@ -217,7 +218,7 @@ class ComponentBuilderDelegate {
             .map((j.ComponentBuilderParameter parameter) {
           return Field((FieldBuilder b) {
             b.type = refer('${_allocateTypeName(parameter.parameter.type)}?');
-            final String? tag =
+            final Tag? tag =
                 parameter.parameter.enclosingElement!.getQualifierTag();
             b.name = '_${_generateName(
               parameter.parameter.type,
@@ -271,21 +272,21 @@ class ComponentBuilderDelegate {
       );
 
       final ProviderSource? provider =
-          _componentContext.findProvider(dependency.type, dependency.qualifier);
+          _componentContext.findProvider(dependency.type, dependency.tag);
 
-      if (provider == null && dependency.qualifier != null) {
+      if (provider == null && dependency.tag != null) {
         throw JuggerError(
-          notProvided(dependency.type, dependency.qualifier),
+          notProvided(dependency.type, dependency.tag),
         );
       }
 
       if (!(provider is BuildInstanceSource) &&
           !(provider is AnotherComponentSource)) {
         fields.add(Field((FieldBuilder b) {
-          final String? qualifier = dependency.qualifier;
+          final Tag? tag = dependency.tag;
           b.name = '_${_generateName(
             dependency.type,
-            qualifier?._toAssignTag(),
+            tag?._toAssignTag(),
           )}Provider';
 
           final String generic = allocator.allocate(
@@ -295,7 +296,7 @@ class ComponentBuilderDelegate {
           b.modifier = FieldModifier.final$;
 
           final ProviderSource? provider =
-              _componentContext.findProvider(dependency.type, qualifier);
+              _componentContext.findProvider(dependency.type, tag);
 
           if (provider is ModuleSource) {
             b.assignment = _buildProviderFromModuleAssignCode(
@@ -307,7 +308,7 @@ class ComponentBuilderDelegate {
 
             check(
               !(isCore(typeElement) || typeElement.isAbstract),
-              notProvided(dependency.type, qualifier),
+              notProvided(dependency.type, tag),
             );
             b.assignment = _buildProviderFromClassAssignCode(typeElement);
           }
@@ -353,7 +354,7 @@ class ComponentBuilderDelegate {
       _log(
           'build property for: ${property.enclosingElement.name}.${property.name}');
       return Method((MethodBuilder builder) {
-        final String? tag = property.getQualifierTag();
+        final Tag? tag = property.getQualifierTag();
         builder
           ..annotations.add(_overrideAnnotationExpression)
           ..name = property.name
@@ -381,7 +382,7 @@ class ComponentBuilderDelegate {
         b.name = method.name;
         b.returns = refer(_allocateTypeName(method.returnType));
 
-        final String? tag = method.getQualifierTag();
+        final Tag? tag = method.getQualifierTag();
         final ProviderSource? providerSource =
             _componentContext.findProvider(method.returnType, tag);
 
@@ -435,7 +436,7 @@ class ComponentBuilderDelegate {
       builder.body = Block((BlockBuilder b) {
         for (j.InjectedMember member in visitor.members.toSet()) {
           _log('build provide method for member: ${member.element}');
-          final String? tag = member.element.getQualifierTag();
+          final Tag? tag = member.element.getQualifierTag();
           b.addExpression(CodeExpression(Block.of(<Code>[
             Code('${parameterElement.name}.${member.element.name}'),
             Code(' = ${_generateAssignString(member.element.type, tag)}'),
@@ -462,7 +463,7 @@ class ComponentBuilderDelegate {
   ///
   String _generateAssignString(
     DartType type,
-    String? name, [
+    Tag? tag, [
     bool callGet = true,
   ]) {
     type.checkUnsupportedType();
@@ -474,7 +475,7 @@ class ComponentBuilderDelegate {
     if (type.isProvider) {
       final DartType depType = type.providerType;
       final ProviderSource? provider =
-          _componentContext.findProvider(depType, name);
+          _componentContext.findProvider(depType, tag);
 
       if (provider == null && depType.hasInjectedConstructor()) {
         return _generateAssignString(
@@ -485,7 +486,7 @@ class ComponentBuilderDelegate {
       }
       check2(
         provider != null,
-        () => providerNotFound(depType, name),
+        () => providerNotFound(depType, tag),
       );
       return _generateAssignString(
         provider!.type,
@@ -494,15 +495,15 @@ class ComponentBuilderDelegate {
       );
     }
 
-    final ProviderSource? provider = _componentContext.findProvider(type, name);
+    final ProviderSource? provider = _componentContext.findProvider(type, tag);
 
     if (provider is BuildInstanceSource) {
       final String? finalSting;
 
-      if (name == null) {
+      if (tag == null) {
         finalSting = null;
       } else {
-        finalSting = generateMd5(name);
+        finalSting = generateMd5(tag.uniqueId);
       }
 
       return '_${_generateName(type, finalSting)}';
@@ -517,31 +518,31 @@ class ComponentBuilderDelegate {
 
     if (visitor.injectedConstructors.isEmpty) {
       final j.Method? provideMethod =
-          _componentContext.findProvideMethod(type: type, name: name);
+          _componentContext.findProvideMethod(type: type, tag: tag);
       check2(
         provideMethod != null,
-        () => providerNotFound(type, name),
+        () => providerNotFound(type, tag),
       );
     }
 
     return _generateProviderCall(
-      name: name,
+      tag: tag,
       type: type,
       callGet: callGet,
     );
   }
 
   String _generateProviderCall({
-    required String? name,
+    required Tag? tag,
     required DartType type,
     required bool callGet,
   }) {
     final String? finalSting;
 
-    if (name == null) {
+    if (tag == null) {
       finalSting = null;
     } else {
-      finalSting = generateMd5(name);
+      finalSting = generateMd5(tag.uniqueId);
     }
 
     return '_${_generateName(type, finalSting)}Provider${callGet ? '.get()' : ''}';
@@ -1008,7 +1009,7 @@ class ComponentBuilderDelegate {
             .map((j.ComponentBuilderParameter parameter) {
           return Parameter((ParameterBuilder b) {
             b.toThis = true;
-            final String? tag =
+            final Tag? tag =
                 parameter.parameter.enclosingElement!.getQualifierTag();
             b.name = '_${_generateName(
               parameter.parameter.type,
@@ -1029,7 +1030,7 @@ class ComponentBuilderDelegate {
         .map((j.ComponentBuilderParameter parameter) {
       // ignore: unnecessary_parenthesis
       return (Field((FieldBuilder b) {
-        final String? tag =
+        final Tag? tag =
             parameter.parameter.enclosingElement!.getQualifierTag();
         b.name = '_${_generateName(
           parameter.parameter.type,
@@ -1072,8 +1073,8 @@ class ComponentBuilderDelegate {
   void _log(String value) => _logs.add(value);
 }
 
-extension _StringExt on String {
-  String _toAssignTag() => generateMd5(this);
+extension _StringExt on Tag {
+  String _toAssignTag() => generateMd5(uniqueId);
 }
 
 extension ElementExt on Element {

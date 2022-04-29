@@ -3,6 +3,8 @@ import 'package:collection/collection.dart';
 import 'package:jugger_generator/src/utils.dart';
 import 'package:jugger_generator/src/visitors.dart';
 
+import 'tag.dart';
+
 class Component {
   const Component({
     required this.element,
@@ -156,7 +158,7 @@ class QualifierAnnotation implements Annotation {
     required this.tag,
   });
 
-  final String tag;
+  final Tag tag;
 
   @override
   int get hashCode => tag.hashCode;
@@ -167,19 +169,21 @@ class QualifierAnnotation implements Annotation {
 }
 
 class Method {
-  const Method(this.element, this.annotations);
+  Method(this.element, this.annotations);
 
   final MethodElement element;
 
   final List<Annotation> annotations;
 
-  QualifierAnnotation? get _namedAnnotation {
+  QualifierAnnotation? _findQualifierAnnotation() {
     final Annotation? annotation = annotations
         .firstWhereOrNull((Annotation a) => a is QualifierAnnotation);
     return annotation is QualifierAnnotation ? annotation : null;
   }
 
-  String? get named => _namedAnnotation?.tag;
+  late final Tag? _tag = _findQualifierAnnotation()?.tag;
+
+  Tag? get tag => _tag;
 }
 
 class MemberInjectorMethod {
