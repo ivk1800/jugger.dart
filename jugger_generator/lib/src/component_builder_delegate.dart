@@ -8,6 +8,7 @@ import 'package:code_builder/code_builder.dart';
 import 'package:collection/collection.dart';
 import 'package:dart_style/dart_style.dart';
 import 'package:jugger/jugger.dart' as jugger;
+import 'package:jugger_generator/src/class_element_ext.dart';
 import 'package:jugger_generator/src/dart_type_ext.dart';
 import 'package:jugger_generator/src/utils.dart';
 
@@ -420,6 +421,8 @@ class ComponentBuilderDelegate {
 
       final ParameterElement parameterElement = method.element.parameters[0];
 
+      final ClassElement memberElement =
+          parameterElement.type.element! as ClassElement;
       builder.requiredParameters.add(Parameter((ParameterBuilder b) {
         b.name = uncapitalize(parameterElement.name);
         b.type = Reference(parameterElement.type.getName(),
@@ -427,7 +430,7 @@ class ComponentBuilderDelegate {
       }));
 
       final InjectedMembersVisitor visitor = InjectedMembersVisitor();
-      parameterElement.type.element!.visitChildren(visitor);
+      memberElement.visitChildren(visitor);
 
       builder.body = Block((BlockBuilder b) {
         for (j.InjectedMember member in visitor.members.toSet()) {
@@ -437,6 +440,15 @@ class ComponentBuilderDelegate {
             Code('${parameterElement.name}.${member.element.name}'),
             Code(' = ${_generateAssignString(member.element.type, tag)}'),
           ])));
+        }
+
+        if (memberElement.getInjectedMethods().isNotEmpty) {
+          b.addExpression(
+            _callInjectedMethodsIfNeeded(
+              CodeExpression(Code(parameterElement.name)),
+              memberElement,
+            ),
+          );
         }
       });
 
@@ -919,11 +931,7 @@ class ComponentBuilderDelegate {
     Element element,
   ) {
     if (element is ClassElement) {
-      final InjectedMethodsVisitor injectedMethodsVisitor =
-          InjectedMethodsVisitor();
-      element.visitChildren(injectedMethodsVisitor);
-
-      final Set<MethodElement> methods = injectedMethodsVisitor.methods;
+      final Set<MethodElement> methods = element.getInjectedMethods();
       if (methods.isNotEmpty) {
         final List<Code> methodsCalls = methods.expand((MethodElement method) {
           final Code methodCall = _buildCallMethodOrConstructor(

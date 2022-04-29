@@ -320,6 +320,18 @@ void main() {
         'injected_method/injected_method_with_qualifier_parameters',
       );
     });
+
+    test('injected method class which part of component', () async {
+      await checkBuilderOfFile(
+        'injected_method/injected_method_class_which_part_of_component',
+      );
+    });
+
+    test('injected method class which not part of component', () async {
+      await checkBuilderOfFile(
+        'injected_method/injected_method_class_which_not_part_of_component',
+      );
+    });
   });
 
   group('module', () {
