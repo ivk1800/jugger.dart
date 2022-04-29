@@ -216,6 +216,10 @@ void main() {
     test('component with multiple modules', () async {
       await checkBuilderOfFile('component/component_with_multiple_modules');
     });
+
+    test('component without module', () async {
+      await checkBuilderOfFile('component/component_without_module_2');
+    });
   });
 
   group('interface prefix', () {

@@ -10,6 +10,7 @@ import 'package:jugger_generator/src/utils.dart';
 import 'package:jugger_generator/src/visitors.dart';
 import 'package:quiver/core.dart';
 
+import 'dependency_place.dart';
 import 'jugger_error.dart';
 
 class ComponentContext {
@@ -87,7 +88,9 @@ class ComponentContext {
       _registerDependency(element);
     }
 
-    component.provideMethods.forEach(_registerDependency);
+    for (MethodElement element in component.provideMethods) {
+      _registerDependency(element, DependencyPlace.component);
+    }
     component.provideProperties.forEach(_registerDependency);
 
     for (j.MemberInjectorMethod method in component.methods) {
@@ -118,7 +121,10 @@ class ComponentContext {
   // List<ClassElement> get dependenciesClasses =>
   //     _dependencies.values.map((Dependency d) => d.element).toList();
 
-  Dependency _registerDependency(Element element) {
+  Dependency _registerDependency(
+    Element element, [
+    DependencyPlace? dependencyPlace,
+  ]) {
     final String? qualifier = element.getQualifierTag();
 
     final _Key key = _Key.of(element, qualifier);
@@ -137,6 +143,26 @@ class ComponentContext {
     }
 
     if (element is MethodElement) {
+      if (dependencyPlace == DependencyPlace.component) {
+        check2(
+          element.parameters.isEmpty,
+          () => 'parameters of dependency from component not allowed',
+        );
+        final ConstructorElement? injectedConstructor =
+            element.returnType.getInjectedConstructorOrNull();
+
+        final Dependency dependency = Dependency(
+          qualifier,
+          element.returnType,
+          injectedConstructor != null
+              ? _registerConstructorDependencies(injectedConstructor)
+              : <Dependency>[],
+        );
+        _registerAndValidateDependency(key, dependency);
+        _dependenciesQueue.removeFirst();
+        return dependency;
+      }
+
       final Dependency dependency = Dependency(
         qualifier,
         element.returnType,

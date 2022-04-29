@@ -1,0 +1,24 @@
+// ignore_for_file: implementation_imports
+// ignore_for_file: prefer_const_constructors
+// ignore_for_file: always_specify_types
+// ignore_for_file: directives_ordering
+// ignore_for_file: non_constant_identifier_names
+import 'package:example/component/component_without_module_2.dart' as _i1;
+import 'package:jugger/jugger.dart' as _i2;
+
+class JuggerAppComponent implements _i1.AppComponent {
+  JuggerAppComponent.create();
+
+  late final _i2.IProvider<_i1.Firebase> _firebaseProvider =
+      _i2.Provider<_i1.Firebase>(() => const _i1.Firebase());
+
+  late final _i2.IProvider<_i1.Flurry> _flurryProvider =
+      _i2.Provider<_i1.Flurry>(() => const _i1.Flurry());
+
+  late final _i2.IProvider<_i1.Tracker> _trackerProvider =
+      _i2.Provider<_i1.Tracker>(() => _i1.Tracker(
+          firebase: _firebaseProvider.get(), flurry: _flurryProvider.get()));
+
+  @override
+  _i1.Tracker getTracker() => _trackerProvider.get();
+}
