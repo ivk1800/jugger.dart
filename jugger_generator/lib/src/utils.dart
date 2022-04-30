@@ -75,9 +75,7 @@ List<Annotation> getAnnotations(Element moduleClass) {
 
       if (isQualifier) {
         annotations.add(
-          QualifierAnnotation(
-            tag: Tag.ofString('${annotationClassElement.name}'),
-          ),
+          QualifierAnnotation(tag: _getTag(annotation, annotationClassElement)),
         );
       }
     } else if (annotationElement is ConstructorElement) {
@@ -86,12 +84,7 @@ List<Annotation> getAnnotations(Element moduleClass) {
       final bool isQualifier = annotationClassElement.metadata.isQualifier();
       if (isQualifier) {
         annotations.add(
-          QualifierAnnotation(
-            tag: annotationClassElement.name == 'Named'
-                ? Tag.ofString(
-                    '${annotation.computeConstantValue()!.getField('name')!.toStringValue()!}')
-                : Tag.ofString('${annotationClassElement.name}'),
-          ),
+          QualifierAnnotation(tag: _getTag(annotation, annotationClassElement)),
         );
       }
     }
@@ -178,6 +171,21 @@ List<Annotation> getAnnotations(Element moduleClass) {
     }
   }
   return annotations;
+}
+
+Tag _getTag(ElementAnnotation annotation, ClassElement annotationClassElement) {
+  if (annotationClassElement.name == 'Named') {
+    final String? stringName =
+        annotation.computeConstantValue()!.getField('name')!.toStringValue();
+    check2(stringName != null, () => 'Unable get name of Named');
+    final String id = stringName!;
+    return Tag(uniqueId: id, originalId: id);
+  } else {
+    final String originalId = annotationClassElement.name;
+    final String uniqueId =
+        '${annotationClassElement.library.source.shortName}:$originalId}';
+    return Tag(uniqueId: uniqueId, originalId: originalId);
+  }
 }
 
 void checkUniqueClasses(Iterable<ClassElement> classes) {

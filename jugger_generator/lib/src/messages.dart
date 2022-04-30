@@ -9,11 +9,11 @@ String providerNotFound(
   DartType type,
   Tag? tag,
 ) {
-  return 'Provider for (${type.getName()}${tag != null ? ', qualifier: $tag' : ''}) not found';
+  return 'Provider for (${type.getName()}${tag != null ? ', qualifier: ${tag.originalId}' : ''}) not found';
 }
 
 String notProvided(DartType type, Tag? tag) {
-  return '[${type.getName()}, qualifier: $tag] not provided';
+  return '[${type.getName()}, qualifier: ${tag?.originalId}] not provided';
 }
 
 String injectedConstructorNotFound(ClassElement element) {

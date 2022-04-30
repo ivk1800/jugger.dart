@@ -1,11 +1,14 @@
 class Tag {
-  Tag._(this.uniqueId);
+  const Tag({
+    required this.uniqueId,
+    required this.originalId,
+  });
 
-  factory Tag.ofString(String s) {
-    return Tag._(s);
-  }
-
+  /// For internal usage.
   final String uniqueId;
+
+  /// Can be displayed for user.
+  final String originalId;
 
   @override
   bool operator ==(dynamic other) => other is Tag && uniqueId == other.uniqueId;
