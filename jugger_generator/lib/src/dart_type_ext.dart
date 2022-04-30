@@ -33,7 +33,7 @@ extension DartTypeExt on DartType {
   ConstructorElement getRequiredInjectedConstructor() {
     final InjectedConstructorsVisitor visitor = InjectedConstructorsVisitor();
     element!.visitChildren(visitor);
-    check2(
+    check(
       visitor.injectedConstructors.length == 1,
       () => 'required single injected constructor',
     );
@@ -45,7 +45,7 @@ extension DartTypeExt on DartType {
 
     final InjectedConstructorsVisitor visitor = InjectedConstructorsVisitor();
     element!.visitChildren(visitor);
-    check2(
+    check(
       visitor.injectedConstructors.length <= 1,
       () => 'required single or zero injected constructor',
     );

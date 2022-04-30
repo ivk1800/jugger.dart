@@ -65,7 +65,7 @@ class ProvidesVisitor extends RecursiveElementVisitor<dynamic> {
   @override
   dynamic visitMethodElement(MethodElement element) {
     final Element moduleElement = element.enclosingElement;
-    check2(
+    check(
       moduleElement.hasAnnotatedAsModule(),
       () => moduleAnnotationRequired(moduleElement as ClassElement),
     );
@@ -85,15 +85,24 @@ class ProvidesVisitor extends RecursiveElementVisitor<dynamic> {
     }
 
     if (element.isStatic) {
-      check(getProvideAnnotation(element) != null,
-          'provide static method [${moduleElement.name}.${element.name}] must be annotated [${j.provides.runtimeType}]');
+      check(
+        getProvideAnnotation(element) != null,
+        () =>
+            'provide static method [${moduleElement.name}.${element.name}] must be annotated [${j.provides.runtimeType}]',
+      );
     }
 
     if (element.isAbstract) {
-      check(getBindAnnotation(element) != null,
-          'provide abstract method [${moduleElement.name}.${element.name}] must be annotated [${j.binds.runtimeType}]');
-      check(element.parameters.length == 1,
-          'method [${moduleElement.name}.${element.name}] annotates [${j.binds.runtimeType}] must have 1 parameter');
+      check(
+        getBindAnnotation(element) != null,
+        () =>
+            'provide abstract method [${moduleElement.name}.${element.name}] must be annotated [${j.binds.runtimeType}]',
+      );
+      check(
+        element.parameters.length == 1,
+        () =>
+            'method [${moduleElement.name}.${element.name}] annotates [${j.binds.runtimeType}] must have 1 parameter',
+      );
       // ignore: flutter_style_todos
       //TODO: check parameter type must be assignable to the return type
     }
@@ -138,7 +147,7 @@ class ComponentsVisitor extends RecursiveElementVisitor<dynamic> {
     final ComponentAnnotation? component = getComponentAnnotation(element);
 
     if (component != null) {
-      check2(element.isPublic, () => publicComponent(element));
+      check(element.isPublic, () => publicComponent(element));
 
       final InjectedFieldsVisitor fieldsVisitor = InjectedFieldsVisitor();
       element.visitChildren(fieldsVisitor);
@@ -181,11 +190,11 @@ class InjectedMethodsVisitor extends RecursiveElementVisitor<dynamic> {
         .any((Annotation annotation) => annotation is InjectAnnotation)) {
       if (!methods.any((MethodElement collectedMethod) =>
           collectedMethod.name == element.name)) {
-        check2(
+        check(
           !element.isStatic,
           () => 'injected method [${element.name}] can not be static',
         );
-        check2(
+        check(
           !element.isAbstract,
           () => 'injected method [${element.name}] can not be abstract',
         );
@@ -222,7 +231,7 @@ class ComponentBuildersVisitor extends RecursiveElementVisitor<dynamic> {
         getComponentBuilderAnnotation(element);
 
     if (annotation != null) {
-      check2(element.isPublic, () => publicComponentBuilder(element));
+      check(element.isPublic, () => publicComponentBuilder(element));
       final BuildMethodsVisitor v = BuildMethodsVisitor();
       element.visitChildren(v);
 
@@ -230,25 +239,38 @@ class ComponentBuildersVisitor extends RecursiveElementVisitor<dynamic> {
         final MethodElement methodElement = v.methodElements[i];
 
         if (methodElement.name == 'build') {
-          check(methodElement.parameters.isEmpty, 'build have > 1 parameter');
+          check(
+            methodElement.parameters.isEmpty,
+            () => 'build have > 1 parameter',
+          );
         } else {
-          check(methodElement.returnType.getName() == element.name,
-              '(${methodElement.name})  method return wrong type. Expected ${element.name}');
-          check(methodElement.parameters.length == 1,
-              '${methodElement.name} have > 1 parameter');
+          check(
+            methodElement.returnType.getName() == element.name,
+            () =>
+                '(${methodElement.name})  method return wrong type. Expected ${element.name}',
+          );
+          check(
+            methodElement.parameters.length == 1,
+            () => '${methodElement.name} have > 1 parameter',
+          );
         }
       }
 
       late final MethodElement buildMethod;
       final MethodElement? buildMethodNullable = v.buildMethod;
-      check(buildMethodNullable != null,
-          'not found build method for [${createClassNameWithPath(element)}');
+      check(
+        buildMethodNullable != null,
+        () => 'not found build method for [${createClassNameWithPath(element)}',
+      );
       buildMethod = buildMethodNullable!;
 
       final ComponentAnnotation? componentAnnotation =
           getComponentAnnotation(buildMethod.returnType.element!);
 
-      check(componentAnnotation != null, 'build method must return component');
+      check(
+        componentAnnotation != null,
+        () => 'build method must return component',
+      );
 
       final Iterable<MethodElement> externalDependenciesMethods = v
           .methodElements
@@ -256,13 +278,18 @@ class ComponentBuildersVisitor extends RecursiveElementVisitor<dynamic> {
       for (DependencyAnnotation dep in componentAnnotation!.dependencies) {
         final bool dependencyProvided =
             externalDependenciesMethods.any((MethodElement me) {
-          check(me.parameters.length == 1,
-              'build method (${me.name}) must have 1 parameter');
+          check(
+            me.parameters.length == 1,
+            () => 'build method (${me.name}) must have 1 parameter',
+          );
           return me.parameters[0].type.element == dep.element;
         });
 
-        check(dependencyProvided,
-            'dependency (${dep.element.name}) must provided by build method');
+        check(
+          dependencyProvided,
+          () =>
+              'dependency (${dep.element.name}) must provided by build method',
+        );
       }
 
       for (MethodElement element in externalDependenciesMethods) {

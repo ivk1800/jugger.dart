@@ -49,7 +49,7 @@ ProvideAnnotation? getProvideAnnotation(Element element) {
 QualifierAnnotation? getQualifierAnnotation(Element element) {
   final List<QualifierAnnotation> qualifierAnnotation =
       getAnnotations(element).whereType<QualifierAnnotation>().toList();
-  check2(
+  check(
     qualifierAnnotation.length <= 1,
     () => multipleQualifiersNotAllowed(element),
   );
@@ -135,7 +135,7 @@ List<Annotation> getAnnotations(Element moduleClass) {
             modulesAnnotations.groupListsBy((ModuleAnnotation annotation) =>
                 annotation.moduleElement.thisType);
         for (List<ModuleAnnotation> group in groupedAnnotations.values) {
-          check2(
+          check(
             group.length == 1,
             () => repeatedModules(group.first.moduleElement.thisType),
           );
@@ -145,7 +145,7 @@ List<Annotation> getAnnotations(Element moduleClass) {
             element: valueElement,
             modules: allModules.toList(),
             dependencies: dependencies.map((ClassElement c) {
-              check2(c.isAbstract, () => dependencyMustBeAbstract(c.thisType));
+              check(c.isAbstract, () => dependencyMustBeAbstract(c.thisType));
               return DependencyAnnotation(element: c);
             }).toList()));
       } else if (valueElement.name == provides.runtimeType.toString()) {
@@ -177,7 +177,7 @@ Tag _getTag(ElementAnnotation annotation, ClassElement annotationClassElement) {
   if (annotationClassElement.name == 'Named') {
     final String? stringName =
         annotation.computeConstantValue()!.getField('name')!.toStringValue();
-    check2(stringName != null, () => 'Unable get name of Named');
+    check(stringName != null, () => 'Unable get name of Named');
     final String id = stringName!;
     return Tag(uniqueId: id, originalId: id);
   } else {
@@ -192,7 +192,7 @@ void checkUniqueClasses(Iterable<ClassElement> classes) {
   final Map<InterfaceType, List<ClassElement>> groupedAnnotations =
       classes.groupListsBy((ClassElement annotation) => annotation.thisType);
   for (List<ClassElement> group in groupedAnnotations.values) {
-    check2(
+    check(
       group.length == 1,
       () => repeatedModules(group.first.thisType),
     );
@@ -211,7 +211,7 @@ List<ClassElement> getClassListFromField(
       // ignore: avoid_as
       .map((DartObject o) => o.toTypeValue()!.element as ClassElement)
       .toList();
-  check2(result != null, () => 'unable get $name from annotation');
+  check(result != null, () => 'unable get $name from annotation');
   return result!;
 }
 
@@ -239,13 +239,7 @@ String createClassNameWithPath(ClassElement element) {
   return '${element.name}] ${element.library.identifier}';
 }
 
-void check(bool condition, String message) {
-  if (!condition) {
-    throw JuggerError(message);
-  }
-}
-
-void check2(bool condition, String Function() message) {
+void check(bool condition, String Function() message) {
   if (!condition) {
     throw JuggerError(message.call());
   }
@@ -262,7 +256,7 @@ extension DartTypeExt on DartType {
     final InjectedConstructorsVisitor visitor = InjectedConstructorsVisitor();
     element!.visitChildren(visitor);
 
-    check2(
+    check(
       visitor.injectedConstructors.length < 2,
       () => 'too many injected constructors of [${getName()}]',
     );
@@ -270,9 +264,9 @@ extension DartTypeExt on DartType {
   }
 
   void checkUnsupportedType() {
-    check2(this is InterfaceType, () => 'type [$this] not supported');
+    check(this is InterfaceType, () => 'type [$this] not supported');
 
-    check2(
+    check(
       nullabilitySuffix == NullabilitySuffix.none,
       () => typeNotSupported(this),
     );

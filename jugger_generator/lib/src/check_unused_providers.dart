@@ -10,7 +10,7 @@ void checkUnusedProviders(String content) {
   final _Visitor visitor = _Visitor(rawContent: content);
   unit.visitChildren(visitor);
 
-  check2(
+  check(
     visitor.variables.isEmpty,
     () => foundUnusedGeneratedProviders(visitor.variables),
   );

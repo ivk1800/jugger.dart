@@ -24,15 +24,15 @@ class ModuleExtractor {
     if (!(moduleClass is ClassElement)) {
       throw JuggerError('element[$moduleClass] is not ClassElement');
     }
-    check2(moduleClass.isAbstract, () => moduleMustBeAbstract(moduleClass));
-    check2(moduleClass.isPublic, () => publicModule(moduleClass));
-    check2(
+    check(moduleClass.isAbstract, () => moduleMustBeAbstract(moduleClass));
+    check(moduleClass.isPublic, () => publicModule(moduleClass));
+    check(
       moduleClass.hasAnnotatedAsModule(),
       () => moduleAnnotationRequired(moduleClass),
     );
 
     final List<ElementAnnotation> resolvedMetadata = moduleClass.metadata;
-    check2(
+    check(
       resolvedMetadata.length == 1,
       () => 'multiple annotations on module not supported',
     );

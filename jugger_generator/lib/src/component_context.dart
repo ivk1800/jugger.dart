@@ -53,9 +53,10 @@ class ComponentContext {
 
     if (component.dependencies.isNotEmpty) {
       check(
-          componentBuilder != null,
-          'you need provide dependencies by builder. '
-          'component: ${component.element.name}, dependencies: ${component.dependencies.map((j.DependencyAnnotation de) => de.element.name).join(',')}');
+        componentBuilder != null,
+        () => 'you need provide dependencies by builder. '
+            'component: ${component.element.name}, dependencies: ${component.dependencies.map((j.DependencyAnnotation de) => de.element.name).join(',')}',
+      );
     }
 
     for (j.Method method in component.modulesProvideMethods) {
@@ -145,7 +146,7 @@ class ComponentContext {
 
     if (element is MethodElement) {
       if (dependencyPlace == DependencyPlace.component) {
-        check2(
+        check(
           element.parameters.isEmpty,
           () => 'parameters of dependency from component not allowed',
         );
@@ -199,7 +200,7 @@ class ComponentContext {
     key.type.checkUnsupportedType();
 
     if (dependency.type.isProvider) {
-      check2(
+      check(
         dependency.dependencies.isEmpty,
         () => 'provider with dependencies!',
       );
@@ -256,8 +257,10 @@ class ComponentContext {
       return dependency;
     }
 
-    check(visitor.injectedConstructors.length == 1,
-        'too many injected constructors for ${element.type.getName()}');
+    check(
+      visitor.injectedConstructors.length == 1,
+      () => 'too many injected constructors for ${element.type.getName()}',
+    );
 
     final j.InjectedConstructor injectedConstructor =
         visitor.injectedConstructors[0];
@@ -268,15 +271,15 @@ class ComponentContext {
 
     check(
       !constructorElement.isPrivate,
-      'constructor can not be private [$constructorLogName]',
+      () => 'constructor can not be private [$constructorLogName]',
     );
     check(
       !constructorElement.isFactory,
-      'factory constructor not supported [$constructorLogName]',
+      () => 'factory constructor not supported [$constructorLogName]',
     );
     check(
       constructorElement.name.isEmpty,
-      'named constructor not supported [$constructorLogName]',
+      () => 'named constructor not supported [$constructorLogName]',
     );
 
     final List<Dependency> dependencies =
@@ -348,7 +351,8 @@ class ComponentContext {
     grouped.forEach((dynamic key, List<ProviderSource> p) {
       check(
         p.length == 1,
-        '$key provides multiple time: ${p.map((ProviderSource s) => s.sourceString).join(', ')}',
+        () =>
+            '$key provides multiple time: ${p.map((ProviderSource s) => s.sourceString).join(', ')}',
       );
     });
   }

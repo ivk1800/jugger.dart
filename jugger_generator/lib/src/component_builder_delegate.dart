@@ -266,7 +266,7 @@ class ComponentBuilderDelegate {
         _filterDependenciesForFields(dependencies);
 
     for (Dependency dependency in filteredDependencies) {
-      check2(
+      check(
         !dependency.type.isProvider,
         () => providerNotAllowed(dependency.type),
       );
@@ -308,7 +308,7 @@ class ComponentBuilderDelegate {
 
             check(
               !(isCore(typeElement) || typeElement.isAbstract),
-              notProvided(dependency.type, tag),
+              () => notProvided(dependency.type, tag),
             );
             b.assignment = _buildProviderFromClassAssignCode(typeElement);
           }
@@ -327,7 +327,10 @@ class ComponentBuilderDelegate {
   }
 
   String _allocateTypeName(DartType t) {
-    check(t is InterfaceType, 'type [$t] not supported');
+    check(
+      t is InterfaceType,
+      () => 'type [$t] not supported',
+    );
     final InterfaceType type = t as InterfaceType;
 
     final String name = _allocator.allocate(
@@ -386,7 +389,7 @@ class ComponentBuilderDelegate {
         final ProviderSource? providerSource =
             _componentContext.findProvider(method.returnType, tag);
 
-        check2(
+        check(
           providerSource != null || method.returnType.hasInjectedConstructor(),
           () => 'not found inject constructor for [${method.runtimeType}]\n'
               '${notProvided(method.returnType, tag)}',
@@ -417,8 +420,10 @@ class ComponentBuilderDelegate {
       builder.name = method.element.name;
       builder.annotations.add(_overrideAnnotationExpression);
       builder.returns = const Reference('void');
-      check(method.element.parameters.length == 1,
-          'method ${method.element.name} must have 1 parameter');
+      check(
+        method.element.parameters.length == 1,
+        () => 'method ${method.element.name} must have 1 parameter',
+      );
 
       final ParameterElement parameterElement = method.element.parameters[0];
 
@@ -484,7 +489,7 @@ class ComponentBuilderDelegate {
           false,
         );
       }
-      check2(
+      check(
         provider != null,
         () => providerNotFound(depType, tag),
       );
@@ -519,7 +524,7 @@ class ComponentBuilderDelegate {
     if (visitor.injectedConstructors.isEmpty) {
       final j.Method? provideMethod =
           _componentContext.findProvideMethod(type: type, tag: tag);
-      check2(
+      check(
         provideMethod != null,
         () => providerNotFound(type, tag),
       );
@@ -604,7 +609,7 @@ class ComponentBuilderDelegate {
     final InjectedConstructorsVisitor visitor = InjectedConstructorsVisitor();
     element.visitChildren(visitor);
 
-    check2(
+    check(
       visitor.injectedConstructors.length == 1,
       () => injectedConstructorNotFound(element),
     );
@@ -709,8 +714,11 @@ class ComponentBuilderDelegate {
     _log(
         'build provider from abstract method: ${method.enclosingElement.toNameWithPath()}');
 
-    check(method.parameters.length == 1,
-        'method annotates [${jugger.binds.runtimeType}] must have 1 parameter');
+    check(
+      method.parameters.length == 1,
+      () =>
+          'method annotates [${jugger.binds.runtimeType}] must have 1 parameter',
+    );
 
     final Element rawParameter = method.parameters[0].type.element!;
     final ClassElement parameter;
@@ -731,7 +739,7 @@ class ComponentBuilderDelegate {
             interfaceType.element.name ==
             method.returnType.getDisplayString(withNullability: false));
 
-    check2(
+    check(
       isSupertype,
       () => bindWrongType(method),
     );
@@ -741,7 +749,7 @@ class ComponentBuilderDelegate {
       return _buildProviderFromModule(method, provider);
     }
 
-    check2(
+    check(
       visitor.injectedConstructors.length == 1,
       () => injectedConstructorNotFound(parameter),
     );
@@ -753,7 +761,7 @@ class ComponentBuilderDelegate {
     final ClassElement returnClass;
     if (getBindAnnotation(method) != null) {
       final Element? bindedElement = method.parameters[0].type.element;
-      check2(
+      check(
         bindedElement is ClassElement,
         () => '$bindedElement not supported.',
       );
@@ -779,7 +787,7 @@ class ComponentBuilderDelegate {
     } else if (getProvideAnnotation(method) != null) {
       check(
         method.returnType.element is ClassElement,
-        '${method.returnType.element} not supported.',
+        () => '${method.returnType.element} not supported.',
       );
       // ignore: avoid_as
       returnClass = method.returnType.element as ClassElement;
@@ -828,7 +836,7 @@ class ComponentBuilderDelegate {
 
     check(
       method.returnType.element is ClassElement,
-      '${method.returnType.element} not supported.',
+      () => '${method.returnType.element} not supported.',
     );
     // ignore: avoid_as
     final ClassElement returnClass = method.returnType.element as ClassElement;
@@ -855,7 +863,7 @@ class ComponentBuilderDelegate {
     _log('build CallMethodOrConstructor for: ${element.name}');
     check(
       (element is ClassElement) || (element is MethodElement),
-      'element${element.name} must be ClassElement or MethodElement',
+      () => 'element${element.name} must be ClassElement or MethodElement',
     );
 
     Reference r(String symbol) {
@@ -904,7 +912,7 @@ class ComponentBuilderDelegate {
 
     check(
       !(isPositional && isNamed),
-      'all parameters must be Positional or Named [${element.name}]',
+      () => 'all parameters must be Positional or Named [${element.name}]',
     );
 
     if (isPositional) {
@@ -957,7 +965,7 @@ class ComponentBuilderDelegate {
   Reference getProviderType(Element element) {
     check(
       element is MethodElement || element is ConstructorElement,
-      '$element not supported',
+      () => '$element not supported',
     );
 
     final String generic = _getGeneric(element);
