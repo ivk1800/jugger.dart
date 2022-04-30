@@ -35,6 +35,7 @@ jugger_generator:
     - [build.yaml](#buildyaml)
     - [remove_interface_prefix_from_component_name](#remove_interface_prefix_from_component_name)
     - [check_unused_providers](#check_unused_providers)
+- [Links](#links)
 
 
 # How to use
@@ -510,3 +511,7 @@ instead:
 ### check_unused_providers:
 
 If there are classes in the graph that are not used, the generation will fall. By default it is turned on.
+
+# Links
+
+Telegram chat: https://t.me/jugger_chat
