@@ -30,9 +30,11 @@ jugger_generator:
         - [Singleton](#singleton)
         - [Inject](#inject)
         - [Injected constructor](#injected-constructor)
+        - [Injected method](#injected-method)
+        - [Qualifiers](#qualifiers)
     - [build.yaml](#buildyaml)
-        - [remove_interface_prefix_from_component_name](#remove_interface_prefix_from_component_name)
-        - [check_unused_providers](#check_unused_providers)
+    - [remove_interface_prefix_from_component_name](#remove_interface_prefix_from_component_name)
+    - [check_unused_providers](#check_unused_providers)
 
 
 # How to use
@@ -367,7 +369,7 @@ class StringProvider {
 }
 ```
 
-### injected method
+### Injected method
 
 The method can also be injected. it will be called when the jugger creates an instance of the class.
 
@@ -417,7 +419,71 @@ class StringProvider {
 }
 ```
 
-## build.yaml
+### Qualifiers
+
+@Qualifier annotation is used to distinguish between objects of the same type but with different instances.
+Example of Named qulifier:
+```dart
+@module
+abstract class AppModule {
+  @provides
+  @Named('dev')
+  static AppConfig provideDevAppConfig() {
+    return const AppConfig('https://dev.com/');
+  }
+
+  @provides
+  @Named('release')
+  static AppConfig provideReleaseAppConfig() {
+    return const AppConfig('https://dev.com/');
+  }
+
+  @provides
+  @singleton
+  static AppConfig provideAppConfig(
+    AppEnvironment environment,
+    @Named('dev') AppConfig dev,
+    @Named('release') AppConfig release,
+  ) {
+    switch (environment) {
+      case AppEnvironment.dev:
+        return dev;
+      case AppEnvironment.release:
+        return release;
+    }
+  }
+}
+```
+
+You can also declare a custom qualifier:
+
+```dart
+@qualifier
+class Release {
+  const Release();
+}
+
+const Release release = Release();
+
+@qualifier
+class Dev {
+  const Dev();
+}
+
+const Dev dev = Dev();
+```
+
+And use as:
+
+```dart
+@provides
+@dev
+static AppConfig provideDevAppConfig() {
+  return const AppConfig('https://dev.com/');
+}
+```
+
+### build.yaml
 
 ```yaml
 targets:
