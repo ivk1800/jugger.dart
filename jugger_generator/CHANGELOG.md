@@ -1,3 +1,12 @@
+## 2.2.1
+
+* Fix generation if component not used modules, and all classes have injected constructor.
+* Fix generation of objects with qualifier of the same type but with different instances.
+* Fix inject method of class, if its class is not used in the component.
+* Improve generation of qualifiers.
+* Internal code improves.
+* Add docs about qualifiers.
+
 ## 2.2.0
 
 * Add includes for module
