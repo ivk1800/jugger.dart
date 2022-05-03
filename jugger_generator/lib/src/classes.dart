@@ -6,7 +6,7 @@ import 'package:jugger_generator/src/visitors.dart';
 import 'tag.dart';
 
 class Component {
-  const Component({
+  Component({
     required this.element,
     required this.annotations,
     required this.methods,
@@ -16,57 +16,59 @@ class Component {
   final List<Annotation> annotations;
   final List<MemberInjectorMethod> methods;
 
-  List<ModuleAnnotation> get modules =>
-      getComponentAnnotation()?.modules ?? List<ModuleAnnotation>.empty();
+  // region private
 
-  List<DependencyAnnotation> get dependencies =>
-      getComponentAnnotation()?.dependencies ??
-      List<DependencyAnnotation>.empty();
-
-  ComponentAnnotation? getComponentAnnotation() {
+  late final ComponentAnnotation? _componentAnnotation = () {
     final Annotation? annotation = annotations
         .firstWhereOrNull((Annotation a) => a is ComponentAnnotation);
     return annotation is ComponentAnnotation ? annotation : null;
-  }
+  }();
 
-  List<Method> get modulesProvideMethods {
-    return modules.map((ModuleAnnotation module) {
-      final ProvidesVisitor v = ProvidesVisitor();
-      module.moduleElement.visitChildren(v);
-      return v.methods;
-    }).expand((List<Method> l) {
-      return l;
-    }).toList();
-  }
+  late final List<ModuleAnnotation> _modules =
+      _componentAnnotation?.modules ?? List<ModuleAnnotation>.empty();
 
-  List<ParameterElement> buildInstanceFields(
-      ComponentBuilder? componentBuilder) {
-    if (componentBuilder == null) {
-      return <ParameterElement>[];
-    }
-    return componentBuilder.parameters
-        .map((ComponentBuilderParameter p) => p.parameter)
-        .toList();
-  }
+  late final List<DependencyAnnotation> _dependencies =
+      _componentAnnotation?.dependencies ?? List<DependencyAnnotation>.empty();
 
-  List<MethodElement> get provideMethods {
+  late final List<Method> _modulesProvideMethods = modules
+      .map((ModuleAnnotation module) {
+        final ProvidesVisitor v = ProvidesVisitor();
+        module.moduleElement.visitChildren(v);
+        return v.methods;
+      })
+      .expand((List<Method> l) => l)
+      .toList();
+
+  late final List<MethodElement> _provideMethods = () {
     final ProvideMethodVisitor v = ProvideMethodVisitor();
     element.visitChildren(v);
     return v.methods
       ..sort((MethodElement a, MethodElement b) => a.name.compareTo(b.name));
-  }
+  }();
 
-  List<PropertyAccessorElement> get provideProperties {
+  late final List<PropertyAccessorElement> _provideProperties = () {
     final ProvidePropertyVisitor v = ProvidePropertyVisitor();
     element.visitChildren(v);
     return v.properties
       ..sort((PropertyAccessorElement a, PropertyAccessorElement b) =>
           a.name.compareTo(b.name));
-  }
+  }();
+
+  // endregion private
+
+  List<ModuleAnnotation> get modules => _modules;
+
+  List<DependencyAnnotation> get dependencies => _dependencies;
+
+  List<Method> get modulesProvideMethods => _modulesProvideMethods;
+
+  List<MethodElement> get provideMethods => _provideMethods;
+
+  List<PropertyAccessorElement> get provideProperties => _provideProperties;
 }
 
 class ComponentBuilder {
-  const ComponentBuilder({
+  ComponentBuilder({
     required this.element,
     required this.componentClass,
     required this.methods,
@@ -77,14 +79,19 @@ class ComponentBuilder {
 
   final List<MethodElement> methods;
 
-  List<ComponentBuilderParameter> get parameters {
-    return methods
-        .expand<ParameterElement>((MethodElement methodElement) {
-          return methodElement.parameters;
-        })
-        .map((ParameterElement p) => ComponentBuilderParameter(parameter: p))
-        .toList();
-  }
+  late final List<ParameterElement> _buildInstanceFields =
+      parameters.map((ComponentBuilderParameter p) => p.parameter).toList();
+
+  late final List<ComponentBuilderParameter> _parameters = methods
+      .expand<ParameterElement>((MethodElement methodElement) {
+        return methodElement.parameters;
+      })
+      .map((ParameterElement p) => ComponentBuilderParameter(parameter: p))
+      .toList();
+
+  List<ComponentBuilderParameter> get parameters => _parameters;
+
+  List<ParameterElement> get buildInstanceFields => _buildInstanceFields;
 }
 
 class ComponentBuilderParameter {
@@ -172,16 +179,15 @@ class Method {
   Method(this.element, this.annotations);
 
   final MethodElement element;
-
   final List<Annotation> annotations;
 
-  QualifierAnnotation? _findQualifierAnnotation() {
+  late final QualifierAnnotation? _qualifierAnnotation = () {
     final Annotation? annotation = annotations
         .firstWhereOrNull((Annotation a) => a is QualifierAnnotation);
     return annotation is QualifierAnnotation ? annotation : null;
-  }
+  }();
 
-  late final Tag? _tag = _findQualifierAnnotation()?.tag;
+  late final Tag? _tag = _qualifierAnnotation?.tag;
 
   Tag? get tag => _tag;
 }

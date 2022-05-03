@@ -75,10 +75,9 @@ class ComponentContext {
     }
 
     for (ParameterElement parameter
-        in component.buildInstanceFields(componentBuilder)) {
+        in componentBuilder?.buildInstanceFields ?? <ParameterElement>[]) {
       providerSources.add(BuildInstanceSource(
           parameter: parameter,
-          // ignore: avoid_as
           type: parameter.type,
           annotations: getAnnotations(parameter.enclosingElement!)));
     }
