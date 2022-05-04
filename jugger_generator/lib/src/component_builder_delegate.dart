@@ -619,9 +619,9 @@ class ComponentBuilderDelegate {
 
     final Expression newInstance =
         getProviderType(injectedConstructor).newInstance(<Expression>[
-      CodeExpression(Block.of(_buildProviderBody(element, <Code>[
-        _buildCallMethodOrConstructor(element, parameters, _componentContext)
-      ])))
+      _buildExpressionBodyExpression(
+        _buildCallMethodOrConstructor(element, parameters, _componentContext),
+      ),
     ]);
 
     return newInstance.code;
@@ -666,15 +666,8 @@ class ComponentBuilderDelegate {
   ) {
     final Expression newInstance = getProviderType(method).newInstance(
       <Expression>[
-        CodeExpression(
-          Block.of(
-            _buildProviderBody(
-              provider.dependencyClass,
-              <Code>[
-                Code(provider.assignString),
-              ],
-            ),
-          ),
+        _buildExpressionBodyExpression(
+          Code(provider.assignString),
         ),
       ],
     );
@@ -689,18 +682,11 @@ class ComponentBuilderDelegate {
   ) {
     final Expression newInstance = getProviderType(method).newInstance(
       <Expression>[
-        CodeExpression(
-          Block.of(
-            _buildProviderBody(
-              provider.moduleClass,
-              <Code>[
-                Code('${_generateAssignString(
-                  provider.type,
-                  provider.tag,
-                )}'),
-              ],
-            ),
-          ),
+        _buildExpressionBodyExpression(
+          Code('${_generateAssignString(
+            provider.type,
+            provider.tag,
+          )}'),
         ),
       ],
     );
@@ -756,29 +742,24 @@ class ComponentBuilderDelegate {
         visitor.injectedConstructors[0];
     final List<ParameterElement> parameters = injectedConstructor.parameters;
 
-    final ClassElement returnClass;
     if (getBindAnnotation(method) != null) {
       final Element? bindedElement = method.parameters[0].type.element;
       check(
         bindedElement is ClassElement,
         () => '$bindedElement not supported.',
       );
-      // ignore: avoid_as
-      returnClass = bindedElement as ClassElement;
       final Expression newInstance = getProviderType(
         method,
       ).newInstance(
         <Expression>[
-          CodeExpression(
-            Block.of(
-              _buildProviderBody(
-                returnClass,
-                <Code>[
-                  Code(_generateAssignString(bindedElement.thisType, null)),
-                ],
+          _buildExpressionBodyExpression(
+            Code(
+              _generateAssignString(
+                (bindedElement as ClassElement).thisType,
+                null,
               ),
             ),
-          )
+          ),
         ],
       );
       return CodeExpression(newInstance.code);
@@ -787,8 +768,6 @@ class ComponentBuilderDelegate {
         method.returnType.element is ClassElement,
         () => '${method.returnType.element} not supported.',
       );
-      // ignore: avoid_as
-      returnClass = method.returnType.element as ClassElement;
     } else {
       throw JuggerError(
           'unknown provided type of method ${method.getDisplayString(withNullability: false)}');
@@ -796,31 +775,30 @@ class ComponentBuilderDelegate {
 
     final Expression newInstance =
         getProviderType(method).newInstance(<Expression>[
-      CodeExpression(
-        Block.of(
-          _buildProviderBody(
-            returnClass,
-            <Code>[
-              _buildCallMethodOrConstructor(
-                  parameter, parameters, _componentContext)
-            ],
-          ),
-        ),
-      )
+      _buildExpressionBodyExpression(
+        _buildCallMethodOrConstructor(parameter, parameters, _componentContext),
+      ),
     ]);
 
     return CodeExpression(newInstance.code);
   }
 
-  List<Code> _buildProviderBody(ClassElement classElement, List<Code> code) {
-    final List<Code> codes = <Code>[];
-
-    final Code primaryExpression = CodeExpression(Block.of(code)).code;
-    codes.addAll(<Code>[
-      const Code('() => '),
-      primaryExpression,
-    ]);
-    return codes;
+  /// Build expression body with given body of code.
+  /// Example result:
+  /// ```
+  /// () => print('hello')
+  /// ```
+  Expression _buildExpressionBodyExpression(Code body) {
+    return CodeExpression(
+      Block.of(
+        <Code>[
+          ...<Code>[
+            const Code('() => '),
+            body,
+          ],
+        ],
+      ),
+    );
   }
 
   // todo refactor as AssignCode, must return Code
@@ -836,17 +814,22 @@ class ComponentBuilderDelegate {
       method.returnType.element is ClassElement,
       () => '${method.returnType.element} not supported.',
     );
-    // ignore: avoid_as
-    final ClassElement returnClass = method.returnType.element as ClassElement;
     final Element moduleClass = method.enclosingElement;
     final Expression newInstance =
         getProviderType(method).newInstance(<Expression>[
-      CodeExpression(Block.of(_buildProviderBody(returnClass, <Code>[
-        refer(moduleClass.name!, createElementPath(moduleClass)).code,
-        const Code('.'),
-        _buildCallMethodOrConstructor(
-            method, method.parameters, _componentContext)
-      ])))
+      _buildExpressionBodyExpression(
+        Block.of(
+          <Code>[
+            refer(moduleClass.name!, createElementPath(moduleClass)).code,
+            const Code('.'),
+            _buildCallMethodOrConstructor(
+              method,
+              method.parameters,
+              _componentContext,
+            )
+          ],
+        ),
+      )
     ]);
 
     return CodeExpression(newInstance.code);
