@@ -74,8 +74,10 @@ class ComponentContext {
       );
     }
 
-    for (ParameterElement parameter
-        in componentBuilder?.buildInstanceFields ?? <ParameterElement>[]) {
+    for (ParameterElement parameter in componentBuilder?.parameters
+            .map((ComponentBuilderParameter p) => p.parameter)
+            .toList() ??
+        <ParameterElement>[]) {
       providerSources.add(BuildInstanceSource(
           parameter: parameter,
           type: parameter.type,
@@ -94,7 +96,7 @@ class ComponentContext {
     }
     component.provideProperties.forEach(_registerDependency);
 
-    for (j.MemberInjectorMethod method in component.methods) {
+    for (j.MemberInjectorMethod method in component.memberInjectors) {
       final MethodElement element = method.element;
 
       for (ParameterElement parameter in element.parameters) {

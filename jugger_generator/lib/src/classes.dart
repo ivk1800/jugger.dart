@@ -5,16 +5,31 @@ import 'package:jugger_generator/src/visitors.dart';
 
 import 'tag.dart';
 
+/// Wrapper class for component classes that are annotated by [inject].
+/// The client of this class must check that the element is definitely a
+/// Component.
 class Component {
   Component({
     required this.element,
     required this.annotations,
-    required this.methods,
+    required this.memberInjectors,
   });
 
+  /// Element associated with this component.
   final ClassElement element;
+
+  /// All annotation of the component.
   final List<Annotation> annotations;
-  final List<MemberInjectorMethod> methods;
+
+  /// All methods that use for injection of classes.
+  /// Example:
+  /// ```dart
+  /// @Component(modules: <Type>[AppModule])
+  /// abstract class AppComponent {
+  ///   void inject(MyClass myClass); // there her is
+  /// }
+  /// ```
+  final List<MemberInjectorMethod> memberInjectors;
 
   // region private
 
@@ -56,17 +71,44 @@ class Component {
 
   // endregion private
 
+  /// Returns the modules that are included to the component.
   List<ModuleAnnotation> get modules => _modules;
 
+  /// Returns the another components that are included to the component as
+  /// dependencies.
   List<DependencyAnnotation> get dependencies => _dependencies;
 
+  /// Returns all methods of modules that are included to the component.
   List<Method> get modulesProvideMethods => _modulesProvideMethods;
 
+  /// Returns methods of the component that return some type, do not include
+  /// methods with the void type.
+  ///
+  /// Example of method:
+  /// ```dart
+  /// @Component(modules: <Type>[AppModule])
+  /// abstract class AppComponent {
+  ///   String getName(); // there he is
+  /// }
+  /// ```
   List<MethodElement> get provideMethods => _provideMethods;
 
+  /// Returns properties of the component that return some type.
+  ///
+  /// Example of method:
+  /// ```dart
+  /// @Component(modules: <Type>[AppModule])
+  /// abstract class AppComponent {
+  ///   String get name; // there he is
+  /// }
+  /// ```
   List<PropertyAccessorElement> get provideProperties => _provideProperties;
 }
 
+/// Wrapper class for component builder classes that are annotated by
+/// [componentBuilder].
+/// The client of this class must check that the element is definitely a
+/// ComponentBuilder.
 class ComponentBuilder {
   ComponentBuilder({
     required this.element,
@@ -74,13 +116,15 @@ class ComponentBuilder {
     required this.methods,
   });
 
+  /// Element associated with this component builder.
   final ClassElement element;
+
+  /// The class of the component that this builder constructs.
   final ClassElement componentClass;
 
+  /// All method of this component builder. Each method must contain only one
+  /// parameter.
   final List<MethodElement> methods;
-
-  late final List<ParameterElement> _buildInstanceFields =
-      parameters.map((ComponentBuilderParameter p) => p.parameter).toList();
 
   late final List<ComponentBuilderParameter> _parameters = methods
       .expand<ParameterElement>((MethodElement methodElement) {
@@ -89,77 +133,98 @@ class ComponentBuilder {
       .map((ParameterElement p) => ComponentBuilderParameter(parameter: p))
       .toList();
 
+  /// Returns all parameters of this component builder, these parameters are
+  /// taken from the methods.
   List<ComponentBuilderParameter> get parameters => _parameters;
-
-  List<ParameterElement> get buildInstanceFields => _buildInstanceFields;
 }
 
+/// Wrapper class for argument of component builder. This is a argument of
+/// method of component builder.
+///
+/// ```dart
+/// @componentBuilder
+/// abstract class MyComponentBuilder {
+///   MyComponentBuilder appComponent(
+///     String s, // there he is
+///   );
+///
+///   AppComponent build();
+/// } ```
 class ComponentBuilderParameter {
   const ComponentBuilderParameter({
     required this.parameter,
   });
 
+  /// Element associated with this parameter.
   final ParameterElement parameter;
 
   @override
-  String toString() {
-    return parameter.type.getName();
-  }
-
-  String get fieldName {
-    return '_${uncapitalize(parameter.type.getName())}';
-  }
+  String toString() => parameter.type.getName();
 }
 
 abstract class Annotation {}
 
+/// Wrapper class for component annotation.
 class ComponentAnnotation implements Annotation {
   const ComponentAnnotation({
-    required this.element,
     required this.modules,
     required this.dependencies,
   });
 
-  final Element element;
+  /// Returns the modules that are included to the component.
   final List<ModuleAnnotation> modules;
+
+  /// Returns the another components that are included to the component as
+  /// dependencies.
   final List<DependencyAnnotation> dependencies;
 }
 
+/// Wrapper class for provide annotation.
 class ProvideAnnotation implements Annotation {}
 
+/// Wrapper class for inject annotation.
 class InjectAnnotation implements Annotation {}
 
+/// Wrapper class for singleton annotation.
 class SingletonAnnotation implements Annotation {}
 
+/// Wrapper class for bind annotation.
 class BindAnnotation implements Annotation {}
 
+/// Wrapper class for nonLazy annotation.
 class NonLazyAnnotation implements Annotation {}
 
+/// Wrapper class for componentBuilder annotation.
 class ComponentBuilderAnnotation implements Annotation {
   const ComponentBuilderAnnotation(this.element);
 
   final ClassElement element;
 }
 
+/// Wrapper class for module annotation.
 class ModuleAnnotation implements Annotation {
   const ModuleAnnotation({
     required this.moduleElement,
     required this.includes,
   });
 
-  /// annotated module class
+  /// Element associated with this module.
   final ClassElement moduleElement;
-  final List<ModuleAnnotation> includes;
 
-  bool get isAbstract => moduleElement.isAbstract;
+  /// Returns the modules that are included to the module.
+  final List<ModuleAnnotation> includes;
 }
 
+/// Wrapper class for component annotation that uses as 'dependency' of
+/// component.
 class DependencyAnnotation implements Annotation {
   const DependencyAnnotation({required this.element});
 
+  /// Element associated with this depencendy.
   final ClassElement element;
 }
 
+/// Wrapper class for qualifier annotation.
 class QualifierAnnotation implements Annotation {
   const QualifierAnnotation({
     required this.tag,
@@ -175,6 +240,7 @@ class QualifierAnnotation implements Annotation {
       other is QualifierAnnotation && other.tag == tag;
 }
 
+/// Wrapper class for provide method of module.
 class Method {
   Method(this.element, this.annotations);
 
@@ -209,15 +275,6 @@ class InjectedMember {
   @override
   bool operator ==(Object other) =>
       other is InjectedMember && other.element.name == element.name;
-}
-
-class MyComponent {
-  const MyComponent(this.classElement, this.componentAnnotation);
-
-  final ClassElement classElement;
-  final ComponentAnnotation componentAnnotation;
-
-  String get name => classElement.name;
 }
 
 class InjectedConstructor {

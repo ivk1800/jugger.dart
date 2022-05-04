@@ -155,7 +155,7 @@ class ComponentsVisitor extends RecursiveElementVisitor<dynamic> {
         Component(
             element: element,
             annotations: <Annotation>[component],
-            methods: fieldsVisitor.fields),
+            memberInjectors: fieldsVisitor.fields),
       );
     }
     return null;

@@ -142,7 +142,6 @@ List<Annotation> getAnnotations(Element moduleClass) {
         }
 
         annotations.add(ComponentAnnotation(
-            element: valueElement,
             modules: allModules.toList(),
             dependencies: dependencies.map((ClassElement c) {
               check(c.isAbstract, () => dependencyMustBeAbstract(c.thisType));

@@ -109,7 +109,7 @@ class ComponentBuilderDelegate {
           }
 
           classBuilder.methods.addAll(_buildMembersInjectorMethods(
-              component.methods, classBuilder, _componentContext));
+              component.memberInjectors, classBuilder, _componentContext));
 
           classBuilder.implements
               .add(Reference(component.element.name, createElementPath(lib)));
