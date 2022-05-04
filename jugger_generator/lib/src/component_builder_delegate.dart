@@ -299,7 +299,7 @@ class ComponentBuilderDelegate {
               _componentContext.findProvider(dependency.type, tag);
 
           if (provider is ModuleSource) {
-            b.assignment = _buildProviderFromModuleAssignCode(
+            b.assignment = _buildProviderFromMethodCode(
               provider.method.element,
             );
           } else {
@@ -600,6 +600,8 @@ class ComponentBuilderDelegate {
             (j.Annotation annotation) => annotation is j.NonLazyAnnotation));
   }
 
+  // region provider
+
   /// example: SingletonProvider<MyProvider>(() => AppModule.provideMyProvider());
   // TODO(Ivan): pass DartType instead ClassElement
   Code _buildProviderFromClassAssignCode(ClassElement element) {
@@ -627,75 +629,49 @@ class ComponentBuilderDelegate {
     return newInstance.code;
   }
 
-  /// example: SingletonProvider<MyProvider>(() => AppModule.provideMyProvider());
-  Code _buildProviderFromModuleAssignCode(MethodElement method) {
+  /// Build provider from given method.
+  /// Example of Result:
+  /// ```
+  /// SingletonProvider<MyProvider>(() => AppModule.provideMyProvider());
+  /// ```
+  Code _buildProviderFromMethodCode(MethodElement method) {
     _log(
-      'build provider from module: ${method.toNameWithPath()}',
+      'build provider from method: ${method.toNameWithPath()}',
     );
-    Expression expression;
     if (method.isStatic) {
-      expression = _buildProviderFromStaticMethod(
+      return _buildProviderFromStaticMethodCode(
         method,
         _componentContext,
         _allocator,
       );
     } else if (method.isAbstract) {
-      expression = _buildProviderFromAbstractMethod(method);
+      return _buildProviderFromAbstractMethodCode(method);
     } else {
       throw JuggerError(
         'provided method must be abstract or static [${method.enclosingElement.name}.${method.name}]',
       );
     }
-    return expression.code;
   }
 
-  ///
-  /// [method]: provider method
-  ///
-  /// example:
-  /// ```dart main
-  /// @singleton
-  /// @bind
-  /// IFoldersScreenRouter bindFoldersScreenRouter(IFoldersRouter router);
-  /// ```
-  ///
-  // todo refactor as AssignCode, must return Code
-  Expression _buildProviderFromAnotherComponent(
-    MethodElement method,
-    AnotherComponentSource provider,
-  ) {
-    final Expression newInstance = getProviderType(method).newInstance(
-      <Expression>[
-        _buildExpressionBodyExpression(
-          Code(provider.assignString),
-        ),
-      ],
-    );
-
-    return CodeExpression(newInstance.code);
-  }
-
-  // todo refactor as AssignCode, must return Code
-  Expression _buildProviderFromModule(
-    MethodElement method,
-    ModuleSource provider,
-  ) {
+  /// Build provider from given method with given source. Use source for
+  /// construct assign code of provider.
+  Code _buildProvider(MethodElement method, ProviderSource source) {
     final Expression newInstance = getProviderType(method).newInstance(
       <Expression>[
         _buildExpressionBodyExpression(
           Code('${_generateAssignString(
-            provider.type,
-            provider.tag,
+            source.type,
+            source.tag,
           )}'),
         ),
       ],
     );
 
-    return CodeExpression(newInstance.code);
+    return newInstance.code;
   }
 
-  // todo refactor as AssignCode, must return Code
-  Expression _buildProviderFromAbstractMethod(MethodElement method) {
+  /// Build provider from given method. Method must have only 'bind' type.
+  Code _buildProviderFromAbstractMethodCode(MethodElement method) {
     _log(
         'build provider from abstract method: ${method.enclosingElement.toNameWithPath()}');
 
@@ -729,9 +705,9 @@ class ComponentBuilderDelegate {
       () => bindWrongType(method),
     );
     if (provider is AnotherComponentSource) {
-      return _buildProviderFromAnotherComponent(method, provider);
+      return _buildProvider(method, provider);
     } else if (provider is ModuleSource) {
-      return _buildProviderFromModule(method, provider);
+      return _buildProvider(method, provider);
     }
 
     check(
@@ -762,7 +738,7 @@ class ComponentBuilderDelegate {
           ),
         ],
       );
-      return CodeExpression(newInstance.code);
+      return newInstance.code;
     } else if (getProvideAnnotation(method) != null) {
       check(
         method.returnType.element is ClassElement,
@@ -780,8 +756,10 @@ class ComponentBuilderDelegate {
       ),
     ]);
 
-    return CodeExpression(newInstance.code);
+    return newInstance.code;
   }
+
+  // endregion provider
 
   /// Build expression body with given body of code.
   /// Example result:
@@ -801,8 +779,7 @@ class ComponentBuilderDelegate {
     );
   }
 
-  // todo refactor as AssignCode, must return Code
-  Expression _buildProviderFromStaticMethod(
+  Code _buildProviderFromStaticMethodCode(
     MethodElement method,
     ComponentContext _componentContext,
     Allocator allocator,
@@ -832,7 +809,7 @@ class ComponentBuilderDelegate {
       )
     ]);
 
-    return CodeExpression(newInstance.code);
+    return newInstance.code;
   }
 
   // TODO(Ivan): split to two methods
