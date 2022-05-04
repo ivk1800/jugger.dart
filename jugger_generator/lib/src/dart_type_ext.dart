@@ -37,7 +37,7 @@ extension DartTypeExt on DartType {
       visitor.injectedConstructors.length == 1,
       () => 'required single injected constructor',
     );
-    return visitor.injectedConstructors.first.element;
+    return visitor.injectedConstructors.first;
   }
 
   ConstructorElement? getInjectedConstructorOrNull() {
@@ -49,6 +49,6 @@ extension DartTypeExt on DartType {
       visitor.injectedConstructors.length <= 1,
       () => 'required single or zero injected constructor',
     );
-    return visitor.injectedConstructors.firstOrNull?.element;
+    return visitor.injectedConstructors.firstOrNull;
   }
 }

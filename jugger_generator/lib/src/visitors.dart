@@ -163,17 +163,15 @@ class ComponentsVisitor extends RecursiveElementVisitor<dynamic> {
 }
 
 class InjectedConstructorsVisitor extends RecursiveElementVisitor<dynamic> {
-  final List<InjectedConstructor> _constructors = <InjectedConstructor>[];
+  final List<ConstructorElement> injectedConstructors = <ConstructorElement>[];
 
   @override
   dynamic visitConstructorElement(ConstructorElement element) {
-    _constructors.add(InjectedConstructor(element));
+    if (element.hasAnnotatedAsInject()) {
+      injectedConstructors.add(element);
+    }
     return null;
   }
-
-  List<InjectedConstructor> get injectedConstructors => _constructors
-      .where((InjectedConstructor constructor) => constructor.isInjected)
-      .toList();
 }
 
 ///

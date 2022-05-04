@@ -292,6 +292,9 @@ extension ElementExt on Element {
     return false;
   }
 
+  bool hasAnnotatedAsInject() =>
+      getAnnotations(this).any((Annotation a) => a is InjectAnnotation);
+
   bool hasAnnotatedAsSingleton() =>
       getAnnotations(this).any((Annotation a) => a is SingletonAnnotation);
 

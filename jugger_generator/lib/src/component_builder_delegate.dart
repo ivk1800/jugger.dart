@@ -613,13 +613,12 @@ class ComponentBuilderDelegate {
       visitor.injectedConstructors.length == 1,
       () => injectedConstructorNotFound(element),
     );
-    final j.InjectedConstructor injectedConstructor =
+    final ConstructorElement injectedConstructor =
         visitor.injectedConstructors[0];
-    final List<ParameterElement> parameters =
-        injectedConstructor.element.parameters;
+    final List<ParameterElement> parameters = injectedConstructor.parameters;
 
     final Expression newInstance =
-        getProviderType(injectedConstructor.element).newInstance(<Expression>[
+        getProviderType(injectedConstructor).newInstance(<Expression>[
       CodeExpression(Block.of(_buildProviderBody(element, <Code>[
         _buildCallMethodOrConstructor(element, parameters, _componentContext)
       ])))
@@ -753,10 +752,9 @@ class ComponentBuilderDelegate {
       visitor.injectedConstructors.length == 1,
       () => injectedConstructorNotFound(parameter),
     );
-    final j.InjectedConstructor injectedConstructor =
+    final ConstructorElement injectedConstructor =
         visitor.injectedConstructors[0];
-    final List<ParameterElement> parameters =
-        injectedConstructor.element.parameters;
+    final List<ParameterElement> parameters = injectedConstructor.parameters;
 
     final ClassElement returnClass;
     if (getBindAnnotation(method) != null) {

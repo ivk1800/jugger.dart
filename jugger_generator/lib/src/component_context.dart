@@ -263,10 +263,8 @@ class ComponentContext {
       () => 'too many injected constructors for ${element.type.getName()}',
     );
 
-    final j.InjectedConstructor injectedConstructor =
+    final ConstructorElement constructorElement =
         visitor.injectedConstructors[0];
-
-    final ConstructorElement constructorElement = injectedConstructor.element;
     late final String constructorLogName =
         '${element.type.getName()}.${constructorElement.name}';
 

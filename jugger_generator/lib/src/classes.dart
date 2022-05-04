@@ -276,16 +276,3 @@ class InjectedMember {
   bool operator ==(Object other) =>
       other is InjectedMember && other.element.name == element.name;
 }
-
-class InjectedConstructor {
-  const InjectedConstructor(this.element);
-
-  final ConstructorElement element;
-
-  List<Annotation> get annotations {
-    return getAnnotations(element);
-  }
-
-  bool get isInjected => annotations
-      .any((Annotation annotation) => annotation is InjectAnnotation);
-}
