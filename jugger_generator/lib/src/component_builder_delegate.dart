@@ -169,7 +169,7 @@ class ComponentBuilderDelegate {
                       parameter.parameter.enclosingElement!.getQualifierTag();
                   final CodeExpression codeExpression =
                       CodeExpression(Block.of(<Code>[
-                    Code('_${_generateName(
+                    Code('_${_generateFieldName(
                       parameter.parameter._tryGetType(),
                       tag?._toAssignTag(),
                     )}!'),
@@ -181,7 +181,7 @@ class ComponentBuilderDelegate {
                     .map((j.ComponentBuilderParameter parameter) {
                   final Tag? tag =
                       parameter.parameter.enclosingElement!.getQualifierTag();
-                  return Code('assert(_${_generateName(
+                  return Code('assert(_${_generateFieldName(
                     parameter.parameter.type,
                     tag?._toAssignTag(),
                   )} != null) ');
@@ -205,7 +205,7 @@ class ComponentBuilderDelegate {
                 final Tag? tag =
                     p.parameter.enclosingElement!.getQualifierTag();
                 b.addExpression(CodeExpression(Block.of(<Code>[
-                  Code('_${_generateName(
+                  Code('_${_generateFieldName(
                     p.parameter.type,
                     tag?._toAssignTag(),
                   )} = ${p.parameter.name}; return this'),
@@ -220,7 +220,7 @@ class ComponentBuilderDelegate {
             b.type = refer('${_allocateTypeName(parameter.parameter.type)}?');
             final Tag? tag =
                 parameter.parameter.enclosingElement!.getQualifierTag();
-            b.name = '_${_generateName(
+            b.name = '_${_generateFieldName(
               parameter.parameter.type,
               tag?._toAssignTag(),
             )}';
@@ -284,7 +284,7 @@ class ComponentBuilderDelegate {
           !(provider is AnotherComponentSource)) {
         fields.add(Field((FieldBuilder b) {
           final Tag? tag = dependency.tag;
-          b.name = '_${_generateName(
+          b.name = '_${_generateFieldName(
             dependency.type,
             tag?._toAssignTag(),
           )}Provider';
@@ -511,7 +511,7 @@ class ComponentBuilderDelegate {
         finalSting = generateMd5(tag.uniqueId);
       }
 
-      return '_${_generateName(type, finalSting)}';
+      return '_${_generateFieldName(type, finalSting)}';
     }
 
     if (provider is AnotherComponentSource) {
@@ -537,31 +537,39 @@ class ComponentBuilderDelegate {
     );
   }
 
+  /// Returns a provider call as string, which can be used in the [Code].
+  /// It is assumed that the provider exists as a field of the component.
+  /// [tag] is used as class field prefix if exists.
+  /// [callGet] is used to optionally call a .get() on a provider.
   String _generateProviderCall({
     required Tag? tag,
     required DartType type,
     required bool callGet,
   }) {
-    final String? finalSting;
+    final String? finalTag;
 
     if (tag == null) {
-      finalSting = null;
+      finalTag = null;
     } else {
-      finalSting = generateMd5(tag.uniqueId);
+      finalTag = generateMd5(tag.uniqueId);
     }
 
-    return '_${_generateName(type, finalSting)}Provider${callGet ? '.get()' : ''}';
+    return '_${_generateFieldName(type, finalTag)}Provider${callGet ? '.get()' : ''}';
   }
 
-  String _generateName(DartType type, String? name) {
+  /// Generate field name of given type. Uses the tag if it exists. Usually
+  /// generates a name for a class field.
+  /// If the type has invalid characters, such as brackets, they will be
+  /// stripped.
+  String _generateFieldName(DartType type, String? tag) {
     final String typeName = type
         .getName()
         .replaceAll('<', '_')
         .replaceAll('>', '_')
         .replaceAll(' ', '')
         .replaceAll(',', '_');
-    if (name != null) {
-      return 'named_${name}_$typeName';
+    if (tag != null) {
+      return 'named_${tag}_$typeName';
     }
 
     return '${uncapitalize(typeName)}';
@@ -620,7 +628,8 @@ class ComponentBuilderDelegate {
     final List<ParameterElement> parameters = injectedConstructor.parameters;
 
     final Expression newInstance =
-        getProviderType(injectedConstructor).newInstance(<Expression>[
+        _getProviderReferenceOfElement(injectedConstructor)
+            .newInstance(<Expression>[
       _buildExpressionBodyExpression(
         _buildCallMethodOrConstructor(element, parameters, _componentContext),
       ),
@@ -656,7 +665,8 @@ class ComponentBuilderDelegate {
   /// Build provider from given method with given source. Use source for
   /// construct assign code of provider.
   Code _buildProvider(MethodElement method, ProviderSource source) {
-    final Expression newInstance = getProviderType(method).newInstance(
+    final Expression newInstance =
+        _getProviderReferenceOfElement(method).newInstance(
       <Expression>[
         _buildExpressionBodyExpression(
           Code('${_generateAssignString(
@@ -724,7 +734,7 @@ class ComponentBuilderDelegate {
         bindedElement is ClassElement,
         () => '$bindedElement not supported.',
       );
-      final Expression newInstance = getProviderType(
+      final Expression newInstance = _getProviderReferenceOfElement(
         method,
       ).newInstance(
         <Expression>[
@@ -750,7 +760,7 @@ class ComponentBuilderDelegate {
     }
 
     final Expression newInstance =
-        getProviderType(method).newInstance(<Expression>[
+        _getProviderReferenceOfElement(method).newInstance(<Expression>[
       _buildExpressionBodyExpression(
         _buildCallMethodOrConstructor(parameter, parameters, _componentContext),
       ),
@@ -793,7 +803,7 @@ class ComponentBuilderDelegate {
     );
     final Element moduleClass = method.enclosingElement;
     final Expression newInstance =
-        getProviderType(method).newInstance(<Expression>[
+        _getProviderReferenceOfElement(method).newInstance(<Expression>[
       _buildExpressionBodyExpression(
         Block.of(
           <Code>[
@@ -920,35 +930,48 @@ class ComponentBuilderDelegate {
     return initialExpression;
   }
 
-  Reference getProviderType(Element element) {
+  /// Returns a provider reference that returns the type that is associated with
+  /// the element.
+  /// Only certain element types are supported, otherwise throws an error.
+  Reference _getProviderReferenceOfElement(Element element) {
     check(
       element is MethodElement || element is ConstructorElement,
       () => '$element not supported',
     );
 
-    final String generic = _getGeneric(element);
+    // type inside brackets
+    final String generic = _getClassTypeAsString(element);
 
     if (element is ConstructorElement) {
-      return getProviderReference(
+      return _getProviderReference(
         generic: generic,
         singleton: element.enclosingElement.hasAnnotatedAsSingleton(),
       );
     }
 
-    return getProviderReference(
+    return _getProviderReference(
       generic: generic,
       singleton: element.hasAnnotatedAsSingleton(),
     );
   }
 
-  Reference getProviderReference(
-      {required String generic, required bool singleton}) {
+  /// Returns a provider reference based on the passed parameters.
+  /// [generic] it is type which will be enclosed in brackets '<>'. Must be
+  /// allocated by Allocator, otherwise there will be syntax errors.
+  ///
+  /// [singleton] true if provider type is singleton.
+  Reference _getProviderReference({
+    required String generic,
+    required bool singleton,
+  }) {
     return refer(
         singleton ? 'SingletonProvider<$generic>' : 'Provider<$generic>',
         'package:jugger/jugger.dart');
   }
 
-  String _getGeneric(Element element) {
+  /// Returns the string class type of the given element and allocates it.
+  /// Only certain element types are supported, otherwise throws an error.
+  String _getClassTypeAsString(Element element) {
     if (element is ConstructorElement) {
       final ClassElement c = element.enclosingElement;
       return _allocator.allocate(
@@ -960,6 +983,9 @@ class ComponentBuilderDelegate {
         'unsupported type: ${element.name}, ${element.runtimeType}');
   }
 
+  /// Build constructor for this component. If the component has a builder, it
+  /// will be private, because depending on whether it has one or not, the
+  /// creation of the component is different.
   Constructor _buildConstructor(j.ComponentBuilder? componentBuilder) {
     return Constructor((ConstructorBuilder constructorBuilder) {
       // constructorBuilder.body = const Code('_init();');
@@ -977,7 +1003,7 @@ class ComponentBuilderDelegate {
             b.toThis = true;
             final Tag? tag =
                 parameter.parameter.enclosingElement!.getQualifierTag();
-            b.name = '_${_generateName(
+            b.name = '_${_generateFieldName(
               parameter.parameter.type,
               tag?._toAssignTag(),
             )}';
@@ -998,7 +1024,7 @@ class ComponentBuilderDelegate {
       return (Field((FieldBuilder b) {
         final Tag? tag =
             parameter.parameter.enclosingElement!.getQualifierTag();
-        b.name = '_${_generateName(
+        b.name = '_${_generateFieldName(
           parameter.parameter.type,
           tag?._toAssignTag(),
         )}';
