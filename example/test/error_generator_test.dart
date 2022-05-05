@@ -556,7 +556,9 @@ abstract class MyModule {
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: not found build method for [MyComponentBuilder] package:example/test.dart.dart',
+            'error: missing_build_method:\n'
+            'Missing required build method of MyComponentBuilder package:example/test.dart.dart\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#missing_build_method#missing_build_method',
           );
         },
       );
@@ -594,10 +596,10 @@ abstract class MyComponent {
 }
 
 @componentBuilder
-abstract class MyComponentBuilder {
-  MyComponentBuilder appComponent(AppComponent appComponent);
+abstract class AppComponentBuilder {
+  AppComponentBuilder appComponent(AppComponent appComponent);
   
-  MyComponentBuilder build();
+  AppComponentBuilder build();
 }
 
 @module
@@ -609,7 +611,9 @@ abstract class MyModule {
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: build MyComponentBuilder build() method must return component type',
+            'error: wrong_type_of_build_method:\n'
+            'build method of AppComponentBuilder return wrong type.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#missing_build_method#wrong_type_of_build_method',
           );
         },
       );
@@ -648,7 +652,7 @@ abstract class MyComponent {
 
 @componentBuilder
 abstract class MyComponentBuilder {
-  MyComponentBuilder build();
+  MyComponent build();
 }
 
 @module
@@ -659,9 +663,10 @@ abstract class MyModule {
         ''',
         onError: (Object error) {
           expect(
-            error.toString(),
-            'error: build MyComponentBuilder build() method must return component type',
-          );
+              error.toString(),
+              'error: missing_component_dependency:\n'
+              'Dependency (AppComponent) not provided.\n'
+              'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#missing_build_method#missing_component_dependency');
         },
       );
     });
@@ -1436,7 +1441,117 @@ abstract class _MyComponentBuilder {
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: Component builder [abstract class _MyComponentBuilder] must be public',
+            'error: public_component_builder:\n'
+            'Component builder _MyComponentBuilder must be public.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#missing_build_method#public_component_builder',
+          );
+        },
+      );
+    });
+
+    test('component builder invalid method type', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component()
+abstract class AppComponent {}
+
+@componentBuilder
+abstract class ComponentBuilder {
+  AppComponent setInt(int i);
+
+  AppComponent build();
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: component_builder_invalid_method_type:\n'
+            'Invalid type of method setInt. Expected ComponentBuilder.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#missing_build_method#component_builder_invalid_method_type',
+          );
+        },
+      );
+    });
+
+    test('wrong arguments of build method', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component()
+abstract class AppComponent {}
+
+@componentBuilder
+abstract class ComponentBuilder {
+  AppComponent build(int i);
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: wrong_arguments_of_build_method:\n'
+            'Build method should not contain arguments.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#missing_build_method#wrong_arguments_of_build_method',
+          );
+        },
+      );
+    });
+
+    test('component builder type provided multiple times', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component()
+abstract class AppComponent {
+  String get string;
+}
+
+@componentBuilder
+abstract class MyComponentBuilder {
+  MyComponentBuilder setString(String s);
+
+  MyComponentBuilder setString2(String s);
+
+  AppComponent build();
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: component_builder_type_provided_multiple_times:\n'
+            'Type String provided multiple times in component builder MyComponentBuilder\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#missing_build_method#component_builder_type_provides_multiple_times',
+          );
+        },
+      );
+    });
+
+    test('component builder method must be public', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component()
+abstract class AppComponent {
+  String get string;
+}
+
+@componentBuilder
+abstract class MyComponentBuilder {
+  MyComponentBuilder _setString(String s);
+
+  AppComponent build();
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: component_builder_private_method:\n'
+            'Method _setString must be public.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#missing_build_method#component_builder_private_method',
           );
         },
       );

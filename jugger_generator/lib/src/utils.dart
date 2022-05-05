@@ -235,7 +235,7 @@ bool isFlutterCore(Element element) {
 }
 
 String createClassNameWithPath(ClassElement element) {
-  return '${element.name}] ${element.library.identifier}';
+  return '${element.name} ${element.library.identifier}';
 }
 
 void check(bool condition, String Function() message) {

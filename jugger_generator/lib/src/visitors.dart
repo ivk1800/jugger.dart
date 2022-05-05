@@ -5,6 +5,7 @@ import 'package:collection/collection.dart';
 import 'package:jugger/jugger.dart' as j;
 
 import 'classes.dart';
+import 'errors_glossary.dart';
 import 'jugger_error.dart';
 import 'messages.dart';
 import 'utils.dart';
@@ -229,27 +230,62 @@ class ComponentBuildersVisitor extends RecursiveElementVisitor<dynamic> {
         getComponentBuilderAnnotation(element);
 
     if (annotation != null) {
-      check(element.isPublic, () => publicComponentBuilder(element));
+      check(
+        element.isPublic,
+        () => buildErrorMessage(
+          error: JuggerErrorId.public_component_builder,
+          message: 'Component builder ${element.name} must be public.',
+        ),
+      );
       final BuildMethodsVisitor v = BuildMethodsVisitor();
       element.visitChildren(v);
 
+      final Set<DartType> argumentsTypes = <DartType>{};
+
       for (int i = 0; i < v.methodElements.length; i++) {
         final MethodElement methodElement = v.methodElements[i];
+        check(
+          methodElement.isPublic,
+          () => buildErrorMessage(
+            error: JuggerErrorId.component_builder_private_method,
+            message: 'Method ${methodElement.name} must be public.',
+          ),
+        );
 
         if (methodElement.name == 'build') {
           check(
             methodElement.parameters.isEmpty,
-            () => 'build have > 1 parameter',
+            () => buildErrorMessage(
+              error: JuggerErrorId.wrong_arguments_of_build_method,
+              message: 'Build method should not contain arguments.',
+            ),
           );
         } else {
           check(
-            methodElement.returnType.getName() == element.name,
-            () =>
-                '(${methodElement.name})  method return wrong type. Expected ${element.name}',
+            methodElement.returnType == element.thisType,
+            () => buildErrorMessage(
+              error: JuggerErrorId.component_builder_invalid_method_type,
+              message: 'Invalid type of method ${methodElement.name}. '
+                  'Expected ${element.thisType}.',
+            ),
           );
           check(
             methodElement.parameters.length == 1,
-            () => '${methodElement.name} have > 1 parameter',
+            () => buildErrorMessage(
+              error: JuggerErrorId.component_builder_invalid_method_parameters,
+              message:
+                  'Method ${methodElement.name} should have only one parameter.',
+            ),
+          );
+          final DartType parameterType = methodElement.parameters.first.type;
+          check(
+            argumentsTypes.add(parameterType),
+            () => buildErrorMessage(
+              error:
+                  JuggerErrorId.component_builder_type_provided_multiple_times,
+              message:
+                  'Type $parameterType provided multiple times in component builder ${element.name}',
+            ),
           );
         }
       }
@@ -258,7 +294,11 @@ class ComponentBuildersVisitor extends RecursiveElementVisitor<dynamic> {
       final MethodElement? buildMethodNullable = v.buildMethod;
       check(
         buildMethodNullable != null,
-        () => 'not found build method for [${createClassNameWithPath(element)}',
+        () => buildErrorMessage(
+          error: JuggerErrorId.missing_build_method,
+          message:
+              'Missing required build method of ${createClassNameWithPath(element)}',
+        ),
       );
       buildMethod = buildMethodNullable!;
 
@@ -285,8 +325,10 @@ class ComponentBuildersVisitor extends RecursiveElementVisitor<dynamic> {
 
         check(
           dependencyProvided,
-          () =>
-              'dependency (${dep.element.name}) must provided by build method',
+          () => buildErrorMessage(
+            error: JuggerErrorId.missing_component_dependency,
+            message: 'Dependency (${dep.element.name}) not provided.',
+          ),
         );
       }
 
@@ -315,11 +357,14 @@ class BuildMethodsVisitor extends RecursiveElementVisitor<dynamic> {
     if (element.name == 'build') {
       final ComponentAnnotation? componentAnnotation =
           getComponentAnnotation(element.returnType.element!);
-      if (componentAnnotation == null) {
-        throw JuggerError(
-          'build $element method must return component type',
-        );
-      }
+      check(
+        componentAnnotation != null,
+        () => buildErrorMessage(
+          error: JuggerErrorId.wrong_type_of_build_method,
+          message:
+              'build method of ${element.enclosingElement.name} return wrong type.',
+        ),
+      );
     }
     methodElements.add(element);
     return null;

@@ -1,9 +1,16 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:jugger/jugger.dart';
+import 'package:jugger_generator/src/errors_glossary.dart';
 import 'package:jugger_generator/src/utils.dart';
 
 import 'tag.dart';
+
+String buildErrorMessage({
+  required JuggerErrorId error,
+  required String message,
+}) =>
+    '${error.name}:\n$message\nExplanation of Error: ${error.toLink()}';
 
 String providerNotFound(
   DartType type,
@@ -58,10 +65,6 @@ String publicComponent(ClassElement element) {
 
 String publicModule(ClassElement element) {
   return 'Module [$element] must be public';
-}
-
-String publicComponentBuilder(ClassElement element) {
-  return 'Component builder [$element] must be public';
 }
 
 String moduleAnnotationRequired(ClassElement element) {
