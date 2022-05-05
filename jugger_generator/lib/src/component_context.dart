@@ -25,13 +25,10 @@ class ComponentContext {
     required this.componentBuilder,
   }) {
     for (j.DependencyAnnotation dep in component.dependencies) {
-      final ProvideMethodVisitor methodVisitor = ProvideMethodVisitor();
-      dep.element.visitChildren(methodVisitor);
+      final List<MethodElement> methods =
+          dep.element.getComponentProvideMethods();
 
-      final ProvidePropertyVisitor propertyVisitor = ProvidePropertyVisitor();
-      dep.element.visitChildren(propertyVisitor);
-
-      for (MethodElement m in methodVisitor.methods) {
+      for (MethodElement m in methods) {
         providerSources.add(AnotherComponentSource(
             type: m.returnType,
             element: m,
@@ -39,7 +36,10 @@ class ComponentContext {
             annotations: getAnnotations(m)));
       }
 
-      for (PropertyAccessorElement property in propertyVisitor.properties) {
+      final List<PropertyAccessorElement> properties =
+          dep.element.getProvideProperties();
+
+      for (PropertyAccessorElement property in properties) {
         providerSources.add(
           AnotherComponentSource(
             type: property.returnType,
@@ -100,10 +100,10 @@ class ComponentContext {
       final MethodElement element = method.element;
 
       for (ParameterElement parameter in element.parameters) {
-        final InjectedMembersVisitor visitor = InjectedMembersVisitor();
-        parameter.type.element!.visitChildren(visitor);
+        final List<InjectedMember> members =
+            parameter.type.element!.getInjectedMembers();
 
-        for (j.InjectedMember member in visitor.members) {
+        for (j.InjectedMember member in members) {
           _registerDependency(member.element);
         }
       }
@@ -210,9 +210,9 @@ class ComponentContext {
       List<Dependency> dependencies = dependency.dependencies;
 
       if (providerType.hasInjectedConstructor()) {
-        final InjectedConstructorsVisitor visitor =
-            InjectedConstructorsVisitor();
-        providerType.element!.visitChildren(visitor);
+        // final InjectedConstructorsVisitor visitor =
+        //     InjectedConstructorsVisitor();
+        // providerType.element!.visitChildren(visitor);
         dependencies = _registerConstructorDependencies(
           providerType.getRequiredInjectedConstructor(),
         );
@@ -244,11 +244,13 @@ class ComponentContext {
 //      return dependency;
 //    }
 
-    final InjectedConstructorsVisitor visitor = InjectedConstructorsVisitor();
-    // FunctionType with nullable element
-    element.type.element?.visitChildren(visitor);
+    // maybe FunctionType with nullable element
+    final Element? typeElement = element.type.element;
+    final List<ConstructorElement> injectedConstructors = typeElement == null
+        ? <ConstructorElement>[]
+        : typeElement.getInjectedConstructors();
 
-    if (visitor.injectedConstructors.isEmpty) {
+    if (injectedConstructors.isEmpty) {
       final Dependency dependency = Dependency(
         tag,
         element.type,
@@ -259,12 +261,11 @@ class ComponentContext {
     }
 
     check(
-      visitor.injectedConstructors.length == 1,
+      injectedConstructors.length == 1,
       () => 'too many injected constructors for ${element.type.getName()}',
     );
 
-    final ConstructorElement constructorElement =
-        visitor.injectedConstructors[0];
+    final ConstructorElement constructorElement = injectedConstructors[0];
     late final String constructorLogName =
         '${element.type.getName()}.${constructorElement.name}';
 

@@ -252,14 +252,14 @@ extension DartTypeExt on DartType {
   bool hasInjectedConstructor() {
     checkUnsupportedType();
 
-    final InjectedConstructorsVisitor visitor = InjectedConstructorsVisitor();
-    element!.visitChildren(visitor);
+    final List<ConstructorElement> injectedConstructors =
+        element!.getInjectedConstructors();
 
     check(
-      visitor.injectedConstructors.length < 2,
+      injectedConstructors.length < 2,
       () => 'too many injected constructors of [${getName()}]',
     );
-    return visitor.injectedConstructors.length == 1;
+    return injectedConstructors.length == 1;
   }
 
   void checkUnsupportedType() {

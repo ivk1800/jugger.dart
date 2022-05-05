@@ -46,25 +46,20 @@ class Component {
       _componentAnnotation?.dependencies ?? List<DependencyAnnotation>.empty();
 
   late final List<Method> _modulesProvideMethods = modules
-      .map((ModuleAnnotation module) {
-        final ProvidesVisitor v = ProvidesVisitor();
-        module.moduleElement.visitChildren(v);
-        return v.methods;
-      })
+      .map((ModuleAnnotation module) => module.moduleElement.getProvides())
       .expand((List<Method> l) => l)
       .toList();
 
   late final List<MethodElement> _provideMethods = () {
-    final ProvideMethodVisitor v = ProvideMethodVisitor();
-    element.visitChildren(v);
-    return v.methods
+    final List<MethodElement> methods = element.getComponentProvideMethods();
+    return methods
       ..sort((MethodElement a, MethodElement b) => a.name.compareTo(b.name));
   }();
 
   late final List<PropertyAccessorElement> _provideProperties = () {
-    final ProvidePropertyVisitor v = ProvidePropertyVisitor();
-    element.visitChildren(v);
-    return v.properties
+    final List<PropertyAccessorElement> properties =
+        element.getProvideProperties();
+    return properties
       ..sort((PropertyAccessorElement a, PropertyAccessorElement b) =>
           a.name.compareTo(b.name));
   }();

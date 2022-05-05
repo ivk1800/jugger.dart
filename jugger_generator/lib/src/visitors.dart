@@ -10,7 +10,7 @@ import 'jugger_error.dart';
 import 'messages.dart';
 import 'utils.dart';
 
-class InjectedMembersVisitor extends RecursiveElementVisitor<dynamic> {
+class _InjectedMembersVisitor extends RecursiveElementVisitor<dynamic> {
   final List<InjectedMember> members = <InjectedMember>[];
 
   @override
@@ -42,10 +42,9 @@ class InjectedMembersVisitor extends RecursiveElementVisitor<dynamic> {
         continue;
       }
 
-      final InjectedMembersVisitor visitor = InjectedMembersVisitor();
-      element.visitChildren(visitor);
+      final List<InjectedMember> members = element.getInjectedMembers();
 
-      _addAll(visitor.members.map((InjectedMember m) => m.element).toList());
+      _addAll(members.map((InjectedMember m) => m.element).toList());
     }
     return null;
   }
@@ -60,7 +59,7 @@ class InjectedMembersVisitor extends RecursiveElementVisitor<dynamic> {
   }
 }
 
-class ProvidesVisitor extends RecursiveElementVisitor<dynamic> {
+class _ProvidesVisitor extends RecursiveElementVisitor<dynamic> {
   final List<Method> methods = <Method>[];
 
   @override
@@ -120,7 +119,7 @@ class ProvidesVisitor extends RecursiveElementVisitor<dynamic> {
   }
 }
 
-class InjectedFieldsVisitor extends RecursiveElementVisitor<dynamic> {
+class _InjectedFieldsVisitor extends RecursiveElementVisitor<dynamic> {
   List<MemberInjectorMethod> fields = <MemberInjectorMethod>[];
 
   @override
@@ -140,7 +139,7 @@ class InjectedFieldsVisitor extends RecursiveElementVisitor<dynamic> {
   }
 }
 
-class ComponentsVisitor extends RecursiveElementVisitor<dynamic> {
+class _ComponentsVisitor extends RecursiveElementVisitor<dynamic> {
   List<Component> components = <Component>[];
 
   @override
@@ -150,20 +149,20 @@ class ComponentsVisitor extends RecursiveElementVisitor<dynamic> {
     if (component != null) {
       check(element.isPublic, () => publicComponent(element));
 
-      final InjectedFieldsVisitor fieldsVisitor = InjectedFieldsVisitor();
+      final _InjectedFieldsVisitor fieldsVisitor = _InjectedFieldsVisitor();
       element.visitChildren(fieldsVisitor);
       components.add(
         Component(
             element: element,
             annotations: <Annotation>[component],
-            memberInjectors: fieldsVisitor.fields),
+            memberInjectors: element.getMemberInjectors()),
       );
     }
     return null;
   }
 }
 
-class InjectedConstructorsVisitor extends RecursiveElementVisitor<dynamic> {
+class _InjectedConstructorsVisitor extends RecursiveElementVisitor<dynamic> {
   final List<ConstructorElement> injectedConstructors = <ConstructorElement>[];
 
   @override
@@ -175,10 +174,7 @@ class InjectedConstructorsVisitor extends RecursiveElementVisitor<dynamic> {
   }
 }
 
-///
-/// collect unique methods without repeating
-///
-class InjectedMethodsVisitor extends RecursiveElementVisitor<dynamic> {
+class _InjectedMethodsVisitor extends RecursiveElementVisitor<dynamic> {
   final Set<MethodElement> methods = <MethodElement>{};
 
   @override
@@ -221,7 +217,7 @@ class InjectedMethodsVisitor extends RecursiveElementVisitor<dynamic> {
   }
 }
 
-class ComponentBuildersVisitor extends RecursiveElementVisitor<dynamic> {
+class _ComponentBuildersVisitor extends RecursiveElementVisitor<dynamic> {
   List<ComponentBuilder> componentBuilders = <ComponentBuilder>[];
 
   @override
@@ -237,13 +233,12 @@ class ComponentBuildersVisitor extends RecursiveElementVisitor<dynamic> {
           message: 'Component builder ${element.name} must be public.',
         ),
       );
-      final BuildMethodsVisitor v = BuildMethodsVisitor();
-      element.visitChildren(v);
+      final List<MethodElement> methods = element.getComponentBuilderMethods();
 
       final Set<DartType> argumentsTypes = <DartType>{};
 
-      for (int i = 0; i < v.methodElements.length; i++) {
-        final MethodElement methodElement = v.methodElements[i];
+      for (int i = 0; i < methods.length; i++) {
+        final MethodElement methodElement = methods[i];
         check(
           methodElement.isPublic,
           () => buildErrorMessage(
@@ -291,7 +286,10 @@ class ComponentBuildersVisitor extends RecursiveElementVisitor<dynamic> {
       }
 
       late final MethodElement buildMethod;
-      final MethodElement? buildMethodNullable = v.buildMethod;
+      final MethodElement? buildMethodNullable =
+          methods.firstWhereOrNull((MethodElement m) {
+        return m.name == 'build';
+      });
       check(
         buildMethodNullable != null,
         () => buildErrorMessage(
@@ -310,9 +308,8 @@ class ComponentBuildersVisitor extends RecursiveElementVisitor<dynamic> {
         () => 'build method must return component',
       );
 
-      final Iterable<MethodElement> externalDependenciesMethods = v
-          .methodElements
-          .where((MethodElement me) => me.name != BuildMethodName);
+      final Iterable<MethodElement> externalDependenciesMethods =
+          methods.where((MethodElement me) => me.name != BuildMethodName);
       for (DependencyAnnotation dep in componentAnnotation!.dependencies) {
         final bool dependencyProvided =
             externalDependenciesMethods.any((MethodElement me) {
@@ -338,7 +335,7 @@ class ComponentBuildersVisitor extends RecursiveElementVisitor<dynamic> {
 
       componentBuilders.add(ComponentBuilder(
           element: element,
-          methods: v.methodElements,
+          methods: methods,
           // ignore: avoid_as
           componentClass: buildMethod.returnType.element as ClassElement));
     }
@@ -349,8 +346,8 @@ class ComponentBuildersVisitor extends RecursiveElementVisitor<dynamic> {
   static const String BuildMethodName = 'build';
 }
 
-class BuildMethodsVisitor extends RecursiveElementVisitor<dynamic> {
-  List<MethodElement> methodElements = <MethodElement>[];
+class _ComponentBuilderMethodsVisitor extends RecursiveElementVisitor<dynamic> {
+  final List<MethodElement> _methods = <MethodElement>[];
 
   @override
   dynamic visitMethodElement(MethodElement element) {
@@ -366,32 +363,17 @@ class BuildMethodsVisitor extends RecursiveElementVisitor<dynamic> {
         ),
       );
     }
-    methodElements.add(element);
-    return null;
-  }
-
-  MethodElement? get buildMethod {
-    return methodElements.firstWhereOrNull((MethodElement m) {
-      return m.name == 'build';
-    });
-  }
-}
-
-class BuildInstanceFieldsVisitor extends RecursiveElementVisitor<dynamic> {
-  List<FieldElement> fields = <FieldElement>[];
-
-  @override
-  dynamic visitFieldElement(FieldElement element) {
-    fields.add(element);
+    _methods.add(element);
     return null;
   }
 }
 
-class ProvideMethodVisitor extends RecursiveElementVisitor<dynamic> {
-  List<MethodElement> methods = <MethodElement>[];
+class _ProvideMethodsVisitor extends RecursiveElementVisitor<dynamic> {
+  final List<MethodElement> _methods = <MethodElement>[];
 
   @override
   dynamic visitMethodElement(MethodElement element) {
+    // skip methods that deal with injection
     if (element.returnType.getName() == 'void') {
       return null;
     }
@@ -402,12 +384,12 @@ class ProvideMethodVisitor extends RecursiveElementVisitor<dynamic> {
       );
     }
 
-    methods.add(element);
+    _methods.add(element);
     return null;
   }
 }
 
-class ProvidePropertyVisitor extends RecursiveElementVisitor<dynamic> {
+class _ProvidePropertyVisitor extends RecursiveElementVisitor<dynamic> {
   List<PropertyAccessorElement> properties = <PropertyAccessorElement>[];
 
   @override
@@ -422,5 +404,90 @@ class ProvidePropertyVisitor extends RecursiveElementVisitor<dynamic> {
     }
 
     return null;
+  }
+}
+
+extension VisitorExt on Element {
+  /// Returns all injected fields of module and validate them. The client must
+  /// check that the element is a class.
+  List<InjectedMember> getInjectedMembers() {
+    final _InjectedMembersVisitor visitor = _InjectedMembersVisitor();
+    visitChildren(visitor);
+    return visitor.members;
+  }
+
+  /// Returns all methods of module and validate them. The client must
+  /// check that the element is a module.
+  List<Method> getProvides() {
+    final _ProvidesVisitor visitor = _ProvidesVisitor();
+    visitChildren(visitor);
+    return visitor.methods;
+  }
+
+  /// Returns all methods of module for inject and validate them. The client
+  /// must check that the element is a module.
+  List<MemberInjectorMethod> getMemberInjectors() {
+    final _InjectedFieldsVisitor visitor = _InjectedFieldsVisitor();
+    visitChildren(visitor);
+    return visitor.fields;
+  }
+
+  /// Returns all components of library and validate them. The client must check
+  /// that the element is a LibraryElement.
+  List<Component> getComponents() {
+    final _ComponentsVisitor visitor = _ComponentsVisitor();
+    visitChildren(visitor);
+    return visitor.components;
+  }
+
+  /// Returns all injected methods of class and validate them. Collect unique
+  /// methods without repeating. The client must check that the element is a
+  /// class.
+  Set<MethodElement> getInjectedMethods() {
+    final _InjectedMethodsVisitor visitor = _InjectedMethodsVisitor();
+    visitChildren(visitor);
+    return visitor.methods;
+  }
+
+  /// Returns all component builders of library and validate them. The client
+  /// must check that the element is a LibraryElement.
+  List<ComponentBuilder> getComponentBuilders() {
+    final _ComponentBuildersVisitor visitor = _ComponentBuildersVisitor();
+    visitChildren(visitor);
+    return visitor.componentBuilders;
+  }
+
+  /// Returns all injected constructors of class and validate them. The client
+  /// must check that the element is a class.
+  List<ConstructorElement> getInjectedConstructors() {
+    final _InjectedConstructorsVisitor visitor = _InjectedConstructorsVisitor();
+    visitChildren(visitor);
+    return visitor.injectedConstructors;
+  }
+
+  /// Returns all methods of component builder and validate them. The client
+  /// must check that the element is a component builder.
+  List<MethodElement> getComponentBuilderMethods() {
+    final _ComponentBuilderMethodsVisitor visitor =
+        _ComponentBuilderMethodsVisitor();
+    visitChildren(visitor);
+    return visitor._methods;
+  }
+
+  /// Returns all methods that the component has and validate them, except for
+  /// the void methods for the injection. The client must check that the element
+  /// is a component.
+  List<MethodElement> getComponentProvideMethods() {
+    final _ProvideMethodsVisitor visitor = _ProvideMethodsVisitor();
+    visitChildren(visitor);
+    return visitor._methods;
+  }
+
+  /// Returns all properties that the component has and validate them. The
+  /// client must check that the element is a component.
+  List<PropertyAccessorElement> getProvideProperties() {
+    final _ProvidePropertyVisitor visitor = _ProvidePropertyVisitor();
+    visitChildren(visitor);
+    return visitor.properties;
   }
 }

@@ -8,7 +8,6 @@ import 'package:code_builder/code_builder.dart';
 import 'package:collection/collection.dart';
 import 'package:dart_style/dart_style.dart';
 import 'package:jugger/jugger.dart' as jugger;
-import 'package:jugger_generator/src/class_element_ext.dart';
 import 'package:jugger_generator/src/dart_type_ext.dart';
 import 'package:jugger_generator/src/utils.dart';
 
@@ -61,25 +60,20 @@ class ComponentBuilderDelegate {
 
       final LibraryElement lib = await buildStep.inputLibrary;
 
-      final ComponentBuildersVisitor componentBuildersVisitor =
-          ComponentBuildersVisitor();
-      lib.visitChildren(componentBuildersVisitor);
-
-      final ComponentsVisitor visitor = ComponentsVisitor();
-      lib.visitChildren(visitor);
-
+      final List<j.Component> components = lib.getComponents();
       final LibraryBuilder target = LibraryBuilder();
 
-      _generateComponentBuilders(
-          target, lib, componentBuildersVisitor.componentBuilders);
+      final List<j.ComponentBuilder> componentBuilders =
+          lib.getComponentBuilders();
 
-      for (int i = 0; i < visitor.components.length; i++) {
-        final j.Component component = visitor.components[i];
+      _generateComponentBuilders(target, lib, componentBuilders);
+
+      for (int i = 0; i < components.length; i++) {
+        final j.Component component = components[i];
         _componentType = component.element.thisType;
 
-        final j.ComponentBuilder? componentBuilder = componentBuildersVisitor
-            .componentBuilders
-            .firstWhereOrNull((j.ComponentBuilder b) {
+        final j.ComponentBuilder? componentBuilder =
+            componentBuilders.firstWhereOrNull((j.ComponentBuilder b) {
           return b.componentClass.name == component.element.name;
         });
 
@@ -435,11 +429,10 @@ class ComponentBuilderDelegate {
             createElementPath(parameterElement.type.element!));
       }));
 
-      final InjectedMembersVisitor visitor = InjectedMembersVisitor();
-      memberElement.visitChildren(visitor);
+      final List<j.InjectedMember> members = memberElement.getInjectedMembers();
 
       builder.body = Block((BlockBuilder b) {
-        for (j.InjectedMember member in visitor.members.toSet()) {
+        for (j.InjectedMember member in members.toSet()) {
           _log('build provide method for member: ${member.element}');
           final Tag? tag = member.element.getQualifierTag();
           b.addExpression(CodeExpression(Block.of(<Code>[
@@ -518,10 +511,10 @@ class ComponentBuilderDelegate {
       return provider.assignString;
     }
 
-    final InjectedConstructorsVisitor visitor = InjectedConstructorsVisitor();
-    type.element!.visitChildren(visitor);
+    final List<ConstructorElement> injectedConstructors =
+        type.element!.getInjectedConstructors();
 
-    if (visitor.injectedConstructors.isEmpty) {
+    if (injectedConstructors.isEmpty) {
       final j.Method? provideMethod =
           _componentContext.findProvideMethod(type: type, tag: tag);
       check(
@@ -616,15 +609,14 @@ class ComponentBuilderDelegate {
     _log(
       'build provider from class: ${element.toNameWithPath()}',
     );
-    final InjectedConstructorsVisitor visitor = InjectedConstructorsVisitor();
-    element.visitChildren(visitor);
+    final List<ConstructorElement> injectedConstructors =
+        element.getInjectedConstructors();
 
     check(
-      visitor.injectedConstructors.length == 1,
+      injectedConstructors.length == 1,
       () => injectedConstructorNotFound(element),
     );
-    final ConstructorElement injectedConstructor =
-        visitor.injectedConstructors[0];
+    final ConstructorElement injectedConstructor = injectedConstructors[0];
     final List<ParameterElement> parameters = injectedConstructor.parameters;
 
     final Expression newInstance =
@@ -699,9 +691,6 @@ class ComponentBuilderDelegate {
       throw JuggerError('parameter must be class [${rawParameter.name}]');
     }
 
-    final InjectedConstructorsVisitor visitor = InjectedConstructorsVisitor();
-    parameter.visitChildren(visitor);
-
     final ProviderSource? provider =
         _componentContext.findProvider(parameter.thisType, null);
 
@@ -720,12 +709,14 @@ class ComponentBuilderDelegate {
       return _buildProvider(method, provider);
     }
 
+    final List<ConstructorElement> injectedConstructors =
+        parameter.getInjectedConstructors();
+
     check(
-      visitor.injectedConstructors.length == 1,
+      injectedConstructors.length == 1,
       () => injectedConstructorNotFound(parameter),
     );
-    final ConstructorElement injectedConstructor =
-        visitor.injectedConstructors[0];
+    final ConstructorElement injectedConstructor = injectedConstructors[0];
     final List<ParameterElement> parameters = injectedConstructor.parameters;
 
     if (getBindAnnotation(method) != null) {

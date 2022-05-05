@@ -31,24 +31,24 @@ extension DartTypeExt on DartType {
   }
 
   ConstructorElement getRequiredInjectedConstructor() {
-    final InjectedConstructorsVisitor visitor = InjectedConstructorsVisitor();
-    element!.visitChildren(visitor);
+    final List<ConstructorElement> injectedConstructors =
+        element!.getInjectedConstructors();
     check(
-      visitor.injectedConstructors.length == 1,
+      injectedConstructors.length == 1,
       () => 'required single injected constructor',
     );
-    return visitor.injectedConstructors.first;
+    return injectedConstructors.first;
   }
 
   ConstructorElement? getInjectedConstructorOrNull() {
     checkUnsupportedType();
 
-    final InjectedConstructorsVisitor visitor = InjectedConstructorsVisitor();
-    element!.visitChildren(visitor);
+    final List<ConstructorElement> injectedConstructors =
+        element!.getInjectedConstructors();
     check(
-      visitor.injectedConstructors.length <= 1,
+      injectedConstructors.length <= 1,
       () => 'required single or zero injected constructor',
     );
-    return visitor.injectedConstructors.firstOrNull;
+    return injectedConstructors.firstOrNull;
   }
 }
