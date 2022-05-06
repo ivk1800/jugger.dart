@@ -1,7 +1,7 @@
 // ignore_for_file: constant_identifier_names
 
 const String _glossary =
-    'https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#missing_build_method';
+    'https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md';
 const String missingBuildMethod = '$_glossary#missing_build_method';
 const String wrongTypeOfBuildMethod = '$_glossary#wrong_type_of_build_method';
 const String missingComponentDependency =
@@ -17,6 +17,11 @@ const String componentBuilderTypeProvidesMultipleTimes =
     '$_glossary#component_builder_type_provides_multiple_times';
 const String componentBuilderPrivateMethod =
     '$_glossary#component_builder_private_method';
+const String publicComponent = '$_glossary#public_component';
+const String abstractComponent = '$_glossary#abstract_component';
+const String invalidComponentDependency =
+    '$_glossary#invalid_component_dependency';
+const String componentDependHimself = '$_glossary#component_depend_himself';
 
 enum JuggerErrorId {
   missing_build_method,
@@ -28,6 +33,10 @@ enum JuggerErrorId {
   wrong_arguments_of_build_method,
   component_builder_type_provided_multiple_times,
   component_builder_private_method,
+  public_component,
+  abstract_component,
+  invalid_component_dependency,
+  component_depend_himself,
 }
 
 extension JuggerErrorIdExt on JuggerErrorId {
@@ -51,6 +60,14 @@ extension JuggerErrorIdExt on JuggerErrorId {
         return componentBuilderTypeProvidesMultipleTimes;
       case JuggerErrorId.component_builder_private_method:
         return componentBuilderPrivateMethod;
+      case JuggerErrorId.public_component:
+        return publicComponent;
+      case JuggerErrorId.abstract_component:
+        return abstractComponent;
+      case JuggerErrorId.invalid_component_dependency:
+        return invalidComponentDependency;
+      case JuggerErrorId.component_depend_himself:
+        return componentDependHimself;
     }
   }
 }

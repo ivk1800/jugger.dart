@@ -209,3 +209,66 @@ abstract class MyComponentBuilder {
   AppComponent build();
 }
 ```
+
+### public_component
+Component must be public.
+
+`BAD:`
+```dart
+@Component()
+abstract class _Component {}
+```
+
+`GOOD:`
+```dart
+@Component()
+abstract class Component {}
+```
+
+### abstract_component
+Component must be abstract.
+
+`BAD:`
+```dart
+@Component()
+class AppComponent {}
+```
+
+`GOOD:`
+```dart
+@Component()
+abstract class AppComponent {}
+```
+
+### invalid_component_dependency
+A component can only depend on another component.
+
+`BAD:`
+```dart
+@Component(dependencies: <Type>[int])
+abstract class FirstComponent {}
+```
+
+`GOOD:`
+```dart
+@Component(dependencies: <Type>[SecondComponent])
+abstract class FirstComponent {}
+
+@Component()
+abstract class SecondComponent {}
+```
+
+### component_depend_himself
+A component AppComponent cannot depend on himself.
+
+`BAD:`
+```dart
+@Component(dependencies: <Type>[AppComponent])
+abstract class AppComponent {}
+```
+
+`GOOD:`
+```dart
+@Component(dependencies: <Type>[])
+abstract class AppComponent {}
+```

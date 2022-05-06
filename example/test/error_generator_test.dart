@@ -558,7 +558,7 @@ abstract class MyModule {
             error.toString(),
             'error: missing_build_method:\n'
             'Missing required build method of MyComponentBuilder package:example/test.dart.dart\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#missing_build_method#missing_build_method',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#missing_build_method',
           );
         },
       );
@@ -613,7 +613,7 @@ abstract class MyModule {
             error.toString(),
             'error: wrong_type_of_build_method:\n'
             'build method of AppComponentBuilder return wrong type.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#missing_build_method#wrong_type_of_build_method',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#wrong_type_of_build_method',
           );
         },
       );
@@ -666,7 +666,7 @@ abstract class MyModule {
               error.toString(),
               'error: missing_component_dependency:\n'
               'Dependency (AppComponent) not provided.\n'
-              'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#missing_build_method#missing_component_dependency');
+              'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#missing_component_dependency');
         },
       );
     });
@@ -1419,7 +1419,66 @@ abstract class _Component {}
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: Component [abstract class _Component] must be public',
+            'error: public_component:\n'
+            'Component _Component must be public.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#public_component',
+          );
+        },
+      );
+    });
+
+    test('abstract component', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component()
+class AppComponent {}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: abstract_component:\n'
+            'Component AppComponent must be abstract.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#abstract_component',
+          );
+        },
+      );
+    });
+
+    test('not component a dependency', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(dependencies: <Type>[int])
+abstract class AppComponent {}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: invalid_component_dependency:\n'
+            'Dependency int is not allowed, only other components are allowed.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_component_dependency',
+          );
+        },
+      );
+    });
+
+    test('component depend himself', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(dependencies: <Type>[AppComponent])
+abstract class AppComponent {}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: component_depend_himself:\n'
+            'A component AppComponent cannot depend on himself.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#component_depend_himself',
           );
         },
       );
@@ -1443,7 +1502,7 @@ abstract class _MyComponentBuilder {
             error.toString(),
             'error: public_component_builder:\n'
             'Component builder _MyComponentBuilder must be public.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#missing_build_method#public_component_builder',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#public_component_builder',
           );
         },
       );
@@ -1469,7 +1528,7 @@ abstract class ComponentBuilder {
             error.toString(),
             'error: component_builder_invalid_method_type:\n'
             'Invalid type of method setInt. Expected ComponentBuilder.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#missing_build_method#component_builder_invalid_method_type',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#component_builder_invalid_method_type',
           );
         },
       );
@@ -1493,7 +1552,7 @@ abstract class ComponentBuilder {
             error.toString(),
             'error: wrong_arguments_of_build_method:\n'
             'Build method should not contain arguments.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#missing_build_method#wrong_arguments_of_build_method',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#wrong_arguments_of_build_method',
           );
         },
       );
@@ -1523,7 +1582,7 @@ abstract class MyComponentBuilder {
             error.toString(),
             'error: component_builder_type_provided_multiple_times:\n'
             'Type String provided multiple times in component builder MyComponentBuilder\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#missing_build_method#component_builder_type_provides_multiple_times',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#component_builder_type_provides_multiple_times',
           );
         },
       );
@@ -1551,7 +1610,7 @@ abstract class MyComponentBuilder {
             error.toString(),
             'error: component_builder_private_method:\n'
             'Method _setString must be public.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#missing_build_method#component_builder_private_method',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#component_builder_private_method',
           );
         },
       );

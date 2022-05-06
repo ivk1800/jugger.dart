@@ -9,6 +9,7 @@ import 'package:crypto/crypto.dart';
 import 'package:jugger/jugger.dart';
 
 import 'classes.dart';
+import 'errors_glossary.dart';
 import 'jugger_error.dart';
 import 'library_ext.dart';
 import 'messages.dart';
@@ -117,6 +118,15 @@ List<Annotation> getAnnotations(Element moduleClass) {
           'dependencies',
         );
 
+        check(
+          !dependencies.contains(moduleClass),
+          () => buildErrorMessage(
+            error: JuggerErrorId.component_depend_himself,
+            message:
+                'A component ${moduleClass.name} cannot depend on himself.',
+          ),
+        );
+
         final List<ModuleAnnotation> modulesAnnotations =
             modules.map((ClassElement moduleDep) {
           return ModuleExtractor().getModuleAnnotationOfModuleClass(moduleDep);
@@ -141,12 +151,22 @@ List<Annotation> getAnnotations(Element moduleClass) {
           );
         }
 
-        annotations.add(ComponentAnnotation(
+        annotations.add(
+          ComponentAnnotation(
             modules: allModules.toList(),
             dependencies: dependencies.map((ClassElement c) {
-              check(c.isAbstract, () => dependencyMustBeAbstract(c.thisType));
+              check(
+                getComponentAnnotation(c) != null,
+                () => buildErrorMessage(
+                  error: JuggerErrorId.invalid_component_dependency,
+                  message:
+                      'Dependency ${c.name} is not allowed, only other components are allowed.',
+                ),
+              );
               return DependencyAnnotation(element: c);
-            }).toList()));
+            }).toList(),
+          ),
+        );
       } else if (valueElement.name == provides.runtimeType.toString()) {
         annotations.add(ProvideAnnotation());
       } else if (valueElement.name == inject.runtimeType.toString()) {

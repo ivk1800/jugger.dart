@@ -147,15 +147,29 @@ class _ComponentsVisitor extends RecursiveElementVisitor<dynamic> {
     final ComponentAnnotation? component = getComponentAnnotation(element);
 
     if (component != null) {
-      check(element.isPublic, () => publicComponent(element));
+      check(
+        element.isPublic,
+        () => buildErrorMessage(
+          error: JuggerErrorId.public_component,
+          message: 'Component ${element.name} must be public.',
+        ),
+      );
+      check(
+        element.isAbstract,
+        () => buildErrorMessage(
+          error: JuggerErrorId.abstract_component,
+          message: 'Component ${element.name} must be abstract.',
+        ),
+      );
 
       final _InjectedFieldsVisitor fieldsVisitor = _InjectedFieldsVisitor();
       element.visitChildren(fieldsVisitor);
       components.add(
         Component(
-            element: element,
-            annotations: <Annotation>[component],
-            memberInjectors: element.getMemberInjectors()),
+          element: element,
+          annotations: <Annotation>[component],
+          memberInjectors: element.getMemberInjectors(),
+        ),
       );
     }
     return null;
