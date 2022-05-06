@@ -1,8 +1,8 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
-import 'package:jugger_generator/src/utils.dart';
 
+import 'utils.dart';
 import 'visitors.dart';
 
 extension DartTypeExt on DartType {

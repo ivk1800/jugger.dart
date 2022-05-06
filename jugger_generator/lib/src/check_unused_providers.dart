@@ -1,9 +1,9 @@
 import 'package:analyzer/dart/analysis/utilities.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
-import 'package:jugger_generator/src/utils.dart';
 
 import 'messages.dart';
+import 'utils.dart';
 
 void checkUnusedProviders(String content) {
   final CompilationUnit unit = parseString(content: content).unit;

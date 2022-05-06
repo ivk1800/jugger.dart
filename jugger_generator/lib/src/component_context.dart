@@ -3,16 +3,16 @@ import 'dart:collection';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
-import 'package:jugger_generator/src/classes.dart';
-import 'package:jugger_generator/src/classes.dart' as j;
-import 'package:jugger_generator/src/dart_type_ext.dart';
-import 'package:jugger_generator/src/utils.dart';
-import 'package:jugger_generator/src/visitors.dart';
 import 'package:quiver/core.dart';
 
+import 'classes.dart';
+import 'classes.dart' as j;
+import 'dart_type_ext.dart';
 import 'dependency_place.dart';
 import 'jugger_error.dart';
 import 'tag.dart';
+import 'utils.dart';
+import 'visitors.dart';
 
 class ComponentContext {
   ComponentContext({
@@ -24,11 +24,11 @@ class ComponentContext {
     required this.component,
     required this.componentBuilder,
   }) {
-    for (j.DependencyAnnotation dep in component.dependencies) {
+    for (final j.DependencyAnnotation dep in component.dependencies) {
       final List<MethodElement> methods =
           dep.element.getComponentProvideMethods();
 
-      for (MethodElement m in methods) {
+      for (final MethodElement m in methods) {
         providerSources.add(AnotherComponentSource(
             type: m.returnType,
             element: m,
@@ -39,7 +39,7 @@ class ComponentContext {
       final List<PropertyAccessorElement> properties =
           dep.element.getProvideProperties();
 
-      for (PropertyAccessorElement property in properties) {
+      for (final PropertyAccessorElement property in properties) {
         providerSources.add(
           AnotherComponentSource(
             type: property.returnType,
@@ -59,7 +59,7 @@ class ComponentContext {
       );
     }
 
-    for (j.Method method in component.modulesProvideMethods) {
+    for (final j.Method method in component.modulesProvideMethods) {
       final MethodElement element = method.element;
 
       providerSources.add(
@@ -74,7 +74,7 @@ class ComponentContext {
       );
     }
 
-    for (ParameterElement parameter in componentBuilder?.parameters
+    for (final ParameterElement parameter in componentBuilder?.parameters
             .map((ComponentBuilderParameter p) => p.parameter)
             .toList() ??
         <ParameterElement>[]) {
@@ -86,24 +86,24 @@ class ComponentContext {
 
     _validateProviderSources();
 
-    for (j.Method method in component.modulesProvideMethods) {
+    for (final j.Method method in component.modulesProvideMethods) {
       final MethodElement element = method.element;
       _registerDependency(element);
     }
 
-    for (MethodElement element in component.provideMethods) {
+    for (final MethodElement element in component.provideMethods) {
       _registerDependency(element, DependencyPlace.component);
     }
     component.provideProperties.forEach(_registerDependency);
 
-    for (j.MemberInjectorMethod method in component.memberInjectors) {
+    for (final j.MemberInjectorMethod method in component.memberInjectors) {
       final MethodElement element = method.element;
 
-      for (ParameterElement parameter in element.parameters) {
+      for (final ParameterElement parameter in element.parameters) {
         final List<InjectedMember> members =
             parameter.type.element!.getInjectedMembers();
 
-        for (j.InjectedMember member in members) {
+        for (final j.InjectedMember member in members) {
           _registerDependency(member.element);
         }
       }
@@ -218,18 +218,18 @@ class ComponentContext {
         );
       }
 
-      dependency = Dependency(
+      _dependencies[key] = Dependency(
         dependency.tag,
         providerType,
         dependencies,
       );
+    } else {
+      _dependencies[key] = dependency;
     }
-
-    _dependencies[key] = dependency;
   }
 
   Dependency _registerVariableElementDependency(Element element) {
-    if (!(element is VariableElement)) {
+    if (element is! VariableElement) {
       throw JuggerError('element[$element] is not VariableElement');
     }
 
@@ -541,7 +541,7 @@ class AnotherComponentSource extends ProviderSource {
   String get assignString {
     final String base =
         '_${uncapitalize(dependencyClass.name)}.${element.name}';
-    final String postfix = '${element is MethodElement ? '()' : ''}';
+    final String postfix = element is MethodElement ? '()' : '';
     return '$base$postfix';
   }
 

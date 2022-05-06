@@ -7,13 +7,13 @@ import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
 import 'package:crypto/crypto.dart';
 import 'package:jugger/jugger.dart';
-import 'package:jugger_generator/src/jugger_error.dart';
-import 'package:jugger_generator/src/tag.dart';
 
 import 'classes.dart';
+import 'jugger_error.dart';
 import 'library_ext.dart';
 import 'messages.dart';
 import 'module_extractor.dart';
+import 'tag.dart';
 import 'visitors.dart';
 
 ComponentAnnotation? getComponentAnnotation(Element element) {
@@ -134,7 +134,7 @@ List<Annotation> getAnnotations(Element moduleClass) {
         final Map<InterfaceType, List<ModuleAnnotation>> groupedAnnotations =
             modulesAnnotations.groupListsBy((ModuleAnnotation annotation) =>
                 annotation.moduleElement.thisType);
-        for (List<ModuleAnnotation> group in groupedAnnotations.values) {
+        for (final List<ModuleAnnotation> group in groupedAnnotations.values) {
           check(
             group.length == 1,
             () => repeatedModules(group.first.moduleElement.thisType),
@@ -160,7 +160,7 @@ List<Annotation> getAnnotations(Element moduleClass) {
       } else if (valueElement.name == binds.runtimeType.toString()) {
         annotations.add(BindAnnotation());
       } else if (valueElement.name == componentBuilder.runtimeType.toString()) {
-        if (!(valueElement is ClassElement)) {
+        if (valueElement is! ClassElement) {
           throw JuggerError('element[$valueElement] is not ClassElement');
         }
         annotations.add(ComponentBuilderAnnotation(valueElement));
@@ -190,7 +190,7 @@ Tag _getTag(ElementAnnotation annotation, ClassElement annotationClassElement) {
 void checkUniqueClasses(Iterable<ClassElement> classes) {
   final Map<InterfaceType, List<ClassElement>> groupedAnnotations =
       classes.groupListsBy((ClassElement annotation) => annotation.thisType);
-  for (List<ClassElement> group in groupedAnnotations.values) {
+  for (final List<ClassElement> group in groupedAnnotations.values) {
     check(
       group.length == 1,
       () => repeatedModules(group.first.thisType),
@@ -238,6 +238,7 @@ String createClassNameWithPath(ClassElement element) {
   return '${element.name} ${element.library.identifier}';
 }
 
+// ignore: avoid_positional_boolean_parameters
 void check(bool condition, String Function() message) {
   if (!condition) {
     throw JuggerError(message.call());

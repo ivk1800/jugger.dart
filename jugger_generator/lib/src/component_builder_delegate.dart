@@ -8,16 +8,16 @@ import 'package:code_builder/code_builder.dart';
 import 'package:collection/collection.dart';
 import 'package:dart_style/dart_style.dart';
 import 'package:jugger/jugger.dart' as jugger;
-import 'package:jugger_generator/src/dart_type_ext.dart';
-import 'package:jugger_generator/src/utils.dart';
 
 import 'check_unused_providers.dart';
 import 'classes.dart' as j;
 import 'component_context.dart';
+import 'dart_type_ext.dart';
 import 'global_config.dart';
 import 'jugger_error.dart';
 import 'messages.dart';
 import 'tag.dart';
+import 'utils.dart';
 import 'visitors.dart';
 
 class ComponentBuilderDelegate {
@@ -33,7 +33,7 @@ class ComponentBuilderDelegate {
   final Expression _overrideAnnotationExpression =
       const CodeExpression(Code('override'));
 
-  static const List<String> Ignores = <String>[
+  static const List<String> ignores = <String>[
     'ignore_for_file: implementation_imports',
     'ignore_for_file: prefer_const_constructors',
     'ignore_for_file: always_specify_types',
@@ -46,8 +46,8 @@ class ComponentBuilderDelegate {
       return await _buildOutput(buildStep);
     } catch (e) {
       final String message = '${_logs.join('\n')}\n$e';
-      print('\x1B[94m$message\x1B[0m');
-      print((e as Error).stackTrace);
+      log.shout('\x1B[94m$message\x1B[0m');
+      log.shout((e as Error).stackTrace);
       rethrow;
     }
   }
@@ -110,7 +110,7 @@ class ComponentBuilderDelegate {
 
           classBuilder.constructors.add(_buildConstructor(componentBuilder));
 
-          classBuilder..name = _createComponentName(component.element.name);
+          classBuilder.name = _createComponentName(component.element.name);
         }));
       }
 
@@ -123,7 +123,7 @@ class ComponentBuilderDelegate {
 
       final String finalFileText = fileText.isEmpty
           ? ''
-          : '${Ignores.map((String line) => '// $line').join('\n')}\n$fileText';
+          : '${ignores.map((String line) => '// $line').join('\n')}\n$fileText';
       return DartFormatter().format(finalFileText);
     }
 
@@ -181,7 +181,7 @@ class ComponentBuilderDelegate {
                   )} != null) ');
                 }).toList();
 
-                for (Code value in assertCodes) {
+                for (final Code value in assertCodes) {
                   b.addExpression(CodeExpression(value));
                 }
 
@@ -259,7 +259,7 @@ class ComponentBuilderDelegate {
     final Iterable<Dependency> filteredDependencies =
         _filterDependenciesForFields(dependencies);
 
-    for (Dependency dependency in filteredDependencies) {
+    for (final Dependency dependency in filteredDependencies) {
       check(
         !dependency.type.isProvider,
         () => providerNotAllowed(dependency.type),
@@ -274,8 +274,8 @@ class ComponentBuilderDelegate {
         );
       }
 
-      if (!(provider is BuildInstanceSource) &&
-          !(provider is AnotherComponentSource)) {
+      if (provider is! BuildInstanceSource &&
+          provider is! AnotherComponentSource) {
         fields.add(Field((FieldBuilder b) {
           final Tag? tag = dependency.tag;
           b.name = '_${_generateFieldName(
@@ -371,7 +371,7 @@ class ComponentBuilderDelegate {
         _componentContext.component.provideMethods;
     final List<Method> newProperties = <Method>[];
 
-    for (MethodElement method in methods) {
+    for (final MethodElement method in methods) {
       _log(
           'build provide method for: ${method.enclosingElement.name}.${method.name}');
       final Method m = Method((MethodBuilder b) {
@@ -432,7 +432,7 @@ class ComponentBuilderDelegate {
       final List<j.InjectedMember> members = memberElement.getInjectedMembers();
 
       builder.body = Block((BlockBuilder b) {
-        for (j.InjectedMember member in members.toSet()) {
+        for (final j.InjectedMember member in members.toSet()) {
           _log('build provide method for member: ${member.element}');
           final Tag? tag = member.element.getQualifierTag();
           b.addExpression(CodeExpression(Block.of(<Code>[
@@ -565,7 +565,7 @@ class ComponentBuilderDelegate {
       return 'named_${tag}_$typeName';
     }
 
-    return '${uncapitalize(typeName)}';
+    return uncapitalize(typeName);
   }
 
   Method _buildInitNonLazyMethod(ComponentContext _componentContext) {
@@ -582,7 +582,7 @@ class ComponentBuilderDelegate {
         ..sort((ProviderSource a, ProviderSource b) =>
             a.type.getName().compareTo(b.type.getName()));
 
-      for (ProviderSource source in nonLazyProviders) {
+      for (final ProviderSource source in nonLazyProviders) {
         builder.statements.add(
           Code('${_generateAssignString(
             source.type,
@@ -661,10 +661,12 @@ class ComponentBuilderDelegate {
         _getProviderReferenceOfElement(method).newInstance(
       <Expression>[
         _buildExpressionBodyExpression(
-          Code('${_generateAssignString(
-            source.type,
-            source.tag,
-          )}'),
+          Code(
+            _generateAssignString(
+              source.type,
+              source.tag,
+            ),
+          ),
         ),
       ],
     );
@@ -692,7 +694,7 @@ class ComponentBuilderDelegate {
     }
 
     final ProviderSource? provider =
-        _componentContext.findProvider(parameter.thisType, null);
+        _componentContext.findProvider(parameter.thisType);
 
     final bool isSupertype = parameter.allSupertypes.any(
         (InterfaceType interfaceType) =>
@@ -842,13 +844,15 @@ class ComponentBuilderDelegate {
     ///   IChatUpdatesProvider bindChatUpdatesProvider(UpdatesProvider impl);
     if (element is ClassElement) {
       final ProviderSource? provider =
-          _componentContext.findProvider(element.thisType, null);
+          _componentContext.findProvider(element.thisType);
 
       if (provider is ModuleSource) {
-        return Code('${_generateAssignString(
-          provider.type,
-          provider.tag,
-        )}');
+        return Code(
+          _generateAssignString(
+            provider.type,
+            provider.tag,
+          ),
+        );
       }
     }
 

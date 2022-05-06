@@ -36,7 +36,7 @@ class _InjectedMembersVisitor extends RecursiveElementVisitor<dynamic> {
     final List<InterfaceType> allSupertypes =
         element.enclosingElement.allSupertypes;
 
-    for (InterfaceType interfaceType in allSupertypes) {
+    for (final InterfaceType interfaceType in allSupertypes) {
       final Element element = interfaceType.element;
       if (isFlutterCore(element) || isCore(element)) {
         continue;
@@ -205,7 +205,7 @@ class _InjectedMethodsVisitor extends RecursiveElementVisitor<dynamic> {
     final List<InterfaceType> allSupertypes =
         element.enclosingElement.allSupertypes;
 
-    for (InterfaceType interfaceType in allSupertypes) {
+    for (final InterfaceType interfaceType in allSupertypes) {
       final Element element = interfaceType.element;
       if (isFlutterCore(element) || isCore(element)) {
         continue;
@@ -309,8 +309,9 @@ class _ComponentBuildersVisitor extends RecursiveElementVisitor<dynamic> {
       );
 
       final Iterable<MethodElement> externalDependenciesMethods =
-          methods.where((MethodElement me) => me.name != BuildMethodName);
-      for (DependencyAnnotation dep in componentAnnotation!.dependencies) {
+          methods.where((MethodElement me) => me.name != buildMethodName);
+      for (final DependencyAnnotation dep
+          in componentAnnotation!.dependencies) {
         final bool dependencyProvided =
             externalDependenciesMethods.any((MethodElement me) {
           check(
@@ -329,7 +330,7 @@ class _ComponentBuildersVisitor extends RecursiveElementVisitor<dynamic> {
         );
       }
 
-      for (MethodElement element in externalDependenciesMethods) {
+      for (final MethodElement element in externalDependenciesMethods) {
         element.parameters.first.type.checkUnsupportedType();
       }
 
@@ -343,7 +344,7 @@ class _ComponentBuildersVisitor extends RecursiveElementVisitor<dynamic> {
     return null;
   }
 
-  static const String BuildMethodName = 'build';
+  static const String buildMethodName = 'build';
 }
 
 class _ComponentBuilderMethodsVisitor extends RecursiveElementVisitor<dynamic> {

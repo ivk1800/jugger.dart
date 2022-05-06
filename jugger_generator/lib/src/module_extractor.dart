@@ -21,7 +21,7 @@ class ModuleExtractor {
   }
 
   ModuleAnnotation getModuleAnnotationOfModuleClass(Element moduleClass) {
-    if (!(moduleClass is ClassElement)) {
+    if (moduleClass is! ClassElement) {
       throw JuggerError('element[$moduleClass] is not ClassElement');
     }
     check(moduleClass.isAbstract, () => moduleMustBeAbstract(moduleClass));

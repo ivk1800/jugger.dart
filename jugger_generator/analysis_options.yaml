@@ -1,0 +1,11 @@
+include: package:lint/analysis_options.yaml
+
+analyzer:
+  exclude:
+
+linter:
+  rules:
+    always_use_package_imports: false
+    prefer_relative_imports: true
+    require_trailing_commas: false
+    cast_nullable_to_non_nullable: false

@@ -1,10 +1,10 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:jugger/jugger.dart';
-import 'package:jugger_generator/src/errors_glossary.dart';
-import 'package:jugger_generator/src/utils.dart';
 
+import 'errors_glossary.dart';
 import 'tag.dart';
+import 'utils.dart';
 
 String buildErrorMessage({
   required JuggerErrorId error,

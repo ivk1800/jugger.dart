@@ -3,8 +3,8 @@
 import 'dart:async';
 
 import 'package:build/build.dart';
-import 'package:jugger_generator/src/component_builder_delegate.dart';
 
+import 'component_builder_delegate.dart';
 import 'global_config.dart';
 
 class JuggerBuilder extends Builder {
@@ -27,14 +27,14 @@ class JuggerBuilder extends Builder {
 
     final String outputContents = await delegate.buildOutput(buildStep);
     if (outputContents.trim().isEmpty || _isTestAsset(buildStep.inputId)) {
-      return Future<void>.value(null);
+      return Future<void>.value();
     }
     final AssetId outputFile =
         buildStep.inputId.changeExtension('.$outputExtension');
 
     buildStep.writeAsString(outputFile, outputContents);
 
-    return Future<void>.value(null);
+    return Future<void>.value();
   }
 
   @override

@@ -1,3 +1,5 @@
+// ignore_for_file: constant_identifier_names
+
 const String _glossary =
     'https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#missing_build_method';
 const String missingBuildMethod = '$_glossary#missing_build_method';

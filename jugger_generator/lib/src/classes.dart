@@ -1,9 +1,9 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:collection/collection.dart';
-import 'package:jugger_generator/src/utils.dart';
-import 'package:jugger_generator/src/visitors.dart';
 
 import 'tag.dart';
+import 'utils.dart';
+import 'visitors.dart';
 
 /// Wrapper class for component classes that are annotated by [inject].
 /// The client of this class must check that the element is definitely a
