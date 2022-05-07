@@ -84,26 +84,18 @@ class ComponentBuilderDelegate {
         _logs.clear();
 
         target.body.add(Class((ClassBuilder classBuilder) {
-          classBuilder.fields.addAll(
-            _buildProvidesFields(
-              _componentContext.dependencies,
-              _componentContext,
-              _allocator,
-            ),
-          );
+          classBuilder.fields.addAll(_buildProvidesFields());
           classBuilder.fields.addAll(_buildConstructorFields(componentBuilder));
           _log('build for component: ${component.element.toNameWithPath()}');
-          classBuilder.methods.addAll(_buildProvideMethods(_componentContext));
-          classBuilder.methods
-              .addAll(_buildProvideProperties(_componentContext));
+          classBuilder.methods.addAll(_buildProvideMethods());
+          classBuilder.methods.addAll(_buildProvideProperties());
 
           if (hasNonLazyProviders()) {
-            classBuilder.methods
-                .add(_buildInitNonLazyMethod(_componentContext));
+            classBuilder.methods.add(_buildInitNonLazyMethod());
           }
 
           classBuilder.methods.addAll(_buildMembersInjectorMethods(
-              component.memberInjectors, classBuilder, _componentContext));
+              component.memberInjectors, classBuilder));
 
           classBuilder.implements
               .add(Reference(component.element.name, createElementPath(lib)));
@@ -130,8 +122,11 @@ class ComponentBuilderDelegate {
     return '';
   }
 
-  void _generateComponentBuilders(LibraryBuilder target, LibraryElement lib,
-      List<j.ComponentBuilder> componentBuilders) {
+  void _generateComponentBuilders(
+    LibraryBuilder target,
+    LibraryElement lib,
+    List<j.ComponentBuilder> componentBuilders,
+  ) {
     for (int i = 0; i < componentBuilders.length; i++) {
       final j.ComponentBuilder componentBuilder = componentBuilders[i];
 
@@ -224,6 +219,10 @@ class ComponentBuilderDelegate {
     }
   }
 
+  /// Returns the name for the generated component class.
+  /// [name] The name of the component for which you want to generate a name.
+  /// Usually the class name.
+  ///
   String _createComponentName(String name) {
     if (!globalConfig.removeInterfacePrefixFromComponentName ||
         name.length == 1) {
@@ -238,6 +237,9 @@ class ComponentBuilderDelegate {
     return 'Jugger$name';
   }
 
+  /// Returns a list of graph objects for which the provider field should be
+  /// generated. If the current component is a graph object, it does not need to
+  /// be generated. In this case, the call will be like 'this'.
   Iterable<Dependency> _filterDependenciesForFields(
       List<Dependency> dependencies) {
     return dependencies.where((Dependency dependency) {
@@ -249,15 +251,17 @@ class ComponentBuilderDelegate {
     });
   }
 
-  List<Field> _buildProvidesFields(
-    List<Dependency> dependencies,
-    ComponentContext _componentContext,
-    Allocator allocator,
-  ) {
+  /// Returns a list of all providers that are used in the current component.
+  /// Example of field:
+  /// ```
+  /// late final _i2.IProvider<int> _intProvider =
+  ///      _i2.Provider<int>(() => _i1.Module2.providerInt());
+  /// ```
+  List<Field> _buildProvidesFields() {
     final List<Field> fields = <Field>[];
 
     final Iterable<Dependency> filteredDependencies =
-        _filterDependenciesForFields(dependencies);
+        _filterDependenciesForFields(_componentContext.dependencies);
 
     for (final Dependency dependency in filteredDependencies) {
       check(
@@ -283,7 +287,7 @@ class ComponentBuilderDelegate {
             tag?._toAssignTag(),
           )}Provider';
 
-          final String generic = allocator.allocate(
+          final String generic = _allocator.allocate(
             refer(_allocateDependencyTypeName(dependency)),
           );
           b.late = true;
@@ -293,7 +297,7 @@ class ComponentBuilderDelegate {
               _componentContext.findProvider(dependency.type, tag);
 
           if (provider is ModuleSource) {
-            b.assignment = _buildProviderFromMethodCode(
+            b.assignment = _buildProviderFromMethod(
               provider.method.element,
             );
           } else {
@@ -313,13 +317,25 @@ class ComponentBuilderDelegate {
       }
     }
 
+    // Sort so that the sequence is preserved with each code generation (for
+    // test stability)
     return fields..sort((Field a, Field b) => a.name.compareTo(b.name));
   }
 
+  /// A helper function that allocates the given type of object graph and
+  /// returns its name. If the type is generic, nested types in brackets will
+  /// also be allocated.
   String _allocateDependencyTypeName(Dependency dependency) {
     return _allocateTypeName(dependency.type);
   }
 
+  /// A helper function that allocates the given type and returns its name.
+  /// If the type is generic, nested types in brackets will also be allocated.
+  /// Example of result:
+  /// ```
+  /// List<_i1.Item>
+  /// _i1.Item
+  /// ```
   String _allocateTypeName(DartType t) {
     check(
       t is InterfaceType,
@@ -343,7 +359,7 @@ class ComponentBuilderDelegate {
     }).join(',')}>';
   }
 
-  List<Method> _buildProvideProperties(ComponentContext _componentContext) {
+  List<Method> _buildProvideProperties() {
     final List<PropertyAccessorElement> properties =
         _componentContext.component.provideProperties;
 
@@ -366,7 +382,14 @@ class ComponentBuilderDelegate {
     }).toList();
   }
 
-  List<Method> _buildProvideMethods(ComponentContext _componentContext) {
+  /// Returns a list of component methods, their implementation, each method
+  /// calls the corresponding type provider.
+  /// Example of result:
+  /// ```
+  /// @override
+  /// _i1.Config getName() => _configProvider.get();
+  /// ```
+  List<Method> _buildProvideMethods() {
     final List<MethodElement> methods =
         _componentContext.component.provideMethods;
     final List<Method> newProperties = <Method>[];
@@ -391,23 +414,27 @@ class ComponentBuilderDelegate {
 
         b.lambda = true;
         b.body = Code(
-          _generateAssignString(
-            method.returnType,
-            tag,
-          ),
+          _generateAssignString(method.returnType, tag),
         );
       });
       newProperties.add(m);
     }
 
+    // Sort so that the sequence is preserved with each code generation (for
+    // test stability)
     return newProperties
       ..sort((Method a, Method b) => a.name!.compareTo(b.name!));
   }
 
+  /// Returns a list of component properties, their implementation, each
+  /// property calls the corresponding type provider.
+  /// ```
+  /// @override
+  /// String get string => _stringProvider.get();
+  /// ```
   List<Method> _buildMembersInjectorMethods(
     List<j.MemberInjectorMethod> fields,
     ClassBuilder classBuilder,
-    ComponentContext _componentContext,
   ) {
     return fields.map((j.MemberInjectorMethod method) {
       final MethodBuilder builder = MethodBuilder();
@@ -455,9 +482,25 @@ class ComponentBuilderDelegate {
     }).toList();
   }
 
+  /// Returns a assign of type as string, which can be used in the [Code].
+  /// If the component does not have a source for the type, an error will be
+  /// thrown.
   ///
-  /// Return example: '_myRepositoryProvider.get()
-  /// or _myRepositoryProvider if callGet passed as false
+  /// Returns a field call on the component. A field can be a provider of this
+  /// component, a call to another component, or a component argument.
+  ///
+  /// [tag] is used as class field prefix if exists.
+  /// [callGet] is used to optionally call a .get() on a provider.
+  ///
+  /// Example of result:
+  /// ```
+  /// _myRepositoryProvider.get()
+  /// ```
+  /// or
+  /// ```
+  /// _myRepositoryProvider
+  /// ```
+  /// if callGet passed as false.
   ///
   String _generateAssignString(
     DartType type,
@@ -568,7 +611,10 @@ class ComponentBuilderDelegate {
     return uncapitalize(typeName);
   }
 
-  Method _buildInitNonLazyMethod(ComponentContext _componentContext) {
+  /// Returns a method that is called immediately after the component is
+  /// initialized. The method calls the provider's .get() method to initialize
+  /// graph objects.
+  Method _buildInitNonLazyMethod() {
     final MethodBuilder builder = MethodBuilder();
     builder.name = '_initNonLazy';
     builder.returns = const Reference('void');
@@ -579,6 +625,8 @@ class ComponentBuilderDelegate {
           .where((ProviderSource source) => source.annotations.any(
               (j.Annotation annotation) => annotation is j.NonLazyAnnotation))
           .toList()
+        // Sort so that the sequence is preserved with each code generation (for
+        // test stability)
         ..sort((ProviderSource a, ProviderSource b) =>
             a.type.getName().compareTo(b.type.getName()));
 
@@ -595,6 +643,8 @@ class ComponentBuilderDelegate {
     return builder.build();
   }
 
+  /// Returns true if there are non-lazy graph objects in the component. The
+  /// source in the module must be annotated with @nonLazy.
   bool hasNonLazyProviders() {
     return _componentContext.providerSources.any((ProviderSource source) =>
         source.annotations.any(
@@ -622,8 +672,8 @@ class ComponentBuilderDelegate {
     final Expression newInstance =
         _getProviderReferenceOfElement(injectedConstructor)
             .newInstance(<Expression>[
-      _buildExpressionBodyExpression(
-        _buildCallMethodOrConstructor(element, parameters, _componentContext),
+      _buildExpressionBody(
+        _buildCallMethodOrConstructor(element, parameters),
       ),
     ]);
 
@@ -631,22 +681,18 @@ class ComponentBuilderDelegate {
   }
 
   /// Build provider from given method.
-  /// Example of Result:
+  /// Example of result:
   /// ```
   /// SingletonProvider<MyProvider>(() => AppModule.provideMyProvider());
   /// ```
-  Code _buildProviderFromMethodCode(MethodElement method) {
+  Code _buildProviderFromMethod(MethodElement method) {
     _log(
       'build provider from method: ${method.toNameWithPath()}',
     );
     if (method.isStatic) {
-      return _buildProviderFromStaticMethodCode(
-        method,
-        _componentContext,
-        _allocator,
-      );
+      return _buildProviderFromStaticMethod(method);
     } else if (method.isAbstract) {
-      return _buildProviderFromAbstractMethodCode(method);
+      return _buildProviderFromAbstractMethod(method);
     } else {
       throw JuggerError(
         'provided method must be abstract or static [${method.enclosingElement.name}.${method.name}]',
@@ -656,11 +702,15 @@ class ComponentBuilderDelegate {
 
   /// Build provider from given method with given source. Use source for
   /// construct assign code of provider.
+  /// Example of result:
+  /// ```
+  /// SingletonProvider<MyProvider>(() => AppModule.provideMyProvider());
+  /// ```
   Code _buildProvider(MethodElement method, ProviderSource source) {
     final Expression newInstance =
         _getProviderReferenceOfElement(method).newInstance(
       <Expression>[
-        _buildExpressionBodyExpression(
+        _buildExpressionBody(
           Code(
             _generateAssignString(
               source.type,
@@ -675,7 +725,11 @@ class ComponentBuilderDelegate {
   }
 
   /// Build provider from given method. Method must have only 'bind' type.
-  Code _buildProviderFromAbstractMethodCode(MethodElement method) {
+  /// Example of result:
+  /// ```
+  /// SingletonProvider<MyProvider>(() => AppModule.provideMyProvider());
+  /// ```
+  Code _buildProviderFromAbstractMethod(MethodElement method) {
     _log(
         'build provider from abstract method: ${method.enclosingElement.toNameWithPath()}');
 
@@ -722,7 +776,7 @@ class ComponentBuilderDelegate {
         method,
       ).newInstance(
         <Expression>[
-          _buildExpressionBodyExpression(
+          _buildExpressionBody(
             Code(
               _generateAssignString(
                 (bindedElement as ClassElement).thisType,
@@ -745,8 +799,8 @@ class ComponentBuilderDelegate {
 
     final Expression newInstance =
         _getProviderReferenceOfElement(method).newInstance(<Expression>[
-      _buildExpressionBodyExpression(
-        _buildCallMethodOrConstructor(parameter, parameters, _componentContext),
+      _buildExpressionBody(
+        _buildCallMethodOrConstructor(parameter, parameters),
       ),
     ]);
 
@@ -756,11 +810,11 @@ class ComponentBuilderDelegate {
   // endregion provider
 
   /// Build expression body with given body of code.
-  /// Example result:
+  /// Example of result:
   /// ```
   /// () => print('hello')
   /// ```
-  Expression _buildExpressionBodyExpression(Code body) {
+  Expression _buildExpressionBody(Code body) {
     return CodeExpression(
       Block.of(
         <Code>[
@@ -773,11 +827,12 @@ class ComponentBuilderDelegate {
     );
   }
 
-  Code _buildProviderFromStaticMethodCode(
-    MethodElement method,
-    ComponentContext _componentContext,
-    Allocator allocator,
-  ) {
+  /// Build provider from given static method.
+  /// Example of result:
+  /// ```
+  /// SingletonProvider<MyProvider>(() => AppModule.provideMyProvider());
+  /// ```
+  Code _buildProviderFromStaticMethod(MethodElement method) {
     _log(
         'build provider from static method: ${method.enclosingElement.name}.${method.name}');
 
@@ -788,7 +843,7 @@ class ComponentBuilderDelegate {
     final Element moduleClass = method.enclosingElement;
     final Expression newInstance =
         _getProviderReferenceOfElement(method).newInstance(<Expression>[
-      _buildExpressionBodyExpression(
+      _buildExpressionBody(
         Block.of(
           <Code>[
             refer(moduleClass.name!, createElementPath(moduleClass)).code,
@@ -796,7 +851,6 @@ class ComponentBuilderDelegate {
             _buildCallMethodOrConstructor(
               method,
               method.parameters,
-              _componentContext,
             )
           ],
         ),
@@ -810,7 +864,6 @@ class ComponentBuilderDelegate {
   Code _buildCallMethodOrConstructor(
     Element element,
     List<ParameterElement> parameters,
-    ComponentContext _componentContext,
   ) {
     _log('build CallMethodOrConstructor for: ${element.name}');
     check(
@@ -871,9 +924,7 @@ class ComponentBuilderDelegate {
 
     if (isPositional) {
       final Expression newInstanceExpression = r(element.name!).newInstance(
-        _buildArgumentsExpression(element, parameters, _componentContext)
-            .values
-            .toList(),
+        _buildArgumentsExpression(element, parameters).values.toList(),
       );
       return _callInjectedMethodsIfNeeded(newInstanceExpression, element).code;
     }
@@ -881,7 +932,7 @@ class ComponentBuilderDelegate {
     if (isNamed) {
       final Expression newInstance = r(element.name!).newInstance(
         <Expression>[],
-        _buildArgumentsExpression(element, parameters, _componentContext),
+        _buildArgumentsExpression(element, parameters),
       );
       return _callInjectedMethodsIfNeeded(newInstance, element).code;
     }
@@ -889,6 +940,14 @@ class ComponentBuilderDelegate {
     throw JuggerError('unexpected state');
   }
 
+  /// Returns a call of injected methods sequentially, starting with the base
+  /// class.
+  /// Example of result:
+  /// ```
+  /// ..initSuperBase(_intProvider.get())
+  /// ..initBase(_intProvider.get())
+  /// ..init(_intProvider.get()));
+  /// ```
   Expression _callInjectedMethodsIfNeeded(
     Expression initialExpression,
     Element element,
@@ -898,7 +957,9 @@ class ComponentBuilderDelegate {
       if (methods.isNotEmpty) {
         final List<Code> methodsCalls = methods.expand((MethodElement method) {
           final Code methodCall = _buildCallMethodOrConstructor(
-              method, method.parameters, _componentContext);
+            method,
+            method.parameters,
+          );
           return <Code>[
             const Code('..'),
             methodCall,
@@ -974,7 +1035,6 @@ class ComponentBuilderDelegate {
   /// creation of the component is different.
   Constructor _buildConstructor(j.ComponentBuilder? componentBuilder) {
     return Constructor((ConstructorBuilder constructorBuilder) {
-      // constructorBuilder.body = const Code('_init();');
       if (hasNonLazyProviders()) {
         constructorBuilder.body = const Code('_initNonLazy();');
       }
@@ -1023,7 +1083,6 @@ class ComponentBuilderDelegate {
   Map<String, Expression> _buildArgumentsExpression(
     Element forElement,
     List<ParameterElement> parameters,
-    ComponentContext _componentContext,
   ) {
     _log('build arguments for ${forElement.name}: $parameters');
 
