@@ -129,94 +129,152 @@ class ComponentBuilderDelegate {
   ) {
     for (int i = 0; i < componentBuilders.length; i++) {
       final j.ComponentBuilder componentBuilder = componentBuilders[i];
-
-      target.body.add(Class((ClassBuilder classBuilder) {
-        classBuilder.name =
-            '${_createComponentName(componentBuilder.componentClass.name)}Builder';
-
-        classBuilder.implements.add(
-            Reference(componentBuilder.element.name, createElementPath(lib)));
-        classBuilder.methods
-            .addAll(componentBuilder.methods.map((MethodElement m) {
-          return Method((MethodBuilder b) {
-            b.annotations.add(_overrideAnnotationExpression);
-            b.name = m.name;
-            b.returns = Reference(m.returnType.getName(),
-                createElementPath(m.returnType.element!));
-            b.requiredParameters.addAll(m.parameters.map((ParameterElement pe) {
-              return Parameter((ParameterBuilder parameterBuilder) {
-                parameterBuilder.name = pe.name;
-                parameterBuilder.type = refer(_allocateTypeName(pe.type));
-              });
-            }));
-
-            b.body = Block((BlockBuilder b) {
-              if (m.name == 'build') {
-                final Iterable<Expression> map = componentBuilder.parameters
-                    .map((j.ComponentBuilderParameter parameter) {
-                  final Tag? tag =
-                      parameter.parameter.enclosingElement!.getQualifierTag();
-                  final CodeExpression codeExpression =
-                      CodeExpression(Block.of(<Code>[
-                    Code('_${_generateFieldName(
-                      parameter.parameter._tryGetType(),
-                      tag?._toAssignTag(),
-                    )}!'),
-                  ]));
-                  return codeExpression;
-                });
-
-                final List<Code> assertCodes = componentBuilder.parameters
-                    .map((j.ComponentBuilderParameter parameter) {
-                  final Tag? tag =
-                      parameter.parameter.enclosingElement!.getQualifierTag();
-                  return Code('assert(_${_generateFieldName(
-                    parameter.parameter.type,
-                    tag?._toAssignTag(),
-                  )} != null) ');
-                }).toList();
-
-                for (final Code value in assertCodes) {
-                  b.addExpression(CodeExpression(value));
-                }
-
-                final Expression newInstance = refer(
-                        '${_createComponentName(m.returnType.getName())}._create')
-                    .newInstance(map);
-
-                b.addExpression(CodeExpression(Block.of(<Code>[
-                  const Code('return '),
-                  newInstance.code,
-                ])));
-              } else {
-                final j.ComponentBuilderParameter p =
-                    j.ComponentBuilderParameter(parameter: m.parameters[0]);
-                final Tag? tag =
-                    p.parameter.enclosingElement!.getQualifierTag();
-                b.addExpression(CodeExpression(Block.of(<Code>[
-                  Code('_${_generateFieldName(
-                    p.parameter.type,
-                    tag?._toAssignTag(),
-                  )} = ${p.parameter.name}; return this'),
-                ])));
-              }
-            });
-          });
-        }));
-        classBuilder.fields.addAll(componentBuilder.parameters
-            .map((j.ComponentBuilderParameter parameter) {
-          return Field((FieldBuilder b) {
-            b.type = refer('${_allocateTypeName(parameter.parameter.type)}?');
-            final Tag? tag =
-                parameter.parameter.enclosingElement!.getQualifierTag();
-            b.name = '_${_generateFieldName(
-              parameter.parameter.type,
-              tag?._toAssignTag(),
-            )}';
-          });
-        }));
-      }));
+      target.body.add(_buildComponentBuilderClass(componentBuilder, lib));
     }
+  }
+
+  /// Returns a class of component builder.
+  Class _buildComponentBuilderClass(
+    j.ComponentBuilder componentBuilder,
+    LibraryElement lib,
+  ) {
+    return Class((ClassBuilder classBuilder) {
+      classBuilder.name =
+          '${_createComponentName(componentBuilder.componentClass.name)}Builder';
+
+      classBuilder.implements.add(
+        refer(componentBuilder.element.name, createElementPath(lib)),
+      );
+      classBuilder.methods.addAll(
+        componentBuilder.methods.map(
+          (MethodElement m) {
+            return _buildComponentBuilderMethod(componentBuilder, m);
+          },
+        ),
+      );
+      classBuilder.fields.addAll(
+        componentBuilder.parameters.map(
+          (j.ComponentBuilderParameter parameter) {
+            return _buildComponentParameter(parameter);
+          },
+        ),
+      );
+    });
+  }
+
+  /// Returns component argument field which is taken from the component
+  /// builder.
+  Field _buildComponentParameter(j.ComponentBuilderParameter parameter) {
+    return Field((FieldBuilder b) {
+      b.type = refer('${_allocateTypeName(parameter.parameter.type)}?');
+      final Tag? tag = parameter.parameter.enclosingElement!.getQualifierTag();
+      b.name = '_${_generateFieldName(
+        parameter.parameter.type,
+        tag?._toAssignTag(),
+      )}';
+    });
+  }
+
+  /// Returns the method body of the component builder, method can be any.
+  Method _buildComponentBuilderMethod(
+    j.ComponentBuilder componentBuilder,
+    MethodElement method,
+  ) {
+    return Method((MethodBuilder builder) {
+      builder.annotations.add(_overrideAnnotationExpression);
+      builder.name = method.name;
+      builder.returns = refer(
+        method.returnType.getName(),
+        createElementPath(method.returnType.element!),
+      );
+      builder.requiredParameters.addAll(
+        method.parameters.map(
+          (ParameterElement pe) {
+            return Parameter((ParameterBuilder parameterBuilder) {
+              parameterBuilder.name = pe.name;
+              parameterBuilder.type = refer(_allocateTypeName(pe.type));
+            });
+          },
+        ),
+      );
+
+      if (method.name == 'build') {
+        builder.body = _buildComponentBuilderBuildMethodBody(
+          componentBuilder,
+          method.returnType,
+        );
+      } else {
+        builder.body = _buildComponentBuilderMethodBody(method);
+      }
+    });
+  }
+
+  /// Returns the method body of the component builder, should not be a method
+  /// named 'build', there is a separate method to generate such a method.
+  Code _buildComponentBuilderMethodBody(MethodElement method) {
+    return Block((BlockBuilder builder) {
+      final j.ComponentBuilderParameter p =
+          j.ComponentBuilderParameter(parameter: method.parameters[0]);
+      final Tag? tag = p.parameter.enclosingElement!.getQualifierTag();
+      builder.addExpression(
+        CodeExpression(
+          Code('_${_generateFieldName(
+            p.parameter.type,
+            tag?._toAssignTag(),
+          )} = ${p.parameter.name}; return this'),
+        ),
+      );
+    });
+  }
+
+  /// Returns the method body named 'build' of the component builder.
+  Code _buildComponentBuilderBuildMethodBody(
+    j.ComponentBuilder componentBuilder,
+    DartType componentType,
+  ) {
+    return Block((BlockBuilder builder) {
+      final Iterable<Expression> parameters = componentBuilder.parameters
+          .map((j.ComponentBuilderParameter parameter) {
+        final Tag? tag =
+            parameter.parameter.enclosingElement!.getQualifierTag();
+        final CodeExpression codeExpression = CodeExpression(
+          Code('_${_generateFieldName(
+            parameter.parameter._tryGetType(),
+            tag?._toAssignTag(),
+          )}!'),
+        );
+        return codeExpression;
+      });
+
+      final List<Code> assertCodes = componentBuilder.parameters
+          .map((j.ComponentBuilderParameter parameter) {
+        final Tag? tag =
+            parameter.parameter.enclosingElement!.getQualifierTag();
+        return Code('assert(_${_generateFieldName(
+          parameter.parameter.type,
+          tag?._toAssignTag(),
+        )} != null) ');
+      }).toList();
+
+      for (final Code value in assertCodes) {
+        builder.addExpression(CodeExpression(value));
+      }
+
+      final Expression newInstance =
+          refer('${_createComponentName(componentType.getName())}._create')
+              .newInstance(parameters);
+
+      builder.addExpression(
+        CodeExpression(
+          Block.of(
+            <Code>[
+              const Code('return '),
+              newInstance.code,
+            ],
+          ),
+        ),
+      );
+    });
   }
 
   /// Returns the name for the generated component class.
