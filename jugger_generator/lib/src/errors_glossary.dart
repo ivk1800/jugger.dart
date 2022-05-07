@@ -22,6 +22,19 @@ const String abstractComponent = '$_glossary#abstract_component';
 const String invalidComponentDependency =
     '$_glossary#invalid_component_dependency';
 const String componentDependHimself = '$_glossary#component_depend_himself';
+const String publicModule = '$_glossary#public_module';
+const String abstractModule = '$_glossary#abstract_module';
+const String moduleAnnotationRequired = '$_glossary#module_annotation_required';
+const String repeatedModules = '$_glossary#repeated_modules';
+const String missingProvidesAnnotation =
+    '$_glossary#missing_provides_annotation';
+const String missingBindAnnotation = '$_glossary#missing_bind_annotation';
+const String unsupportedMethodType = '$_glossary#unsupported_method_type';
+const String privateMethodOfModule = '$_glossary#private_method_of_module';
+const String bindWrongType = '$_glossary#bind_wrong_type';
+const String ambiguityOfProvideMethod =
+    '$_glossary#ambiguity_of_provide_method';
+const String typeNotSupported = '$_glossary#type_not_supported';
 
 enum JuggerErrorId {
   missing_build_method,
@@ -37,6 +50,17 @@ enum JuggerErrorId {
   abstract_component,
   invalid_component_dependency,
   component_depend_himself,
+  public_module,
+  abstract_module,
+  module_annotation_required,
+  repeated_modules,
+  missing_provides_annotation,
+  missing_bind_annotation,
+  unsupported_method_type,
+  private_method_of_module,
+  bind_wrong_type,
+  ambiguity_of_provide_method,
+  type_not_supported,
 }
 
 extension JuggerErrorIdExt on JuggerErrorId {
@@ -68,6 +92,28 @@ extension JuggerErrorIdExt on JuggerErrorId {
         return invalidComponentDependency;
       case JuggerErrorId.component_depend_himself:
         return componentDependHimself;
+      case JuggerErrorId.public_module:
+        return publicModule;
+      case JuggerErrorId.abstract_module:
+        return abstractModule;
+      case JuggerErrorId.module_annotation_required:
+        return moduleAnnotationRequired;
+      case JuggerErrorId.repeated_modules:
+        return repeatedModules;
+      case JuggerErrorId.missing_provides_annotation:
+        return missingProvidesAnnotation;
+      case JuggerErrorId.unsupported_method_type:
+        return unsupportedMethodType;
+      case JuggerErrorId.private_method_of_module:
+        return privateMethodOfModule;
+      case JuggerErrorId.missing_bind_annotation:
+        return missingBindAnnotation;
+      case JuggerErrorId.bind_wrong_type:
+        return bindWrongType;
+      case JuggerErrorId.ambiguity_of_provide_method:
+        return ambiguityOfProvideMethod;
+      case JuggerErrorId.type_not_supported:
+        return typeNotSupported;
     }
   }
 }

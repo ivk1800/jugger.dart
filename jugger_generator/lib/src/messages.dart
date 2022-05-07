@@ -1,6 +1,5 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
-import 'package:jugger/jugger.dart';
 
 import 'errors_glossary.dart';
 import 'tag.dart';
@@ -31,38 +30,10 @@ String providerNotAllowed(DartType type) {
   return 'found registered dependency of provider [${type.getName()}]';
 }
 
-String bindWrongType(MethodElement method) {
-  return '${method.name} bind wrong type ${method.returnType}';
-}
-
-String dependencyMustBeAbstract(DartType type) {
-  return 'dependency must be abstract [${type.getName()}]';
-}
-
 String multipleQualifiersNotAllowed(Element element) {
   return 'multiple qualifiers not allowed [${element.enclosingElement?.name}.${element.name}]';
 }
 
-String moduleMustBeAbstract(ClassElement moduleClass) {
-  return 'module must be abstract [${moduleClass.thisType.getName()}] ${moduleClass.library.identifier}';
-}
-
 String foundUnusedGeneratedProviders(Iterable<String> variables) {
   return 'found unused generated providers: ${variables.join(', ')}';
-}
-
-String typeNotSupported(DartType type) {
-  return 'type [$type] not supported';
-}
-
-String repeatedModules(DartType type) {
-  return 'repeated modules [$type] not allowed';
-}
-
-String publicModule(ClassElement element) {
-  return 'Module [$element] must be public';
-}
-
-String moduleAnnotationRequired(ClassElement element) {
-  return 'class [${element.name}] ${element.library.identifier} must be annotated as ${module.runtimeType}';
 }

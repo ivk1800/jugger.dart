@@ -696,15 +696,6 @@ class ComponentBuilderDelegate {
     final ProviderSource? provider =
         _componentContext.findProvider(parameter.thisType);
 
-    final bool isSupertype = parameter.allSupertypes.any(
-        (InterfaceType interfaceType) =>
-            interfaceType.element.name ==
-            method.returnType.getDisplayString(withNullability: false));
-
-    check(
-      isSupertype,
-      () => bindWrongType(method),
-    );
     if (provider is AnotherComponentSource) {
       return _buildProvider(method, provider);
     } else if (provider is ModuleSource) {

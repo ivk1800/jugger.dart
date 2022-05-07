@@ -132,24 +132,31 @@ List<Annotation> getAnnotations(Element moduleClass) {
           return ModuleExtractor().getModuleAnnotationOfModuleClass(moduleDep);
         }).toList();
 
-        final Set<ModuleAnnotation> allModules =
+        final List<ModuleAnnotation> allModules =
             modulesAnnotations.expand((ModuleAnnotation module) {
+          //check repeated annotation from includes field
           checkUniqueClasses(
             module.includes
                 .map((ModuleAnnotation annotation) => annotation.moduleElement),
           );
           return List<ModuleAnnotation>.from(module.includes)..add(module);
-        }).toSet();
+        }).toList();
 
+        // region : check repeated annotation from modules field
         final Map<InterfaceType, List<ModuleAnnotation>> groupedAnnotations =
             modulesAnnotations.groupListsBy((ModuleAnnotation annotation) =>
                 annotation.moduleElement.thisType);
         for (final List<ModuleAnnotation> group in groupedAnnotations.values) {
           check(
             group.length == 1,
-            () => repeatedModules(group.first.moduleElement.thisType),
+            () => buildErrorMessage(
+              error: JuggerErrorId.repeated_modules,
+              message:
+                  'Repeated modules [${group.first.moduleElement.name}] not allowed.',
+            ),
           );
         }
+        // endregion
 
         annotations.add(
           ComponentAnnotation(
@@ -213,7 +220,10 @@ void checkUniqueClasses(Iterable<ClassElement> classes) {
   for (final List<ClassElement> group in groupedAnnotations.values) {
     check(
       group.length == 1,
-      () => repeatedModules(group.first.thisType),
+      () => buildErrorMessage(
+        error: JuggerErrorId.repeated_modules,
+        message: 'Repeated modules [${group.first.name}] not allowed.',
+      ),
     );
   }
 }
@@ -284,11 +294,20 @@ extension DartTypeExt on DartType {
   }
 
   void checkUnsupportedType() {
-    check(this is InterfaceType, () => 'type [$this] not supported');
+    check(
+      this is InterfaceType,
+      () => buildErrorMessage(
+        error: JuggerErrorId.type_not_supported,
+        message: 'Type $this not supported.',
+      ),
+    );
 
     check(
       nullabilitySuffix == NullabilitySuffix.none,
-      () => typeNotSupported(this),
+      () => buildErrorMessage(
+        error: JuggerErrorId.type_not_supported,
+        message: 'Type $this not supported.',
+      ),
     );
   }
 }

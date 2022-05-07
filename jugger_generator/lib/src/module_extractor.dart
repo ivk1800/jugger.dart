@@ -3,6 +3,8 @@ import 'dart:collection';
 import 'package:analyzer/dart/element/element.dart';
 
 import 'classes.dart';
+import 'errors_glossary.dart';
+import 'package:jugger/jugger.dart' as j;
 import 'jugger_error.dart';
 import 'messages.dart';
 import 'utils.dart';
@@ -24,11 +26,27 @@ class ModuleExtractor {
     if (moduleClass is! ClassElement) {
       throw JuggerError('element[$moduleClass] is not ClassElement');
     }
-    check(moduleClass.isAbstract, () => moduleMustBeAbstract(moduleClass));
-    check(moduleClass.isPublic, () => publicModule(moduleClass));
     check(
       moduleClass.hasAnnotatedAsModule(),
-      () => moduleAnnotationRequired(moduleClass),
+      () => buildErrorMessage(
+        error: JuggerErrorId.module_annotation_required,
+        message:
+            'The ${moduleClass.name} is missing an annotation ${j.module.runtimeType}.',
+      ),
+    );
+    check(
+      moduleClass.isAbstract,
+      () => buildErrorMessage(
+        error: JuggerErrorId.abstract_module,
+        message: 'Module ${moduleClass.name} must be abstract',
+      ),
+    );
+    check(
+      moduleClass.isPublic,
+      () => buildErrorMessage(
+        error: JuggerErrorId.public_module,
+        message: 'Module ${moduleClass.name} must be public.',
+      ),
     );
 
     final List<ElementAnnotation> resolvedMetadata = moduleClass.metadata;

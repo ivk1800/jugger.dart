@@ -259,7 +259,7 @@ abstract class SecondComponent {}
 ```
 
 ### component_depend_himself
-A component AppComponent cannot depend on himself.
+A component cannot depend on himself.
 
 `BAD:`
 ```dart
@@ -271,4 +271,211 @@ abstract class AppComponent {}
 ```dart
 @Component(dependencies: <Type>[])
 abstract class AppComponent {}
+```
+
+### public_module
+Module must be public.
+
+`BAD:`
+```dart
+@module
+abstract class _Module {}
+```
+
+`GOOD:`
+```dart
+@module
+abstract class Module {}
+```
+
+### abstract_module
+Module must be abstract.
+
+`BAD:`
+```dart
+@module
+class Module {}
+```
+
+`GOOD:`
+```dart
+@module
+abstract class Module {}
+```
+
+### module_annotation_required
+Module class must be annotated with @module.
+
+`BAD:`
+```dart
+abstract class Module {}
+```
+
+`GOOD:`
+```dart
+@module
+abstract class Module {}
+```
+
+### repeated_modules
+Not allowed to have multiple modules of the same type. 
+Does not apply if the same module is used in different modules as includes.
+
+`BAD:`
+```dart
+@Component(modules: <Type>[AppModule, AppModule])
+abstract class AppComponent { }
+```
+
+`GOOD:`
+```dart
+@Component(modules: <Type>[AppModule])
+abstract class AppComponent { }
+```
+
+### missing_provides_annotation
+Static methods in modules must be annotated with @Provides.
+
+`BAD:`
+```dart
+@Module()
+abstract class Module1 {
+  static String provideString() => '';
+}
+```
+
+`GOOD:`
+```dart
+@Module()
+abstract class Module1 {
+  @provides
+  static String provideString() => '';
+}
+```
+
+### missing_bind_annotation
+Abstract methods in modules must be annotated with @binds.
+
+`BAD:`
+```dart
+@Module()
+abstract class Module1 {
+  Pattern bindPattern(String impl);
+}
+```
+
+`GOOD:`
+```dart
+@Module()
+abstract class Module1 {
+  @binds
+  Pattern bindPattern(String impl);
+}
+```
+
+### unsupported_method_type
+Methods of the module must be abstract or static.
+
+`BAD:`
+```dart
+@Module()
+abstract class Module1 {
+  @provides
+  String providerString() => '';
+}
+```
+
+`GOOD:`
+```dart
+@Module()
+abstract class Module1 {
+  @provides
+  static String providerString() => '';
+}
+```
+
+### private_method_of_module
+Methods of the module can not be private.
+
+`BAD:`
+```dart
+@Module()
+abstract class Module1 {
+  @provides
+  static String _providerString() => '';
+}
+```
+
+`GOOD:`
+```dart
+@Module()
+abstract class Module1 {
+  @provides
+  static String providerString() => '';
+}
+```
+
+### bind_wrong_type
+Parameter type of method must be assignable to the return type.
+
+`BAD:`
+```dart
+@Module()
+abstract class Module1 {
+  @binds
+  Pattern bindPattern(int impl);
+}
+```
+
+`GOOD:`
+```dart
+@Module()
+abstract class Module1 {
+  @binds
+  Pattern bindPattern(String impl);
+}
+```
+
+### ambiguity_of_provide_method
+Method of module can not be annotated together with @Provides and @Binds.
+
+`BAD:`
+```dart
+@Module()
+abstract class Module1 {
+  @binds
+  @provides
+  Pattern bindPattern(String impl);
+}
+```
+
+`GOOD:`
+```dart
+@Module()
+abstract class Module1 {
+  @binds
+  Pattern bindPattern(String impl);
+}
+```
+
+### type_not_supported
+Jugger does not support some types, they should not be used. 
+Such types include nullable.
+
+`BAD:`
+```dart
+@module
+abstract class AppModule {
+  @provides
+  static String? providesString() => '';
+}
+```
+
+`GOOD:`
+```dart
+@module
+abstract class AppModule {
+  @provides
+  static String providesString() => '';
+}
 ```

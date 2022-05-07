@@ -5,31 +5,6 @@ import 'utils.dart';
 
 void main() {
   group('module', () {
-    test('should failed if provide method not abstract or static', () async {
-      await checkBuilderError(
-        codeContent: '''
-import 'package:jugger/jugger.dart';
-
-@Component(modules: <Type>[AppModule])
-abstract class AppComponent {
-  String get testString;
-}
-
-@module
-abstract class AppModule {
-  @provides
-  String provideTestString() => '';
-}
-        ''',
-        onError: (Object error) {
-          expect(
-            error.toString(),
-            'error: provided method must be abstract or static [AppModule.provideTestString]',
-          );
-        },
-      );
-    });
-
     test('circular includes', () async {
       await checkBuilderError(
         codeContent: '''
@@ -891,44 +866,28 @@ abstract class AppModule {
   });
 
   group('binds', () {
-    test('binds wrong type', () async {
+    test('bind wrong type', () async {
       await checkBuilderError(
         codeContent: '''
 import 'package:jugger/jugger.dart';
 
-abstract class IMainRouter {}
+@Component(modules: <Type>[Module1])
+abstract class AppComponent {}
 
-class MainRouter implements IMainRouter {
-  const MainRouter();
-}
-
-@Component(modules: <Type>[AppModule])
-abstract class AppComponent {
-  IMainRouter getMainRouter();
-}
-
-@module
-abstract class AppModule {
-  @singleton
-  @provides
-  static MainRouter provideMainRouter() => const MainRouter();
-
-  @singleton
+@Module()
+abstract class Module1 {
   @binds
-  IMainRouter bindMainRouter(String impl);
+  Pattern bindPattern(int impl);
 }
         ''',
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: bindMainRouter bind wrong type IMainRouter',
+            'error: bind_wrong_type:\n'
+            'Method Module1.bindPattern parameter type must be assignable to the return type.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#bind_wrong_type',
           );
         },
-        options: const BuilderOptions(
-          <String, dynamic>{
-            'check_unused_providers': true,
-          },
-        ),
       );
     });
 
@@ -978,7 +937,9 @@ abstract class AppComponent {
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: type [String?] not supported',
+            'error: type_not_supported:\n'
+            'Type String? not supported.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#type_not_supported',
           );
         },
         options: const BuilderOptions(
@@ -1002,7 +963,9 @@ abstract class AppComponent {
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: type [void Function()] not supported',
+            'error: type_not_supported:\n'
+            'Type void Function() not supported.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#type_not_supported',
           );
         },
         options: const BuilderOptions(
@@ -1033,7 +996,9 @@ class Config {
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: type [String?] not supported',
+            'error: type_not_supported:\n'
+            'Type String? not supported.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#type_not_supported',
           );
         },
         options: const BuilderOptions(
@@ -1064,7 +1029,9 @@ class Config {
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: type [String Function()] not supported',
+            'error: type_not_supported:\n'
+            'Type String Function() not supported.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#type_not_supported',
           );
         },
         options: const BuilderOptions(
@@ -1093,7 +1060,9 @@ abstract class AppModule {
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: type [int?] not supported',
+            'error: type_not_supported:\n'
+            'Type int? not supported.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#type_not_supported',
           );
         },
         options: const BuilderOptions(
@@ -1121,7 +1090,9 @@ abstract class AppModule {
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: type [int Function()] not supported',
+            'error: type_not_supported:\n'
+            'Type int Function() not supported.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#type_not_supported',
           );
         },
         options: const BuilderOptions(
@@ -1149,7 +1120,9 @@ abstract class AppModule {
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: type [String?] not supported',
+            'error: type_not_supported:\n'
+            'Type String? not supported.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#type_not_supported',
           );
         },
         options: const BuilderOptions(
@@ -1177,7 +1150,9 @@ abstract class AppModule {
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: type [int Function()] not supported',
+            'error: type_not_supported:\n'
+            'Type int Function() not supported.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#type_not_supported',
           );
         },
         options: const BuilderOptions(
@@ -1208,7 +1183,9 @@ abstract class MyComponentBuilder {
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: type [String?] not supported',
+            'error: type_not_supported:\n'
+            'Type String? not supported.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#type_not_supported',
           );
         },
         options: const BuilderOptions(
@@ -1239,7 +1216,9 @@ abstract class MyComponentBuilder {
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: type [int Function()] not supported',
+            'error: type_not_supported:\n'
+            'Type int Function() not supported.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#type_not_supported',
           );
         },
         options: const BuilderOptions(
@@ -1267,7 +1246,9 @@ abstract class AppModule {
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: type [String?] not supported',
+            'error: type_not_supported:\n'
+            'Type String? not supported.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#type_not_supported',
           );
         },
         options: const BuilderOptions(
@@ -1295,7 +1276,9 @@ abstract class AppModule {
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: type [String?] not supported',
+            'error: type_not_supported:\n'
+            'Type String? not supported.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#type_not_supported',
           );
         },
         options: const BuilderOptions(
@@ -1308,26 +1291,25 @@ abstract class AppModule {
   });
 
   group('module', () {
-    test('abstract provide method', () async {
+    test('abstract method without bind annotation', () async {
       await checkBuilderError(
         codeContent: '''
 import 'package:jugger/jugger.dart';
 
-@Component(modules: <Type>[Module])
-abstract class AppComponent {
-  String getString();
-}
+@Component(modules: <Type>[Module1])
+abstract class AppComponent {}
 
-@module
-abstract class Module {
-  @provides
-  String provideString();
+@Module()
+abstract class Module1 {
+  Pattern bindPattern(String impl);
 }
         ''',
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: provide abstract method [Module.provideString] must be annotated [Binds]',
+            'error: missing_bind_annotation:\n'
+            'Found abstract method Module1.bindPattern, but is not annotated with @Binds.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#missing_bind_annotation',
           );
         },
       );
@@ -1347,9 +1329,210 @@ abstract class _Module {}
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: Module [abstract class _Module] must be public',
+            'error: public_module:\n'
+            'Module _Module must be public.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#public_module',
           );
         },
+      );
+    });
+
+    test('abstract module', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[Module])
+abstract class AppComponent {}
+
+@module
+class Module {}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: abstract_module:\n'
+            'Module Module must be abstract\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#abstract_module',
+          );
+        },
+      );
+    });
+
+    test('module annotation required', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[Module])
+abstract class AppComponent {}
+
+abstract class Module {}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: module_annotation_required:\n'
+            'The Module is missing an annotation Module.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#module_annotation_required',
+          );
+        },
+      );
+    });
+
+    test('static method without provide annotation', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[Module1])
+abstract class AppComponent {}
+
+@Module()
+abstract class Module1 {
+  static String provideString() => '';
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: missing_provides_annotation:\n'
+            'Found static method Module1.provideString, but is not annotated with @Provides.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#missing_provides_annotation',
+          );
+        },
+      );
+    });
+
+    test('abstract or static method', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[Module1])
+abstract class AppComponent {}
+
+@Module()
+abstract class Module1 {
+  @provides
+  String providerString() => '';
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: unsupported_method_type:\n'
+            'Method Module1.providerString must be abstract or static.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#unsupported_method_type',
+          );
+        },
+      );
+    });
+
+    test('private method', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[Module1])
+abstract class AppComponent {}
+
+@Module()
+abstract class Module1 {
+  @provides
+  static String _providerString() => '';
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: private_method_of_module:\n'
+            'Method Module1._providerString can not be private.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#private_method_of_module',
+          );
+        },
+      );
+    });
+
+    test('binds and provides together', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[Module1])
+abstract class AppComponent {}
+
+@Module()
+abstract class Module1 {
+  @binds
+  @provides
+  Pattern bindPattern(String impl);
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: ambiguity_of_provide_method:\n'
+            'Method [Module1.bindPattern] can not be annotated together with @Provides and @Binds\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#ambiguity_of_provide_method',
+          );
+        },
+      );
+    });
+
+    test('ambiguity of provide method', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[Module1])
+abstract class AppComponent {}
+
+@Module()
+abstract class Module1 {
+  @binds
+  @provides
+  Pattern bindPattern(String impl);
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: ambiguity_of_provide_method:\n'
+            'Method [Module1.bindPattern] can not be annotated together with @Provides and @Binds\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#ambiguity_of_provide_method',
+          );
+        },
+      );
+    });
+
+    test('provides nullable type', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[AppModule])
+abstract class AppComponent {}
+
+@module
+abstract class AppModule {
+  @provides
+  static String? providesString() => '';
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: type_not_supported:\n'
+            'Type String? not supported.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#type_not_supported',
+          );
+        },
+        options: const BuilderOptions(
+          <String, dynamic>{
+            'check_unused_providers': true,
+          },
+        ),
       );
     });
   });
@@ -1402,7 +1585,42 @@ abstract class AppModule {
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: repeated modules [AppModule] not allowed',
+            'error: repeated_modules:\n'
+            'Repeated modules [AppModule] not allowed.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#repeated_modules',
+          );
+        },
+      );
+    });
+
+    test('repeated modules in includes', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[FirstModule])
+abstract class AppComponent {
+  String getString();
+}
+
+@Module(includes: <Type>[SecondModule, SecondModule])
+abstract class FirstModule {
+  @provides
+  static String provideString() => '';
+}
+
+@module
+abstract class SecondModule {
+  @provides
+  static String provideString() => '';
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: repeated_modules:\n'
+            'Repeated modules [SecondModule] not allowed.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#repeated_modules',
           );
         },
       );

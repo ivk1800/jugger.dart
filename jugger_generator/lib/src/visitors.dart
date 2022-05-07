@@ -65,54 +65,83 @@ class _ProvidesVisitor extends RecursiveElementVisitor<dynamic> {
   @override
   dynamic visitMethodElement(MethodElement element) {
     final Element moduleElement = element.enclosingElement;
-    check(
-      moduleElement.hasAnnotatedAsModule(),
-      () => moduleAnnotationRequired(moduleElement as ClassElement),
-    );
-
     final List<Annotation> annotations = getAnnotations(element);
 
-    if (!element.isAbstract && !element.isStatic) {
-      throw JuggerError(
-        'provided method must be abstract or static [${moduleElement.name}.${element.name}]',
-      );
-    }
+    element.returnType.checkUnsupportedType();
 
-    if (element.isPrivate) {
-      throw JuggerError(
-        'provided method can not be private [${moduleElement.name}.${element.name}]',
-      );
-    }
+    check(
+      element.isAbstract || element.isStatic,
+      () => buildErrorMessage(
+        error: JuggerErrorId.unsupported_method_type,
+        message:
+            'Method ${moduleElement.name}.${element.name} must be abstract or static.',
+      ),
+    );
 
+    check(
+      !element.isPrivate,
+      () => buildErrorMessage(
+        error: JuggerErrorId.private_method_of_module,
+        message:
+            'Method ${moduleElement.name}.${element.name} can not be private.',
+      ),
+    );
+
+    final ProvideAnnotation? provideAnnotation = getProvideAnnotation(element);
     if (element.isStatic) {
       check(
-        getProvideAnnotation(element) != null,
-        () =>
-            'provide static method [${moduleElement.name}.${element.name}] must be annotated [${j.provides.runtimeType}]',
+        provideAnnotation != null,
+        () => buildErrorMessage(
+          error: JuggerErrorId.missing_provides_annotation,
+          message:
+              'Found static method ${moduleElement.name}.${element.name}, but is not annotated with @${j.provides.runtimeType}.',
+        ),
       );
     }
 
+    final BindAnnotation? bindAnnotation = getBindAnnotation(element);
     if (element.isAbstract) {
       check(
-        getBindAnnotation(element) != null,
-        () =>
-            'provide abstract method [${moduleElement.name}.${element.name}] must be annotated [${j.binds.runtimeType}]',
+        bindAnnotation != null,
+        () => buildErrorMessage(
+          error: JuggerErrorId.missing_bind_annotation,
+          message:
+              'Found abstract method ${moduleElement.name}.${element.name}, but is not annotated with @${j.binds.runtimeType}.',
+        ),
       );
       check(
         element.parameters.length == 1,
         () =>
             'method [${moduleElement.name}.${element.name}] annotates [${j.binds.runtimeType}] must have 1 parameter',
       );
-      // ignore: flutter_style_todos
-      //TODO: check parameter type must be assignable to the return type
-    }
 
-    if (getBindAnnotation(element) != null &&
-        getProvideAnnotation(element) != null) {
-      throw JuggerError(
-        'provide method [${moduleElement.name}.${element.name}] can not be annotated together [${j.provides.runtimeType}] and [${j.binds.runtimeType}]',
+      final DartType parameterType = element.parameters.first.type;
+      parameterType.checkUnsupportedType();
+      final typeElement = parameterType.element;
+
+      check(typeElement is ClassElement, () => 'Supported only class element.');
+
+      final bool isSupertype = (typeElement as ClassElement).allSupertypes.any(
+          (InterfaceType interfaceType) => interfaceType == element.returnType);
+
+      check(
+        isSupertype,
+        () => buildErrorMessage(
+          error: JuggerErrorId.bind_wrong_type,
+          message:
+              'Method ${moduleElement.name}.${element.name} parameter type must be assignable to the return type.',
+        ),
       );
     }
+
+    check(
+      !(bindAnnotation != null && provideAnnotation != null),
+      () => buildErrorMessage(
+        error: JuggerErrorId.ambiguity_of_provide_method,
+        message:
+            'Method [${moduleElement.name}.${element.name}] can not be annotated together with @${j.provides.runtimeType} and @${j.binds.runtimeType}',
+      ),
+    );
 
     methods.add(Method(element, annotations));
     return null;
