@@ -22,10 +22,6 @@ String notProvided(DartType type, Tag? tag) {
   return '[${type.getName()}, qualifier: ${tag?.originalId}] not provided';
 }
 
-String injectedConstructorNotFound(ClassElement element) {
-  return 'not found injected constructor for ${element.name}';
-}
-
 String providerNotAllowed(DartType type) {
   return 'found registered dependency of provider [${type.getName()}]';
 }

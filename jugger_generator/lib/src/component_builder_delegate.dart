@@ -13,6 +13,7 @@ import 'check_unused_providers.dart';
 import 'classes.dart' as j;
 import 'component_context.dart';
 import 'dart_type_ext.dart';
+import 'errors_glossary.dart';
 import 'global_config.dart';
 import 'jugger_error.dart';
 import 'messages.dart';
@@ -366,7 +367,7 @@ class ComponentBuilderDelegate {
               !(isCore(typeElement) || typeElement.isAbstract),
               () => notProvided(dependency.type, tag),
             );
-            b.assignment = _buildProviderFromClassAssignCode(typeElement);
+            b.assignment = _buildProviderFromType(dependency.type);
           }
 
           b.type =
@@ -711,27 +712,22 @@ class ComponentBuilderDelegate {
 
   // region provider
 
-  /// example: SingletonProvider<MyProvider>(() => AppModule.provideMyProvider());
-  // TODO(Ivan): pass DartType instead ClassElement
-  Code _buildProviderFromClassAssignCode(ClassElement element) {
-    _log(
-      'build provider from class: ${element.toNameWithPath()}',
-    );
-    final List<ConstructorElement> injectedConstructors =
-        element.getInjectedConstructors();
-
-    check(
-      injectedConstructors.length == 1,
-      () => injectedConstructorNotFound(element),
-    );
-    final ConstructorElement injectedConstructor = injectedConstructors[0];
-    final List<ParameterElement> parameters = injectedConstructor.parameters;
+  /// Build provider from given type. Use source for construct assign code of
+  /// provider.
+  /// Example of result:
+  /// ```
+  /// SingletonProvider<MyProvider>(() => AppModule.provideMyProvider());
+  /// ```
+  Code _buildProviderFromType(DartType type) {
+    type.checkUnsupportedType();
+    final ConstructorElement injectedConstructor =
+        type.getRequiredInjectedConstructor();
 
     final Expression newInstance =
         _getProviderReferenceOfElement(injectedConstructor)
             .newInstance(<Expression>[
       _buildExpressionBody(
-        _buildCallMethodOrConstructor(element, parameters),
+        _buildCallConstructor(injectedConstructor),
       ),
     ]);
 
@@ -814,15 +810,9 @@ class ComponentBuilderDelegate {
       return _buildProvider(method, provider);
     }
 
-    final List<ConstructorElement> injectedConstructors =
-        parameter.getInjectedConstructors();
-
-    check(
-      injectedConstructors.length == 1,
-      () => injectedConstructorNotFound(parameter),
-    );
-    final ConstructorElement injectedConstructor = injectedConstructors[0];
-    final List<ParameterElement> parameters = injectedConstructor.parameters;
+    // if injected constructor is missing it makes no sense to do anything.
+    final ConstructorElement injectedConstructor =
+        parameter.thisType.getRequiredInjectedConstructor();
 
     if (getBindAnnotation(method) != null) {
       final Element? bindedElement = method.parameters[0].type.element;
@@ -858,7 +848,7 @@ class ComponentBuilderDelegate {
     final Expression newInstance =
         _getProviderReferenceOfElement(method).newInstance(<Expression>[
       _buildExpressionBody(
-        _buildCallMethodOrConstructor(parameter, parameters),
+        _buildCallConstructor(injectedConstructor),
       ),
     ]);
 
@@ -906,10 +896,7 @@ class ComponentBuilderDelegate {
           <Code>[
             refer(moduleClass.name!, createElementPath(moduleClass)).code,
             const Code('.'),
-            _buildCallMethodOrConstructor(
-              method,
-              method.parameters,
-            )
+            _buildCallMethod(method)
           ],
         ),
       )
@@ -918,88 +905,112 @@ class ComponentBuilderDelegate {
     return newInstance.code;
   }
 
-  // TODO(Ivan): split to two methods
-  Code _buildCallMethodOrConstructor(
-    Element element,
-    List<ParameterElement> parameters,
-  ) {
-    _log('build CallMethodOrConstructor for: ${element.name}');
-    check(
-      (element is ClassElement) || (element is MethodElement),
-      () => 'element${element.name} must be ClassElement or MethodElement',
-    );
+  /// Returns the code that calls the given constructor. Calls injected methods
+  /// if needed.
+  /// Example of result:
+  /// ```
+  /// MyClass();
+  /// ```
+  Code _buildCallConstructor(ConstructorElement constructor) {
+    final ProviderSource? provider =
+        _componentContext.findProvider(constructor.type);
 
-    Reference r(String symbol) {
-      if (element is MethodElement) {
-        return refer(element.name);
-      }
-      return refer(element.name!, createElementPath(element));
+    if (provider is ModuleSource) {
+      return Code(
+        _generateAssignString(
+          provider.type,
+          provider.tag,
+        ),
+      );
     }
+    final ClassElement classElement = constructor.enclosingElement;
+    final Reference reference =
+        refer(classElement.name, createElementPath(classElement));
 
-    /// handle case:
-    ///   @singleton
-    ///   @provide
-    ///   static UpdatesProvider provideUpdatesProvider() => UpdatesProvider();
-    ///
-    ///   @singleton
-    ///   @bind
-    ///   IChatUpdatesProvider bindChatUpdatesProvider(UpdatesProvider impl);
-    if (element is ClassElement) {
-      final ProviderSource? provider =
-          _componentContext.findProvider(element.thisType);
-
-      if (provider is ModuleSource) {
-        return Code(
-          _generateAssignString(
-            provider.type,
-            provider.tag,
-          ),
-        );
-      }
-    }
-
-    if (parameters.isEmpty) {
-      final Reference reference = r(element.name!);
+    if (constructor.parameters.isEmpty) {
       late final Expression instanceExpression;
-      if (element is ClassElement &&
-          element.constructors.first.isConst &&
-          element.constructors.first.parameters.isEmpty) {
+      if (constructor.isConst && constructor.parameters.isEmpty) {
         instanceExpression = reference.constInstance(<Expression>[]);
       } else {
         instanceExpression = reference.newInstance(<Expression>[]);
       }
-      return _callInjectedMethodsIfNeeded(instanceExpression, element).code;
+      return _callInjectedMethodsIfNeeded(instanceExpression, classElement)
+          .code;
     }
 
+    final Expression newInstanceExpression = _buildCallArgumentsExpression(
+      constructor.parameters,
+      reference,
+    );
+    return _callInjectedMethodsIfNeeded(
+      newInstanceExpression,
+      classElement,
+    ).code;
+  }
+
+  /// Returns the code that calls the given method. Method can be: module
+  /// method, method of another component.
+  /// Example of result:
+  /// ```
+  /// provideMyProvider();
+  /// ```
+  Code _buildCallMethod(MethodElement method) {
+    final Reference reference = refer(method.name);
+    if (method.parameters.isEmpty) {
+      return reference.newInstance(<Expression>[]).code;
+    }
+
+    return _buildCallArgumentsExpression(
+      method.parameters,
+      reference,
+    ).code;
+  }
+
+  /// Returns a call to the arguments usually of a method or constructor. Only
+  /// named or only positional arguments are supported.
+  /// [parameters] to be called.
+  /// [reference] reference to a method or constructor.
+  /// Example of result:
+  /// ```
+  /// provideMyClass(arg1, args2); // for method
+  /// MyClass(arg1, args2); // for constructor
+  /// ```
+  Expression _buildCallArgumentsExpression(
+    List<ParameterElement> parameters,
+    Reference reference,
+  ) {
     final bool isPositional =
         parameters.any((ParameterElement p) => p.isPositional);
     final bool isNamed = parameters.any((ParameterElement p) => p.isNamed);
 
     check(
       !(isPositional && isNamed),
-      () => 'all parameters must be Positional or Named [${element.name}]',
+      () => buildErrorMessage(
+        error: JuggerErrorId.invalid_parameters_types,
+        message:
+            '${reference.symbol} can have only positional parameters or only named parameters.',
+      ),
     );
 
     if (isPositional) {
-      final Expression newInstanceExpression = r(element.name!).newInstance(
-        _buildArgumentsExpression(element, parameters).values.toList(),
+      return reference.newInstance(
+        _buildArgumentsExpressions(parameters).values.toList(),
       );
-      return _callInjectedMethodsIfNeeded(newInstanceExpression, element).code;
     }
 
     if (isNamed) {
-      final Expression newInstance = r(element.name!).newInstance(
+      final Expression newInstance = reference.newInstance(
         <Expression>[],
-        _buildArgumentsExpression(element, parameters),
+        _buildArgumentsExpressions(parameters),
       );
-      return _callInjectedMethodsIfNeeded(newInstance, element).code;
+      return newInstance;
     }
 
-    throw JuggerError('unexpected state');
+    throw JuggerError('Unable to call constructor or method.');
   }
 
   /// Returns a call of injected methods sequentially, starting with the base
-  /// class.
+  /// class. Will be called if the element is a class.
   /// Example of result:
   /// ```
   /// ..initSuperBase(_intProvider.get())
@@ -1014,13 +1025,9 @@ class ComponentBuilderDelegate {
       final Set<MethodElement> methods = element.getInjectedMethods();
       if (methods.isNotEmpty) {
         final List<Code> methodsCalls = methods.expand((MethodElement method) {
-          final Code methodCall = _buildCallMethodOrConstructor(
-            method,
-            method.parameters,
-          );
           return <Code>[
             const Code('..'),
-            methodCall,
+            _buildCallMethod(method),
           ];
         }).toList();
         return CodeExpression(Block.of(
@@ -1138,12 +1145,9 @@ class ComponentBuilderDelegate {
     }).toList();
   }
 
-  Map<String, Expression> _buildArgumentsExpression(
-    Element forElement,
+  Map<String, Expression> _buildArgumentsExpressions(
     List<ParameterElement> parameters,
   ) {
-    _log('build arguments for ${forElement.name}: $parameters');
-
     if (parameters.isEmpty) {
       return HashMap<String, Expression>();
     }

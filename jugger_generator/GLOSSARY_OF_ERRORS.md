@@ -479,3 +479,41 @@ abstract class AppModule {
   static String providesString() => '';
 }
 ```
+
+### ambiguity_of_injected_constructor
+For a class to be used in an object graph, it must have only one constructor injected. 
+If there is no injected constructor, the jugger will not understand what to do.
+
+`BAD:`
+```dart
+class MyClass {
+  MyClass();
+}
+```
+
+`GOOD:`
+```dart
+class MyClass {
+  @inject
+  MyClass();
+}
+```
+
+### invalid_parameters_types
+Constructor or method can have only positional parameters or only named parameters.
+
+`BAD:`
+```dart
+@provides
+static String provideString(int numberInt, {
+required int numberDouble,
+}) => '';
+```
+
+`GOOD:`
+```dart
+static String provideString(
+    int numberInt, 
+    int numberDouble,
+) => '';
+```

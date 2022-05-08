@@ -2,6 +2,8 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
 
+import 'errors_glossary.dart';
+import 'messages.dart';
 import 'utils.dart';
 import 'visitors.dart';
 
@@ -35,7 +37,11 @@ extension DartTypeExt on DartType {
         element!.getInjectedConstructors();
     check(
       injectedConstructors.length == 1,
-      () => 'required single injected constructor',
+      () => buildErrorMessage(
+        error: JuggerErrorId.ambiguity_of_injected_constructor,
+        message:
+            'Class ${element?.name} has more than one injected constructor or no injected constructor.',
+      ),
     );
     return injectedConstructors.first;
   }

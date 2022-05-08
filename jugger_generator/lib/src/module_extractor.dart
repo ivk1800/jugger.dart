@@ -1,10 +1,10 @@
 import 'dart:collection';
 
 import 'package:analyzer/dart/element/element.dart';
+import 'package:jugger/jugger.dart' as j;
 
 import 'classes.dart';
 import 'errors_glossary.dart';
-import 'package:jugger/jugger.dart' as j;
 import 'jugger_error.dart';
 import 'messages.dart';
 import 'utils.dart';

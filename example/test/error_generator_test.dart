@@ -5,6 +5,41 @@ import 'utils.dart';
 
 void main() {
   group('module', () {
+    test('should failed if method with named param', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[AppModule])
+abstract class AppComponent {
+  String get hello;
+}
+
+@module
+abstract class AppModule {
+  @provides
+  static String provideHello(int numberInt, {
+    required int numberDouble,
+  }) => '';
+
+  @provides
+  static int provideNumberInt() => 1;
+
+  @provides
+  static double provideNumberDouble() => 1;
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: invalid_parameters_types:\n'
+            'provideHello can have only positional parameters or only named parameters.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_parameters_types',
+          );
+        },
+      );
+    });
+
     test('circular includes', () async {
       await checkBuilderError(
         codeContent: '''
@@ -94,7 +129,9 @@ class MyClass {
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: not found injected constructor for MyClass',
+            'error: ambiguity_of_injected_constructor:\n'
+            'Class MyClass has more than one injected constructor or no injected constructor.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#ambiguity_of_injected_constructor',
           );
         },
       );
@@ -233,7 +270,9 @@ class MyClass {
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: all parameters must be Positional or Named [MyClass]',
+            'error: invalid_parameters_types:\n'
+            'MyClass can have only positional parameters or only named parameters.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_parameters_types',
           );
         },
       );
@@ -431,7 +470,9 @@ const Inject inject = Inject._();
           onError: (Object error) {
             expect(
               error.toString(),
-              'error: not found injected constructor for MyClass',
+              'error: ambiguity_of_injected_constructor:\n'
+              'Class MyClass has more than one injected constructor or no injected constructor.\n'
+              'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#ambiguity_of_injected_constructor',
             );
           },
         );
@@ -916,7 +957,9 @@ abstract class AppModule {
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: not found injected constructor for MainRouter',
+            'error: ambiguity_of_injected_constructor:\n'
+            'Class MainRouter has more than one injected constructor or no injected constructor.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#ambiguity_of_injected_constructor',
           );
         },
       );

@@ -117,7 +117,7 @@ class _ProvidesVisitor extends RecursiveElementVisitor<dynamic> {
 
       final DartType parameterType = element.parameters.first.type;
       parameterType.checkUnsupportedType();
-      final typeElement = parameterType.element;
+      final Element? typeElement = parameterType.element;
 
       check(typeElement is ClassElement, () => 'Supported only class element.');
 
