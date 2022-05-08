@@ -65,8 +65,6 @@ class _ProvidesVisitor extends RecursiveElementVisitor<dynamic> {
   @override
   dynamic visitMethodElement(MethodElement element) {
     final Element moduleElement = element.enclosingElement;
-    final List<Annotation> annotations = getAnnotations(element);
-
     element.returnType.checkUnsupportedType();
 
     check(
@@ -143,7 +141,7 @@ class _ProvidesVisitor extends RecursiveElementVisitor<dynamic> {
       ),
     );
 
-    methods.add(Method(element, annotations));
+    methods.add(Method(element));
     return null;
   }
 }

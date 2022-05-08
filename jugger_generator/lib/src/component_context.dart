@@ -9,7 +9,9 @@ import 'classes.dart';
 import 'classes.dart' as j;
 import 'dart_type_ext.dart';
 import 'dependency_place.dart';
+import 'errors_glossary.dart';
 import 'jugger_error.dart';
+import 'messages.dart';
 import 'tag.dart';
 import 'utils.dart';
 import 'visitors.dart';
@@ -28,19 +30,22 @@ class ComponentContext {
       final List<MethodElement> methods =
           dep.element.getComponentProvideMethods();
 
-      for (final MethodElement m in methods) {
-        providerSources.add(AnotherComponentSource(
-            type: m.returnType,
-            element: m,
+      for (final MethodElement method in methods) {
+        _registerSource(
+          AnotherComponentSource(
+            type: method.returnType,
+            element: method,
             dependencyClass: dep.element,
-            annotations: getAnnotations(m)));
+            annotations: getAnnotations(method),
+          ),
+        );
       }
 
       final List<PropertyAccessorElement> properties =
           dep.element.getProvideProperties();
 
       for (final PropertyAccessorElement property in properties) {
-        providerSources.add(
+        _registerSource(
           AnotherComponentSource(
             type: property.returnType,
             element: property,
@@ -62,11 +67,9 @@ class ComponentContext {
     for (final j.Method method in component.modulesProvideMethods) {
       final MethodElement element = method.element;
 
-      providerSources.add(
+      _registerSource(
         ModuleSource(
-          // ignore: avoid_as
           moduleClass: element.enclosingElement as ClassElement,
-          // ignore: avoid_as
           type: element.returnType,
           method: method,
           annotations: getAnnotations(element),
@@ -78,10 +81,14 @@ class ComponentContext {
             .map((ComponentBuilderParameter p) => p.parameter)
             .toList() ??
         <ParameterElement>[]) {
-      providerSources.add(BuildInstanceSource(
+      _registerSource(
+        BuildInstanceSource(
           parameter: parameter,
           type: parameter.type,
-          annotations: getAnnotations(parameter.enclosingElement!)));
+          componentBuilder: componentBuilder!,
+          annotations: getAnnotations(parameter.enclosingElement!),
+        ),
+      );
     }
 
     _validateProviderSources();
@@ -114,15 +121,19 @@ class ComponentContext {
   final j.Component component;
   final j.ComponentBuilder? componentBuilder;
 
-  final Set<ProviderSource> providerSources = <ProviderSource>{};
+  late final Set<ProviderSource> providerSources = HashSet<ProviderSource>(
+    equals: _providesSourceEquals,
+    hashCode: (ProviderSource p) {
+      return Object.hash(p.type.hashCode, p.key.hashCode);
+    },
+  );
 
   List<Dependency> get dependencies => _dependencies.values.toList()
+    // Sort so that the sequence is preserved with each code generation (for
+    // test stability)
     ..sort((Dependency a, Dependency b) => a.compareTo(b));
 
   final Queue<_Key> _dependenciesQueue = Queue<_Key>();
-
-  // List<ClassElement> get dependenciesClasses =>
-  //     _dependencies.values.map((Dependency d) => d.element).toList();
 
   Dependency _registerDependency(
     Element element, [
@@ -356,6 +367,33 @@ class ComponentContext {
       );
     });
   }
+
+  /// Helper function for equals sources. Equals and hash code is not overridden
+  /// in the source, so you need to use this function.
+  bool _providesSourceEquals(ProviderSource p1, ProviderSource p2) {
+    return p1.type == p2.type && p1.key == p2.key;
+  }
+
+  /// Register the source, but if a source with this type is already registered,
+  /// throws an error.
+  void _registerSource(ProviderSource source) {
+    check(providerSources.add(source), () {
+      final List<ProviderSource> sources = <ProviderSource>[
+        providerSources
+            .firstWhere((ProviderSource s) => _providesSourceEquals(s, source)),
+        source
+      ];
+
+      final String places = sources
+          .map((ProviderSource source) => source.sourceString)
+          .join(', ');
+      final String message = '${source.type} provided multiple times: $places';
+      return buildErrorMessage(
+        error: JuggerErrorId.multiple_providers_for_type,
+        message: message,
+      );
+    });
+  }
 }
 
 class _Key {
@@ -462,21 +500,6 @@ abstract class ProviderSource {
   String get sourceString;
 
   final List<j.Annotation> annotations;
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other.runtimeType == runtimeType &&
-          other is ProviderSource &&
-          other.type == type &&
-          other.key == key);
-
-  @override
-  int get hashCode => Object.hash(
-        runtimeType,
-        type.hashCode,
-        key.hashCode,
-      );
 }
 
 class ModuleSource extends ProviderSource {
@@ -499,10 +522,12 @@ class BuildInstanceSource extends ProviderSource {
   BuildInstanceSource({
     required DartType type,
     required this.parameter,
+    required this.componentBuilder,
     required List<j.Annotation> annotations,
   }) : super(type, annotations);
 
   final ParameterElement parameter;
+  final j.ComponentBuilder componentBuilder;
 
   String get assignString {
     final j.QualifierAnnotation? qualifier = qualifierAnnotation;
@@ -514,7 +539,9 @@ class BuildInstanceSource extends ProviderSource {
   }
 
   @override
-  String get sourceString => '${parameter.type.getName()} ${parameter.name}';
+  String get sourceString {
+    return '${componentBuilder.element.name}.${parameter.enclosingElement?.name}';
+  }
 }
 
 class AnotherComponentSource extends ProviderSource {
@@ -546,5 +573,5 @@ class AnotherComponentSource extends ProviderSource {
   }
 
   @override
-  String get sourceString => '${type.getName()}.${element.name}';
+  String get sourceString => '${dependencyClass.name}.${element.name}';
 }

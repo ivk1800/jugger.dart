@@ -47,7 +47,9 @@ class Component {
 
   late final List<Method> _modulesProvideMethods = modules
       .map((ModuleAnnotation module) => module.moduleElement.getProvides())
-      .expand((List<Method> l) => l)
+      .expand((List<Method> methods) => methods)
+      // if module is used several times, just make unique methods
+      .toSet()
       .toList();
 
   late final List<MethodElement> _provideMethods = () {
@@ -74,6 +76,7 @@ class Component {
   List<DependencyAnnotation> get dependencies => _dependencies;
 
   /// Returns all methods of modules that are included to the component.
+  /// Methods are not repeated if one module is used several times.
   List<Method> get modulesProvideMethods => _modulesProvideMethods;
 
   /// Returns methods of the component that return some type, do not include
@@ -237,10 +240,12 @@ class QualifierAnnotation implements Annotation {
 
 /// Wrapper class for provide method of module.
 class Method {
-  Method(this.element, this.annotations);
+  Method(this.element);
 
   final MethodElement element;
-  final List<Annotation> annotations;
+
+  /// All methods of the current method.
+  late final List<Annotation> annotations = getAnnotations(element);
 
   late final QualifierAnnotation? _qualifierAnnotation = () {
     final Annotation? annotation = annotations
@@ -250,7 +255,18 @@ class Method {
 
   late final Tag? _tag = _qualifierAnnotation?.tag;
 
+  /// Tag associated with the current method.
   Tag? get tag => _tag;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other.runtimeType == runtimeType &&
+          other is Method &&
+          other.element == element);
+
+  @override
+  int get hashCode => element.hashCode;
 }
 
 class MemberInjectorMethod {

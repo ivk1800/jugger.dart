@@ -635,7 +635,7 @@ abstract class MyModule {
       );
     });
 
-    test('should failed if dependency not provided by build method', () async {
+    test('should failed if object not provided by build method', () async {
       await checkBuilderError(
         codeContent: '''
 import 'package:jugger/jugger.dart';
@@ -688,7 +688,7 @@ abstract class MyModule {
     });
 
     test(
-        'should failed if dependency provided multiple time from parent component and module',
+        'should failed if object provided multiple time from parent component and module',
         () async {
       await checkBuilderError(
         codeContent: '''
@@ -739,7 +739,230 @@ abstract class MyModule {
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: AppConfig provides multiple time: AppConfig.appConfig, MyModule.provideAppConfig',
+            'error: multiple_providers_for_type:\n'
+            'AppConfig provided multiple times: AppComponent.appConfig, MyModule.provideAppConfig\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#multiple_providers_for_type',
+          );
+        },
+      );
+    });
+
+    test('should failed if object provided multiple time from same module',
+        () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[AppModule])
+abstract class AppComponent {
+  String get string;
+}
+
+@module
+abstract class AppModule {
+  @provides
+  static String provideString1() => '';
+
+  @provides
+  static String provideString2() => '';
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: multiple_providers_for_type:\n'
+            'String provided multiple times: AppModule.provideString1, AppModule.provideString2\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#multiple_providers_for_type',
+          );
+        },
+      );
+    });
+
+    test(
+        'should failed if object provided multiple time from different modules',
+        () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[AppModule1, AppModule2])
+abstract class AppComponent {
+  String get string;
+}
+
+@module
+abstract class AppModule1 {
+  @provides
+  static String provideString2() => '';
+}
+
+@module
+abstract class AppModule2 {
+  @provides
+  static String provideString1() => '';
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: multiple_providers_for_type:\n'
+            'String provided multiple times: AppModule1.provideString2, AppModule2.provideString1\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#multiple_providers_for_type',
+          );
+        },
+      );
+    });
+
+    test('should failed if object provided from module and included module',
+        () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[AppModule1])
+abstract class AppComponent {
+  String get string;
+}
+
+@Module(includes: <Type>[AppModule2])
+abstract class AppModule1 {
+  @provides
+  static String provideString2() => '';
+}
+
+@module
+abstract class AppModule2 {
+  @provides
+  static String provideString1() => '';
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: multiple_providers_for_type:\n'
+            'String provided multiple times: AppModule2.provideString1, AppModule1.provideString2\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#multiple_providers_for_type',
+          );
+        },
+      );
+    });
+
+    test('should failed if object provided from args and module', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[AppModule1])
+abstract class AppComponent {
+  String get string;
+}
+
+@module
+abstract class AppModule1 {
+  @provides
+  static String provideString2() => '';
+}
+
+@componentBuilder
+abstract class AppComponentBuilder {
+  AppComponentBuilder setString(String s);
+
+  AppComponent build();
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: multiple_providers_for_type:\n'
+            'String provided multiple times: AppModule1.provideString2, AppComponentBuilder.setString\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#multiple_providers_for_type',
+          );
+        },
+      );
+    });
+
+    test('should failed if object provided from args and included module',
+        () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[AppModule1])
+abstract class AppComponent {
+  String get string;
+}
+
+@Module(includes: <Type>[AppModule2])
+abstract class AppModule1 {}
+
+@module
+abstract class AppModule2 {
+  @provides
+  static String provideString2() => '';
+}
+
+@componentBuilder
+abstract class AppComponentBuilder {
+  AppComponentBuilder setString(String s);
+
+  AppComponent build();
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: multiple_providers_for_type:\n'
+            'String provided multiple times: AppModule2.provideString2, AppComponentBuilder.setString\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#multiple_providers_for_type',
+          );
+        },
+      );
+    });
+
+    test('should failed if object provided from parent component and module',
+        () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[AppModule])
+abstract class AppComponent {
+  String get string;
+}
+
+@module
+abstract class AppModule {
+  @provides
+  static String provideString() => '';
+}
+
+@Component(
+  dependencies: <Type>[AppComponent],
+  modules: <Type>[MyModule],
+)
+abstract class MyComponent {
+  String get helloString;
+}
+
+@componentBuilder
+abstract class MyComponentBuilder {
+  MyComponentBuilder appComponent(AppComponent appComponent);
+
+  MyComponent build();
+}
+
+@module
+abstract class MyModule {
+  @provides
+  static String provideHelloString() => '';
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: multiple_providers_for_type:\n'
+            'String provided multiple times: AppComponent.string, MyModule.provideHelloString\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#multiple_providers_for_type',
           );
         },
       );

@@ -38,6 +38,8 @@ const String typeNotSupported = '$_glossary#type_not_supported';
 const String ambiguityOfInjectedConstructor =
     '$_glossary#ambiguity_of_injected_constructor';
 const String invalidParametersTypes = '$_glossary#invalid_parameters_types';
+const String multipleProvidersForType =
+    '$_glossary#multiple_providers_for_type';
 
 enum JuggerErrorId {
   missing_build_method,
@@ -66,6 +68,7 @@ enum JuggerErrorId {
   type_not_supported,
   ambiguity_of_injected_constructor,
   invalid_parameters_types,
+  multiple_providers_for_type,
 }
 
 extension JuggerErrorIdExt on JuggerErrorId {
@@ -123,6 +126,8 @@ extension JuggerErrorIdExt on JuggerErrorId {
         return ambiguityOfInjectedConstructor;
       case JuggerErrorId.invalid_parameters_types:
         return invalidParametersTypes;
+      case JuggerErrorId.multiple_providers_for_type:
+        return multipleProvidersForType;
     }
   }
 }
