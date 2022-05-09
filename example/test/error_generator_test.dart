@@ -100,7 +100,9 @@ class MyClass {
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: constructor can not be private [MyClass._]',
+            'error: invalid_injected_constructor:\n'
+            'Constructor MyClass._ can not be private.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_injected_constructor',
           );
         },
       );
@@ -164,7 +166,9 @@ class MyClass {
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: too many injected constructors for MyClass',
+            'error: ambiguity_of_injected_constructor:\n'
+            'Class MyClass has more than one injected constructor or no injected constructor.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#ambiguity_of_injected_constructor',
           );
         },
       );
@@ -198,7 +202,9 @@ class MyClass {
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: factory constructor not supported [MyClass.create]',
+            'error: invalid_injected_constructor:\n'
+            'Factory constructor MyClass.create not supported.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_injected_constructor',
           );
         },
       );
@@ -228,7 +234,9 @@ class MyClass {
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: named constructor not supported [MyClass.create]',
+            'error: invalid_injected_constructor:\n'
+            'Named constructor MyClass.create not supported.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_injected_constructor',
           );
         },
       );
@@ -521,7 +529,9 @@ abstract class MyModule {
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: you need provide dependencies by builder. component: MyComponent, dependencies: AppComponent',
+            'error: missing_component_builder:\n'
+            'Component MyComponent depends on AppComponent, but component builder is missing.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#missing_component_builder',
           );
         },
       );
@@ -1804,6 +1814,54 @@ abstract class AppModule {
   });
 
   group('component', () {
+    test(
+      'should fail if method not abstract',
+      () async {
+        await checkBuilderError(
+          codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component()
+abstract class AppComponent {
+  String getString() => '';
+}
+        ''',
+          onError: (Object error) {
+            expect(
+              error.toString(),
+              'error: invalid_method_of_component:\n'
+              'Method getString of component must be abstract.\n'
+              'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_method_of_component',
+            );
+          },
+        );
+      },
+    );
+
+    test(
+      'should fail if method with parameters',
+      () async {
+        await checkBuilderError(
+          codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component()
+abstract class AppComponent {
+  String getString(String s);
+}
+        ''',
+          onError: (Object error) {
+            expect(
+              error.toString(),
+              'error: invalid_method_of_component:\n'
+              'Method getString of component must have zero parameters.\n'
+              'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_method_of_component',
+            );
+          },
+        );
+      },
+    );
+
     test(
       'should fail if class with qualifier, but constructor is injected',
       () async {

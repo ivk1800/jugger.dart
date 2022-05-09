@@ -517,3 +517,79 @@ static String provideString(
     int numberDouble,
 ) => '';
 ```
+
+### invalid_injected_constructor
+An injected constructor cannot be:
+* private;
+* named;
+* factory;
+
+`BAD:`
+```dart
+class MyClass {
+  @inject
+  MyClass._();
+}
+
+@inject
+factory MyClass.create() {
+  return MyClass._();
+}
+
+class MyClass {
+  @inject
+  MyClass.create();
+}
+```
+
+`GOOD:`
+```dart
+class MyClass {
+  @inject
+  MyClass();
+}
+```
+
+### invalid_method_of_component
+Method of component must be public, abstract and without parameters.
+
+`BAD:`
+```dart
+@Component()
+abstract class AppComponent {
+  String _getString(String s) => s;
+}
+```
+
+`GOOD:`
+```dart
+@Component()
+abstract class AppComponent {
+  String getString();
+}
+```
+
+### missing_component_builder
+If a component depends on another component, it must be passed to the component builder.
+
+`BAD:`
+```dart
+@Component(
+  dependencies: <Type>[AppComponent],
+)
+abstract class MyComponent { }
+```
+
+`GOOD:`
+```dart
+@Component(
+  dependencies: <Type>[AppComponent],
+)
+abstract class MyComponent { }
+
+@componentBuilder
+abstract class MyComponentBuilder {
+  MyComponentBuilder setAppComponent(AppComponent appComponent);
+  MyComponent build();
+}
+```

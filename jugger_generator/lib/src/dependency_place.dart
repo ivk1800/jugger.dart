@@ -1,3 +1,0 @@
-enum DependencyPlace {
-  component,
-}

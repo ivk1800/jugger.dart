@@ -420,11 +420,22 @@ class _ProvideMethodsVisitor extends RecursiveElementVisitor<dynamic> {
       return null;
     }
 
-    if (!element.isAbstract) {
-      throw JuggerError(
-        '${element.name} not abstract',
-      );
-    }
+    check(
+      element.parameters.isEmpty,
+      () => buildErrorMessage(
+        error: JuggerErrorId.invalid_method_of_component,
+        message:
+            'Method ${element.name} of component must have zero parameters.',
+      ),
+    );
+
+    check(
+      element.isAbstract,
+      () => buildErrorMessage(
+        error: JuggerErrorId.invalid_method_of_component,
+        message: 'Method ${element.name} of component must be abstract.',
+      ),
+    );
 
     _methods.add(element);
     return null;

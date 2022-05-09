@@ -78,7 +78,7 @@ class ComponentBuilderDelegate {
           return b.componentClass.name == component.element.name;
         });
 
-        _componentContext = ComponentContext.fromComponent(
+        _componentContext = ComponentContext(
           component: component,
           componentBuilder: componentBuilder,
         );
@@ -299,9 +299,9 @@ class ComponentBuilderDelegate {
   /// Returns a list of graph objects for which the provider field should be
   /// generated. If the current component is a graph object, it does not need to
   /// be generated. In this case, the call will be like 'this'.
-  Iterable<Dependency> _filterDependenciesForFields(
-      List<Dependency> dependencies) {
-    return dependencies.where((Dependency dependency) {
+  Iterable<GraphObject> _filterDependenciesForFields(
+      List<GraphObject> dependencies) {
+    return dependencies.where((GraphObject dependency) {
       final ClassElement typeElement = dependency.type.element as ClassElement;
       final bool isCurrentComponent =
           getComponentAnnotation(typeElement) != null &&
@@ -319,10 +319,10 @@ class ComponentBuilderDelegate {
   List<Field> _buildProvidesFields() {
     final List<Field> fields = <Field>[];
 
-    final Iterable<Dependency> filteredDependencies =
-        _filterDependenciesForFields(_componentContext.dependencies);
+    final Iterable<GraphObject> filteredDependencies =
+        _filterDependenciesForFields(_componentContext.objectsGraph);
 
-    for (final Dependency dependency in filteredDependencies) {
+    for (final GraphObject dependency in filteredDependencies) {
       check(
         !dependency.type.isProvider,
         () => providerNotAllowed(dependency.type),
@@ -337,8 +337,7 @@ class ComponentBuilderDelegate {
         );
       }
 
-      if (provider is! BuildInstanceSource &&
-          provider is! AnotherComponentSource) {
+      if (provider is! ArgumentSource && provider is! AnotherComponentSource) {
         fields.add(Field((FieldBuilder b) {
           final Tag? tag = dependency.tag;
           b.name = '_${_generateFieldName(
@@ -384,7 +383,7 @@ class ComponentBuilderDelegate {
   /// A helper function that allocates the given type of object graph and
   /// returns its name. If the type is generic, nested types in brackets will
   /// also be allocated.
-  String _allocateDependencyTypeName(Dependency dependency) {
+  String _allocateDependencyTypeName(GraphObject dependency) {
     return _allocateTypeName(dependency.type);
   }
 
@@ -597,7 +596,7 @@ class ComponentBuilderDelegate {
 
     final ProviderSource? provider = _componentContext.findProvider(type, tag);
 
-    if (provider is BuildInstanceSource) {
+    if (provider is ArgumentSource) {
       final String? finalSting;
 
       if (tag == null) {

@@ -8,21 +8,18 @@ import 'package:quiver/core.dart';
 import 'classes.dart';
 import 'classes.dart' as j;
 import 'dart_type_ext.dart';
-import 'dependency_place.dart';
 import 'errors_glossary.dart';
+import 'graph_object_place.dart';
 import 'jugger_error.dart';
 import 'messages.dart';
 import 'tag.dart';
 import 'utils.dart';
 import 'visitors.dart';
 
+/// Class containing all information about the component, including the object
+/// graph.
 class ComponentContext {
   ComponentContext({
-    required this.component,
-    required this.componentBuilder,
-  });
-
-  ComponentContext.fromComponent({
     required this.component,
     required this.componentBuilder,
   }) {
@@ -59,8 +56,11 @@ class ComponentContext {
     if (component.dependencies.isNotEmpty) {
       check(
         componentBuilder != null,
-        () => 'you need provide dependencies by builder. '
-            'component: ${component.element.name}, dependencies: ${component.dependencies.map((j.DependencyAnnotation de) => de.element.name).join(',')}',
+        () => buildErrorMessage(
+          error: JuggerErrorId.missing_component_builder,
+          message:
+              'Component ${component.element.name} depends on ${component.dependencies.map((j.DependencyAnnotation de) => de.element.name).join(',')}, but component builder is missing.',
+        ),
       );
     }
 
@@ -82,7 +82,7 @@ class ComponentContext {
             .toList() ??
         <ParameterElement>[]) {
       _registerSource(
-        BuildInstanceSource(
+        ArgumentSource(
           parameter: parameter,
           type: parameter.type,
           componentBuilder: componentBuilder!,
@@ -91,17 +91,15 @@ class ComponentContext {
       );
     }
 
-    _validateProviderSources();
-
     for (final j.Method method in component.modulesProvideMethods) {
       final MethodElement element = method.element;
-      _registerDependency(element);
+      _registerGraphObject(element);
     }
 
     for (final MethodElement element in component.provideMethods) {
-      _registerDependency(element, DependencyPlace.component);
+      _registerGraphObject(element, GraphObjectPlace.component);
     }
-    component.provideProperties.forEach(_registerDependency);
+    component.provideProperties.forEach(_registerGraphObject);
 
     for (final j.MemberInjectorMethod method in component.memberInjectors) {
       final MethodElement element = method.element;
@@ -111,16 +109,18 @@ class ComponentContext {
             parameter.type.element!.getInjectedMembers();
 
         for (final j.InjectedMember member in members) {
-          _registerDependency(member.element);
+          _registerGraphObject(member.element);
         }
       }
     }
   }
 
-  final Map<_Key, Dependency> _dependencies = HashMap<_Key, Dependency>();
+  /// All objects of the component graph.
+  final Map<_Key, GraphObject> _objectsGraph = HashMap<_Key, GraphObject>();
   final j.Component component;
   final j.ComponentBuilder? componentBuilder;
 
+  /// All object sources of component. Does not contain duplicates.
   late final Set<ProviderSource> providerSources = HashSet<ProviderSource>(
     equals: _providesSourceEquals,
     hashCode: (ProviderSource p) {
@@ -128,79 +128,84 @@ class ComponentContext {
     },
   );
 
-  List<Dependency> get dependencies => _dependencies.values.toList()
+  /// All graph objects of the component.
+  List<GraphObject> get objectsGraph => _objectsGraph.values.toList()
     // Sort so that the sequence is preserved with each code generation (for
     // test stability)
-    ..sort((Dependency a, Dependency b) => a.compareTo(b));
+    ..sort((GraphObject a, GraphObject b) => a.compareTo(b));
 
-  final Queue<_Key> _dependenciesQueue = Queue<_Key>();
+  /// Queue to detect circular dependencies.
+  final Queue<_Key> _objectsGraphQueue = Queue<_Key>();
 
-  Dependency _registerDependency(
+  /// Registers a graph object with validation. Detects circular dependency.
+  /// [element] an element that is a graph object. The element must be of a
+  /// specific type that is supported. This is a method, parameter, field, and
+  /// etc. The uniqueness of an object is determined using a qualifier and a
+  /// type. If the type is already registered, the method simply returns it.
+  /// [graphObjectPlace] the place of the graph object, the logic of registering
+  /// the object depends on the value.
+  GraphObject _registerGraphObject(
     Element element, [
-    DependencyPlace? dependencyPlace,
+    GraphObjectPlace? graphObjectPlace,
   ]) {
     final Tag? tag = element.getQualifierTag();
 
     final _Key key = _Key.of(element, tag);
 
-    if (_dependenciesQueue.contains(key)) {
-      _dependenciesQueue.addFirst(key);
+    if (_objectsGraphQueue.contains(key)) {
+      _objectsGraphQueue.addFirst(key);
       throw JuggerError(
-        'Found circular dependency! ${_dependenciesQueue.toList().reversed.join('->')}',
+        'Found circular dependency! ${_objectsGraphQueue.toList().reversed.join('->')}',
       );
     }
-    _dependenciesQueue.addFirst(key);
+    _objectsGraphQueue.addFirst(key);
 
-    if (_dependencies.containsKey(key)) {
-      _dependenciesQueue.removeFirst();
-      return _dependencies[key]!;
+    if (_objectsGraph.containsKey(key)) {
+      _objectsGraphQueue.removeFirst();
+      return _objectsGraph[key]!;
     }
 
     if (element is MethodElement) {
-      if (dependencyPlace == DependencyPlace.component) {
-        check(
-          element.parameters.isEmpty,
-          () => 'parameters of dependency from component not allowed',
-        );
+      if (graphObjectPlace == GraphObjectPlace.component) {
         final ConstructorElement? injectedConstructor =
             element.returnType.getInjectedConstructorOrNull();
 
-        final Dependency dependency = Dependency(
+        final GraphObject graphObject = GraphObject(
           tag,
           element.returnType,
           injectedConstructor != null
-              ? _registerConstructorDependencies(injectedConstructor)
-              : <Dependency>[],
+              ? _registerConstructorObjects(injectedConstructor)
+              : <GraphObject>[],
         );
-        _registerAndValidateDependency(key, dependency);
-        _dependenciesQueue.removeFirst();
-        return dependency;
+        _registerAndValidateGraphObject(key, graphObject);
+        _objectsGraphQueue.removeFirst();
+        return graphObject;
       }
 
-      final Dependency dependency = Dependency(
+      final GraphObject graphObject = GraphObject(
         tag,
         element.returnType,
-        _registerMethodDependencies(element),
+        _registerMethodObjects(element),
       );
-      _registerAndValidateDependency(key, dependency);
-      _dependenciesQueue.removeFirst();
-      return dependency;
-    } else if (element is ParameterElement || element is FieldElement) {
-      _dependenciesQueue.removeFirst();
-      return _registerVariableElementDependency(element);
+      _registerAndValidateGraphObject(key, graphObject);
+      _objectsGraphQueue.removeFirst();
+      return graphObject;
+    } else if (element is VariableElement) {
+      _objectsGraphQueue.removeFirst();
+      return _registerVariableElementGraphObject(element);
     } else if (element is PropertyAccessorElement) {
       final ConstructorElement? injectedConstructor =
           element.returnType.getInjectedConstructorOrNull();
-      final Dependency dependency = Dependency(
+      final GraphObject graphObject = GraphObject(
         tag,
         element.returnType,
         injectedConstructor != null
-            ? _registerConstructorDependencies(injectedConstructor)
-            : <Dependency>[],
+            ? _registerConstructorObjects(injectedConstructor)
+            : <GraphObject>[],
       );
-      _registerAndValidateDependency(key, dependency);
-      _dependenciesQueue.removeFirst();
-      return dependency;
+      _registerAndValidateGraphObject(key, graphObject);
+      _objectsGraphQueue.removeFirst();
+      return graphObject;
     }
 
     throw JuggerError(
@@ -208,163 +213,115 @@ class ComponentContext {
     );
   }
 
-  void _registerAndValidateDependency(_Key key, Dependency dependency) {
+  /// The method checks the type for a supported one and registers the object.
+  void _registerAndValidateGraphObject(_Key key, GraphObject object) {
     key.type.checkUnsupportedType();
 
-    if (dependency.type.isProvider) {
+    if (object.type.isProvider) {
       check(
-        dependency.dependencies.isEmpty,
+        object.dependencies.isEmpty,
         () => 'provider with dependencies!',
       );
-      final DartType providerType = dependency.type.providerType;
+      final DartType providerType = object.type.providerType;
 
-      List<Dependency> dependencies = dependency.dependencies;
+      List<GraphObject> objects = object.dependencies;
 
       if (providerType.hasInjectedConstructor()) {
-        // final InjectedConstructorsVisitor visitor =
-        //     InjectedConstructorsVisitor();
-        // providerType.element!.visitChildren(visitor);
-        dependencies = _registerConstructorDependencies(
+        objects = _registerConstructorObjects(
           providerType.getRequiredInjectedConstructor(),
         );
       }
 
-      _dependencies[key] = Dependency(
-        dependency.tag,
+      _objectsGraph[key] = GraphObject(
+        object.tag,
         providerType,
-        dependencies,
+        objects,
       );
     } else {
-      _dependencies[key] = dependency;
+      _objectsGraph[key] = object;
     }
   }
 
-  Dependency _registerVariableElementDependency(Element element) {
-    if (element is! VariableElement) {
-      throw JuggerError('element[$element] is not VariableElement');
-    }
-
+  /// Registers the variable as a graph object if it has not been registered
+  /// before.
+  GraphObject _registerVariableElementGraphObject(VariableElement element) {
     final Tag? tag = element.getQualifierTag();
 
     final _Key key = _Key.of(element, tag);
 
-//    if (isCore(element.type.element)) {
-//      final _Dependency dependency =
-//      _Dependency(element.type.element as ClassElement, <_Dependency>[]);
-//      _dependencies[key] = dependency;
-//      return dependency;
-//    }
+    final ConstructorElement? injectedConstructor =
+        element.type.getInjectedConstructorOrNull();
 
-    // maybe FunctionType with nullable element
-    final Element? typeElement = element.type.element;
-    final List<ConstructorElement> injectedConstructors = typeElement == null
-        ? <ConstructorElement>[]
-        : typeElement.getInjectedConstructors();
-
-    if (injectedConstructors.isEmpty) {
-      final Dependency dependency = Dependency(
+    if (injectedConstructor == null) {
+      final GraphObject graphObject = GraphObject(
         tag,
         element.type,
-        <Dependency>[],
+        <GraphObject>[],
       );
-      _registerAndValidateDependency(key, dependency);
-      return dependency;
+      _registerAndValidateGraphObject(key, graphObject);
+      return graphObject;
     }
 
-    check(
-      injectedConstructors.length == 1,
-      () => 'too many injected constructors for ${element.type.getName()}',
-    );
+    final List<GraphObject> objects =
+        _registerConstructorObjects(injectedConstructor);
 
-    final ConstructorElement constructorElement = injectedConstructors[0];
-    late final String constructorLogName =
-        '${element.type.getName()}.${constructorElement.name}';
-
-    check(
-      !constructorElement.isPrivate,
-      () => 'constructor can not be private [$constructorLogName]',
-    );
-    check(
-      !constructorElement.isFactory,
-      () => 'factory constructor not supported [$constructorLogName]',
-    );
-    check(
-      constructorElement.name.isEmpty,
-      () => 'named constructor not supported [$constructorLogName]',
-    );
-
-    final List<Dependency> dependencies =
-        _registerConstructorDependencies(constructorElement);
-
-    final Dependency dependency = Dependency(
+    final GraphObject object = GraphObject(
       tag,
       element.type,
-      dependencies,
+      objects,
     );
-    _registerAndValidateDependency(key, dependency);
-    return dependency;
+    _registerAndValidateGraphObject(key, object);
+    return object;
   }
 
-  List<Dependency> _registerConstructorDependencies(
-      ConstructorElement element) {
-    final List<Dependency> dependencies =
+  /// Registers the all parameters of constructor as a graph object if it has not
+  /// been registered before.
+  List<GraphObject> _registerConstructorObjects(ConstructorElement element) {
+    final List<GraphObject> objects =
         element.parameters.map((ParameterElement parameter) {
-      _registerParamDependencyIfNeed(parameter);
-      return _registerDependency(parameter);
+      _registerParamObjectIfNeed(parameter);
+      return _registerGraphObject(parameter);
     }).toList();
 
-    return dependencies;
+    return objects;
   }
 
-  List<Dependency> _registerMethodDependencies(MethodElement element) {
-    final List<Dependency> dependencies =
+  /// Registers the all parameters of method as a graph object if it has not
+  /// been registered before.
+  List<GraphObject> _registerMethodObjects(MethodElement element) {
+    final List<GraphObject> objects =
         element.parameters.map((ParameterElement parameter) {
-      _registerParamDependencyIfNeed(parameter);
-      return _registerDependency(parameter);
+      _registerParamObjectIfNeed(parameter);
+      return _registerGraphObject(parameter);
     }).toList();
 
-    return dependencies;
+    return objects;
   }
 
-  void _registerParamDependencyIfNeed(ParameterElement parameter) {
+  /// Registers the parameter as a graph object if it has not been registered
+  /// before.
+  void _registerParamObjectIfNeed(ParameterElement parameter) {
     final j.Method? provideMethod = findProvideMethod(
       type: parameter.type,
       tag: parameter.getQualifierTag(),
     );
 
     if (provideMethod != null) {
-      _registerDependency(provideMethod.element);
+      _registerGraphObject(provideMethod.element);
     }
   }
 
+  /// Find the method of the component that provided the given type with tag.
   j.Method? findProvideMethod({required DartType type, required Tag? tag}) {
     return component.modulesProvideMethods.firstWhereOrNull((j.Method method) {
       return method.element.returnType == type && method.tag == tag;
     });
   }
 
+  /// Method returns type source by type and tag.
   ProviderSource? findProvider(DartType type, [Tag? tag]) {
-    // if (!(element is ClassElement)) {
-    //   throw JuggerError('element[$element] is not ClassElement');
-    // }
     return providerSources.firstWhereOrNull((ProviderSource source) {
       return source.type == type && source.tag == tag;
-    });
-  }
-
-  void _validateProviderSources() {
-    final Map<dynamic, List<ProviderSource>> grouped =
-        groupBy<ProviderSource, dynamic>(providerSources,
-            (ProviderSource source) {
-      return source.key;
-    });
-
-    grouped.forEach((dynamic key, List<ProviderSource> p) {
-      check(
-        p.length == 1,
-        () =>
-            '$key provides multiple time: ${p.map((ProviderSource s) => s.sourceString).join(', ')}',
-      );
     });
   }
 
@@ -396,12 +353,13 @@ class ComponentContext {
   }
 }
 
+/// Identifier of type source. Serves to build a dependency graph.
 class _Key {
   _Key({
     required this.tag,
     required this.type,
-    required this.element,
-  });
+    required Element element,
+  }) : _element = element;
 
   factory _Key.of(Element element, Tag? tag) {
     if (element is MethodElement) {
@@ -437,8 +395,13 @@ class _Key {
     );
   }
 
-  final Element element;
+  /// An element that provides an object of type.
+  final Element _element;
+
+  /// The type to which the key belongs.
   final DartType type;
+
+  /// Tag associated with the type.
   final Tag? tag;
 
   @override
@@ -448,19 +411,28 @@ class _Key {
   int get hashCode => hash2(type.hashCode, tag.hashCode);
 
   @override
-  String toString() => '${element.name}';
+  String toString() => '${_element.name}';
 }
 
-class Dependency implements Comparable<Dependency> {
-  const Dependency(
+/// Object of graph.
+class GraphObject implements Comparable<GraphObject> {
+  const GraphObject(
     this.tag,
     this.type,
     this.dependencies,
   );
 
+  /// Object type.
   final DartType type;
 
-  final List<Dependency> dependencies;
+  /// Dependencies of object. These dependencies may vary depending on the source
+  /// that this object provides. If the object is provided by a module method,
+  /// the dependencies will be the method arguments. If the Object is provided
+  /// by an injectable constructor, the dependencies will be the constructor
+  /// arguments. Etc.
+  final List<GraphObject> dependencies;
+
+  /// Object tag, the tag is constructed from a type and a qualifier.
   final Tag? tag;
 
   @override
@@ -469,17 +441,24 @@ class Dependency implements Comparable<Dependency> {
   }
 
   @override
-  int compareTo(Dependency other) {
+  int compareTo(GraphObject other) {
     return '${tag ?? ''}_${type.getName()}'
         .compareTo('${other.tag ?? ''}_${other.type.getName()}');
   }
 }
 
+/// Base type of graph object source.
 abstract class ProviderSource {
   ProviderSource(this.type, this.annotations);
 
+  /// The type that the source provides.
   final DartType type;
 
+  /// All source annotations, see implementations of this interface for details.
+  final List<j.Annotation> annotations;
+
+  /// A unique key of source. Qualifier and type will be combined.
+  /// Should be used to identify the source.
   Object get key {
     final j.QualifierAnnotation? qualifier = qualifierAnnotation;
     if (qualifier != null) {
@@ -489,19 +468,24 @@ abstract class ProviderSource {
     return type;
   }
 
+  /// Source qualifier. This is a custom qualifier or a named annotation.
   j.QualifierAnnotation? get qualifierAnnotation {
     final Annotation? annotation = annotations
         .firstWhereOrNull((j.Annotation a) => a is j.QualifierAnnotation);
     return annotation is QualifierAnnotation ? annotation : null;
   }
 
+  /// Source tag. This is a custom qualifier or a named annotation. Can be used
+  /// to find a provider. Multiple types can have the same tag, so it does not
+  /// guarantee the uniqueness of the source, you need to use the [key] for this
   Tag? get tag => qualifierAnnotation?.tag;
 
+  /// A string indicating the location of the source. Should be used when a code
+  /// generation error occurs.
   String get sourceString;
-
-  final List<j.Annotation> annotations;
 }
 
+/// Type source is module.
 class ModuleSource extends ProviderSource {
   ModuleSource({
     required this.moduleClass,
@@ -510,54 +494,77 @@ class ModuleSource extends ProviderSource {
     required this.method,
   }) : super(type, annotations);
 
+  /// The module in which the method is located.
   final ClassElement moduleClass;
 
+  /// A method that provided a dependency. Static or abstract.
+  /// ```
+  /// @module
+  /// abstract class Module {
+  ///   @provides
+  ///   static int provideInt() => 0; // <---
+  /// }
+  /// ```
   final j.Method method;
 
   @override
   String get sourceString => '${moduleClass.name}.${method.element.name}';
 }
 
-class BuildInstanceSource extends ProviderSource {
-  BuildInstanceSource({
+/// Type source is argument of component builder.
+class ArgumentSource extends ProviderSource {
+  ArgumentSource({
     required DartType type,
     required this.parameter,
-    required this.componentBuilder,
+    required j.ComponentBuilder componentBuilder,
     required List<j.Annotation> annotations,
-  }) : super(type, annotations);
+  })  : _componentBuilder = componentBuilder,
+        super(type, annotations);
 
+  /// Parameter of the method of component builder.
+  /// ```
+  /// @componentBuilder
+  /// abstract class MyComponentBuilder {
+  ///   MyComponentBuilder setSting(
+  ///     String s, // <---
+  ///   );
+  ///
+  ///   AppComponent build();
+  /// }
+  /// ````
   final ParameterElement parameter;
-  final j.ComponentBuilder componentBuilder;
 
-  String get assignString {
-    final j.QualifierAnnotation? qualifier = qualifierAnnotation;
-    if (qualifier != null) {
-      return '_${qualifier.tag}${parameter.type.getName()}';
-    }
-
-    return '_${uncapitalize(parameter.type.getName())}';
-  }
+  /// Component builder in which the method is located.
+  final j.ComponentBuilder _componentBuilder;
 
   @override
   String get sourceString {
-    return '${componentBuilder.element.name}.${parameter.enclosingElement?.name}';
+    return '${_componentBuilder.element.name}.${parameter.enclosingElement?.name}';
   }
 }
 
+/// Type source is a component.
 class AnotherComponentSource extends ProviderSource {
-  /// [element] method or property
   AnotherComponentSource({
     required DartType type,
     required this.element,
-    required this.dependencyClass,
+    required ClassElement dependencyClass,
     required List<j.Annotation> annotations,
-  })  : assert(element is MethodElement || element is PropertyAccessorElement),
+  })  : _dependencyClass = dependencyClass,
+        assert(element is MethodElement || element is PropertyAccessorElement),
         super(type, annotations);
 
-  ///
-  /// example: _appComponent
-  ///
-  final ClassElement dependencyClass;
+  /// The component class that is used as a dependency.
+  final ClassElement _dependencyClass;
+
+  /// Method or property which provides an object instance.
+  /// ```
+  /// @Component()
+  /// abstract class AppComponent {
+  ///   String get string; //  <---
+  ///   String getString(); // <---
+  /// }
+  /// ```
   final Element element;
 
   ///
@@ -567,11 +574,11 @@ class AnotherComponentSource extends ProviderSource {
   ///
   String get assignString {
     final String base =
-        '_${uncapitalize(dependencyClass.name)}.${element.name}';
+        '_${uncapitalize(_dependencyClass.name)}.${element.name}';
     final String postfix = element is MethodElement ? '()' : '';
     return '$base$postfix';
   }
 
   @override
-  String get sourceString => '${dependencyClass.name}.${element.name}';
+  String get sourceString => '${_dependencyClass.name}.${element.name}';
 }

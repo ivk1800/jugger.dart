@@ -86,7 +86,7 @@ class Component {
   /// ```dart
   /// @Component(modules: <Type>[AppModule])
   /// abstract class AppComponent {
-  ///   String getName(); // there he is
+  ///   String getName(); // <---
   /// }
   /// ```
   List<MethodElement> get provideMethods => _provideMethods;
@@ -97,7 +97,7 @@ class Component {
   /// ```dart
   /// @Component(modules: <Type>[AppModule])
   /// abstract class AppComponent {
-  ///   String get name; // there he is
+  ///   String get name; // <---
   /// }
   /// ```
   List<PropertyAccessorElement> get provideProperties => _provideProperties;
@@ -143,7 +143,7 @@ class ComponentBuilder {
 /// @componentBuilder
 /// abstract class MyComponentBuilder {
 ///   MyComponentBuilder appComponent(
-///     String s, // there he is
+///     String s, // <---
 ///   );
 ///
 ///   AppComponent build();
@@ -244,7 +244,7 @@ class Method {
 
   final MethodElement element;
 
-  /// All methods of the current method.
+  /// All annotations of the current method.
   late final List<Annotation> annotations = getAnnotations(element);
 
   late final QualifierAnnotation? _qualifierAnnotation = () {

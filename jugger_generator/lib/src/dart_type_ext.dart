@@ -1,6 +1,5 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
-import 'package:collection/collection.dart';
 
 import 'errors_glossary.dart';
 import 'messages.dart';
@@ -32,9 +31,35 @@ extension DartTypeExt on DartType {
     return interfaceType.typeArguments.first;
   }
 
+  /// Returns the required injected constructor. This means that it should be
+  /// only single and should be validated.
   ConstructorElement getRequiredInjectedConstructor() {
     final List<ConstructorElement> injectedConstructors =
         element!.getInjectedConstructors();
+
+    return _getSingleInjectedConstructor(injectedConstructors);
+  }
+
+  /// Returns null if there are no injected constructors, otherwise an injected
+  /// constructor if he is single. Performs validation and may throw an error.
+  ConstructorElement? getInjectedConstructorOrNull() {
+    checkUnsupportedType();
+
+    final List<ConstructorElement> injectedConstructors =
+        element!.getInjectedConstructors();
+
+    if (injectedConstructors.isEmpty) {
+      return null;
+    }
+
+    return _getSingleInjectedConstructor(injectedConstructors);
+  }
+
+  /// Returns the injected constructor and validates it. If more than one
+  /// constructor throws an error.
+  ConstructorElement _getSingleInjectedConstructor(
+    List<ConstructorElement> injectedConstructors,
+  ) {
     check(
       injectedConstructors.length == 1,
       () => buildErrorMessage(
@@ -43,18 +68,33 @@ extension DartTypeExt on DartType {
             'Class ${element?.name} has more than one injected constructor or no injected constructor.',
       ),
     );
-    return injectedConstructors.first;
-  }
+    final ConstructorElement constructorElement = injectedConstructors.first;
 
-  ConstructorElement? getInjectedConstructorOrNull() {
-    checkUnsupportedType();
+    late final String constructorLogName =
+        '${constructorElement.enclosingElement.name}.${constructorElement.name}';
 
-    final List<ConstructorElement> injectedConstructors =
-        element!.getInjectedConstructors();
     check(
-      injectedConstructors.length <= 1,
-      () => 'required single or zero injected constructor',
+      !constructorElement.isPrivate,
+      () => buildErrorMessage(
+        error: JuggerErrorId.invalid_injected_constructor,
+        message: 'Constructor $constructorLogName can not be private.',
+      ),
     );
-    return injectedConstructors.firstOrNull;
+    check(
+      !constructorElement.isFactory,
+      () => buildErrorMessage(
+        error: JuggerErrorId.invalid_injected_constructor,
+        message: 'Factory constructor $constructorLogName not supported.',
+      ),
+    );
+    check(
+      constructorElement.name.isEmpty,
+      () => buildErrorMessage(
+        error: JuggerErrorId.invalid_injected_constructor,
+        message: 'Named constructor $constructorLogName not supported.',
+      ),
+    );
+
+    return constructorElement;
   }
 }
