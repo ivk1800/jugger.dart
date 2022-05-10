@@ -16,7 +16,6 @@ import 'dart_type_ext.dart';
 import 'errors_glossary.dart';
 import 'global_config.dart';
 import 'jugger_error.dart';
-import 'messages.dart';
 import 'tag.dart';
 import 'utils.dart';
 import 'visitors.dart';
@@ -323,9 +322,11 @@ class ComponentBuilderDelegate {
         _filterDependenciesForFields(_componentContext.objectsGraph);
 
     for (final GraphObject graphObject in filteredDependencies) {
+      // for dev purpose
       check(
         !graphObject.type.isProvider,
-        () => providerNotAllowed(graphObject.type),
+        () =>
+            'found registered dependency of provider [${graphObject.type.getName()}]',
       );
 
       final ProviderSource? provider =

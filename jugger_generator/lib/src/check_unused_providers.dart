@@ -2,7 +2,7 @@ import 'package:analyzer/dart/analysis/utilities.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
 
-import 'messages.dart';
+import 'errors_glossary.dart';
 import 'utils.dart';
 
 void checkUnusedProviders(String content) {
@@ -12,7 +12,11 @@ void checkUnusedProviders(String content) {
 
   check(
     visitor.variables.isEmpty,
-    () => foundUnusedGeneratedProviders(visitor.variables),
+    () => buildErrorMessage(
+      error: JuggerErrorId.unused_generated_providers,
+      message:
+          'Found unused generated providers: ${visitor.variables.join(', ')}',
+    ),
   );
 }
 

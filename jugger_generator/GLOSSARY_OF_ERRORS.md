@@ -620,3 +620,43 @@ Providers can be:
 2) Component arguments;
 3) Other component;
 4) If none of the above providers was found, the jagger looks at the injected constructor;
+
+### unused_generated_providers
+If there is a registered object in the graph, but it is not used in the construction of objects, jagger will throw an 
+error. This is the default behavior if you want to disable:
+
+build.yaml
+
+```yaml
+targets:
+  $default:
+    builders:
+      jugger_generator:
+        options:
+          check_unused_providers: false
+```
+
+### multiple_qualifiers
+Multiple qualifiers not allowed.
+
+`BAD:`
+```dart
+@Component(modules: <Type>[AppModule])
+abstract class AppComponent {
+  @Named('name')
+  @Named('name1')
+  AppConfig get appConfig;
+}
+```
+
+`GOOD:`
+```dart
+@Component(modules: <Type>[AppModule])
+abstract class AppComponent {
+  @Named('name')
+  AppConfig get appConfig;
+  
+  @Named('name1')
+  AppConfig get appConfig1;
+}
+```

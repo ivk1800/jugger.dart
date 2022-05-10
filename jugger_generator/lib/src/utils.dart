@@ -12,7 +12,6 @@ import 'classes.dart';
 import 'errors_glossary.dart';
 import 'jugger_error.dart';
 import 'library_ext.dart';
-import 'messages.dart';
 import 'module_extractor.dart';
 import 'tag.dart';
 import 'visitors.dart';
@@ -52,7 +51,11 @@ QualifierAnnotation? getQualifierAnnotation(Element element) {
       getAnnotations(element).whereType<QualifierAnnotation>().toList();
   check(
     qualifierAnnotation.length <= 1,
-    () => multipleQualifiersNotAllowed(element),
+    () => buildErrorMessage(
+      error: JuggerErrorId.multiple_qualifiers,
+      message:
+          'Multiple qualifiers of ${element.enclosingElement?.name}.${element.name} not allowed.',
+    ),
   );
 
   return qualifierAnnotation

@@ -1191,7 +1191,9 @@ abstract class AppModule {
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: found unused generated providers: _stringProvider',
+            'error: unused_generated_providers:\n'
+            'Found unused generated providers: _stringProvider\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#unused_generated_providers',
           );
         },
         options: const BuilderOptions(
@@ -1289,7 +1291,9 @@ abstract class AppModule {
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: multiple qualifiers not allowed [AppComponent.appConfig]',
+            'error: multiple_qualifiers:\n'
+            'Multiple qualifiers of AppComponent.appConfig not allowed.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#multiple qualifiers',
           );
         },
       );

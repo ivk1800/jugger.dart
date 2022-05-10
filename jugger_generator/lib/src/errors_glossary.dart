@@ -51,6 +51,8 @@ const String invalidMethodOfComponent =
 const String missingComponentBuilder = '$_glossary#missing_component_builder';
 const String circularDependency = '$_glossary#circular_dependency';
 const String providerNotFound = '$_glossary#provider_not_found';
+const String unusedGeneratedProviders = '$_glossary#unused_generated_providers';
+const String multipleQualifiers = '$_glossary#multiple qualifiers';
 
 enum JuggerErrorId {
   missing_build_method,
@@ -85,6 +87,8 @@ enum JuggerErrorId {
   invalid_method_of_component,
   circular_dependency,
   provider_not_found,
+  unused_generated_providers,
+  multiple_qualifiers,
 }
 
 extension JuggerErrorIdExt on JuggerErrorId {
@@ -154,6 +158,10 @@ extension JuggerErrorIdExt on JuggerErrorId {
         return circularDependency;
       case JuggerErrorId.provider_not_found:
         return providerNotFound;
+      case JuggerErrorId.unused_generated_providers:
+        return unusedGeneratedProviders;
+      case JuggerErrorId.multiple_qualifiers:
+        return multipleQualifiers;
     }
   }
 }
