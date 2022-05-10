@@ -1,5 +1,9 @@
 // ignore_for_file: constant_identifier_names
 
+import 'package:analyzer/dart/element/type.dart';
+
+import 'tag.dart';
+
 const String _glossary =
     'https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md';
 const String missingBuildMethod = '$_glossary#missing_build_method';
@@ -45,6 +49,8 @@ const String invalidInjectedConstructor =
 const String invalidMethodOfComponent =
     '$_glossary#invalid_method_of_component';
 const String missingComponentBuilder = '$_glossary#missing_component_builder';
+const String circularDependency = '$_glossary#circular_dependency';
+const String providerNotFound = '$_glossary#provider_not_found';
 
 enum JuggerErrorId {
   missing_build_method,
@@ -77,6 +83,8 @@ enum JuggerErrorId {
   invalid_injected_constructor,
   missing_component_builder,
   invalid_method_of_component,
+  circular_dependency,
+  provider_not_found,
 }
 
 extension JuggerErrorIdExt on JuggerErrorId {
@@ -142,6 +150,24 @@ extension JuggerErrorIdExt on JuggerErrorId {
         return missingComponentBuilder;
       case JuggerErrorId.invalid_method_of_component:
         return invalidMethodOfComponent;
+      case JuggerErrorId.circular_dependency:
+        return circularDependency;
+      case JuggerErrorId.provider_not_found:
+        return providerNotFound;
     }
   }
+}
+
+String buildErrorMessage({
+  required JuggerErrorId error,
+  required String message,
+}) =>
+    '${error.name}:\n$message\nExplanation of Error: ${error.toLink()}';
+
+String buildProviderNotFoundMessage(DartType type, Tag? tag) {
+  return buildErrorMessage(
+    error: JuggerErrorId.provider_not_found,
+    message:
+        'Provider for $type ${tag != null ? 'with qualifier ${tag.originalId} ' : ''}not found.',
+  );
 }

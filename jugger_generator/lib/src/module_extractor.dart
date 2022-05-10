@@ -6,7 +6,6 @@ import 'package:jugger/jugger.dart' as j;
 import 'classes.dart';
 import 'errors_glossary.dart';
 import 'jugger_error.dart';
-import 'messages.dart';
 import 'utils.dart';
 
 class ModuleExtractor {

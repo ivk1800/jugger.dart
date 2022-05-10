@@ -2,7 +2,6 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 
 import 'errors_glossary.dart';
-import 'messages.dart';
 import 'utils.dart';
 import 'visitors.dart';
 

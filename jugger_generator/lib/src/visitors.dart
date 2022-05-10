@@ -7,7 +7,6 @@ import 'package:jugger/jugger.dart' as j;
 import 'classes.dart';
 import 'errors_glossary.dart';
 import 'jugger_error.dart';
-import 'messages.dart';
 import 'utils.dart';
 
 class _InjectedMembersVisitor extends RecursiveElementVisitor<dynamic> {
@@ -434,6 +433,14 @@ class _ProvideMethodsVisitor extends RecursiveElementVisitor<dynamic> {
       () => buildErrorMessage(
         error: JuggerErrorId.invalid_method_of_component,
         message: 'Method ${element.name} of component must be abstract.',
+      ),
+    );
+
+    check(
+      element.isPublic,
+      () => buildErrorMessage(
+        error: JuggerErrorId.invalid_method_of_component,
+        message: 'Method ${element.name} of component must be public.',
       ),
     );
 

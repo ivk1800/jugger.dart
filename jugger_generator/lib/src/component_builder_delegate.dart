@@ -322,37 +322,39 @@ class ComponentBuilderDelegate {
     final Iterable<GraphObject> filteredDependencies =
         _filterDependenciesForFields(_componentContext.objectsGraph);
 
-    for (final GraphObject dependency in filteredDependencies) {
+    for (final GraphObject graphObject in filteredDependencies) {
       check(
-        !dependency.type.isProvider,
-        () => providerNotAllowed(dependency.type),
+        !graphObject.type.isProvider,
+        () => providerNotAllowed(graphObject.type),
       );
 
       final ProviderSource? provider =
-          _componentContext.findProvider(dependency.type, dependency.tag);
+          _componentContext.findProvider(graphObject.type, graphObject.tag);
 
-      if (provider == null && dependency.tag != null) {
+      // Do not generate code if method of component annotated with qualifier,
+      // but constructor of class is injected
+      if (provider == null && graphObject.tag != null) {
         throw JuggerError(
-          notProvided(dependency.type, dependency.tag),
+          buildProviderNotFoundMessage(graphObject.type, graphObject.tag),
         );
       }
 
       if (provider is! ArgumentSource && provider is! AnotherComponentSource) {
         fields.add(Field((FieldBuilder b) {
-          final Tag? tag = dependency.tag;
+          final Tag? tag = graphObject.tag;
           b.name = '_${_generateFieldName(
-            dependency.type,
+            graphObject.type,
             tag?._toAssignTag(),
           )}Provider';
 
           final String generic = _allocator.allocate(
-            refer(_allocateDependencyTypeName(dependency)),
+            refer(_allocateDependencyTypeName(graphObject)),
           );
           b.late = true;
           b.modifier = FieldModifier.final$;
 
           final ProviderSource? provider =
-              _componentContext.findProvider(dependency.type, tag);
+              _componentContext.findProvider(graphObject.type, tag);
 
           if (provider is ModuleSource) {
             b.assignment = _buildProviderFromMethod(
@@ -360,13 +362,13 @@ class ComponentBuilderDelegate {
             );
           } else {
             final ClassElement typeElement =
-                dependency.type.element as ClassElement;
+                graphObject.type.element as ClassElement;
 
             check(
               !(isCore(typeElement) || typeElement.isAbstract),
-              () => notProvided(dependency.type, tag),
+              () => buildProviderNotFoundMessage(graphObject.type, tag),
             );
-            b.assignment = _buildProviderFromType(dependency.type);
+            b.assignment = _buildProviderFromType(graphObject.type);
           }
 
           b.type =
@@ -460,19 +462,12 @@ class ComponentBuilderDelegate {
         b.name = method.name;
         b.returns = refer(_allocateTypeName(method.returnType));
 
-        final Tag? tag = method.getQualifierTag();
-        final ProviderSource? providerSource =
-            _componentContext.findProvider(method.returnType, tag);
-
-        check(
-          providerSource != null || method.returnType.hasInjectedConstructor(),
-          () => 'not found inject constructor for [${method.runtimeType}]\n'
-              '${notProvided(method.returnType, tag)}',
-        );
-
         b.lambda = true;
         b.body = Code(
-          _generateAssignString(method.returnType, tag),
+          _generateAssignString(
+            method.returnType,
+            method.getQualifierTag(),
+          ),
         );
       });
       newProperties.add(m);
@@ -585,7 +580,7 @@ class ComponentBuilderDelegate {
       }
       check(
         provider != null,
-        () => providerNotFound(depType, tag),
+        () => buildProviderNotFoundMessage(depType, tag),
       );
       return _generateAssignString(
         provider!.type,
@@ -620,7 +615,7 @@ class ComponentBuilderDelegate {
           _componentContext.findProvideMethod(type: type, tag: tag);
       check(
         provideMethod != null,
-        () => providerNotFound(type, tag),
+        () => buildProviderNotFoundMessage(type, tag),
       );
     }
 

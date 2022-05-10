@@ -593,3 +593,30 @@ abstract class MyComponentBuilder {
   MyComponent build();
 }
 ```
+
+### circular_dependency
+Jugger detect circular dependencies. Common error if two classes depend on each other.
+
+`BAD:`
+```dart
+class Class1 {
+  @inject
+  Class1(this.class2);
+  
+  final Class2 class2;
+}
+class Class2 {
+  @inject
+  Class2(this.class1);
+
+  final Class1 class1;
+}
+```
+
+### provider_not_found
+The jugger doesn't understand you because it can't determine the provider for the type. 
+Providers can be:
+1) Method of module; 
+2) Component arguments;
+3) Other component;
+4) If none of the above providers was found, the jagger looks at the injected constructor;

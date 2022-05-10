@@ -4,6 +4,188 @@ import 'package:test/test.dart';
 import 'utils.dart';
 
 void main() {
+  group('missing provider', () {
+    test('missing provider of type for component', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component()
+abstract class AppComponent {
+  String getString();
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: provider_not_found:\n'
+            'Provider for String not found.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#provider_not_found',
+          );
+        },
+      );
+    });
+    test('missing provider of type with qualifier for component', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component()
+abstract class AppComponent {
+  @Named('s')
+  String getString();
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: provider_not_found:\n'
+            'Provider for String with qualifier s not found.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#provider_not_found',
+          );
+        },
+      );
+    });
+
+    test('missing provider of type for module method arg', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[AppModule])
+abstract class AppComponent {
+  String getString();
+}
+
+@module
+abstract class AppModule {
+  @provides
+  static String provideString(int i) => '';
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: provider_not_found:\n'
+            'Provider for int not found.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#provider_not_found',
+          );
+        },
+      );
+    });
+
+    test('missing provider of type with qualifier for module method arg',
+        () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[AppModule])
+abstract class AppComponent {
+  String getString();
+}
+
+@module
+abstract class AppModule {
+  @provides
+  static String provideString(@Named('i') int i) => '';
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: provider_not_found:\n'
+            'Provider for int with qualifier i not found.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#provider_not_found',
+          );
+        },
+      );
+    });
+
+    test('missing provider of type for module method arg 2', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[AppModule])
+abstract class AppComponent {
+  String getString();
+}
+
+@module
+abstract class AppModule {
+  @provides
+  static String provideString(IProvider<int> i) => '';
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: provider_not_found:\n'
+            'Provider for int not found.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#provider_not_found',
+          );
+        },
+      );
+    });
+
+    test('missing provider of type with qualifier for module method arg 2',
+        () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[AppModule])
+abstract class AppComponent {
+  String getString();
+}
+
+@module
+abstract class AppModule {
+  @provides
+  static String provideString(@Named('i') IProvider<int> i) => '';
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: provider_not_found:\n'
+            'Provider for int with qualifier i not found.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#provider_not_found',
+          );
+        },
+      );
+    });
+
+    test(
+        'if method of component annotated with qualifier, but constructor of class is in',
+        () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component()
+abstract class AppComponent {
+  @Named('s')
+  MyClass getMyClass();
+}
+
+class MyClass {
+  const MyClass();
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: provider_not_found:\n'
+            'Provider for MyClass with qualifier s not found.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#provider_not_found',
+          );
+        },
+      );
+    });
+  });
+
   group('module', () {
     test('should failed if method with named param', () async {
       await checkBuilderError(
@@ -307,7 +489,9 @@ abstract class AppModule {
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: Provider for (String) not found',
+            'error: provider_not_found:\n'
+            'Provider for String not found.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#provider_not_found',
           );
         },
       );
@@ -332,7 +516,9 @@ abstract class AppModule {
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: [Future<String>, qualifier: null] not provided',
+            'error: provider_not_found:\n'
+            'Provider for Future<String> not found.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#provider_not_found',
           );
         },
       );
@@ -363,7 +549,9 @@ abstract class AppModule {
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: Found circular dependency! provideAppName->provideAppVersion->provideAppName',
+            'error: circular_dependency:\n'
+            'Found circular dependency! provideAppName->provideAppVersion->provideAppName\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#circular_dependency',
           );
         },
       );
@@ -404,7 +592,9 @@ class MyClass {
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: Found circular dependency! provideHello->bindRouter->provideHello',
+            'error: circular_dependency:\n'
+            'Found circular dependency! provideHello->bindRouter->provideHello\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#circular_dependency',
           );
         },
       );
@@ -437,7 +627,9 @@ class MyClass {
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: Found circular dependency! provideInt->provideHello->provideInt',
+            'error: circular_dependency:\n'
+            'Found circular dependency! provideInt->provideHello->provideInt\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#circular_dependency',
           );
         },
       );
@@ -1031,7 +1223,9 @@ abstract class AppModule {}
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: [String, qualifier: my] not provided',
+            'error: provider_not_found:\n'
+            'Provider for String with qualifier my not found.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#provider_not_found',
           );
         },
       );
@@ -1063,7 +1257,9 @@ const My my = My();
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: [String, qualifier: My] not provided',
+            'error: provider_not_found:\n'
+            'Provider for String with qualifier My not found.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#provider_not_found',
           );
         },
       );
@@ -1839,6 +2035,30 @@ abstract class AppComponent {
     );
 
     test(
+      'should fail if method not public',
+      () async {
+        await checkBuilderError(
+          codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component()
+abstract class AppComponent {
+  String _getString();
+}
+        ''',
+          onError: (Object error) {
+            expect(
+              error.toString(),
+              'error: invalid_method_of_component:\n'
+              'Method _getString of component must be public.\n'
+              'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_method_of_component',
+            );
+          },
+        );
+      },
+    );
+
+    test(
       'should fail if method with parameters',
       () async {
         await checkBuilderError(
@@ -1883,7 +2103,9 @@ abstract class AppComponent {
           onError: (Object error) {
             expect(
               error.toString(),
-              'error: [MyClass, qualifier: test] not provided',
+              'error: provider_not_found:\n'
+              'Provider for MyClass with qualifier test not found.\n'
+              'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#provider_not_found',
             );
           },
         );

@@ -11,7 +11,6 @@ import 'dart_type_ext.dart';
 import 'errors_glossary.dart';
 import 'graph_object_place.dart';
 import 'jugger_error.dart';
-import 'messages.dart';
 import 'tag.dart';
 import 'utils.dart';
 import 'visitors.dart';
@@ -155,7 +154,11 @@ class ComponentContext {
     if (_objectsGraphQueue.contains(key)) {
       _objectsGraphQueue.addFirst(key);
       throw JuggerError(
-        'Found circular dependency! ${_objectsGraphQueue.toList().reversed.join('->')}',
+        buildErrorMessage(
+          error: JuggerErrorId.circular_dependency,
+          message:
+              'Found circular dependency! ${_objectsGraphQueue.toList().reversed.join('->')}',
+        ),
       );
     }
     _objectsGraphQueue.addFirst(key);
