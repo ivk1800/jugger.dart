@@ -14,6 +14,10 @@ class JuggerBuilder extends Builder {
 
   @override
   Future<void> build(BuildStep buildStep) async {
+    if (_isTestAsset(buildStep.inputId)) {
+      return Future<void>.value();
+    }
+
     final GlobalConfig globalConfig = GlobalConfig(
       removeInterfacePrefixFromComponentName: options
               .config['remove_interface_prefix_from_component_name'] as bool? ??
@@ -25,8 +29,8 @@ class JuggerBuilder extends Builder {
       globalConfig: globalConfig,
     );
 
-    final String outputContents = await delegate.buildOutput(buildStep);
-    if (outputContents.trim().isEmpty || _isTestAsset(buildStep.inputId)) {
+    final String? outputContents = await delegate.buildOutput(buildStep);
+    if (outputContents == null || outputContents.trim().isEmpty) {
       return Future<void>.value();
     }
     final AssetId outputFile =

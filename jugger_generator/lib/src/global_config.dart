@@ -1,3 +1,4 @@
+/// Config of JuggerBuilder.
 class GlobalConfig {
   GlobalConfig({
     required this.removeInterfacePrefixFromComponentName,

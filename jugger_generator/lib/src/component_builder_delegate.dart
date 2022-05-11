@@ -20,6 +20,7 @@ import 'tag.dart';
 import 'utils.dart';
 import 'visitors.dart';
 
+/// Delegate to generate the jugger component.
 class ComponentBuilderDelegate {
   ComponentBuilderDelegate({
     required this.globalConfig,
@@ -41,9 +42,11 @@ class ComponentBuilderDelegate {
     'ignore_for_file: non_constant_identifier_names',
   ];
 
-  Future<String> buildOutput(BuildStep buildStep) async {
+  /// Returns the generated component code, null if there is nothing to generate
+  /// for buildStep.
+  Future<String?> buildOutput(BuildStep buildStep) async {
     try {
-      return await _buildOutput(buildStep);
+      return await _buildOutputInternal(buildStep);
     } catch (e) {
       final String message = '${_logs.join('\n')}\n$e';
       log.shout('\x1B[94m$message\x1B[0m');
@@ -52,15 +55,21 @@ class ComponentBuilderDelegate {
     }
   }
 
-  Future<String> _buildOutput(BuildStep buildStep) async {
+  Future<String?> _buildOutputInternal(BuildStep buildStep) async {
     final Resolver resolver = buildStep.resolver;
 
     if (await resolver.isLibrary(buildStep.inputId)) {
-      _allocator = Allocator.simplePrefixing();
-
       final LibraryElement lib = await buildStep.inputLibrary;
 
       final List<j.Component> components = lib.getComponents();
+
+      // skip if nothing to generate
+      if (components.isEmpty) {
+        return null;
+      }
+
+      _allocator = Allocator.simplePrefixing();
+
       final LibraryBuilder target = LibraryBuilder();
 
       final List<j.ComponentBuilder> componentBuilders =
