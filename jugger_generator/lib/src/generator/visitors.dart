@@ -4,10 +4,10 @@ import 'package:analyzer/dart/element/visitor.dart';
 import 'package:collection/collection.dart';
 import 'package:jugger/jugger.dart' as j;
 
-import 'classes.dart';
-import 'errors_glossary.dart';
-import 'jugger_error.dart';
-import 'utils.dart';
+import '../errors_glossary.dart';
+import '../jugger_error.dart';
+import '../utils/utils.dart';
+import 'wrappers.dart';
 
 class _InjectedMembersVisitor extends RecursiveElementVisitor<dynamic> {
   final List<InjectedMember> members = <InjectedMember>[];

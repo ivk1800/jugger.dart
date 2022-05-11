@@ -5,15 +5,15 @@ import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
 import 'package:quiver/core.dart';
 
-import 'classes.dart';
-import 'classes.dart' as j;
-import 'dart_type_ext.dart';
-import 'errors_glossary.dart';
+import '../errors_glossary.dart';
 import 'graph_object_place.dart';
-import 'jugger_error.dart';
+import '../jugger_error.dart';
 import 'tag.dart';
-import 'utils.dart';
+import '../utils/dart_type_ext.dart';
+import '../utils/utils.dart';
 import 'visitors.dart';
+import 'wrappers.dart';
+import 'wrappers.dart' as j;
 
 /// Class containing all information about the component, including the object
 /// graph.

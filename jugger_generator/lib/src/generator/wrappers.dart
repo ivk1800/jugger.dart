@@ -2,7 +2,7 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:collection/collection.dart';
 
 import 'tag.dart';
-import 'utils.dart';
+import '../utils/utils.dart';
 import 'visitors.dart';
 
 /// Wrapper class for component classes that are annotated by [inject].

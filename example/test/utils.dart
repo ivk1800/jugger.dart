@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:build/build.dart';
 import 'package:build_test/build_test.dart';
-import 'package:jugger_generator/src/jugger_builder.dart';
+import 'package:jugger_generator/src/builder/jugger_builder.dart';
 
 Future<void> checkBuilderOfFile(
   String fileName, [

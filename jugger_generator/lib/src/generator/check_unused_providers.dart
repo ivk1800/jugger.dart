@@ -2,8 +2,8 @@ import 'package:analyzer/dart/analysis/utilities.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
 
-import 'errors_glossary.dart';
-import 'utils.dart';
+import '../errors_glossary.dart';
+import '../utils/utils.dart';
 
 void checkUnusedProviders(String content) {
   final CompilationUnit unit = parseString(content: content).unit;

@@ -4,7 +4,7 @@ import 'dart:async';
 
 import 'package:build/build.dart';
 
-import 'component_builder_delegate.dart';
+import '../generator/component_builder_delegate.dart';
 import 'global_config.dart';
 
 class JuggerBuilder extends Builder {

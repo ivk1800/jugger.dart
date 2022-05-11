@@ -1,9 +1,9 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 
-import 'errors_glossary.dart';
+import '../errors_glossary.dart';
+import '../generator/visitors.dart';
 import 'utils.dart';
-import 'visitors.dart';
 
 extension DartTypeExt on DartType {
   bool get isProvider {

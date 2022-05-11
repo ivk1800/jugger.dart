@@ -9,16 +9,16 @@ import 'package:collection/collection.dart';
 import 'package:dart_style/dart_style.dart';
 import 'package:jugger/jugger.dart' as jugger;
 
+import '../builder/global_config.dart';
 import 'check_unused_providers.dart';
-import 'classes.dart' as j;
 import 'component_context.dart';
-import 'dart_type_ext.dart';
-import 'errors_glossary.dart';
-import 'global_config.dart';
-import 'jugger_error.dart';
+import '../errors_glossary.dart';
+import '../jugger_error.dart';
 import 'tag.dart';
-import 'utils.dart';
+import '../utils/dart_type_ext.dart';
+import '../utils/utils.dart';
 import 'visitors.dart';
+import 'wrappers.dart' as j;
 
 /// Delegate to generate the jugger component.
 class ComponentBuilderDelegate {

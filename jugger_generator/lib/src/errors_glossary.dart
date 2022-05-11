@@ -2,7 +2,7 @@
 
 import 'package:analyzer/dart/element/type.dart';
 
-import 'tag.dart';
+import 'generator/tag.dart';
 
 const String _glossary =
     'https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md';
@@ -91,6 +91,7 @@ enum JuggerErrorId {
   multiple_qualifiers,
 }
 
+// TODO: support Enhanced enums with members in dart 2.17.0
 extension JuggerErrorIdExt on JuggerErrorId {
   String toLink() {
     switch (this) {

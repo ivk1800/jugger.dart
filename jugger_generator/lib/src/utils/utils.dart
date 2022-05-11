@@ -8,13 +8,13 @@ import 'package:collection/collection.dart';
 import 'package:crypto/crypto.dart';
 import 'package:jugger/jugger.dart';
 
-import 'classes.dart';
-import 'errors_glossary.dart';
-import 'jugger_error.dart';
+import '../errors_glossary.dart';
+import '../jugger_error.dart';
+import '../generator/tag.dart';
+import '../generator/visitors.dart';
+import '../generator/wrappers.dart';
 import 'library_ext.dart';
 import 'module_extractor.dart';
-import 'tag.dart';
-import 'visitors.dart';
 
 ComponentAnnotation? getComponentAnnotation(Element element) {
   final Annotation? annotation = getAnnotations(element)

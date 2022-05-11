@@ -1,3 +1,4 @@
+/// General generation error.
 class JuggerError extends Error {
   JuggerError(this.message);
 
