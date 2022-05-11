@@ -1,11 +1,11 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:collection/collection.dart';
 
-import 'tag.dart';
 import '../utils/utils.dart';
+import 'tag.dart';
 import 'visitors.dart';
 
-/// Wrapper class for component classes that are annotated by [inject].
+/// Wrapper class for component classes that are annotated by [Component].
 /// The client of this class must check that the element is definitely a
 /// Component.
 class Component {

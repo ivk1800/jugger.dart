@@ -10,13 +10,13 @@ import 'package:dart_style/dart_style.dart';
 import 'package:jugger/jugger.dart' as jugger;
 
 import '../builder/global_config.dart';
-import 'check_unused_providers.dart';
-import 'component_context.dart';
 import '../errors_glossary.dart';
 import '../jugger_error.dart';
-import 'tag.dart';
 import '../utils/dart_type_ext.dart';
 import '../utils/utils.dart';
+import 'check_unused_providers.dart';
+import 'component_context.dart';
+import 'tag.dart';
 import 'visitors.dart';
 import 'wrappers.dart' as j;
 
@@ -28,9 +28,8 @@ class ComponentBuilderDelegate {
 
   final GlobalConfig globalConfig;
   late ComponentContext _componentContext;
-  late Allocator _allocator;
+  late final Allocator _allocator = Allocator.simplePrefixing();
   late DartType _componentType;
-  final List<String> _logs = <String>[];
   final Expression _overrideAnnotationExpression =
       const CodeExpression(Code('override'));
 
@@ -48,9 +47,9 @@ class ComponentBuilderDelegate {
     try {
       return await _buildOutputInternal(buildStep);
     } catch (e) {
-      final String message = '${_logs.join('\n')}\n$e';
-      log.shout('\x1B[94m$message\x1B[0m');
-      log.shout((e as Error).stackTrace);
+      log.info(
+        '\nError during component generation:\n${_componentContext.component.element.toNameWithPath()}',
+      );
       rethrow;
     }
   }
@@ -67,8 +66,6 @@ class ComponentBuilderDelegate {
       if (components.isEmpty) {
         return null;
       }
-
-      _allocator = Allocator.simplePrefixing();
 
       final LibraryBuilder target = LibraryBuilder();
 
@@ -90,12 +87,10 @@ class ComponentBuilderDelegate {
           component: component,
           componentBuilder: componentBuilder,
         );
-        _logs.clear();
 
         target.body.add(Class((ClassBuilder classBuilder) {
           classBuilder.fields.addAll(_buildProvidesFields());
           classBuilder.fields.addAll(_buildConstructorFields(componentBuilder));
-          _log('build for component: ${component.element.toNameWithPath()}');
           classBuilder.methods.addAll(_buildProvideMethods());
           classBuilder.methods.addAll(_buildProvideProperties());
 
@@ -434,8 +429,6 @@ class ComponentBuilderDelegate {
         _componentContext.component.provideProperties;
 
     return properties.map((PropertyAccessorElement property) {
-      _log(
-          'build property for: ${property.enclosingElement.name}.${property.name}');
       return Method((MethodBuilder builder) {
         final Tag? tag = property.getQualifierTag();
         builder
@@ -465,8 +458,6 @@ class ComponentBuilderDelegate {
     final List<Method> newProperties = <Method>[];
 
     for (final MethodElement method in methods) {
-      _log(
-          'build provide method for: ${method.enclosingElement.name}.${method.name}');
       final Method m = Method((MethodBuilder b) {
         b.annotations.add(_overrideAnnotationExpression);
         b.name = method.name;
@@ -523,7 +514,6 @@ class ComponentBuilderDelegate {
 
       builder.body = Block((BlockBuilder b) {
         for (final j.InjectedMember member in members.toSet()) {
-          _log('build provide method for member: ${member.element}');
           final Tag? tag = member.element.getQualifierTag();
           b.addExpression(CodeExpression(Block.of(<Code>[
             Code('${parameterElement.name}.${member.element.name}'),
@@ -744,9 +734,6 @@ class ComponentBuilderDelegate {
   /// SingletonProvider<MyProvider>(() => AppModule.provideMyProvider());
   /// ```
   Code _buildProviderFromMethod(MethodElement method) {
-    _log(
-      'build provider from method: ${method.toNameWithPath()}',
-    );
     if (method.isStatic) {
       return _buildProviderFromStaticMethod(method);
     } else if (method.isAbstract) {
@@ -788,9 +775,6 @@ class ComponentBuilderDelegate {
   /// SingletonProvider<MyProvider>(() => AppModule.provideMyProvider());
   /// ```
   Code _buildProviderFromAbstractMethod(MethodElement method) {
-    _log(
-        'build provider from abstract method: ${method.enclosingElement.toNameWithPath()}');
-
     check(
       method.parameters.length == 1,
       () =>
@@ -885,9 +869,6 @@ class ComponentBuilderDelegate {
   /// SingletonProvider<MyProvider>(() => AppModule.provideMyProvider());
   /// ```
   Code _buildProviderFromStaticMethod(MethodElement method) {
-    _log(
-        'build provider from static method: ${method.enclosingElement.name}.${method.name}');
-
     check(
       method.returnType.element is ClassElement,
       () => '${method.returnType.element} not supported.',
@@ -1172,8 +1153,6 @@ class ComponentBuilderDelegate {
     });
     return Map<String, Expression>.fromEntries(map);
   }
-
-  void _log(String value) => _logs.add(value);
 }
 
 extension _StringExt on Tag {

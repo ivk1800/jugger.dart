@@ -9,10 +9,10 @@ import 'package:crypto/crypto.dart';
 import 'package:jugger/jugger.dart';
 
 import '../errors_glossary.dart';
-import '../jugger_error.dart';
 import '../generator/tag.dart';
 import '../generator/visitors.dart';
 import '../generator/wrappers.dart';
+import '../jugger_error.dart';
 import 'library_ext.dart';
 import 'module_extractor.dart';
 
@@ -343,7 +343,7 @@ extension ElementExt on Element {
 
   Tag? getQualifierTag() => getQualifierAnnotation(this)?.tag;
 
-  String toNameWithPath() => '$name] ${library?.identifier}';
+  String toNameWithPath() => '$name ${library?.identifier}';
 }
 
 extension ElementAnnotationExt on List<ElementAnnotation> {

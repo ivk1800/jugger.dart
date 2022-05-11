@@ -4,8 +4,8 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:jugger/jugger.dart' as j;
 
 import '../errors_glossary.dart';
-import '../jugger_error.dart';
 import '../generator/wrappers.dart';
+import '../jugger_error.dart';
 import 'utils.dart';
 
 class ModuleExtractor {

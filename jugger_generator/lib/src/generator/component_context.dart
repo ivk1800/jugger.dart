@@ -6,11 +6,11 @@ import 'package:collection/collection.dart';
 import 'package:quiver/core.dart';
 
 import '../errors_glossary.dart';
-import 'graph_object_place.dart';
 import '../jugger_error.dart';
-import 'tag.dart';
 import '../utils/dart_type_ext.dart';
 import '../utils/utils.dart';
+import 'graph_object_place.dart';
+import 'tag.dart';
 import 'visitors.dart';
 import 'wrappers.dart';
 import 'wrappers.dart' as j;
