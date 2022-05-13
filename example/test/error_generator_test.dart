@@ -186,7 +186,48 @@ class MyClass {
     });
   });
 
+  group('missing provider', () {
+    test('unexpected error', () async {
+      await checkBuilderError(
+        codeContent: '''
+@Component()
+abstract class AppComponent { }
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: Null check operator used on a null value\n'
+            'Unexpected error, please report the issue: https://github.com/ivk1800/jugger.dart/issues/new?assignees=&labels=&template=code-generation-error.md&title=',
+          );
+        },
+      );
+    });
+  });
+
   group('module', () {
+    test('Multiple annotations on module', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[AppModule])
+abstract class AppComponent { }
+
+@module
+@module
+abstract class AppModule { }
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: multiple_module_annotations:\n'
+            'Multiple annotations on module AppModule not supported.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#multiple_module_annotations',
+          );
+        },
+      );
+    });
+
     test('should failed if method with named param', () async {
       await checkBuilderError(
         codeContent: '''
@@ -250,7 +291,9 @@ abstract class Module2 {
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: Found circular included modules!',
+            'error: circular_modules_dependency:\n'
+            'Found circular included modules!\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#modules_circular_dependency',
           );
         },
       );
@@ -1293,7 +1336,7 @@ abstract class AppModule {
             error.toString(),
             'error: multiple_qualifiers:\n'
             'Multiple qualifiers of AppComponent.appConfig not allowed.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#multiple qualifiers',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#multiple_qualifiers',
           );
         },
       );
@@ -1322,12 +1365,11 @@ abstract class AppModule {
   @provides
   static String provideString() => 'hello';
 }
-
         ''',
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: field _helloString must be only public',
+            'error: Field _helloString must be only public.',
           );
         },
         options: const BuilderOptions(
@@ -1360,6 +1402,33 @@ abstract class Module1 {
             'error: bind_wrong_type:\n'
             'Method Module1.bindPattern parameter type must be assignable to the return type.\n'
             'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#bind_wrong_type',
+          );
+        },
+      );
+    });
+
+    test('bind method with multiple parameters', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[AppModule])
+abstract class AppComponent {
+  String getString();
+}
+
+@module
+abstract class AppModule {
+  @binds
+  String bindString(String s, int i);
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: invalid_bind_method:\n'
+            'Method AppModule.bindString annotated with Binds must have one parameter.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_bind_method',
           );
         },
       );
@@ -2015,6 +2084,30 @@ abstract class AppModule {
 
   group('component', () {
     test(
+      'injectable method without one parameter',
+      () async {
+        await checkBuilderError(
+          codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component()
+abstract class AppComponent {
+  void inject(int i, String s);
+}
+        ''',
+          onError: (Object error) {
+            expect(
+              error.toString(),
+              'error: invalid_injectable_method:\n'
+              'Injected method inject must have one parameter.\n'
+              'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_injectable_method',
+            );
+          },
+        );
+      },
+    );
+
+    test(
       'should fail if method not abstract',
       () async {
         await checkBuilderError(
@@ -2350,7 +2443,7 @@ abstract class MyComponentBuilder {
             error.toString(),
             'error: component_builder_type_provided_multiple_times:\n'
             'Type String provided multiple times in component builder MyComponentBuilder\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#component_builder_type_provides_multiple_times',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#component_builder_type_provided_multiple_times',
           );
         },
       );
@@ -2386,6 +2479,41 @@ abstract class MyComponentBuilder {
   });
 
   group('injected method', () {
+    test('private method', () async {
+      await checkBuilderError(
+        codeContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[AppModule])
+abstract class AppComponent {
+  MyClass getMyClass();
+}
+
+@module
+abstract class AppModule {
+  @provides
+  static int provideInt() => 0;
+}
+
+class MyClass {
+  @inject
+  const MyClass();
+
+  @inject
+  void _init(int i) {}
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: invalid_injected_method:\n'
+            'Injected method _init must be public.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_injected_method',
+          );
+        },
+      );
+    });
+
     test('static method', () async {
       await checkBuilderError(
         codeContent: '''
@@ -2413,7 +2541,9 @@ class MyClass {
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: injected method [init] can not be static',
+            'error: invalid_injected_method:\n'
+            'Injected method init can not be static.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_injected_method',
           );
         },
       );
@@ -2453,7 +2583,9 @@ abstract class BaseClass {
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: injected method [init] can not be abstract',
+            'error: invalid_injected_method:\n'
+            'Injected method init can not be abstract.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_injected_method',
           );
         },
       );

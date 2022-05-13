@@ -212,7 +212,10 @@ class ComponentContext {
     }
 
     throw JuggerError(
-      'field ${element.name} unsupported type [${element.runtimeType}]',
+      buildUnexpectedErrorMessage(
+        message:
+            'Field ${element.name} unsupported type [${element.runtimeType}]',
+      ),
     );
   }
 
@@ -223,7 +226,9 @@ class ComponentContext {
     if (object.type.isProvider) {
       check(
         object.dependencies.isEmpty,
-        () => 'provider with dependencies!',
+        () => buildUnexpectedErrorMessage(
+          message: 'provider with dependencies!',
+        ),
       );
       final DartType providerType = object.type.providerType;
 

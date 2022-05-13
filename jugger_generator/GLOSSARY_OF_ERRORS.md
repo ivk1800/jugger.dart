@@ -518,6 +518,30 @@ static String provideString(
 ) => '';
 ```
 
+### multiple_providers_for_type
+Type can only have one provider.
+
+`BAD:`
+```dart
+@module
+abstract class MyModule {
+  @provides
+  static String provideSting() => '';
+
+  @provides
+  static String provideSting2() => '';
+}
+```
+
+`GOOD:`
+```dart
+@module
+abstract class MyModule {
+  @provides
+  static String provideSting() => '';
+}
+```
+
 ### invalid_injected_constructor
 An injected constructor cannot be:
 * private;
@@ -659,4 +683,101 @@ abstract class AppComponent {
   @Named('name1')
   AppConfig get appConfig1;
 }
+```
+
+### invalid_injectable_method
+Injectable method must have one parameter.
+
+`BAD:`
+```dart
+@Component()
+abstract class AppComponent {
+  void inject(int i, String s);
+}
+```
+
+`GOOD:`
+```dart
+@Component()
+abstract class AppComponent {
+  void inject(int i);
+}
+```
+
+### invalid_injected_method
+Injected method must be public and instance method.
+
+`BAD:`
+```dart
+@inject
+static void init(int i) {}
+```
+
+`GOOD:`
+```dart
+@inject
+void init(int i) {}
+```
+
+### invalid_bind_method
+Bind method must have one parameter.
+
+`BAD:`
+```dart
+ @binds
+  String bindString(String s, int i);
+```
+
+`GOOD:`
+```dart
+ @binds
+  String bindString(String s);
+```
+
+### modules_circular_dependency
+Two modules cannot include each other.
+
+`BAD:`
+```dart
+@Module(includes: <Type>[Module2])
+abstract class Module1 {
+  @provides
+  static String providerString(int i) => '';
+}
+
+@Module(includes: <Type>[Module1])
+abstract class Module2 {
+  @provides
+  static int providerInt() => 0;
+}
+```
+
+`GOOD:`
+```dart
+@Module()
+abstract class Module1 {
+  @provides
+  static String providerString(int i) => '';
+}
+
+@Module()
+abstract class Module2 {
+  @provides
+  static int providerInt() => 0;
+}
+```
+
+### multiple_module_annotations
+
+`BAD:`
+```dart
+@module
+@module
+abstract class AppModule { }
+```
+
+`GOOD:`
+```dart
+@module
+abstract class AppModule { }
 ```

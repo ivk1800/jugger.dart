@@ -6,6 +6,7 @@ import 'package:jugger/jugger.dart' as j;
 
 import '../errors_glossary.dart';
 import '../jugger_error.dart';
+import '../utils/dart_type_ext.dart';
 import '../utils/utils.dart';
 import 'wrappers.dart';
 
@@ -17,13 +18,10 @@ class _InjectedMembersVisitor extends RecursiveElementVisitor<dynamic> {
     final List<Annotation> annotations = getAnnotations(element);
     if (annotations
         .any((Annotation annotation) => annotation is InjectAnnotation)) {
-      // ignore: flutter_style_todos
-      //TODO: check another dynamic states
-      if (!element.isPublic || element.isStatic) {
-        throw JuggerError(
-          'field ${element.name} must be only public',
-        );
-      }
+      check(
+        element.isPublic && !element.isStatic && !element.isAbstract,
+        () => 'Field ${element.name} must be only public.',
+      );
       _add(element);
     }
 
@@ -108,15 +106,23 @@ class _ProvidesVisitor extends RecursiveElementVisitor<dynamic> {
       );
       check(
         element.parameters.length == 1,
-        () =>
-            'method [${moduleElement.name}.${element.name}] annotates [${j.binds.runtimeType}] must have 1 parameter',
+        () => buildErrorMessage(
+          error: JuggerErrorId.invalid_bind_method,
+          message:
+              'Method ${moduleElement.name}.${element.name} annotated with ${j.binds.runtimeType} must have one parameter.',
+        ),
       );
 
       final DartType parameterType = element.parameters.first.type;
       parameterType.checkUnsupportedType();
       final Element? typeElement = parameterType.element;
 
-      check(typeElement is ClassElement, () => 'Supported only class element.');
+      check(
+        typeElement is ClassElement,
+        () => buildUnexpectedErrorMessage(
+          message: 'Supported only class element.',
+        ),
+      );
 
       final bool isSupertype = (typeElement as ClassElement).allSupertypes.any(
           (InterfaceType interfaceType) => interfaceType == element.returnType);
@@ -146,7 +152,7 @@ class _ProvidesVisitor extends RecursiveElementVisitor<dynamic> {
 }
 
 class _InjectedFieldsVisitor extends RecursiveElementVisitor<dynamic> {
-  List<MemberInjectorMethod> fields = <MemberInjectorMethod>[];
+  List<MemberInjectorMethod> methods = <MemberInjectorMethod>[];
 
   @override
   dynamic visitMethodElement(MethodElement element) {
@@ -154,13 +160,15 @@ class _InjectedFieldsVisitor extends RecursiveElementVisitor<dynamic> {
       return null;
     }
 
-    if (element.parameters.length != 1) {
-      throw JuggerError(
-        'method ${element.name} must have 1 parameter',
-      );
-    }
+    check(
+      element.parameters.length == 1,
+      () => buildErrorMessage(
+        error: JuggerErrorId.invalid_injectable_method,
+        message: 'Injected method ${element.name} must have one parameter.',
+      ),
+    );
 
-    fields.add(MemberInjectorMethod(element));
+    methods.add(MemberInjectorMethod(element));
     return null;
   }
 }
@@ -226,12 +234,25 @@ class _InjectedMethodsVisitor extends RecursiveElementVisitor<dynamic> {
       if (!methods.any((MethodElement collectedMethod) =>
           collectedMethod.name == element.name)) {
         check(
+          element.isPublic,
+          () => buildErrorMessage(
+            error: JuggerErrorId.invalid_injected_method,
+            message: 'Injected method ${element.name} must be public.',
+          ),
+        );
+        check(
           !element.isStatic,
-          () => 'injected method [${element.name}] can not be static',
+          () => buildErrorMessage(
+            error: JuggerErrorId.invalid_injected_method,
+            message: 'Injected method ${element.name} can not be static.',
+          ),
         );
         check(
           !element.isAbstract,
-          () => 'injected method [${element.name}] can not be abstract',
+          () => buildErrorMessage(
+            error: JuggerErrorId.invalid_injected_method,
+            message: 'Injected method ${element.name} can not be abstract.',
+          ),
         );
         methods.add(element);
       }
@@ -343,21 +364,12 @@ class _ComponentBuildersVisitor extends RecursiveElementVisitor<dynamic> {
       final ComponentAnnotation? componentAnnotation =
           getComponentAnnotation(buildMethod.returnType.element!);
 
-      check(
-        componentAnnotation != null,
-        () => 'build method must return component',
-      );
-
       final Iterable<MethodElement> externalDependenciesMethods =
           methods.where((MethodElement me) => me.name != buildMethodName);
       for (final DependencyAnnotation dep
           in componentAnnotation!.dependencies) {
         final bool dependencyProvided =
             externalDependenciesMethods.any((MethodElement me) {
-          check(
-            me.parameters.length == 1,
-            () => 'build method (${me.name}) must have 1 parameter',
-          );
           return me.parameters[0].type.element == dep.element;
         });
 
@@ -489,7 +501,7 @@ extension VisitorExt on Element {
   List<MemberInjectorMethod> getMemberInjectors() {
     final _InjectedFieldsVisitor visitor = _InjectedFieldsVisitor();
     visitChildren(visitor);
-    return visitor.fields;
+    return visitor.methods;
   }
 
   /// Returns all components of library and validate them. The client must check

@@ -1,6 +1,7 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:collection/collection.dart';
 
+import '../utils/dart_type_ext.dart';
 import '../utils/utils.dart';
 import 'tag.dart';
 import 'visitors.dart';

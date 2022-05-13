@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
-import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
 import 'package:crypto/crypto.dart';
@@ -10,7 +9,6 @@ import 'package:jugger/jugger.dart';
 
 import '../errors_glossary.dart';
 import '../generator/tag.dart';
-import '../generator/visitors.dart';
 import '../generator/wrappers.dart';
 import '../jugger_error.dart';
 import 'library_ext.dart';
@@ -106,7 +104,11 @@ List<Annotation> getAnnotations(Element moduleClass) {
     }
 
     if (valueElement == null) {
-      throw JuggerError('value if annotation [$annotation] is null');
+      throw JuggerError(
+        buildUnexpectedErrorMessage(
+          message: 'value if annotation [$annotation] is null',
+        ),
+      );
     } else {
       final bool isJuggerLibrary = valueElement.library!.isJuggerLibrary;
 
@@ -191,7 +193,11 @@ List<Annotation> getAnnotations(Element moduleClass) {
         annotations.add(BindAnnotation());
       } else if (valueElement.name == componentBuilder.runtimeType.toString()) {
         if (valueElement is! ClassElement) {
-          throw JuggerError('element[$valueElement] is not ClassElement');
+          throw JuggerError(
+            buildUnexpectedErrorMessage(
+              message: 'element[$valueElement] is not ClassElement',
+            ),
+          );
         }
         annotations.add(ComponentBuilderAnnotation(valueElement));
       } else if (valueElement.name == nonLazy.runtimeType.toString()) {
@@ -206,7 +212,12 @@ Tag _getTag(ElementAnnotation annotation, ClassElement annotationClassElement) {
   if (annotationClassElement.name == 'Named') {
     final String? stringName =
         annotation.computeConstantValue()!.getField('name')!.toStringValue();
-    check(stringName != null, () => 'Unable get name of Named');
+    check(
+      stringName != null,
+      () => buildUnexpectedErrorMessage(
+        message: 'Unable get name of Named',
+      ),
+    );
     final String id = stringName!;
     return Tag(uniqueId: id, originalId: id);
   } else {
@@ -243,7 +254,12 @@ List<ClassElement> getClassListFromField(
       // ignore: avoid_as
       .map((DartObject o) => o.toTypeValue()!.element as ClassElement)
       .toList();
-  check(result != null, () => 'unable get $name from annotation');
+  check(
+    result != null,
+    () => buildUnexpectedErrorMessage(
+      message: 'unable get $name from annotation',
+    ),
+  );
   return result!;
 }
 
@@ -278,40 +294,10 @@ void check(bool condition, String Function() message) {
   }
 }
 
-extension DartTypeExt on DartType {
-  String getName() {
-    return getDisplayString(withNullability: true);
-  }
-
-  bool hasInjectedConstructor() {
-    checkUnsupportedType();
-
-    final List<ConstructorElement> injectedConstructors =
-        element!.getInjectedConstructors();
-
-    check(
-      injectedConstructors.length < 2,
-      () => 'too many injected constructors of [${getName()}]',
-    );
-    return injectedConstructors.length == 1;
-  }
-
-  void checkUnsupportedType() {
-    check(
-      this is InterfaceType,
-      () => buildErrorMessage(
-        error: JuggerErrorId.type_not_supported,
-        message: 'Type $this not supported.',
-      ),
-    );
-
-    check(
-      nullabilitySuffix == NullabilitySuffix.none,
-      () => buildErrorMessage(
-        error: JuggerErrorId.type_not_supported,
-        message: 'Type $this not supported.',
-      ),
-    );
+// ignore: avoid_positional_boolean_parameters
+void checkUnexpected(bool condition, String Function() message) {
+  if (!condition) {
+    throw JuggerError(message.call());
   }
 }
 

@@ -7,7 +7,6 @@ import 'package:build/build.dart';
 import 'package:code_builder/code_builder.dart';
 import 'package:collection/collection.dart';
 import 'package:dart_style/dart_style.dart';
-import 'package:jugger/jugger.dart' as jugger;
 
 import '../builder/global_config.dart';
 import '../errors_glossary.dart';
@@ -47,10 +46,11 @@ class ComponentBuilderDelegate {
     try {
       return await _buildOutputInternal(buildStep);
     } catch (e) {
-      log.info(
-        '\nError during component generation:\n${_componentContext.component.element.toNameWithPath()}',
-      );
-      rethrow;
+      if (e is! JuggerError) {
+        throw JuggerError(buildUnexpectedErrorMessage(message: e.toString()));
+      } else {
+        rethrow;
+      }
     }
   }
 
@@ -326,11 +326,12 @@ class ComponentBuilderDelegate {
         _filterDependenciesForFields(_componentContext.objectsGraph);
 
     for (final GraphObject graphObject in filteredDependencies) {
-      // for dev purpose
       check(
         !graphObject.type.isProvider,
-        () =>
-            'found registered dependency of provider [${graphObject.type.getName()}]',
+        () => buildUnexpectedErrorMessage(
+          message:
+              'found registered dependency of provider [${graphObject.type.getName()}]',
+        ),
       );
 
       final ProviderSource? provider =
@@ -404,7 +405,7 @@ class ComponentBuilderDelegate {
   String _allocateTypeName(DartType t) {
     check(
       t is InterfaceType,
-      () => 'type [$t] not supported',
+      () => buildUnexpectedErrorMessage(message: 'type [$t] not supported'),
     );
     final InterfaceType type = t as InterfaceType;
 
@@ -495,10 +496,6 @@ class ComponentBuilderDelegate {
       builder.name = method.element.name;
       builder.annotations.add(_overrideAnnotationExpression);
       builder.returns = const Reference('void');
-      check(
-        method.element.parameters.length == 1,
-        () => 'method ${method.element.name} must have 1 parameter',
-      );
 
       final ParameterElement parameterElement = method.element.parameters[0];
 
@@ -740,7 +737,10 @@ class ComponentBuilderDelegate {
       return _buildProviderFromAbstractMethod(method);
     } else {
       throw JuggerError(
-        'provided method must be abstract or static [${method.enclosingElement.name}.${method.name}]',
+        buildUnexpectedErrorMessage(
+          message:
+              'provided method must be abstract or static [${method.enclosingElement.name}.${method.name}]',
+        ),
       );
     }
   }
@@ -775,18 +775,16 @@ class ComponentBuilderDelegate {
   /// SingletonProvider<MyProvider>(() => AppModule.provideMyProvider());
   /// ```
   Code _buildProviderFromAbstractMethod(MethodElement method) {
-    check(
-      method.parameters.length == 1,
-      () =>
-          'method annotates [${jugger.binds.runtimeType}] must have 1 parameter',
-    );
-
     final Element rawParameter = method.parameters[0].type.element!;
     final ClassElement parameter;
     if (rawParameter is ClassElement) {
       parameter = rawParameter;
     } else {
-      throw JuggerError('parameter must be class [${rawParameter.name}]');
+      throw JuggerError(
+        buildUnexpectedErrorMessage(
+          message: 'parameter must be class [${rawParameter.name}]',
+        ),
+      );
     }
 
     final ProviderSource? provider =
@@ -806,7 +804,9 @@ class ComponentBuilderDelegate {
       final Element? bindedElement = method.parameters[0].type.element;
       check(
         bindedElement is ClassElement,
-        () => '$bindedElement not supported.',
+        () => buildUnexpectedErrorMessage(
+          message: '$bindedElement not supported.',
+        ),
       );
       final Expression newInstance = _getProviderReferenceOfElement(
         method,
@@ -826,11 +826,17 @@ class ComponentBuilderDelegate {
     } else if (getProvideAnnotation(method) != null) {
       check(
         method.returnType.element is ClassElement,
-        () => '${method.returnType.element} not supported.',
+        () => buildUnexpectedErrorMessage(
+          message: '${method.returnType.element} not supported.',
+        ),
       );
     } else {
       throw JuggerError(
-          'unknown provided type of method ${method.getDisplayString(withNullability: false)}');
+        buildUnexpectedErrorMessage(
+          message:
+              'Unknown provided type of method ${method.getDisplayString(withNullability: false)}',
+        ),
+      );
     }
 
     final Expression newInstance =
@@ -871,7 +877,9 @@ class ComponentBuilderDelegate {
   Code _buildProviderFromStaticMethod(MethodElement method) {
     check(
       method.returnType.element is ClassElement,
-      () => '${method.returnType.element} not supported.',
+      () => buildUnexpectedErrorMessage(
+        message: '${method.returnType.element} not supported.',
+      ),
     );
     final Element moduleClass = method.enclosingElement;
     final Expression newInstance =
@@ -1033,7 +1041,7 @@ class ComponentBuilderDelegate {
   Reference _getProviderReferenceOfElement(Element element) {
     check(
       element is MethodElement || element is ConstructorElement,
-      () => '$element not supported',
+      () => buildUnexpectedErrorMessage(message: '$element not supported'),
     );
 
     // type inside brackets

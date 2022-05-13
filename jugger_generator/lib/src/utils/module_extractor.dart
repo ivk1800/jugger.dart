@@ -8,6 +8,7 @@ import '../generator/wrappers.dart';
 import '../jugger_error.dart';
 import 'utils.dart';
 
+/// Helper class that detects circular dependencies between modules.
 class ModuleExtractor {
   final Queue<ElementAnnotation> _modulesQueue = Queue<ElementAnnotation>();
 
@@ -23,7 +24,11 @@ class ModuleExtractor {
 
   ModuleAnnotation getModuleAnnotationOfModuleClass(Element moduleClass) {
     if (moduleClass is! ClassElement) {
-      throw JuggerError('element[$moduleClass] is not ClassElement');
+      throw JuggerError(
+        buildUnexpectedErrorMessage(
+          message: 'element[$moduleClass] is not ClassElement',
+        ),
+      );
     }
     check(
       moduleClass.hasAnnotatedAsModule(),
@@ -51,13 +56,21 @@ class ModuleExtractor {
     final List<ElementAnnotation> resolvedMetadata = moduleClass.metadata;
     check(
       resolvedMetadata.length == 1,
-      () => 'multiple annotations on module not supported',
+      () => buildErrorMessage(
+        error: JuggerErrorId.multiple_module_annotations,
+        message:
+            'Multiple annotations on module ${moduleClass.name} not supported.',
+      ),
     );
 
     final ElementAnnotation elementAnnotation = resolvedMetadata.first;
-    if (_modulesQueue.contains(elementAnnotation)) {
-      throw JuggerError('Found circular included modules!');
-    }
+    check(
+      !_modulesQueue.contains(elementAnnotation),
+      () => buildErrorMessage(
+        error: JuggerErrorId.circular_modules_dependency,
+        message: 'Found circular included modules!',
+      ),
+    );
 
     _modulesQueue.addFirst(elementAnnotation);
     final ModuleAnnotation moduleAnnotation = ModuleAnnotation(

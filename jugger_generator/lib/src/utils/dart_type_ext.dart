@@ -1,4 +1,5 @@
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 
 import '../errors_glossary.dart';
@@ -95,5 +96,34 @@ extension DartTypeExt on DartType {
     );
 
     return constructorElement;
+  }
+
+  String getName() {
+    return getDisplayString(withNullability: true);
+  }
+
+  /// Returns true if it has one injected constructor, otherwise an error will
+  /// be thrown.
+  bool hasInjectedConstructor() {
+    checkUnsupportedType();
+    return getInjectedConstructorOrNull() != null;
+  }
+
+  void checkUnsupportedType() {
+    check(
+      this is InterfaceType,
+      () => buildErrorMessage(
+        error: JuggerErrorId.type_not_supported,
+        message: 'Type $this not supported.',
+      ),
+    );
+
+    check(
+      nullabilitySuffix == NullabilitySuffix.none,
+      () => buildErrorMessage(
+        error: JuggerErrorId.type_not_supported,
+        message: 'Type $this not supported.',
+      ),
+    );
   }
 }
