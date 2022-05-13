@@ -7,6 +7,7 @@ import '../generator/visitors.dart';
 import 'utils.dart';
 
 extension DartTypeExt on DartType {
+  /// Whether this type is a [Provider].
   bool get isProvider {
     if (element == null) {
       return false;
@@ -24,9 +25,21 @@ extension DartTypeExt on DartType {
         element!.name == 'IProvider';
   }
 
-  DartType get providerType {
+  /// Returns the only generic type, if not one throws an error.
+  /// Type is means:
+  /// ```
+  /// Provider<
+  /// String // <---
+  /// >
+  /// ```
+  DartType get getSingleTypeArgument {
     final InterfaceType interfaceType = this as InterfaceType;
-    assert(interfaceType.typeArguments.length == 1);
+    check(
+      interfaceType.typeArguments.length == 1,
+      () => buildUnexpectedErrorMessage(
+        message: 'interfaceType.typeArguments must be 1',
+      ),
+    );
 
     return interfaceType.typeArguments.first;
   }
@@ -99,7 +112,7 @@ extension DartTypeExt on DartType {
   }
 
   String getName() {
-    return getDisplayString(withNullability: true);
+    return getDisplayString(withNullability: false);
   }
 
   /// Returns true if it has one injected constructor, otherwise an error will

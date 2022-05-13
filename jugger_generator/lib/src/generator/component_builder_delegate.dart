@@ -12,6 +12,8 @@ import '../builder/global_config.dart';
 import '../errors_glossary.dart';
 import '../jugger_error.dart';
 import '../utils/dart_type_ext.dart';
+import '../utils/element_ext.dart';
+import '../utils/tag_ext.dart';
 import '../utils/utils.dart';
 import 'check_unused_providers.dart';
 import 'component_context.dart';
@@ -91,10 +93,18 @@ class ComponentBuilderDelegate {
         target.body.add(Class((ClassBuilder classBuilder) {
           classBuilder.fields.addAll(_buildProvidesFields());
           classBuilder.fields.addAll(_buildConstructorFields(componentBuilder));
-          classBuilder.methods.addAll(_buildProvideMethods());
-          classBuilder.methods.addAll(_buildProvideProperties());
+          classBuilder.methods.addAll(
+            _buildComponentMembers(
+              _componentContext.component.provideMethods,
+            ),
+          );
+          classBuilder.methods.addAll(
+            _buildComponentMembers(
+              _componentContext.component.provideProperties,
+            ),
+          );
 
-          if (hasNonLazyProviders()) {
+          if (_hasNonLazyProviders()) {
             classBuilder.methods.add(_buildInitNonLazyMethod());
           }
 
@@ -126,6 +136,7 @@ class ComponentBuilderDelegate {
     return '';
   }
 
+  /// Generating component builders of the given library.
   void _generateComponentBuilders(
     LibraryBuilder target,
     LibraryElement lib,
@@ -174,7 +185,7 @@ class ComponentBuilderDelegate {
       final Tag? tag = parameter.parameter.enclosingElement!.getQualifierTag();
       b.name = '_${_generateFieldName(
         parameter.parameter.type,
-        tag?._toAssignTag(),
+        tag?.toAssignTag(),
       )}';
     });
   }
@@ -224,7 +235,7 @@ class ComponentBuilderDelegate {
         CodeExpression(
           Code('_${_generateFieldName(
             p.parameter.type,
-            tag?._toAssignTag(),
+            tag?.toAssignTag(),
           )} = ${p.parameter.name}; return this'),
         ),
       );
@@ -243,8 +254,8 @@ class ComponentBuilderDelegate {
             parameter.parameter.enclosingElement!.getQualifierTag();
         final CodeExpression codeExpression = CodeExpression(
           Code('_${_generateFieldName(
-            parameter.parameter._tryGetType(),
-            tag?._toAssignTag(),
+            parameter.parameter.tryGetType(),
+            tag?.toAssignTag(),
           )}!'),
         );
         return codeExpression;
@@ -256,7 +267,7 @@ class ComponentBuilderDelegate {
             parameter.parameter.enclosingElement!.getQualifierTag();
         return Code('assert(_${_generateFieldName(
           parameter.parameter.type,
-          tag?._toAssignTag(),
+          tag?.toAssignTag(),
         )} != null) ');
       }).toList();
 
@@ -350,7 +361,7 @@ class ComponentBuilderDelegate {
           final Tag? tag = graphObject.tag;
           b.name = '_${_generateFieldName(
             graphObject.type,
-            tag?._toAssignTag(),
+            tag?.toAssignTag(),
           )}Provider';
 
           final String generic = _allocator.allocate(
@@ -425,60 +436,45 @@ class ComponentBuilderDelegate {
     }).join(',')}>';
   }
 
-  List<Method> _buildProvideProperties() {
-    final List<PropertyAccessorElement> properties =
-        _componentContext.component.provideProperties;
-
-    return properties.map((PropertyAccessorElement property) {
-      return Method((MethodBuilder builder) {
-        final Tag? tag = property.getQualifierTag();
-        builder
-          ..annotations.add(_overrideAnnotationExpression)
-          ..name = property.name
-          ..lambda = true
-          ..body = Code(_generateAssignString(
-            property.returnType,
-            tag,
-          ))
-          ..type = MethodType.getter
-          ..returns = refer(_allocateTypeName(property.returnType));
-      });
-    }).toList();
-  }
-
-  /// Returns a list of component methods, their implementation, each method
-  /// calls the corresponding type provider.
+  /// Returns a list of component members or properties, their implementation,
+  /// each member calls the corresponding type provider.
   /// Example of result:
   /// ```
   /// @override
   /// _i1.Config getName() => _configProvider.get();
+  /// _i1.Config get name => _configProvider.get();
   /// ```
-  List<Method> _buildProvideMethods() {
-    final List<MethodElement> methods =
-        _componentContext.component.provideMethods;
-    final List<Method> newProperties = <Method>[];
+  /// [items] must be list of properties or method.
+  List<Method> _buildComponentMembers(List<ExecutableElement> items) {
+    final List<Method> newMembers = <Method>[];
 
-    for (final MethodElement method in methods) {
+    for (final ExecutableElement executable in items) {
+      checkUnexpected(
+        executable is PropertyAccessorElement || executable is MethodElement,
+        () => 'executable $executable not supported.',
+      );
       final Method m = Method((MethodBuilder b) {
         b.annotations.add(_overrideAnnotationExpression);
-        b.name = method.name;
-        b.returns = refer(_allocateTypeName(method.returnType));
+        b.name = executable.name;
+        b.returns = refer(_allocateTypeName(executable.returnType));
 
         b.lambda = true;
         b.body = Code(
           _generateAssignString(
-            method.returnType,
-            method.getQualifierTag(),
+            executable.returnType,
+            executable.getQualifierTag(),
           ),
         );
+        if (executable is PropertyAccessorElement) {
+          b.type = MethodType.getter;
+        }
       });
-      newProperties.add(m);
+      newMembers.add(m);
     }
 
     // Sort so that the sequence is preserved with each code generation (for
     // test stability)
-    return newProperties
-      ..sort((Method a, Method b) => a.name!.compareTo(b.name!));
+    return newMembers..sort((Method a, Method b) => a.name!.compareTo(b.name!));
   }
 
   /// Returns a list of component properties, their implementation, each
@@ -564,7 +560,7 @@ class ComponentBuilderDelegate {
     }
 
     if (type.isProvider) {
-      final DartType depType = type.providerType;
+      final DartType depType = type.getSingleTypeArgument;
       final ProviderSource? provider =
           _componentContext.findProvider(depType, tag);
 
@@ -695,7 +691,7 @@ class ComponentBuilderDelegate {
 
   /// Returns true if there are non-lazy graph objects in the component. The
   /// source in the module must be annotated with @nonLazy.
-  bool hasNonLazyProviders() {
+  bool _hasNonLazyProviders() {
     return _componentContext.providerSources.any((ProviderSource source) =>
         source.annotations.any(
             (j.Annotation annotation) => annotation is j.NonLazyAnnotation));
@@ -1093,7 +1089,7 @@ class ComponentBuilderDelegate {
   /// creation of the component is different.
   Constructor _buildConstructor(j.ComponentBuilder? componentBuilder) {
     return Constructor((ConstructorBuilder constructorBuilder) {
-      if (hasNonLazyProviders()) {
+      if (_hasNonLazyProviders()) {
         constructorBuilder.body = const Code('_initNonLazy();');
       }
 
@@ -1109,7 +1105,7 @@ class ComponentBuilderDelegate {
                 parameter.parameter.enclosingElement!.getQualifierTag();
             b.name = '_${_generateFieldName(
               parameter.parameter.type,
-              tag?._toAssignTag(),
+              tag?.toAssignTag(),
             )}';
           });
         }));
@@ -1117,6 +1113,8 @@ class ComponentBuilderDelegate {
     });
   }
 
+  /// Returns a list of fields for the constructor. fields correspond to fields
+  /// from component builder.
   List<Field> _buildConstructorFields(j.ComponentBuilder? componentBuilder) {
     if (componentBuilder == null) {
       return <Field>[];
@@ -1130,7 +1128,7 @@ class ComponentBuilderDelegate {
             parameter.parameter.enclosingElement!.getQualifierTag();
         b.name = '_${_generateFieldName(
           parameter.parameter.type,
-          tag?._toAssignTag(),
+          tag?.toAssignTag(),
         )}';
         b.modifier = FieldModifier.final$;
         b.type = refer(_allocateTypeName(parameter.parameter.type));
@@ -1138,6 +1136,8 @@ class ComponentBuilderDelegate {
     }).toList();
   }
 
+  /// Returns arguments that can be used to call a constructor or method.
+  /// [parameters] parameters used for arguments.
   Map<String, Expression> _buildArgumentsExpressions(
     List<ParameterElement> parameters,
   ) {
@@ -1160,22 +1160,5 @@ class ComponentBuilderDelegate {
       return MapEntry<String, Expression>(parameter.name, codeExpression);
     });
     return Map<String, Expression>.fromEntries(map);
-  }
-}
-
-extension _StringExt on Tag {
-  String _toAssignTag() => generateMd5(uniqueId);
-}
-
-extension ElementExt on Element {
-  DartType _tryGetType() {
-    final Element element = this;
-    if (element is ClassElement) {
-      return element.thisType;
-    } else if (element is ParameterElement) {
-      return element.type;
-    }
-
-    throw JuggerError('unable get type of [$element]');
   }
 }

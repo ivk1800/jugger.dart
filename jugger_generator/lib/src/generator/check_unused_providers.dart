@@ -5,6 +5,8 @@ import 'package:analyzer/dart/ast/visitor.dart';
 import '../errors_glossary.dart';
 import '../utils/utils.dart';
 
+/// Checks the generated code for unused providers. These are providers that are
+/// not used in the object graph.
 void checkUnusedProviders(String content) {
   final CompilationUnit unit = parseString(content: content).unit;
   final _Visitor visitor = _Visitor(rawContent: content);

@@ -230,7 +230,7 @@ class ComponentContext {
           message: 'provider with dependencies!',
         ),
       );
-      final DartType providerType = object.type.providerType;
+      final DartType providerType = object.type.getSingleTypeArgument;
 
       List<GraphObject> objects = object.dependencies;
 
@@ -381,7 +381,7 @@ class _Key {
         return _Key(
           tag: tag,
           element: element,
-          type: element.type.providerType,
+          type: element.type.getSingleTypeArgument,
         );
       }
 
