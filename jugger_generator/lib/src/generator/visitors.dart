@@ -5,7 +5,6 @@ import 'package:collection/collection.dart';
 import 'package:jugger/jugger.dart' as j;
 
 import '../errors_glossary.dart';
-import '../jugger_error.dart';
 import '../utils/dart_type_ext.dart';
 import '../utils/utils.dart';
 import 'wrappers.dart';

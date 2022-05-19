@@ -703,7 +703,7 @@ class ComponentBuilderDelegate {
   /// provider.
   /// Example of result:
   /// ```
-  /// SingletonProvider<MyProvider>(() => AppModule.provideMyProvider());
+  /// SingletonProvider<MyClass>(() => AppModule.MyClass());
   /// ```
   Code _buildProviderFromType(DartType type) {
     type.checkUnsupportedType();
@@ -724,7 +724,7 @@ class ComponentBuilderDelegate {
   /// Build provider from given method.
   /// Example of result:
   /// ```
-  /// SingletonProvider<MyProvider>(() => AppModule.provideMyProvider());
+  /// SingletonProvider<MyClass>(() => AppModule.provideMyClass());
   /// ```
   Code _buildProviderFromMethod(MethodElement method) {
     if (method.isStatic) {
@@ -742,10 +742,10 @@ class ComponentBuilderDelegate {
   }
 
   /// Build provider from given method with given source. Use source for
-  /// construct assign code of provider.
+  /// construct assign code of provider or another component.
   /// Example of result:
   /// ```
-  /// SingletonProvider<MyProvider>(() => AppModule.provideMyProvider());
+  /// SingletonProvider<MyClass>(() => _appComponent.getMyClass());
   /// ```
   Code _buildProvider(MethodElement method, ProviderSource source) {
     final Expression newInstance =
@@ -768,7 +768,7 @@ class ComponentBuilderDelegate {
   /// Build provider from given method. Method must have only 'bind' type.
   /// Example of result:
   /// ```
-  /// SingletonProvider<MyProvider>(() => AppModule.provideMyProvider());
+  /// SingletonProvider<MyClass>(() => _myClassProvider.get());
   /// ```
   Code _buildProviderFromAbstractMethod(MethodElement method) {
     final Element rawParameter = method.parameters[0].type.element!;
@@ -793,8 +793,7 @@ class ComponentBuilderDelegate {
     }
 
     // if injected constructor is missing it makes no sense to do anything.
-    final ConstructorElement injectedConstructor =
-        parameter.thisType.getRequiredInjectedConstructor();
+    parameter.thisType.getRequiredInjectedConstructor();
 
     if (getBindAnnotation(method) != null) {
       final Element? bindedElement = method.parameters[0].type.element;
@@ -826,23 +825,14 @@ class ComponentBuilderDelegate {
           message: '${method.returnType.element} not supported.',
         ),
       );
-    } else {
-      throw JuggerError(
-        buildUnexpectedErrorMessage(
-          message:
-              'Unknown provided type of method ${method.getDisplayString(withNullability: false)}',
-        ),
-      );
     }
 
-    final Expression newInstance =
-        _getProviderReferenceOfElement(method).newInstance(<Expression>[
-      _buildExpressionBody(
-        _buildCallConstructor(injectedConstructor),
+    throw JuggerError(
+      buildUnexpectedErrorMessage(
+        message:
+            'Unknown provided type of method ${method.getDisplayString(withNullability: false)}',
       ),
-    ]);
-
-    return newInstance.code;
+    );
   }
 
   // endregion provider
@@ -868,7 +858,7 @@ class ComponentBuilderDelegate {
   /// Build provider from given static method.
   /// Example of result:
   /// ```
-  /// SingletonProvider<MyProvider>(() => AppModule.provideMyProvider());
+  /// SingletonProvider<MyClass>(() => AppModule.provideMyClass());
   /// ```
   Code _buildProviderFromStaticMethod(MethodElement method) {
     check(
@@ -941,7 +931,7 @@ class ComponentBuilderDelegate {
   /// method, method of another component.
   /// Example of result:
   /// ```
-  /// provideMyProvider();
+  /// provideMyClass();
   /// ```
   Code _buildCallMethod(MethodElement method) {
     final Reference reference = refer(method.name);
