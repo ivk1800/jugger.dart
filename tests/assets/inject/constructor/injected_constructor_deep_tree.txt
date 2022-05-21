@@ -1,0 +1,29 @@
+// ignore_for_file: implementation_imports
+// ignore_for_file: prefer_const_constructors
+// ignore_for_file: always_specify_types
+// ignore_for_file: directives_ordering
+// ignore_for_file: non_constant_identifier_names
+import 'package:tests/inject/constructor/injected_constructor_deep_tree.dart'
+    as _i1;
+import 'package:jugger/jugger.dart' as _i2;
+
+class JuggerAppComponent implements _i1.AppComponent {
+  JuggerAppComponent.create();
+
+  late final _i2.IProvider<_i1.InjectedClass1> _injectedClass1Provider =
+      _i2.Provider<_i1.InjectedClass1>(() =>
+          _i1.InjectedClass1(injectedClass2Provider: _injectedClass2Provider));
+
+  late final _i2.IProvider<_i1.InjectedClass2> _injectedClass2Provider =
+      _i2.Provider<_i1.InjectedClass2>(
+          () => _i1.InjectedClass2(_injectedClass3Provider.get()));
+
+  late final _i2.IProvider<_i1.InjectedClass3> _injectedClass3Provider =
+      _i2.Provider<_i1.InjectedClass3>(() => const _i1.InjectedClass3());
+
+  late final _i2.IProvider<String> _stringProvider = _i2.Provider<String>(
+      () => _i1.AppModule.providerString(_injectedClass1Provider.get()));
+
+  @override
+  String get hello => _stringProvider.get();
+}

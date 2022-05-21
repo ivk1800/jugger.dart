@@ -1,0 +1,25 @@
+// ignore_for_file: implementation_imports
+// ignore_for_file: prefer_const_constructors
+// ignore_for_file: always_specify_types
+// ignore_for_file: directives_ordering
+// ignore_for_file: non_constant_identifier_names
+import 'package:tests/generics/provide_complex_generic_type.dart' as _i1;
+import 'package:jugger/jugger.dart' as _i2;
+
+class JuggerAppComponent implements _i1.AppComponent {
+  JuggerAppComponent.create();
+
+  late final _i2.IProvider<
+          Map<Map<String, _i1.Item>, Map<String, Map<String, _i1.Item>>>>
+      _map_Map_String_Item__Map_String_Map_String_Item___Provider =
+      _i2.Provider<
+              Map<Map<String, _i1.Item>, Map<String, Map<String, _i1.Item>>>>(
+          () => _i1.AppModule.provideItems());
+
+  @override
+  Map<Map<String, _i1.Item>, Map<String, Map<String, _i1.Item>>> getItems() =>
+      _map_Map_String_Item__Map_String_Map_String_Item___Provider.get();
+  @override
+  Map<Map<String, _i1.Item>, Map<String, Map<String, _i1.Item>>> get items =>
+      _map_Map_String_Item__Map_String_Map_String_Item___Provider.get();
+}

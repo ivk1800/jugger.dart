@@ -1,0 +1,24 @@
+// ignore_for_file: implementation_imports
+// ignore_for_file: prefer_const_constructors
+// ignore_for_file: always_specify_types
+// ignore_for_file: directives_ordering
+// ignore_for_file: non_constant_identifier_names
+import 'package:tests/my2.dart' as _i1;
+import 'package:tests/my1.dart' as _i2;
+import 'package:tests/test.dart' as _i3;
+import 'package:jugger/jugger.dart' as _i4;
+
+class JuggerAppComponent implements _i3.AppComponent {
+  JuggerAppComponent.create();
+
+  late final _i4.IProvider<_i2.First> _first1Provider =
+      _i4.Provider<_i2.First>(() => const _i2.First());
+
+  late final _i4.IProvider<_i1.First> _firstProvider =
+      _i4.Provider<_i1.First>(() => const _i1.First());
+
+  @override
+  _i2.First get first1 => _first1Provider.get();
+  @override
+  _i1.First get first2 => _firstProvider.get();
+}

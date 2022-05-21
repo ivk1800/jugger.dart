@@ -1,0 +1,32 @@
+// ignore_for_file: implementation_imports
+// ignore_for_file: prefer_const_constructors
+// ignore_for_file: always_specify_types
+// ignore_for_file: directives_ordering
+// ignore_for_file: non_constant_identifier_names
+import 'package:tests/component/component_with_build_instance_dependency.dart'
+    as _i1;
+
+class JuggerAppComponentBuilder implements _i1.MyComponentBuilder {
+  String? _string;
+
+  @override
+  _i1.MyComponentBuilder appComponent(String s) {
+    _string = s;
+    return this;
+  }
+
+  @override
+  _i1.AppComponent build() {
+    assert(_string != null);
+    return JuggerAppComponent._create(_string!);
+  }
+}
+
+class JuggerAppComponent implements _i1.AppComponent {
+  JuggerAppComponent._create(this._string);
+
+  final String _string;
+
+  @override
+  String get string => _string;
+}

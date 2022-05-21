@@ -1,0 +1,16 @@
+name: tests
+
+environment:
+  sdk: ">=2.12.0 <3.0.0"
+
+dependencies:
+  jugger: 2.1.0
+
+dev_dependencies:
+  build: ^2.2.1
+  build_runner: ^2.1.7
+  build_runner_core: ^7.2.3
+  build_test: ^2.1.5
+  jugger_generator:
+    path: ../jugger_generator
+  test: ^1.20.1

@@ -1,0 +1,20 @@
+// ignore_for_file: implementation_imports
+// ignore_for_file: prefer_const_constructors
+// ignore_for_file: always_specify_types
+// ignore_for_file: directives_ordering
+// ignore_for_file: non_constant_identifier_names
+import 'package:tests/component/component_with_overrided_ancestor_injectors.dart'
+    as _i1;
+import 'package:jugger/jugger.dart' as _i2;
+
+class JuggerAppComponent implements _i1.AppComponent {
+  JuggerAppComponent.create();
+
+  late final _i2.IProvider<String> _stringProvider =
+      _i2.Provider<String>(() => _i1.Module1.provideString());
+
+  @override
+  void inject(_i1.InjectedClass c) {
+    c.s = _stringProvider.get();
+  }
+}
