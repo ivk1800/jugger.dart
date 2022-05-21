@@ -150,28 +150,6 @@ class _ProvidesVisitor extends RecursiveElementVisitor<dynamic> {
   }
 }
 
-class _InjectedFieldsVisitor extends RecursiveElementVisitor<dynamic> {
-  List<MemberInjectorMethod> methods = <MemberInjectorMethod>[];
-
-  @override
-  dynamic visitMethodElement(MethodElement element) {
-    if (element.returnType.getName() != 'void') {
-      return null;
-    }
-
-    check(
-      element.parameters.length == 1,
-      () => buildErrorMessage(
-        error: JuggerErrorId.invalid_injectable_method,
-        message: 'Injected method ${element.name} must have one parameter.',
-      ),
-    );
-
-    methods.add(MemberInjectorMethod(element));
-    return null;
-  }
-}
-
 class _ComponentsVisitor extends RecursiveElementVisitor<dynamic> {
   List<Component> components = <Component>[];
 
@@ -180,6 +158,20 @@ class _ComponentsVisitor extends RecursiveElementVisitor<dynamic> {
     final ComponentAnnotation? component = getComponentAnnotation(element);
 
     if (component != null) {
+      for (final InterfaceType type in element.allSupertypes) {
+        if (type.isDartCoreObject) {
+          continue;
+        }
+        check(
+          type.element.isAbstract,
+          () => buildErrorMessage(
+            error: JuggerErrorId.invalid_component,
+            message:
+                'Component ${element.name} should only have abstract classes as ancestor.',
+          ),
+        );
+      }
+
       check(
         element.isPublic,
         () => buildErrorMessage(
@@ -195,14 +187,8 @@ class _ComponentsVisitor extends RecursiveElementVisitor<dynamic> {
         ),
       );
 
-      final _InjectedFieldsVisitor fieldsVisitor = _InjectedFieldsVisitor();
-      element.visitChildren(fieldsVisitor);
       components.add(
-        Component(
-          element: element,
-          annotations: <Annotation>[component],
-          memberInjectors: element.getMemberInjectors(),
-        ),
+        Component.fromElement(element, component),
       );
     }
     return null;
@@ -420,61 +406,65 @@ class _ComponentBuilderMethodsVisitor extends RecursiveElementVisitor<dynamic> {
   }
 }
 
-class _ProvideMethodsVisitor extends RecursiveElementVisitor<dynamic> {
+class _MethodsVisitor extends GeneralizingElementVisitor<dynamic> {
   final List<MethodElement> _methods = <MethodElement>[];
 
   @override
-  dynamic visitMethodElement(MethodElement element) {
-    // skip methods that deal with injection
-    if (element.returnType.getName() == 'void') {
-      return null;
+  dynamic visitElement(Element element) {
+    if (element is ConstructorElement) {
+      final List<InterfaceType> allSupertypes =
+          element.enclosingElement.allSupertypes;
+
+      for (final InterfaceType interfaceType in allSupertypes) {
+        final Element interfaceElement = interfaceType.element;
+        if (isFlutterCore(interfaceElement) || isCore(interfaceElement)) {
+          return super.visitElement(element);
+        }
+
+        return super.visitElement(interfaceElement);
+      }
     }
+    return super.visitElement(element);
+  }
 
-    check(
-      element.parameters.isEmpty,
-      () => buildErrorMessage(
-        error: JuggerErrorId.invalid_method_of_component,
-        message:
-            'Method ${element.name} of component must have zero parameters.',
-      ),
-    );
-
-    check(
-      element.isAbstract,
-      () => buildErrorMessage(
-        error: JuggerErrorId.invalid_method_of_component,
-        message: 'Method ${element.name} of component must be abstract.',
-      ),
-    );
-
-    check(
-      element.isPublic,
-      () => buildErrorMessage(
-        error: JuggerErrorId.invalid_method_of_component,
-        message: 'Method ${element.name} of component must be public.',
-      ),
-    );
-
-    _methods.add(element);
-    return null;
+  @override
+  dynamic visitMethodElement(MethodElement element) {
+    if (!_methods.any((MethodElement collectedMethod) =>
+        collectedMethod.name == element.name)) {
+      _methods.add(element);
+    }
+    return super.visitMethodElement(element);
   }
 }
 
-class _ProvidePropertyVisitor extends RecursiveElementVisitor<dynamic> {
-  List<PropertyAccessorElement> properties = <PropertyAccessorElement>[];
-
-  @override
-  dynamic visitFieldElement(FieldElement element) {
-    return null;
-  }
+class _PropertiesVisitor extends GeneralizingElementVisitor<dynamic> {
+  final List<PropertyAccessorElement> _properties = <PropertyAccessorElement>[];
 
   @override
   dynamic visitPropertyAccessorElement(PropertyAccessorElement element) {
-    if (element.isGetter) {
-      properties.add(element);
+    if (!_properties.any((PropertyAccessorElement collectedMethod) =>
+        collectedMethod.name == element.name)) {
+      _properties.add(element);
     }
+    return super.visitPropertyAccessorElement(element);
+  }
 
-    return null;
+  @override
+  dynamic visitElement(Element element) {
+    if (element is ConstructorElement) {
+      final List<InterfaceType> allSupertypes =
+          element.enclosingElement.allSupertypes;
+
+      for (final InterfaceType interfaceType in allSupertypes) {
+        final Element interfaceElement = interfaceType.element;
+        if (isFlutterCore(interfaceElement) || isCore(interfaceElement)) {
+          return super.visitElement(element);
+        }
+
+        return super.visitElement(interfaceElement);
+      }
+    }
+    return super.visitElement(element);
   }
 }
 
@@ -498,9 +488,23 @@ extension VisitorExt on Element {
   /// Returns all methods of module for inject and validate them. The client
   /// must check that the element is a module.
   List<MemberInjectorMethod> getMemberInjectors() {
-    final _InjectedFieldsVisitor visitor = _InjectedFieldsVisitor();
-    visitChildren(visitor);
-    return visitor.methods;
+    final List<MemberInjectorMethod> methods = getMethods()
+        .where((element) => element.returnType.getName() == 'void')
+        .map((e) => MemberInjectorMethod(e))
+        .toList(growable: false);
+
+    for (final MemberInjectorMethod injectedMethod in methods) {
+      MethodElement method = injectedMethod.element;
+      check(
+        method.parameters.length == 1,
+        () => buildErrorMessage(
+          error: JuggerErrorId.invalid_injectable_method,
+          message: 'Injected method ${method.name} must have one parameter.',
+        ),
+      );
+    }
+
+    return methods;
   }
 
   /// Returns all components of library and validate them. The client must check
@@ -545,20 +549,65 @@ extension VisitorExt on Element {
     return visitor._methods;
   }
 
-  /// Returns all methods that the component has and validate them, except for
+  /// Returns all methods of the component and validate them, except for
   /// the void methods for the injection. The client must check that the element
   /// is a component.
   List<MethodElement> getComponentProvideMethods() {
-    final _ProvideMethodsVisitor visitor = _ProvideMethodsVisitor();
+    final List<MethodElement> methods = getMethods()
+        // skip methods that deal with injection
+        .where((element) => element.returnType.getName() != 'void')
+        .toList(growable: false);
+
+    for (final MethodElement method in methods) {
+      check(
+        method.parameters.isEmpty,
+        () => buildErrorMessage(
+          error: JuggerErrorId.invalid_method_of_component,
+          message:
+              'Method ${method.name} of component must have zero parameters.',
+        ),
+      );
+
+      check(
+        method.isAbstract,
+        () => buildErrorMessage(
+          error: JuggerErrorId.invalid_method_of_component,
+          message: 'Method ${method.name} of component must be abstract.',
+        ),
+      );
+
+      check(
+        method.isPublic,
+        () => buildErrorMessage(
+          error: JuggerErrorId.invalid_method_of_component,
+          message: 'Method ${method.name} of component must be public.',
+        ),
+      );
+    }
+    return methods;
+  }
+
+  /// Returns all properties of the component and validate them. The
+  /// client must check that the element is a component.
+  List<PropertyAccessorElement> getProvideProperties() {
+    final List<PropertyAccessorElement> properties = getProperties();
+    for (final PropertyAccessorElement property in properties) {
+      check(property.isGetter, () => 'null');
+    }
+    return properties;
+  }
+
+  /// Returns all methods of the component.
+  List<MethodElement> getMethods() {
+    final _MethodsVisitor visitor = _MethodsVisitor();
     visitChildren(visitor);
     return visitor._methods;
   }
 
-  /// Returns all properties that the component has and validate them. The
-  /// client must check that the element is a component.
-  List<PropertyAccessorElement> getProvideProperties() {
-    final _ProvidePropertyVisitor visitor = _ProvidePropertyVisitor();
+  /// Returns all properties of the component.
+  List<PropertyAccessorElement> getProperties() {
+    final _PropertiesVisitor visitor = _PropertiesVisitor();
     visitChildren(visitor);
-    return visitor.properties;
+    return visitor._properties;
   }
 }

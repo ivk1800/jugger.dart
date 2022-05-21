@@ -10,11 +10,41 @@ import 'visitors.dart';
 /// The client of this class must check that the element is definitely a
 /// Component.
 class Component {
-  Component({
+  Component._({
     required this.element,
     required this.annotations,
     required this.memberInjectors,
+    required this.provideMethods,
+    required this.provideProperties,
+    required this.modules,
+    required this.dependencies,
+    required this.modulesProvideMethods,
   });
+
+  factory Component.fromElement(
+    ClassElement element,
+    ComponentAnnotation component,
+  ) {
+    final List<ModuleAnnotation> modules = component.modules;
+    return Component._(
+      element: element,
+      annotations: <Annotation>[component],
+      memberInjectors: element.getMemberInjectors(),
+      provideMethods: element.getComponentProvideMethods()
+        ..sort((MethodElement a, MethodElement b) => a.name.compareTo(b.name)),
+      provideProperties: element.getProvideProperties()
+        ..sort((PropertyAccessorElement a, PropertyAccessorElement b) =>
+            a.name.compareTo(b.name)),
+      modules: modules,
+      dependencies: component.dependencies,
+      modulesProvideMethods: modules
+          .map((ModuleAnnotation module) => module.moduleElement.getProvides())
+          .expand((List<Method> methods) => methods)
+          // if module is used several times, just make unique methods
+          .toSet()
+          .toList(),
+    );
+  }
 
   /// Element associated with this component.
   final ClassElement element;
@@ -32,53 +62,16 @@ class Component {
   /// ```
   final List<MemberInjectorMethod> memberInjectors;
 
-  // region private
-
-  late final ComponentAnnotation? _componentAnnotation = () {
-    final Annotation? annotation = annotations
-        .firstWhereOrNull((Annotation a) => a is ComponentAnnotation);
-    return annotation is ComponentAnnotation ? annotation : null;
-  }();
-
-  late final List<ModuleAnnotation> _modules =
-      _componentAnnotation?.modules ?? List<ModuleAnnotation>.empty();
-
-  late final List<DependencyAnnotation> _dependencies =
-      _componentAnnotation?.dependencies ?? List<DependencyAnnotation>.empty();
-
-  late final List<Method> _modulesProvideMethods = modules
-      .map((ModuleAnnotation module) => module.moduleElement.getProvides())
-      .expand((List<Method> methods) => methods)
-      // if module is used several times, just make unique methods
-      .toSet()
-      .toList();
-
-  late final List<MethodElement> _provideMethods = () {
-    final List<MethodElement> methods = element.getComponentProvideMethods();
-    return methods
-      ..sort((MethodElement a, MethodElement b) => a.name.compareTo(b.name));
-  }();
-
-  late final List<PropertyAccessorElement> _provideProperties = () {
-    final List<PropertyAccessorElement> properties =
-        element.getProvideProperties();
-    return properties
-      ..sort((PropertyAccessorElement a, PropertyAccessorElement b) =>
-          a.name.compareTo(b.name));
-  }();
-
-  // endregion private
-
   /// Returns the modules that are included to the component.
-  List<ModuleAnnotation> get modules => _modules;
+  final List<ModuleAnnotation> modules;
 
   /// Returns the another components that are included to the component as
   /// dependencies.
-  List<DependencyAnnotation> get dependencies => _dependencies;
+  final List<DependencyAnnotation> dependencies;
 
   /// Returns all methods of modules that are included to the component.
   /// Methods are not repeated if one module is used several times.
-  List<Method> get modulesProvideMethods => _modulesProvideMethods;
+  final List<Method> modulesProvideMethods;
 
   /// Returns methods of the component that return some type, do not include
   /// methods with the void type.
@@ -90,7 +83,7 @@ class Component {
   ///   String getName(); // <---
   /// }
   /// ```
-  List<MethodElement> get provideMethods => _provideMethods;
+  final List<MethodElement> provideMethods;
 
   /// Returns properties of the component that return some type.
   ///
@@ -101,7 +94,7 @@ class Component {
   ///   String get name; // <---
   /// }
   /// ```
-  List<PropertyAccessorElement> get provideProperties => _provideProperties;
+  final List<PropertyAccessorElement> provideProperties;
 }
 
 /// Wrapper class for component builder classes that are annotated by
@@ -219,7 +212,7 @@ class ModuleAnnotation implements Annotation {
 class DependencyAnnotation implements Annotation {
   const DependencyAnnotation({required this.element});
 
-  /// Element associated with this depencendy.
+  /// Element associated with this dependency.
   final ClassElement element;
 }
 

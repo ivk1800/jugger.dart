@@ -76,6 +76,29 @@ abstract class MyComponentBuilder {
 }
 ```
 
+### invalid_component
+Component should only have abstract classes as ancestor.
+
+`BAD:`
+```dart
+class Ancestor1 {}
+
+@Component(modules: <Type>[Module1])
+abstract class AppComponent extends Ancestor1 {
+  String getString1();
+}
+```
+
+`GOOD:`
+```dart
+abstract class Ancestor1 {}
+
+@Component(modules: <Type>[Module1])
+abstract class AppComponent extends Ancestor1 {
+  String getString1();
+}
+```
+
 ### public_component_builder
 Component builder must be public because it is an interface and it is implemented in another file.
 

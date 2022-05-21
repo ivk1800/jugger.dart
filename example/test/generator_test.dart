@@ -220,6 +220,36 @@ void main() {
     test('component without module', () async {
       await checkBuilderOfFile('component/component_without_module_2');
     });
+
+    test('component with ancestor injectors', () async {
+      await checkBuilderOfFile('component/component_with_ancestor_injectors');
+    });
+
+    test('component with ancestor methods', () async {
+      await checkBuilderOfFile('component/component_with_ancestor_methods');
+    });
+
+    test('component with ancestor properties', () async {
+      await checkBuilderOfFile('component/component_with_ancestor_properties');
+    });
+
+    test('component with overrided ancestor injectors', () async {
+      await checkBuilderOfFile(
+        'component/component_with_overrided_ancestor_injectors',
+      );
+    });
+
+    test('component with overrided ancestor methods', () async {
+      await checkBuilderOfFile(
+        'component/component_with_overrided_ancestor_methods',
+      );
+    });
+
+    test('component with overrided ancestor properties', () async {
+      await checkBuilderOfFile(
+        'component/component_with_overrided_ancestor_properties',
+      );
+    });
   });
 
   group('interface prefix', () {

@@ -23,6 +23,7 @@ const String componentBuilderTypeProvidedMultipleTimes =
     '$_glossary#component_builder_type_provided_multiple_times';
 const String componentBuilderPrivateMethod =
     '$_glossary#component_builder_private_method';
+const String invalidComponent = '$_glossary#invalid_component';
 const String publicComponent = '$_glossary#public_component';
 const String abstractComponent = '$_glossary#abstract_component';
 const String invalidComponentDependency =
@@ -75,6 +76,7 @@ enum JuggerErrorId {
   wrong_arguments_of_build_method,
   component_builder_type_provided_multiple_times,
   component_builder_private_method,
+  invalid_component,
   public_component,
   abstract_component,
   invalid_component_dependency,
@@ -189,6 +191,8 @@ extension JuggerErrorIdExt on JuggerErrorId {
         return modulesCircularDependency;
       case JuggerErrorId.multiple_module_annotations:
         return multipleModuleAnnotations;
+      case JuggerErrorId.invalid_component:
+        return invalidComponent;
     }
   }
 }
