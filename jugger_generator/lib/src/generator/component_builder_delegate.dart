@@ -18,6 +18,7 @@ import '../utils/utils.dart';
 import 'check_unused_providers.dart';
 import 'component_context.dart';
 import 'tag.dart';
+import 'type_name_registry.dart';
 import 'visitors.dart';
 import 'wrappers.dart' as j;
 
@@ -33,6 +34,7 @@ class ComponentBuilderDelegate {
   late DartType _componentType;
   final Expression _overrideAnnotationExpression =
       const CodeExpression(Code('override'));
+  final TypeNameGenerator _typeNameGenerator = TypeNameGenerator();
 
   static const List<String> ignores = <String>[
     'ignore_for_file: implementation_imports',
@@ -644,12 +646,7 @@ class ComponentBuilderDelegate {
   /// If the type has invalid characters, such as brackets, they will be
   /// stripped.
   String _generateFieldName(DartType type, String? tag) {
-    final String typeName = type
-        .getName()
-        .replaceAll('<', '_')
-        .replaceAll('>', '_')
-        .replaceAll(' ', '')
-        .replaceAll(',', '_');
+    final String typeName = _typeNameGenerator.generate(type);
     if (tag != null) {
       return 'named_${tag}_$typeName';
     }

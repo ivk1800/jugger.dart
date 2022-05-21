@@ -4,6 +4,120 @@ import 'package:test/test.dart';
 import 'utils.dart';
 
 void main() {
+  group('field name generation', () {
+    test('should generate type names from module', () async {
+      await checkBuilderResult(
+        assets: {
+          'my1.dart': '''
+          class First {}
+          ''',
+          'my2.dart': '''
+          class First {}
+          ''',
+        },
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+import 'my1.dart' as m1;
+import 'my2.dart' as m2;
+
+@Component(modules: <Type>[Module])
+abstract class AppComponent {
+  m1.First get first1;
+
+  m2.First get first2;
+}
+
+@module
+abstract class Module {
+  @provides
+  static m1.First provideFirst1() => m1.First();
+
+  @provides
+  static m2.First provideFirst2() => m2.First();
+}
+        ''',
+        resultContent: () {
+          return readAssetFile('fields_names/from_module');
+        },
+      );
+    });
+    test('should generate type names from component arguments', () async {
+      await checkBuilderResult(
+        assets: {
+          'my1.dart': '''
+          class First {}
+          ''',
+          'my2.dart': '''
+          class First {}
+          ''',
+        },
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+import 'my1.dart' as m1;
+import 'my2.dart' as m2;
+
+@Component()
+abstract class AppComponent {
+  m1.First get first1;
+
+  m2.First get first2;
+}
+
+@componentBuilder
+abstract class AppComponentBuilder {
+  AppComponentBuilder setFirst1(m1.First first);
+
+  AppComponentBuilder setFirst2(m2.First first);
+
+  AppComponent build();
+}
+        ''',
+        resultContent: () {
+          return readAssetFile('fields_names/from_component_arguments');
+        },
+      );
+    });
+    test('should generate type names from injected constructor', () async {
+      await checkBuilderResult(
+        assets: {
+          'my1.dart': '''
+import 'package:jugger/jugger.dart';
+
+class First {
+  @inject
+  const First();
+}
+          ''',
+          'my2.dart': '''
+import 'package:jugger/jugger.dart';
+
+class First {
+  @inject
+  const First();
+}
+          ''',
+        },
+        mainContent: '''
+// ignore_for_file: avoid_classes_with_only_static_members
+
+import 'package:jugger/jugger.dart';
+import 'my1.dart' as m1;
+import 'my2.dart' as m2;
+
+@Component()
+abstract class AppComponent {
+  m1.First get first1;
+
+  m2.First get first2;
+}
+        ''',
+        resultContent: () {
+          return readAssetFile('fields_names/from_injected_constructor');
+        },
+      );
+    });
+  });
+
   group('binds', () {
     test('from another module', () async {
       await checkBuilderOfFile('binds/binds_from_another_module');

@@ -1,8 +1,21 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:build/build.dart';
 import 'package:build_test/build_test.dart';
 import 'package:jugger_generator/src/builder/jugger_builder.dart';
+
+Future<String> readAssetFile(String fileName) async {
+  final File resultContentFile =
+      File('${Directory.current.path}/assets/$fileName.txt');
+
+  assert(
+    resultContentFile.existsSync(),
+    'file is missing, ${resultContentFile.path}',
+  );
+
+  return resultContentFile.readAsString();
+}
 
 Future<void> checkBuilderOfFile(
   String fileName, [
@@ -57,23 +70,35 @@ Future<void> checkBuilderContent({
   }
 }
 
-Future<void> checkBuilderError({
-  required String codeContent,
-  required void Function(Object error) onError,
+Future<void> checkBuilderResult({
+  required String mainContent,
+  void Function(Object error)? onError,
+  FutureOr<String> Function()? resultContent,
+  Map<String, String> assets = const <String, String>{},
   BuilderOptions options = BuilderOptions.empty,
 }) async {
   const String fileName = 'test.dart';
-  const String resultContent = '';
+  String content = resultContent != null ? await resultContent.call() : '';
   try {
     await testBuilder(
       JuggerBuilder(options: options),
-      <String, String>{'example|lib/$fileName.dart': codeContent},
+      <String, String>{
+        'example|lib/$fileName.dart': mainContent,
+        ...assets.map(
+          (key, value) =>
+              MapEntry<String, String>('example|lib/$key.dart', value),
+        ),
+      },
       outputs: <String, Object>{
-        'example|lib/$fileName.jugger.dart': resultContent,
+        'example|lib/$fileName.jugger.dart': content,
       },
       reader: await PackageAssetReader.currentIsolate(),
     );
   } catch (e) {
-    onError.call(e);
+    if (onError == null) {
+      rethrow;
+    } else {
+      onError.call(e);
+    }
   }
 }

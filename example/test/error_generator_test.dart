@@ -6,8 +6,8 @@ import 'utils.dart';
 void main() {
   group('missing provider', () {
     test('missing provider of type for component', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component()
@@ -26,8 +26,8 @@ abstract class AppComponent {
       );
     });
     test('missing provider of type with qualifier for component', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component()
@@ -48,8 +48,8 @@ abstract class AppComponent {
     });
 
     test('missing provider of type for module method arg', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component(modules: <Type>[AppModule])
@@ -76,8 +76,8 @@ abstract class AppModule {
 
     test('missing provider of type with qualifier for module method arg',
         () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component(modules: <Type>[AppModule])
@@ -103,8 +103,8 @@ abstract class AppModule {
     });
 
     test('missing provider of type for module method arg 2', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component(modules: <Type>[AppModule])
@@ -131,8 +131,8 @@ abstract class AppModule {
 
     test('missing provider of type with qualifier for module method arg 2',
         () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component(modules: <Type>[AppModule])
@@ -160,8 +160,8 @@ abstract class AppModule {
     test(
         'if method of component annotated with qualifier, but constructor of class is in',
         () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component()
@@ -188,8 +188,8 @@ class MyClass {
 
   group('missing provider', () {
     test('unexpected error', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 @Component()
 abstract class AppComponent { }
         ''',
@@ -206,8 +206,8 @@ abstract class AppComponent { }
 
   group('module', () {
     test('Multiple annotations on module', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component(modules: <Type>[AppModule])
@@ -229,8 +229,8 @@ abstract class AppModule { }
     });
 
     test('should failed if method with named param', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component(modules: <Type>[AppModule])
@@ -264,8 +264,8 @@ abstract class AppModule {
     });
 
     test('circular includes', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component(
@@ -302,8 +302,8 @@ abstract class Module2 {
 
   group('constructor', () {
     test('should failed if single private constructor', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component(modules: <Type>[AppModule])
@@ -334,8 +334,8 @@ class MyClass {
     });
 
     test('should failed if not injected constructor', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component(modules: <Type>[AppModule])
@@ -365,8 +365,8 @@ class MyClass {
     });
 
     test('should failed if multiple injected constructors', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component(modules: <Type>[AppModule])
@@ -400,8 +400,8 @@ class MyClass {
     });
 
     test('should failed if injected factory constructor', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component(modules: <Type>[AppModule])
@@ -436,8 +436,8 @@ class MyClass {
     });
 
     test('should failed if injected named constructor', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component(modules: <Type>[AppModule])
@@ -468,8 +468,8 @@ class MyClass {
     });
 
     test('should failed if injected constructor with named param', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component(modules: <Type>[AppModule])
@@ -514,8 +514,8 @@ class MyClass {
 
   group('inject', () {
     test('should failed if injected class from core', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component(modules: <Type>[AppModule])
@@ -541,8 +541,8 @@ abstract class AppModule {
     });
 
     test('should failed if injected abstract class from core', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component(modules: <Type>[AppModule])
@@ -570,8 +570,8 @@ abstract class AppModule {
 
   group('circular dependency', () {
     test('should failed if two providers depend on each other', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component(modules: <Type>[AppModule])
@@ -601,8 +601,8 @@ abstract class AppModule {
     });
 
     test('should failed if depend through binds type', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 class Router implements IRouter {
@@ -644,8 +644,8 @@ class MyClass {
     });
 
     test('should failed if depend through injected constructor', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component(modules: <Type>[AppModule])
@@ -681,8 +681,8 @@ class MyClass {
     group('annotation', () {
       test('should failed if inject annotation not from jugger library',
           () async {
-        await checkBuilderError(
-          codeContent: '''
+        await checkBuilderResult(
+          mainContent: '''
 import 'package:jugger/jugger.dart' as j;
 
 @j.Component(modules: <Type>[AppModule])
@@ -725,8 +725,8 @@ const Inject inject = Inject._();
 
   group('subcomponent', () {
     test('should failed if component builder not found', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 class AppConfig {
@@ -773,8 +773,8 @@ abstract class MyModule {
     });
 
     test('should failed if build method not found', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 class AppConfig {
@@ -826,8 +826,8 @@ abstract class MyModule {
     });
 
     test('should failed if build method return not component type', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 class AppConfig {
@@ -881,8 +881,8 @@ abstract class MyModule {
     });
 
     test('should failed if object not provided by build method', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 class AppConfig {
@@ -935,8 +935,8 @@ abstract class MyModule {
     test(
         'should failed if object provided multiple time from parent component and module',
         () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 class AppConfig {
@@ -994,8 +994,8 @@ abstract class MyModule {
 
     test('should failed if object provided multiple time from same module',
         () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component(modules: <Type>[AppModule])
@@ -1026,8 +1026,8 @@ abstract class AppModule {
     test(
         'should failed if object provided multiple time from different modules',
         () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component(modules: <Type>[AppModule1, AppModule2])
@@ -1060,8 +1060,8 @@ abstract class AppModule2 {
 
     test('should failed if object provided from module and included module',
         () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component(modules: <Type>[AppModule1])
@@ -1093,8 +1093,8 @@ abstract class AppModule2 {
     });
 
     test('should failed if object provided from args and module', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component(modules: <Type>[AppModule1])
@@ -1128,8 +1128,8 @@ abstract class AppComponentBuilder {
 
     test('should failed if object provided from args and included module',
         () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component(modules: <Type>[AppModule1])
@@ -1166,8 +1166,8 @@ abstract class AppComponentBuilder {
 
     test('should failed if object provided from parent component and module',
         () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component(modules: <Type>[AppModule])
@@ -1216,8 +1216,8 @@ abstract class MyModule {
 
   group('build config', () {
     test('should failed if found unused providers', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 class MainRouter {}
@@ -1250,8 +1250,8 @@ abstract class AppModule {
 
   group('qualifier', () {
     test('should failed if named qualifier not found', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 class AppConfig {}
@@ -1277,8 +1277,8 @@ abstract class AppModule {}
     });
 
     test('should failed if qualifier not found', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 class AppConfig {}
@@ -1311,8 +1311,8 @@ const My my = My();
     });
 
     test('should failed if multiple qualifiers', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 class AppConfig {}
@@ -1345,8 +1345,8 @@ abstract class AppModule {
 
   group('injectable field', () {
     test('private injectable field', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 class InjectableClass {
@@ -1383,8 +1383,8 @@ abstract class AppModule {
 
   group('binds', () {
     test('bind wrong type', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component(modules: <Type>[Module1])
@@ -1408,8 +1408,8 @@ abstract class Module1 {
     });
 
     test('bind method with multiple parameters', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component(modules: <Type>[AppModule])
@@ -1435,8 +1435,8 @@ abstract class AppModule {
     });
 
     test('binds class without injected constructor', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 abstract class IMainRouter {}
@@ -1470,8 +1470,8 @@ abstract class AppModule {
 
   group('unsupported type', () {
     test('nullable component getter with String type', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component()
@@ -1496,8 +1496,8 @@ abstract class AppComponent {
     });
 
     test('nullable component getter with Function type', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component()
@@ -1522,8 +1522,8 @@ abstract class AppComponent {
     });
 
     test('nullable parameter in injected constructor', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component()
@@ -1555,8 +1555,8 @@ class Config {
     });
 
     test('function parameter in injected constructor', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component()
@@ -1588,8 +1588,8 @@ class Config {
     });
 
     test('provider method return nullable type', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component(modules: <Type>[AppModule])
@@ -1619,8 +1619,8 @@ abstract class AppModule {
     });
 
     test('provider method return function type', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component(modules: <Type>[AppModule])
@@ -1649,8 +1649,8 @@ abstract class AppModule {
     });
 
     test('nullable parameter in provide method', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component(modules: <Type>[AppModule])
@@ -1679,8 +1679,8 @@ abstract class AppModule {
     });
 
     test('function parameter in provide method', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component(modules: <Type>[AppModule])
@@ -1709,8 +1709,8 @@ abstract class AppModule {
     });
 
     test('build instance nullable type', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component()
@@ -1742,8 +1742,8 @@ abstract class MyComponentBuilder {
     });
 
     test('build instance function type', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component()
@@ -1775,8 +1775,8 @@ abstract class MyComponentBuilder {
     });
 
     test('binds nullable type', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component(modules: <Type>[AppModule])
@@ -1805,8 +1805,8 @@ abstract class AppModule {
     });
 
     test('binds impl nullable type', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component(modules: <Type>[AppModule])
@@ -1837,8 +1837,8 @@ abstract class AppModule {
 
   group('module', () {
     test('abstract method without bind annotation', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component(modules: <Type>[Module1])
@@ -1861,8 +1861,8 @@ abstract class Module1 {
     });
 
     test('public module', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component(modules: <Type>[_Module])
@@ -1883,8 +1883,8 @@ abstract class _Module {}
     });
 
     test('abstract module', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component(modules: <Type>[Module])
@@ -1905,8 +1905,8 @@ class Module {}
     });
 
     test('module annotation required', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component(modules: <Type>[Module])
@@ -1926,8 +1926,8 @@ abstract class Module {}
     });
 
     test('static method without provide annotation', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component(modules: <Type>[Module1])
@@ -1950,8 +1950,8 @@ abstract class Module1 {
     });
 
     test('abstract or static method', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component(modules: <Type>[Module1])
@@ -1975,8 +1975,8 @@ abstract class Module1 {
     });
 
     test('private method', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component(modules: <Type>[Module1])
@@ -2000,8 +2000,8 @@ abstract class Module1 {
     });
 
     test('binds and provides together', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component(modules: <Type>[Module1])
@@ -2026,8 +2026,8 @@ abstract class Module1 {
     });
 
     test('ambiguity of provide method', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component(modules: <Type>[Module1])
@@ -2052,8 +2052,8 @@ abstract class Module1 {
     });
 
     test('provides nullable type', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component(modules: <Type>[AppModule])
@@ -2086,8 +2086,8 @@ abstract class AppModule {
     test(
       'Component should only have abstract classes as ancestor.',
       () async {
-        await checkBuilderError(
-          codeContent: '''
+        await checkBuilderResult(
+          mainContent: '''
 import 'package:jugger/jugger.dart';
 
 class Ancestor1 {}
@@ -2118,8 +2118,8 @@ abstract class Module1 {
     test(
       'injectable method without one parameter',
       () async {
-        await checkBuilderError(
-          codeContent: '''
+        await checkBuilderResult(
+          mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component()
@@ -2142,8 +2142,8 @@ abstract class AppComponent {
     test(
       'should fail if method not abstract',
       () async {
-        await checkBuilderError(
-          codeContent: '''
+        await checkBuilderResult(
+          mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component()
@@ -2166,8 +2166,8 @@ abstract class AppComponent {
     test(
       'should fail if method not public',
       () async {
-        await checkBuilderError(
-          codeContent: '''
+        await checkBuilderResult(
+          mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component()
@@ -2190,8 +2190,8 @@ abstract class AppComponent {
     test(
       'should fail if method with parameters',
       () async {
-        await checkBuilderError(
-          codeContent: '''
+        await checkBuilderResult(
+          mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component()
@@ -2214,8 +2214,8 @@ abstract class AppComponent {
     test(
       'should fail if class with qualifier, but constructor is injected',
       () async {
-        await checkBuilderError(
-          codeContent: '''
+        await checkBuilderResult(
+          mainContent: '''
 import 'package:jugger/jugger.dart';
 
 class MyClass {
@@ -2242,8 +2242,8 @@ abstract class AppComponent {
     );
 
     test('repeated modules', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component(modules: <Type>[AppModule, AppModule])
@@ -2269,8 +2269,8 @@ abstract class AppModule {
     });
 
     test('repeated modules in includes', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component(modules: <Type>[FirstModule])
@@ -2302,8 +2302,8 @@ abstract class SecondModule {
     });
 
     test('public component', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component(modules: <Type>[])
@@ -2321,8 +2321,8 @@ abstract class _Component {}
     });
 
     test('abstract component', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component()
@@ -2340,8 +2340,8 @@ class AppComponent {}
     });
 
     test('not component a dependency', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component(dependencies: <Type>[int])
@@ -2359,8 +2359,8 @@ abstract class AppComponent {}
     });
 
     test('component depend himself', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component(dependencies: <Type>[AppComponent])
@@ -2378,8 +2378,8 @@ abstract class AppComponent {}
     });
 
     test('public component builder', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component(modules: <Type>[])
@@ -2402,8 +2402,8 @@ abstract class _MyComponentBuilder {
     });
 
     test('component builder invalid method type', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component()
@@ -2428,8 +2428,8 @@ abstract class ComponentBuilder {
     });
 
     test('wrong arguments of build method', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component()
@@ -2452,8 +2452,8 @@ abstract class ComponentBuilder {
     });
 
     test('component builder type provided multiple times', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component()
@@ -2482,8 +2482,8 @@ abstract class MyComponentBuilder {
     });
 
     test('component builder method must be public', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component()
@@ -2512,8 +2512,8 @@ abstract class MyComponentBuilder {
 
   group('injected method', () {
     test('private method', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component(modules: <Type>[AppModule])
@@ -2547,8 +2547,8 @@ class MyClass {
     });
 
     test('static method', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component(modules: <Type>[AppModule])
@@ -2582,8 +2582,8 @@ class MyClass {
     });
 
     test('abstract method', () async {
-      await checkBuilderError(
-        codeContent: '''
+      await checkBuilderResult(
+        mainContent: '''
 import 'package:jugger/jugger.dart';
 
 @Component(modules: <Type>[AppModule])

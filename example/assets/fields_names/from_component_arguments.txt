@@ -1,0 +1,46 @@
+// ignore_for_file: implementation_imports
+// ignore_for_file: prefer_const_constructors
+// ignore_for_file: always_specify_types
+// ignore_for_file: directives_ordering
+// ignore_for_file: non_constant_identifier_names
+import 'package:example/my1.dart' as _i1;
+import 'package:example/my2.dart' as _i2;
+import 'package:example/test.dart.dart' as _i3;
+
+class JuggerAppComponentBuilder implements _i3.AppComponentBuilder {
+  _i1.First? _first;
+
+  _i2.First? _first1;
+
+  @override
+  _i3.AppComponentBuilder setFirst1(_i1.First first) {
+    _first = first;
+    return this;
+  }
+
+  @override
+  _i3.AppComponentBuilder setFirst2(_i2.First first) {
+    _first1 = first;
+    return this;
+  }
+
+  @override
+  _i3.AppComponent build() {
+    assert(_first != null);
+    assert(_first1 != null);
+    return JuggerAppComponent._create(_first!, _first1!);
+  }
+}
+
+class JuggerAppComponent implements _i3.AppComponent {
+  JuggerAppComponent._create(this._first, this._first1);
+
+  final _i1.First _first;
+
+  final _i2.First _first1;
+
+  @override
+  _i1.First get first1 => _first;
+  @override
+  _i2.First get first2 => _first1;
+}
