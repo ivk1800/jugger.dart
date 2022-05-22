@@ -376,9 +376,7 @@ class ComponentBuilderDelegate {
               _componentContext.findProvider(graphObject.type, tag);
 
           if (provider is ModuleSource) {
-            b.assignment = _buildProviderFromMethod(
-              provider.method.element,
-            );
+            b.assignment = _buildProviderFromMethod(provider.method);
           } else {
             final ClassElement typeElement =
                 graphObject.type.element as ClassElement;
@@ -606,7 +604,7 @@ class ComponentBuilderDelegate {
         type.element!.getInjectedConstructors();
 
     if (injectedConstructors.isEmpty) {
-      final j.Method? provideMethod =
+      final j.ProvideMethod? provideMethod =
           _componentContext.findProvideMethod(type: type, tag: tag);
       check(
         provideMethod != null,
@@ -723,16 +721,16 @@ class ComponentBuilderDelegate {
   /// ```
   /// SingletonProvider<MyClass>(() => AppModule.provideMyClass());
   /// ```
-  Code _buildProviderFromMethod(MethodElement method) {
-    if (method.isStatic) {
+  Code _buildProviderFromMethod(j.ProvideMethod method) {
+    if (method is j.StaticProvideMethod) {
       return _buildProviderFromStaticMethod(method);
-    } else if (method.isAbstract) {
+    } else if (method is j.AbstractProvideMethod) {
       return _buildProviderFromAbstractMethod(method);
     } else {
       throw JuggerError(
         buildUnexpectedErrorMessage(
           message:
-              'provided method must be abstract or static [${method.enclosingElement.name}.${method.name}]',
+              'Unsupported method [${method.element.enclosingElement.name}.${method.element.name}]',
         ),
       );
     }
@@ -767,47 +765,28 @@ class ComponentBuilderDelegate {
   /// ```
   /// SingletonProvider<MyClass>(() => _myClassProvider.get());
   /// ```
-  Code _buildProviderFromAbstractMethod(MethodElement method) {
-    final Element rawParameter = method.parameters[0].type.element!;
-    final ClassElement parameter;
-    if (rawParameter is ClassElement) {
-      parameter = rawParameter;
-    } else {
-      throw JuggerError(
-        buildUnexpectedErrorMessage(
-          message: 'parameter must be class [${rawParameter.name}]',
-        ),
-      );
-    }
-
+  Code _buildProviderFromAbstractMethod(j.AbstractProvideMethod method) {
     final ProviderSource? provider =
-        _componentContext.findProvider(parameter.thisType);
+        _componentContext.findProvider(method.assignableType);
 
     if (provider is AnotherComponentSource) {
-      return _buildProvider(method, provider);
+      return _buildProvider(method.element, provider);
     } else if (provider is ModuleSource) {
-      return _buildProvider(method, provider);
+      return _buildProvider(method.element, provider);
     }
 
     // if injected constructor is missing it makes no sense to do anything.
-    parameter.thisType.getRequiredInjectedConstructor();
+    method.assignableType.getRequiredInjectedConstructor();
 
-    if (getBindAnnotation(method) != null) {
-      final Element? bindedElement = method.parameters[0].type.element;
-      check(
-        bindedElement is ClassElement,
-        () => buildUnexpectedErrorMessage(
-          message: '$bindedElement not supported.',
-        ),
-      );
+    if (getBindAnnotation(method.element) != null) {
       final Expression newInstance = _getProviderReferenceOfElement(
-        method,
+        method.element,
       ).newInstance(
         <Expression>[
           _buildExpressionBody(
             Code(
               _generateAssignString(
-                (bindedElement as ClassElement).thisType,
+                method.assignableType,
                 null,
               ),
             ),
@@ -815,19 +794,12 @@ class ComponentBuilderDelegate {
         ],
       );
       return newInstance.code;
-    } else if (getProvideAnnotation(method) != null) {
-      check(
-        method.returnType.element is ClassElement,
-        () => buildUnexpectedErrorMessage(
-          message: '${method.returnType.element} not supported.',
-        ),
-      );
     }
 
     throw JuggerError(
       buildUnexpectedErrorMessage(
         message:
-            'Unknown provided type of method ${method.getDisplayString(withNullability: false)}',
+            'Unknown provided type of method ${method.element.getDisplayString(withNullability: false)}',
       ),
     );
   }
@@ -857,22 +829,16 @@ class ComponentBuilderDelegate {
   /// ```
   /// SingletonProvider<MyClass>(() => AppModule.provideMyClass());
   /// ```
-  Code _buildProviderFromStaticMethod(MethodElement method) {
-    check(
-      method.returnType.element is ClassElement,
-      () => buildUnexpectedErrorMessage(
-        message: '${method.returnType.element} not supported.',
-      ),
-    );
-    final Element moduleClass = method.enclosingElement;
+  Code _buildProviderFromStaticMethod(j.StaticProvideMethod method) {
+    final Element moduleClass = method.element.enclosingElement;
     final Expression newInstance =
-        _getProviderReferenceOfElement(method).newInstance(<Expression>[
+        _getProviderReferenceOfElement(method.element).newInstance(<Expression>[
       _buildExpressionBody(
         Block.of(
           <Code>[
             refer(moduleClass.name!, createElementPath(moduleClass)).code,
             const Code('.'),
-            _buildCallMethod(method)
+            _buildCallMethod(method.element)
           ],
         ),
       )

@@ -63,7 +63,7 @@ class ComponentContext {
       );
     }
 
-    for (final j.Method method in component.modulesProvideMethods) {
+    for (final j.ProvideMethod method in component.modulesProvideMethods) {
       final MethodElement element = method.element;
 
       _registerSource(
@@ -90,7 +90,7 @@ class ComponentContext {
       );
     }
 
-    for (final j.Method method in component.modulesProvideMethods) {
+    for (final j.ProvideMethod method in component.modulesProvideMethods) {
       final MethodElement element = method.element;
       _registerGraphObject(element);
     }
@@ -309,7 +309,7 @@ class ComponentContext {
   /// Registers the parameter as a graph object if it has not been registered
   /// before.
   void _registerParamObjectIfNeed(ParameterElement parameter) {
-    final j.Method? provideMethod = findProvideMethod(
+    final j.ProvideMethod? provideMethod = findProvideMethod(
       type: parameter.type,
       tag: parameter.getQualifierTag(),
     );
@@ -320,8 +320,12 @@ class ComponentContext {
   }
 
   /// Find the method of the component that provided the given type with tag.
-  j.Method? findProvideMethod({required DartType type, required Tag? tag}) {
-    return component.modulesProvideMethods.firstWhereOrNull((j.Method method) {
+  j.ProvideMethod? findProvideMethod({
+    required DartType type,
+    required Tag? tag,
+  }) {
+    return component.modulesProvideMethods
+        .firstWhereOrNull((j.ProvideMethod method) {
       return method.element.returnType == type && method.tag == tag;
     });
   }
@@ -513,7 +517,7 @@ class ModuleSource extends ProviderSource {
   ///   static int provideInt() => 0; // <---
   /// }
   /// ```
-  final j.Method method;
+  final j.ProvideMethod method;
 
   @override
   String get sourceString => '${moduleClass.name}.${method.element.name}';

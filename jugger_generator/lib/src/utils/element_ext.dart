@@ -21,4 +21,15 @@ extension ElementExt on Element {
       ),
     );
   }
+
+  T castToOrThrow<T extends Element>() {
+    final Element element = this;
+    if (element is T) {
+      return element;
+    }
+    throw JuggerError(
+      buildUnexpectedErrorMessage(
+          message: 'Expected type $T, but was $element'),
+    );
+  }
 }

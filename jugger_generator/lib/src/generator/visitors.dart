@@ -5,6 +5,7 @@ import 'package:collection/collection.dart';
 import 'package:jugger/jugger.dart' as j;
 
 import '../errors_glossary.dart';
+import '../jugger_error.dart';
 import '../utils/dart_type_ext.dart';
 import '../utils/utils.dart';
 import 'wrappers.dart';
@@ -56,7 +57,7 @@ class _InjectedMembersVisitor extends RecursiveElementVisitor<dynamic> {
 }
 
 class _ProvidesVisitor extends RecursiveElementVisitor<dynamic> {
-  final List<Method> methods = <Method>[];
+  final List<ProvideMethod> methods = <ProvideMethod>[];
 
   @override
   dynamic visitMethodElement(MethodElement element) {
@@ -82,59 +83,7 @@ class _ProvidesVisitor extends RecursiveElementVisitor<dynamic> {
     );
 
     final ProvideAnnotation? provideAnnotation = getProvideAnnotation(element);
-    if (element.isStatic) {
-      check(
-        provideAnnotation != null,
-        () => buildErrorMessage(
-          error: JuggerErrorId.missing_provides_annotation,
-          message:
-              'Found static method ${moduleElement.name}.${element.name}, but is not annotated with @${j.provides.runtimeType}.',
-        ),
-      );
-    }
-
     final BindAnnotation? bindAnnotation = getBindAnnotation(element);
-    if (element.isAbstract) {
-      check(
-        bindAnnotation != null,
-        () => buildErrorMessage(
-          error: JuggerErrorId.missing_bind_annotation,
-          message:
-              'Found abstract method ${moduleElement.name}.${element.name}, but is not annotated with @${j.binds.runtimeType}.',
-        ),
-      );
-      check(
-        element.parameters.length == 1,
-        () => buildErrorMessage(
-          error: JuggerErrorId.invalid_bind_method,
-          message:
-              'Method ${moduleElement.name}.${element.name} annotated with ${j.binds.runtimeType} must have one parameter.',
-        ),
-      );
-
-      final DartType parameterType = element.parameters.first.type;
-      parameterType.checkUnsupportedType();
-      final Element? typeElement = parameterType.element;
-
-      check(
-        typeElement is ClassElement,
-        () => buildUnexpectedErrorMessage(
-          message: 'Supported only class element.',
-        ),
-      );
-
-      final bool isSupertype = (typeElement as ClassElement).allSupertypes.any(
-          (InterfaceType interfaceType) => interfaceType == element.returnType);
-
-      check(
-        isSupertype,
-        () => buildErrorMessage(
-          error: JuggerErrorId.bind_wrong_type,
-          message:
-              'Method ${moduleElement.name}.${element.name} parameter type must be assignable to the return type.',
-        ),
-      );
-    }
 
     check(
       !(bindAnnotation != null && provideAnnotation != null),
@@ -145,8 +94,37 @@ class _ProvidesVisitor extends RecursiveElementVisitor<dynamic> {
       ),
     );
 
-    methods.add(Method(element));
-    return null;
+    if (element.isStatic) {
+      check(
+        provideAnnotation != null,
+        () => buildErrorMessage(
+          error: JuggerErrorId.missing_provides_annotation,
+          message:
+              'Found static method ${moduleElement.name}.${element.name}, but is not annotated with @${j.provides.runtimeType}.',
+        ),
+      );
+      methods.add(StaticProvideMethod.fromMethodElement(element));
+      return null;
+    }
+
+    if (element.isAbstract) {
+      check(
+        bindAnnotation != null,
+        () => buildErrorMessage(
+          error: JuggerErrorId.missing_bind_annotation,
+          message:
+              'Found abstract method ${moduleElement.name}.${element.name}, but is not annotated with @${j.binds.runtimeType}.',
+        ),
+      );
+      methods.add(AbstractProvideMethod.fromMethodElement(element));
+      return null;
+    }
+
+    throw JuggerError(
+      buildUnexpectedErrorMessage(
+        message: 'Unsupported method of module $element',
+      ),
+    );
   }
 }
 
@@ -394,6 +372,16 @@ class _ComponentBuilderMethodsVisitor extends RecursiveElementVisitor<dynamic> {
   }
 }
 
+class _ModuleMethodsVisitor extends RecursiveElementVisitor<dynamic> {
+  final List<ModuleMethod> _methods = <ModuleMethod>[];
+
+  @override
+  dynamic visitMethodElement(MethodElement element) {
+    // _methods.add(element);
+    return super.visitMethodElement(element);
+  }
+}
+
 class _MethodsVisitor extends GeneralizingElementVisitor<dynamic> {
   final List<MethodElement> _methods = <MethodElement>[];
 
@@ -467,10 +455,16 @@ extension VisitorExt on Element {
 
   /// Returns all methods of module and validate them. The client must
   /// check that the element is a module.
-  List<Method> getProvides() {
+  List<ProvideMethod> getProvides() {
     final _ProvidesVisitor visitor = _ProvidesVisitor();
     visitChildren(visitor);
     return visitor.methods;
+  }
+
+  List<ModuleMethod> getModuleMethods() {
+    final _ModuleMethodsVisitor visitor = _ModuleMethodsVisitor();
+    visitChildren(visitor);
+    return visitor._methods;
   }
 
   /// Returns all methods of module for inject and validate them. The client
@@ -482,7 +476,7 @@ extension VisitorExt on Element {
         .toList(growable: false);
 
     for (final MemberInjectorMethod injectedMethod in methods) {
-      MethodElement method = injectedMethod.element;
+      final MethodElement method = injectedMethod.element;
       check(
         method.parameters.length == 1,
         () => buildErrorMessage(

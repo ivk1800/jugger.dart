@@ -1,7 +1,10 @@
 import 'package:analyzer/dart/element/element.dart';
-import 'package:collection/collection.dart';
+import 'package:analyzer/dart/element/type.dart';
+import 'package:jugger/jugger.dart' as j;
 
+import '../errors_glossary.dart';
 import '../utils/dart_type_ext.dart';
+import '../utils/element_ext.dart';
 import '../utils/utils.dart';
 import 'tag.dart';
 import 'visitors.dart';
@@ -39,7 +42,7 @@ class Component {
       dependencies: component.dependencies,
       modulesProvideMethods: modules
           .map((ModuleAnnotation module) => module.moduleElement.getProvides())
-          .expand((List<Method> methods) => methods)
+          .expand((List<ProvideMethod> methods) => methods)
           // if module is used several times, just make unique methods
           .toSet()
           .toList(),
@@ -71,7 +74,7 @@ class Component {
 
   /// Returns all methods of modules that are included to the component.
   /// Methods are not repeated if one module is used several times.
-  final List<Method> modulesProvideMethods;
+  final List<ProvideMethod> modulesProvideMethods;
 
   /// Returns methods of the component that return some type, do not include
   /// methods with the void type.
@@ -232,35 +235,119 @@ class QualifierAnnotation implements Annotation {
       other is QualifierAnnotation && other.tag == tag;
 }
 
-/// Wrapper class for provide method of module.
-class Method {
-  Method(this.element);
+/// Base class of method of Module.
+abstract class ModuleMethod {
+  ModuleMethod({
+    required this.element,
+    required this.annotations,
+  });
 
   final MethodElement element;
-
-  /// All annotations of the current method.
-  late final List<Annotation> annotations = getAnnotations(element);
-
-  late final QualifierAnnotation? _qualifierAnnotation = () {
-    final Annotation? annotation = annotations
-        .firstWhereOrNull((Annotation a) => a is QualifierAnnotation);
-    return annotation is QualifierAnnotation ? annotation : null;
-  }();
-
-  late final Tag? _tag = _qualifierAnnotation?.tag;
-
-  /// Tag associated with the current method.
-  Tag? get tag => _tag;
+  final List<Annotation> annotations;
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other.runtimeType == runtimeType &&
-          other is Method &&
+          other is ModuleMethod &&
           other.element == element);
 
   @override
   int get hashCode => element.hashCode;
+}
+
+/// Wrapper class for provide method of module.
+abstract class ProvideMethod extends ModuleMethod {
+  ProvideMethod({
+    required MethodElement element,
+    required List<Annotation> annotations,
+    required this.tag,
+  }) : super(element: element, annotations: annotations);
+
+  final Tag? tag;
+}
+
+/// Static provide method.
+class StaticProvideMethod extends ProvideMethod {
+  StaticProvideMethod._({
+    required MethodElement element,
+    required List<Annotation> annotations,
+    required Tag? tag,
+  }) : super(element: element, annotations: annotations, tag: tag);
+
+  /// Create method from element and validate.
+  factory StaticProvideMethod.fromMethodElement(MethodElement methodElement) {
+    check(
+      methodElement.returnType.element is ClassElement,
+      () => buildUnexpectedErrorMessage(
+        message: '${methodElement.returnType.element} not supported.',
+      ),
+    );
+    return StaticProvideMethod._(
+      element: methodElement,
+      annotations: getAnnotations(methodElement),
+      tag: getQualifierAnnotation(methodElement)?.tag,
+    );
+  }
+}
+
+/// Bind provide method.
+class AbstractProvideMethod extends ProvideMethod {
+  AbstractProvideMethod._({
+    required MethodElement element,
+    required List<Annotation> annotations,
+    required Tag? tag,
+    required this.assignableType,
+    required this.type,
+  }) : super(element: element, annotations: annotations, tag: tag);
+
+  /// Create method from element and validate.
+  factory AbstractProvideMethod.fromMethodElement(MethodElement element) {
+    final Element moduleElement = element.enclosingElement;
+    check(
+      element.parameters.length == 1,
+      () => buildErrorMessage(
+        error: JuggerErrorId.invalid_bind_method,
+        message:
+            'Method ${moduleElement.name}.${element.name} annotated with ${j.binds.runtimeType} must have one parameter.',
+      ),
+    );
+
+    final DartType parameterType = element.parameters.first.type;
+    parameterType.checkUnsupportedType();
+    final ClassElement? typeElement =
+        parameterType.element?.castToOrThrow<ClassElement>();
+
+    final bool isSupertype = typeElement!.allSupertypes.any(
+        (InterfaceType interfaceType) => interfaceType == element.returnType);
+
+    check(
+      isSupertype,
+      () => buildErrorMessage(
+        error: JuggerErrorId.bind_wrong_type,
+        message:
+            'Method ${moduleElement.name}.${element.name} parameter type must be assignable to the return type.',
+      ),
+    );
+
+    final Element rawParameter = element.parameters[0].type.element!;
+    check(
+      element.returnType.element is ClassElement,
+      () => buildUnexpectedErrorMessage(
+        message: '${element.returnType.element} not supported.',
+      ),
+    );
+    return AbstractProvideMethod._(
+      assignableType: rawParameter.castToOrThrow<ClassElement>().thisType,
+      element: element,
+      annotations: getAnnotations(element),
+      tag: getQualifierAnnotation(element)?.tag,
+      type: element.returnType,
+    );
+  }
+
+  final DartType type;
+  final DartType assignableType;
 }
 
 class MemberInjectorMethod {
