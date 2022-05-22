@@ -19,8 +19,6 @@ const String componentBuilderInvalidMethodType =
     '$_glossary#component_builder_invalid_method_type';
 const String wrongArgumentsOfBuildMethod =
     '$_glossary#wrong_arguments_of_build_method';
-const String componentBuilderTypeProvidedMultipleTimes =
-    '$_glossary#component_builder_type_provided_multiple_times';
 const String componentBuilderPrivateMethod =
     '$_glossary#component_builder_private_method';
 const String invalidComponent = '$_glossary#invalid_component';
@@ -74,7 +72,6 @@ enum JuggerErrorId {
   component_builder_invalid_method_parameters,
   component_builder_invalid_method_type,
   wrong_arguments_of_build_method,
-  component_builder_type_provided_multiple_times,
   component_builder_private_method,
   invalid_component,
   public_component,
@@ -127,8 +124,6 @@ extension JuggerErrorIdExt on JuggerErrorId {
         return componentBuilderInvalidMethodType;
       case JuggerErrorId.wrong_arguments_of_build_method:
         return wrongArgumentsOfBuildMethod;
-      case JuggerErrorId.component_builder_type_provided_multiple_times:
-        return componentBuilderTypeProvidedMultipleTimes;
       case JuggerErrorId.component_builder_private_method:
         return componentBuilderPrivateMethod;
       case JuggerErrorId.public_component:

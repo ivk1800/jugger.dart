@@ -2473,9 +2473,9 @@ abstract class MyComponentBuilder {
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: component_builder_type_provided_multiple_times:\n'
-            'Type String provided multiple times in component builder MyComponentBuilder\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#component_builder_type_provided_multiple_times',
+            'error: multiple_providers_for_type:\n'
+            'String provided multiple times: MyComponentBuilder.setString, MyComponentBuilder.setString2\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#multiple_providers_for_type',
           );
         },
       );

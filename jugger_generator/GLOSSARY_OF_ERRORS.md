@@ -185,31 +185,6 @@ abstract class ComponentBuilder {
 }
 ```
 
-### component_builder_type_provided_multiple_times
-Component builder can have only one method corresponding to single type.
-
-`BAD:`
-```dart
-@componentBuilder
-abstract class MyComponentBuilder {
-  MyComponentBuilder setString(String s);
-
-  MyComponentBuilder setString2(String s);
-
-  AppComponent build();
-}
-```
-
-`GOOD:`
-```dart
-@componentBuilder
-abstract class MyComponentBuilder {
-  MyComponentBuilder setString(String s);
-
-  AppComponent build();
-}
-```
-
 ### component_builder_private_method
 All methods of the component builder must be public.
 

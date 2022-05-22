@@ -1,0 +1,64 @@
+// ignore_for_file: implementation_imports
+// ignore_for_file: prefer_const_constructors
+// ignore_for_file: always_specify_types
+// ignore_for_file: directives_ordering
+// ignore_for_file: non_constant_identifier_names
+import 'package:tests/qualifier/component_arguments_with_named_qualifier.dart'
+    as _i1;
+
+class JuggerAppComponentBuilder implements _i1.AppComponentBuilder {
+  _i1.MyClass? _named_c4ca4238a0b923820dcc509a6f75849b_MyClass;
+
+  _i1.MyClass? _named_c81e728d9d4c2f636f067f89cc14862c_MyClass;
+
+  _i1.MyClass? _myClass;
+
+  @override
+  _i1.AppComponentBuilder setMyClass1(_i1.MyClass c) {
+    _named_c4ca4238a0b923820dcc509a6f75849b_MyClass = c;
+    return this;
+  }
+
+  @override
+  _i1.AppComponentBuilder setMyClass2(_i1.MyClass c) {
+    _named_c81e728d9d4c2f636f067f89cc14862c_MyClass = c;
+    return this;
+  }
+
+  @override
+  _i1.AppComponentBuilder setMyClass3(_i1.MyClass c) {
+    _myClass = c;
+    return this;
+  }
+
+  @override
+  _i1.AppComponent build() {
+    assert(_named_c4ca4238a0b923820dcc509a6f75849b_MyClass != null);
+    assert(_named_c81e728d9d4c2f636f067f89cc14862c_MyClass != null);
+    assert(_myClass != null);
+    return JuggerAppComponent._create(
+        _named_c4ca4238a0b923820dcc509a6f75849b_MyClass!,
+        _named_c81e728d9d4c2f636f067f89cc14862c_MyClass!,
+        _myClass!);
+  }
+}
+
+class JuggerAppComponent implements _i1.AppComponent {
+  JuggerAppComponent._create(
+      this._named_c4ca4238a0b923820dcc509a6f75849b_MyClass,
+      this._named_c81e728d9d4c2f636f067f89cc14862c_MyClass,
+      this._myClass);
+
+  final _i1.MyClass _named_c4ca4238a0b923820dcc509a6f75849b_MyClass;
+
+  final _i1.MyClass _named_c81e728d9d4c2f636f067f89cc14862c_MyClass;
+
+  final _i1.MyClass _myClass;
+
+  @override
+  _i1.MyClass getMyClass1() => _named_c4ca4238a0b923820dcc509a6f75849b_MyClass;
+  @override
+  _i1.MyClass getMyClass2() => _named_c81e728d9d4c2f636f067f89cc14862c_MyClass;
+  @override
+  _i1.MyClass getMyClass3() => _myClass;
+}

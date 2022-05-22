@@ -1,0 +1,47 @@
+// ignore_for_file: implementation_imports
+// ignore_for_file: prefer_const_constructors
+// ignore_for_file: always_specify_types
+// ignore_for_file: directives_ordering
+// ignore_for_file: non_constant_identifier_names
+import 'package:tests/qualifier/component_arguments_with_custom_qualifier.dart'
+    as _i1;
+
+class JuggerAppComponentBuilder implements _i1.AppComponentBuilder {
+  _i1.MyClass? _myClass;
+
+  _i1.MyClass? _named_e4b98b05a8ae01d94a56d28d99d1f63e_MyClass;
+
+  @override
+  _i1.AppComponentBuilder setMyClass1(_i1.MyClass c) {
+    _myClass = c;
+    return this;
+  }
+
+  @override
+  _i1.AppComponentBuilder setMyClass2(_i1.MyClass c) {
+    _named_e4b98b05a8ae01d94a56d28d99d1f63e_MyClass = c;
+    return this;
+  }
+
+  @override
+  _i1.AppComponent build() {
+    assert(_myClass != null);
+    assert(_named_e4b98b05a8ae01d94a56d28d99d1f63e_MyClass != null);
+    return JuggerAppComponent._create(
+        _myClass!, _named_e4b98b05a8ae01d94a56d28d99d1f63e_MyClass!);
+  }
+}
+
+class JuggerAppComponent implements _i1.AppComponent {
+  JuggerAppComponent._create(
+      this._myClass, this._named_e4b98b05a8ae01d94a56d28d99d1f63e_MyClass);
+
+  final _i1.MyClass _myClass;
+
+  final _i1.MyClass _named_e4b98b05a8ae01d94a56d28d99d1f63e_MyClass;
+
+  @override
+  _i1.MyClass getMyClass1() => _myClass;
+  @override
+  _i1.MyClass getMyClass2() => _named_e4b98b05a8ae01d94a56d28d99d1f63e_MyClass;
+}

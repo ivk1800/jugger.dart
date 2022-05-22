@@ -255,6 +255,16 @@ abstract class AppComponent {
       await checkBuilderOfFile(
           'qualifier/qualified_multiple_instances_same_type');
     });
+
+    test('component arguments with custom qualifier', () async {
+      await checkBuilderOfFile(
+          'qualifier/component_arguments_with_custom_qualifier');
+    });
+
+    test('component arguments with named qualifier', () async {
+      await checkBuilderOfFile(
+          'qualifier/component_arguments_with_named_qualifier');
+    });
   });
 
   group('inject', () {

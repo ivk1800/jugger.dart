@@ -281,8 +281,6 @@ class _ComponentBuildersVisitor extends RecursiveElementVisitor<dynamic> {
       );
       final List<MethodElement> methods = element.getComponentBuilderMethods();
 
-      final Set<DartType> argumentsTypes = <DartType>{};
-
       for (int i = 0; i < methods.length; i++) {
         final MethodElement methodElement = methods[i];
         check(
@@ -316,16 +314,6 @@ class _ComponentBuildersVisitor extends RecursiveElementVisitor<dynamic> {
               error: JuggerErrorId.component_builder_invalid_method_parameters,
               message:
                   'Method ${methodElement.name} should have only one parameter.',
-            ),
-          );
-          final DartType parameterType = methodElement.parameters.first.type;
-          check(
-            argumentsTypes.add(parameterType),
-            () => buildErrorMessage(
-              error:
-                  JuggerErrorId.component_builder_type_provided_multiple_times,
-              message:
-                  'Type $parameterType provided multiple times in component builder ${element.name}',
             ),
           );
         }
