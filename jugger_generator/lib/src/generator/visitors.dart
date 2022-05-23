@@ -382,8 +382,8 @@ class _ModuleMethodsVisitor extends RecursiveElementVisitor<dynamic> {
   }
 }
 
-class _MethodsVisitor extends GeneralizingElementVisitor<dynamic> {
-  final List<MethodElement> _methods = <MethodElement>[];
+class _ComponentMembersVisitor extends GeneralizingElementVisitor<dynamic> {
+  final Map<String, ComponentMethod> _members = <String, ComponentMethod>{};
 
   @override
   dynamic visitElement(Element element) {
@@ -404,43 +404,70 @@ class _MethodsVisitor extends GeneralizingElementVisitor<dynamic> {
   }
 
   @override
-  dynamic visitMethodElement(MethodElement element) {
-    if (!_methods.any((MethodElement collectedMethod) =>
-        collectedMethod.name == element.name)) {
-      _methods.add(element);
-    }
-    return super.visitMethodElement(element);
-  }
-}
+  dynamic visitMethodElement(MethodElement method) {
+    check(
+      method.isAbstract,
+      () => buildErrorMessage(
+        error: JuggerErrorId.invalid_method_of_component,
+        message: 'Method ${method.name} of component must be abstract.',
+      ),
+    );
 
-class _PropertiesVisitor extends GeneralizingElementVisitor<dynamic> {
-  final List<PropertyAccessorElement> _properties = <PropertyAccessorElement>[];
+    check(
+      method.isPublic,
+      () => buildErrorMessage(
+        error: JuggerErrorId.invalid_method_of_component,
+        message: 'Method ${method.name} of component must be public.',
+      ),
+    );
+
+    // It is method for inject object.
+    if (method.returnType is VoidType) {
+      check(
+        method.parameters.length == 1,
+        () => buildErrorMessage(
+          error: JuggerErrorId.invalid_injectable_method,
+          message: 'Injected method ${method.name} must have one parameter.',
+        ),
+      );
+      _members.putIfAbsent(
+        method.name,
+        () => MemberInjectorMethod(method),
+      );
+    } else {
+      // It is method for access of object.
+
+      check(
+        method.parameters.isEmpty,
+        () => buildErrorMessage(
+          error: JuggerErrorId.invalid_method_of_component,
+          message:
+              'Method ${method.name} of component must have zero parameters.',
+        ),
+      );
+
+      _members.putIfAbsent(
+        method.name,
+        () => MethodObjectAccessor(method),
+      );
+    }
+    return super.visitMethodElement(method);
+  }
 
   @override
-  dynamic visitPropertyAccessorElement(PropertyAccessorElement element) {
-    if (!_properties.any((PropertyAccessorElement collectedMethod) =>
-        collectedMethod.name == element.name)) {
-      _properties.add(element);
-    }
-    return super.visitPropertyAccessorElement(element);
-  }
-
-  @override
-  dynamic visitElement(Element element) {
-    if (element is ConstructorElement) {
-      final List<InterfaceType> allSupertypes =
-          element.enclosingElement.allSupertypes;
-
-      for (final InterfaceType interfaceType in allSupertypes) {
-        final Element interfaceElement = interfaceType.element;
-        if (isFlutterCore(interfaceElement) || isCore(interfaceElement)) {
-          return super.visitElement(element);
-        }
-
-        return super.visitElement(interfaceElement);
-      }
-    }
-    return super.visitElement(element);
+  dynamic visitPropertyAccessorElement(PropertyAccessorElement property) {
+    check(
+      property.isAbstract,
+      () => buildErrorMessage(
+        error: JuggerErrorId.invalid_method_of_component,
+        message: 'Accessor ${property.name} of component must be abstract.',
+      ),
+    );
+    _members.putIfAbsent(
+      property.name,
+      () => PropertyObjectAccessor(property),
+    );
+    return super.visitPropertyAccessorElement(property);
   }
 }
 
@@ -467,26 +494,13 @@ extension VisitorExt on Element {
     return visitor._methods;
   }
 
-  /// Returns all methods of module for inject and validate them. The client
+  /// Returns all methods of component for inject and validate them. The client
   /// must check that the element is a module.
-  List<MemberInjectorMethod> getMemberInjectors() {
-    final List<MemberInjectorMethod> methods = getMethods()
-        .where((element) => element.returnType.getName() == 'void')
-        .map((e) => MemberInjectorMethod(e))
+  List<MemberInjectorMethod> getComponentMemberInjectorMethods() {
+    return getComponentMembers()
+        .whereType<MemberInjectorMethod>()
+        .cast<MemberInjectorMethod>()
         .toList(growable: false);
-
-    for (final MemberInjectorMethod injectedMethod in methods) {
-      final MethodElement method = injectedMethod.element;
-      check(
-        method.parameters.length == 1,
-        () => buildErrorMessage(
-          error: JuggerErrorId.invalid_injectable_method,
-          message: 'Injected method ${method.name} must have one parameter.',
-        ),
-      );
-    }
-
-    return methods;
   }
 
   /// Returns all components of library and validate them. The client must check
@@ -531,65 +545,30 @@ extension VisitorExt on Element {
     return visitor._methods;
   }
 
-  /// Returns all methods of the component and validate them, except for
-  /// the void methods for the injection. The client must check that the element
-  /// is a component.
-  List<MethodElement> getComponentProvideMethods() {
-    final List<MethodElement> methods = getMethods()
-        // skip methods that deal with injection
-        .where((element) => element.returnType.getName() != 'void')
+  /// Returns all provide methods of the component and validate them.The client
+  /// must check that the element is a component.
+  List<MethodObjectAccessor> getComponentMethodsAccessors() {
+    return getComponentMembers()
+        .whereType<MethodObjectAccessor>()
+        .cast<MethodObjectAccessor>()
         .toList(growable: false);
-
-    for (final MethodElement method in methods) {
-      check(
-        method.parameters.isEmpty,
-        () => buildErrorMessage(
-          error: JuggerErrorId.invalid_method_of_component,
-          message:
-              'Method ${method.name} of component must have zero parameters.',
-        ),
-      );
-
-      check(
-        method.isAbstract,
-        () => buildErrorMessage(
-          error: JuggerErrorId.invalid_method_of_component,
-          message: 'Method ${method.name} of component must be abstract.',
-        ),
-      );
-
-      check(
-        method.isPublic,
-        () => buildErrorMessage(
-          error: JuggerErrorId.invalid_method_of_component,
-          message: 'Method ${method.name} of component must be public.',
-        ),
-      );
-    }
-    return methods;
   }
 
   /// Returns all properties of the component and validate them. The
   /// client must check that the element is a component.
-  List<PropertyAccessorElement> getProvideProperties() {
-    final List<PropertyAccessorElement> properties = getProperties();
-    for (final PropertyAccessorElement property in properties) {
-      check(property.isGetter, () => 'null');
-    }
-    return properties;
+  List<PropertyObjectAccessor> getComponentPropertiesAccessors() {
+    return getComponentMembers()
+        .whereType<PropertyObjectAccessor>()
+        .cast<PropertyObjectAccessor>()
+        .toList(growable: false);
   }
 
-  /// Returns all methods of the component.
-  List<MethodElement> getMethods() {
-    final _MethodsVisitor visitor = _MethodsVisitor();
+  /// Returns all members of the component and validate them. Will throw an
+  /// error if the component contains an unsupported member. The client must
+  /// check that the element is a component.
+  List<ComponentMethod> getComponentMembers() {
+    final _ComponentMembersVisitor visitor = _ComponentMembersVisitor();
     visitChildren(visitor);
-    return visitor._methods;
-  }
-
-  /// Returns all properties of the component.
-  List<PropertyAccessorElement> getProperties() {
-    final _PropertiesVisitor visitor = _PropertiesVisitor();
-    visitChildren(visitor);
-    return visitor._properties;
+    return visitor._members.values.toList(growable: false);
   }
 }

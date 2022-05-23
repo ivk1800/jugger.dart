@@ -97,12 +97,13 @@ class ComponentBuilderDelegate {
           classBuilder.fields.addAll(_buildConstructorFields(componentBuilder));
           classBuilder.methods.addAll(
             _buildComponentMembers(
-              _componentContext.component.provideMethods,
+              _componentContext.component.methodsAccessors.map((e) => e.method),
             ),
           );
           classBuilder.methods.addAll(
             _buildComponentMembers(
-              _componentContext.component.provideProperties,
+              _componentContext.component.propertiesAccessors
+                  .map((e) => e.property),
             ),
           );
 
@@ -445,7 +446,7 @@ class ComponentBuilderDelegate {
   /// _i1.Config get name => _configProvider.get();
   /// ```
   /// [items] must be list of properties or method.
-  List<Method> _buildComponentMembers(List<ExecutableElement> items) {
+  List<Method> _buildComponentMembers(Iterable<ExecutableElement> items) {
     final List<Method> newMembers = <Method>[];
 
     for (final ExecutableElement executable in items) {

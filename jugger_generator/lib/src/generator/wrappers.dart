@@ -1,5 +1,6 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
+import 'package:collection/collection.dart';
 import 'package:jugger/jugger.dart' as j;
 
 import '../errors_glossary.dart';
@@ -17,8 +18,8 @@ class Component {
     required this.element,
     required this.annotations,
     required this.memberInjectors,
-    required this.provideMethods,
-    required this.provideProperties,
+    required this.methodsAccessors,
+    required this.propertiesAccessors,
     required this.modules,
     required this.dependencies,
     required this.modulesProvideMethods,
@@ -32,12 +33,23 @@ class Component {
     return Component._(
       element: element,
       annotations: <Annotation>[component],
-      memberInjectors: element.getMemberInjectors(),
-      provideMethods: element.getComponentProvideMethods()
-        ..sort((MethodElement a, MethodElement b) => a.name.compareTo(b.name)),
-      provideProperties: element.getProvideProperties()
-        ..sort((PropertyAccessorElement a, PropertyAccessorElement b) =>
-            a.name.compareTo(b.name)),
+      memberInjectors: element.getComponentMemberInjectorMethods(),
+      methodsAccessors: element
+          .getComponentMethodsAccessors()
+          // Sort so that the sequence is preserved with each code generation (for
+          // test stability)
+          .sortedByCompare<String>(
+            (MethodObjectAccessor element) => element.method.name,
+            (String a, String b) => a.compareTo(b),
+          ),
+      propertiesAccessors: element
+          .getComponentPropertiesAccessors()
+          // Sort so that the sequence is preserved with each code generation (for
+          // test stability)
+          .sortedByCompare<String>(
+            (PropertyObjectAccessor element) => element.property.name,
+            (String a, String b) => a.compareTo(b),
+          ),
       modules: modules,
       dependencies: component.dependencies,
       modulesProvideMethods: modules
@@ -86,7 +98,7 @@ class Component {
   ///   String getName(); // <---
   /// }
   /// ```
-  final List<MethodElement> provideMethods;
+  final List<MethodObjectAccessor> methodsAccessors;
 
   /// Returns properties of the component that return some type.
   ///
@@ -97,7 +109,7 @@ class Component {
   ///   String get name; // <---
   /// }
   /// ```
-  final List<PropertyAccessorElement> provideProperties;
+  final List<PropertyObjectAccessor> propertiesAccessors;
 }
 
 /// Wrapper class for component builder classes that are annotated by
@@ -350,11 +362,53 @@ class AbstractProvideMethod extends ProvideMethod {
   final DartType assignableType;
 }
 
-class MemberInjectorMethod {
+// region component
+
+/// Base wrapper for member of component.
+abstract class ComponentMethod {
+  const ComponentMethod();
+}
+
+/// Wrapper for method member.
+/// ```dart
+/// @Component()
+/// abstract class AppComponent {
+///  String getString(); <---
+/// }
+/// ```
+class MethodObjectAccessor extends ComponentMethod {
+  MethodObjectAccessor(this.method);
+
+  final MethodElement method;
+}
+
+/// Wrapper for property member.
+/// ```dart
+/// @Component()
+/// abstract class AppComponent {
+///  String get string; <---
+/// }
+/// ```
+class PropertyObjectAccessor extends ComponentMethod {
+  PropertyObjectAccessor(this.property);
+
+  final PropertyAccessorElement property;
+}
+
+/// Wrapper for method for inject object.
+/// ```dart
+/// @Component()
+/// abstract class AppComponent {
+///   void inject(InjectedClass c); <---
+/// }
+/// ```
+class MemberInjectorMethod extends ComponentMethod {
   const MemberInjectorMethod(this.element);
 
   final MethodElement element;
 }
+
+// endregion component
 
 class InjectedMember {
   const InjectedMember(this.element);

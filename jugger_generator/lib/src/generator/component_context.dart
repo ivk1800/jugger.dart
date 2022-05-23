@@ -23,8 +23,8 @@ class ComponentContext {
     required this.componentBuilder,
   }) {
     for (final j.DependencyAnnotation dep in component.dependencies) {
-      final List<MethodElement> methods =
-          dep.element.getComponentProvideMethods();
+      final Iterable<MethodElement> methods =
+          dep.element.getComponentMethodsAccessors().map((e) => e.method);
 
       for (final MethodElement method in methods) {
         _registerSource(
@@ -37,8 +37,8 @@ class ComponentContext {
         );
       }
 
-      final List<PropertyAccessorElement> properties =
-          dep.element.getProvideProperties();
+      final Iterable<PropertyAccessorElement> properties =
+          dep.element.getComponentPropertiesAccessors().map((e) => e.property);
 
       for (final PropertyAccessorElement property in properties) {
         _registerSource(
@@ -95,10 +95,12 @@ class ComponentContext {
       _registerGraphObject(element);
     }
 
-    for (final MethodElement element in component.provideMethods) {
-      _registerGraphObject(element, GraphObjectPlace.component);
+    for (final MethodObjectAccessor method in component.methodsAccessors) {
+      _registerGraphObject(method.method, GraphObjectPlace.component);
     }
-    component.provideProperties.forEach(_registerGraphObject);
+    component.propertiesAccessors
+        .map((e) => e.property)
+        .forEach(_registerGraphObject);
 
     for (final j.MemberInjectorMethod method in component.memberInjectors) {
       final MethodElement element = method.element;

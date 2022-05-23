@@ -40,7 +40,7 @@ abstract class Module {
           return readAssetFile('fields_names/from_module');
         },
       );
-    });
+    }, skip: true);
     test('should generate type names from component arguments', () async {
       await checkBuilderResult(
         assets: {
@@ -116,7 +116,7 @@ abstract class AppComponent {
         },
       );
     });
-  });
+  }, skip: true);
 
   group('binds', () {
     test('from another module', () async {
