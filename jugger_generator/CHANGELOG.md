@@ -1,3 +1,17 @@
+## 2.3.0
+
+* Internal refactoring.
+* Add docs.
+* Add glossary of errors with a description.
+* Fix detecting multiple providers for same type.
+* Skip generation if there is nothing to generate.
+* Fix ignored the methods of the ancestors of the component.
+* Fix generation if different types have same name.
+* Fix ignored qualifier from component argument.
+* Check unsupported type in generic.
+* Check invalid members in component, component builder and module.
+* Custom line-length for generated file. `generated_file_line_length`
+
 ## 2.2.1
 
 * Fix generation if component not used modules, and all classes have injected constructor.
