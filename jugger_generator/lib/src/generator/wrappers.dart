@@ -187,19 +187,29 @@ class ComponentAnnotation implements Annotation {
 }
 
 /// Wrapper class for provide annotation.
-class ProvideAnnotation implements Annotation {}
+class ProvideAnnotation implements Annotation {
+  const ProvideAnnotation();
+}
 
 /// Wrapper class for inject annotation.
-class InjectAnnotation implements Annotation {}
+class InjectAnnotation implements Annotation {
+  const InjectAnnotation();
+}
 
 /// Wrapper class for singleton annotation.
-class SingletonAnnotation implements Annotation {}
+class SingletonAnnotation implements Annotation {
+  const SingletonAnnotation();
+}
 
 /// Wrapper class for bind annotation.
-class BindAnnotation implements Annotation {}
+class BindAnnotation implements Annotation {
+  const BindAnnotation();
+}
 
 /// Wrapper class for nonLazy annotation.
-class NonLazyAnnotation implements Annotation {}
+class NonLazyAnnotation implements Annotation {
+  const NonLazyAnnotation();
+}
 
 /// Wrapper class for componentBuilder annotation.
 class ComponentBuilderAnnotation implements Annotation {

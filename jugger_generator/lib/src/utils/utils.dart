@@ -180,17 +180,17 @@ List<Annotation> getAnnotations(Element moduleClass) {
           ),
         );
       } else if (valueElement.name == provides.runtimeType.toString()) {
-        annotations.add(ProvideAnnotation());
+        annotations.add(const ProvideAnnotation());
       } else if (valueElement.name == inject.runtimeType.toString()) {
-        annotations.add(InjectAnnotation());
+        annotations.add(const InjectAnnotation());
       } else if (valueElement.name == module.runtimeType.toString()) {
         annotations.add(
           ModuleExtractor().getModuleAnnotationOfModuleClass(moduleClass),
         );
       } else if (valueElement.name == singleton.runtimeType.toString()) {
-        annotations.add(SingletonAnnotation());
+        annotations.add(const SingletonAnnotation());
       } else if (valueElement.name == binds.runtimeType.toString()) {
-        annotations.add(BindAnnotation());
+        annotations.add(const BindAnnotation());
       } else if (valueElement.name == componentBuilder.runtimeType.toString()) {
         if (valueElement is! ClassElement) {
           throw JuggerError(
@@ -201,7 +201,7 @@ List<Annotation> getAnnotations(Element moduleClass) {
         }
         annotations.add(ComponentBuilderAnnotation(valueElement));
       } else if (valueElement.name == nonLazy.runtimeType.toString()) {
-        annotations.add(NonLazyAnnotation());
+        annotations.add(const NonLazyAnnotation());
       }
     }
   }
