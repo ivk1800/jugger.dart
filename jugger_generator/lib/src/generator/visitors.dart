@@ -56,7 +56,8 @@ class _InjectedMembersVisitor extends RecursiveElementVisitor<dynamic> {
   }
 }
 
-class _ProvidesVisitor extends RecursiveElementVisitor<dynamic> {
+class _ProvidesVisitor extends RecursiveElementVisitor<dynamic>
+    with CheckSupportedMemberMixin<dynamic> {
   final List<ProvideMethod> methods = <ProvideMethod>[];
 
   @override
@@ -126,6 +127,9 @@ class _ProvidesVisitor extends RecursiveElementVisitor<dynamic> {
       ),
     );
   }
+
+  @override
+  String get subjectName => 'Module';
 }
 
 class _ComponentsVisitor extends RecursiveElementVisitor<dynamic> {
@@ -350,8 +354,12 @@ class _ComponentBuildersVisitor extends RecursiveElementVisitor<dynamic> {
   static const String buildMethodName = 'build';
 }
 
-class _ComponentBuilderMethodsVisitor extends RecursiveElementVisitor<dynamic> {
+class _ComponentBuilderMethodsVisitor extends RecursiveElementVisitor<dynamic>
+    with CheckSupportedMemberMixin<dynamic> {
   final List<MethodElement> _methods = <MethodElement>[];
+
+  @override
+  dynamic visitConstructorElement(ConstructorElement element) => null;
 
   @override
   dynamic visitMethodElement(MethodElement element) {
@@ -370,9 +378,13 @@ class _ComponentBuilderMethodsVisitor extends RecursiveElementVisitor<dynamic> {
     _methods.add(element);
     return null;
   }
+
+  @override
+  String get subjectName => 'ComponentBuilder';
 }
 
-class _ComponentMembersVisitor extends GeneralizingElementVisitor<dynamic> {
+class _ComponentMembersVisitor extends GeneralizingElementVisitor<dynamic>
+    with CheckSupportedMemberMixin<dynamic> {
   final Map<String, ComponentMethod> _members = <String, ComponentMethod>{};
 
   @override
@@ -395,6 +407,14 @@ class _ComponentMembersVisitor extends GeneralizingElementVisitor<dynamic> {
 
   @override
   dynamic visitMethodElement(MethodElement method) {
+    check(
+      !method.isOperator,
+      () => buildErrorMessage(
+        error: JuggerErrorId.invalid_member,
+        message: 'Unsupported member ${method.name} in $subjectName.',
+      ),
+    );
+
     check(
       method.isAbstract,
       () => buildErrorMessage(
@@ -441,11 +461,24 @@ class _ComponentMembersVisitor extends GeneralizingElementVisitor<dynamic> {
         () => MethodObjectAccessor(method),
       );
     }
-    return super.visitMethodElement(method);
+    return null;
+  }
+
+  @override
+  dynamic visitFieldElement(FieldElement element) {
+    return null;
   }
 
   @override
   dynamic visitPropertyAccessorElement(PropertyAccessorElement property) {
+    check(
+      !property.isSetter,
+      () => buildErrorMessage(
+        error: JuggerErrorId.invalid_member,
+        message: 'Unsupported member ${property.name} in $subjectName.',
+      ),
+    );
+
     check(
       property.isAbstract,
       () => buildErrorMessage(
@@ -457,7 +490,91 @@ class _ComponentMembersVisitor extends GeneralizingElementVisitor<dynamic> {
       property.name,
       () => PropertyObjectAccessor(property),
     );
-    return super.visitPropertyAccessorElement(property);
+    return null;
+  }
+
+  @override
+  String get subjectName => 'Component';
+}
+
+/// An visitor that will throw an exception if any of the visit methods that
+/// are invoked have not been overridden.
+mixin CheckSupportedMemberMixin<R> on ElementVisitor<R> {
+  String get subjectName;
+
+  @override
+  R? visitClassElement(ClassElement element) => _throw(element);
+
+  @override
+  R? visitCompilationUnitElement(CompilationUnitElement element) =>
+      _throw(element);
+
+  @override
+  R? visitExportElement(ExportElement element) => _throw(element);
+
+  @override
+  R? visitExtensionElement(ExtensionElement element) => _throw(element);
+
+  @override
+  R? visitFieldElement(FieldElement element) => _throw(element);
+
+  @override
+  R? visitFieldFormalParameterElement(FieldFormalParameterElement element) =>
+      _throw(element);
+
+  @override
+  R? visitFunctionElement(FunctionElement element) => _throw(element);
+
+  @override
+  R? visitGenericFunctionTypeElement(GenericFunctionTypeElement element) =>
+      _throw(element);
+
+  @override
+  R? visitImportElement(ImportElement element) => _throw(element);
+
+  @override
+  R? visitLabelElement(LabelElement element) => _throw(element);
+
+  @override
+  R? visitLibraryElement(LibraryElement element) => _throw(element);
+
+  @override
+  R? visitLocalVariableElement(LocalVariableElement element) => _throw(element);
+
+  @override
+  R? visitMethodElement(MethodElement element) => _throw(element);
+
+  @override
+  R? visitMultiplyDefinedElement(MultiplyDefinedElement element) =>
+      _throw(element);
+
+  @override
+  R? visitParameterElement(ParameterElement element) => _throw(element);
+
+  @override
+  R? visitPrefixElement(PrefixElement element) => _throw(element);
+
+  @override
+  R? visitPropertyAccessorElement(PropertyAccessorElement element) =>
+      _throw(element);
+
+  @override
+  R? visitTopLevelVariableElement(TopLevelVariableElement element) =>
+      _throw(element);
+
+  @override
+  R? visitTypeAliasElement(TypeAliasElement element) => _throw(element);
+
+  @override
+  R? visitTypeParameterElement(TypeParameterElement element) => _throw(element);
+
+  R _throw(Element element) {
+    throw JuggerError(
+      buildErrorMessage(
+        error: JuggerErrorId.invalid_member,
+        message: 'Unsupported member ${element.name} in $subjectName.',
+      ),
+    );
   }
 }
 

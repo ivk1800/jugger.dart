@@ -61,6 +61,7 @@ const String modulesCircularDependency =
     '$_glossary#modules_circular_dependency';
 const String multipleModuleAnnotations =
     '$_glossary#multiple_module_annotations';
+const String invalidMember = '$_glossary#invalid_member';
 
 // endregion errors
 
@@ -104,6 +105,7 @@ enum JuggerErrorId {
   invalid_bind_method,
   circular_modules_dependency,
   multiple_module_annotations,
+  invalid_member,
 }
 
 // TODO: support Enhanced enums with members in dart 2.17.0
@@ -188,6 +190,8 @@ extension JuggerErrorIdExt on JuggerErrorId {
         return multipleModuleAnnotations;
       case JuggerErrorId.invalid_component:
         return invalidComponent;
+      case JuggerErrorId.invalid_member:
+        return invalidMember;
     }
   }
 }

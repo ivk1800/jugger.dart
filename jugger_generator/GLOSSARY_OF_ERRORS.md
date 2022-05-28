@@ -779,3 +779,6 @@ abstract class AppModule { }
 @module
 abstract class AppModule { }
 ```
+
+### invalid_member
+...

@@ -1868,6 +1868,38 @@ abstract class Module1 {
   });
 
   group('module', () {
+    test(
+      'invalid member in module',
+      () async {
+        await checkBuilderResult(
+          mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[AppModule])
+abstract class AppComponent {
+  String getName();
+}
+
+@module
+abstract class AppModule {
+  @provides
+  static String provideName() => 'hello';
+
+  static int get staticGetter => 1;
+}
+        ''',
+          onError: (Object error) {
+            expect(
+              error.toString(),
+              'error: invalid_member:\n'
+              'Unsupported member staticGetter in Module.\n'
+              'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_member',
+            );
+          },
+        );
+      },
+    );
+
     test('abstract method without bind annotation', () async {
       await checkBuilderResult(
         mainContent: '''
@@ -2115,6 +2147,95 @@ abstract class AppModule {
   });
 
   group('component', () {
+    test(
+      'invalid member in component',
+      () async {
+        await checkBuilderResult(
+          mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component()
+abstract class AppComponent {
+  set setter(bool value);
+}
+        ''',
+          onError: (Object error) {
+            expect(
+              error.toString(),
+              'error: invalid_member:\n'
+              'Unsupported member setter= in Component.\n'
+              'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_member',
+            );
+          },
+        );
+      },
+    );
+
+    test(
+      'invalid member in component builder',
+      () async {
+        await checkBuilderResult(
+          mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component()
+abstract class AppComponent {
+  String get string;
+}
+
+@componentBuilder
+abstract class MyComponentBuilder {
+  MyComponentBuilder appComponent(String s);
+
+  int get getter => 1;
+
+  AppComponent build();
+}
+        ''',
+          onError: (Object error) {
+            expect(
+              error.toString(),
+              'error: invalid_member:\n'
+              'Unsupported member getter in ComponentBuilder.\n'
+              'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_member',
+            );
+          },
+        );
+      },
+    );
+
+    test(
+      'Component should only have abstract classes as ancestor.',
+      () async {
+        await checkBuilderResult(
+          mainContent: '''
+import 'package:jugger/jugger.dart';
+
+class Ancestor1 {}
+
+@Component(modules: <Type>[Module1])
+abstract class AppComponent extends Ancestor1 {
+  String getString1();
+}
+
+@module
+abstract class Module1 {
+  @provides
+  static String provideString() => 's';
+}
+        ''',
+          onError: (Object error) {
+            expect(
+              error.toString(),
+              'error: invalid_component:\n'
+              'Component AppComponent should only have abstract classes as ancestor.\n'
+              'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_component',
+            );
+          },
+        );
+      },
+    );
+
     test(
       'Component should only have abstract classes as ancestor.',
       () async {
