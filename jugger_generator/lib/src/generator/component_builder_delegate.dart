@@ -278,16 +278,16 @@ class ComponentBuilderDelegate {
         builder.addExpression(CodeExpression(value));
       }
 
-      final Expression newInstance =
+      final Expression call =
           refer('${_createComponentName(componentType.getName())}._create')
-              .newInstance(parameters);
+              .call(parameters);
 
       builder.addExpression(
         CodeExpression(
           Block.of(
             <Code>[
               const Code('return '),
-              newInstance.code,
+              call.code,
             ],
           ),
         ),
@@ -377,7 +377,7 @@ class ComponentBuilderDelegate {
               _componentContext.findProvider(graphObject.type, tag);
 
           if (provider is ModuleSource) {
-            b.assignment = _buildProviderFromMethod(provider.method);
+            b.assignment = _buildProviderFromMethod(provider.method).code;
           } else {
             final ClassElement typeElement =
                 graphObject.type.element as ClassElement;
@@ -386,7 +386,7 @@ class ComponentBuilderDelegate {
               !(isCore(typeElement) || typeElement.isAbstract),
               () => buildProviderNotFoundMessage(graphObject.type, tag),
             );
-            b.assignment = _buildProviderFromType(graphObject.type);
+            b.assignment = _buildProviderFromType(graphObject.type).code;
           }
 
           b.type =
@@ -702,20 +702,19 @@ class ComponentBuilderDelegate {
   /// ```
   /// SingletonProvider<MyClass>(() => AppModule.MyClass());
   /// ```
-  Code _buildProviderFromType(DartType type) {
+  Expression _buildProviderFromType(DartType type) {
     type.checkUnsupportedType();
     final ConstructorElement injectedConstructor =
         type.getRequiredInjectedConstructor();
 
-    final Expression newInstance =
-        _getProviderReferenceOfElement(injectedConstructor)
-            .newInstance(<Expression>[
+    final Expression callExpression =
+        _getProviderReferenceOfElement(injectedConstructor).call(<Expression>[
       _buildExpressionClosure(
         _buildCallConstructor(injectedConstructor),
       ),
     ]);
 
-    return newInstance.code;
+    return callExpression;
   }
 
   /// Build provider from given method.
@@ -723,7 +722,7 @@ class ComponentBuilderDelegate {
   /// ```
   /// SingletonProvider<MyClass>(() => AppModule.provideMyClass());
   /// ```
-  Code _buildProviderFromMethod(j.ProvideMethod method) {
+  Expression _buildProviderFromMethod(j.ProvideMethod method) {
     if (method is j.StaticProvideMethod) {
       return _buildProviderFromStaticMethod(method);
     } else if (method is j.AbstractProvideMethod) {
@@ -744,9 +743,9 @@ class ComponentBuilderDelegate {
   /// ```
   /// SingletonProvider<MyClass>(() => _appComponent.getMyClass());
   /// ```
-  Code _buildProvider(MethodElement method, ProviderSource source) {
-    final Expression newInstance =
-        _getProviderReferenceOfElement(method).newInstance(
+  Expression _buildProvider(MethodElement method, ProviderSource source) {
+    final Expression callExpression =
+        _getProviderReferenceOfElement(method).call(
       <Expression>[
         _buildExpressionClosure(
           Code(
@@ -759,7 +758,7 @@ class ComponentBuilderDelegate {
       ],
     );
 
-    return newInstance.code;
+    return callExpression;
   }
 
   /// Build provider from given method. Method must have only 'bind' type.
@@ -767,7 +766,7 @@ class ComponentBuilderDelegate {
   /// ```
   /// SingletonProvider<MyClass>(() => _myClassProvider.get());
   /// ```
-  Code _buildProviderFromAbstractMethod(j.AbstractProvideMethod method) {
+  Expression _buildProviderFromAbstractMethod(j.AbstractProvideMethod method) {
     final ProviderSource? provider =
         _componentContext.findProvider(method.assignableType);
 
@@ -781,9 +780,9 @@ class ComponentBuilderDelegate {
     method.assignableType.getRequiredInjectedConstructor();
 
     if (getBindAnnotation(method.element) != null) {
-      final Expression newInstance = _getProviderReferenceOfElement(
+      final Expression callExpression = _getProviderReferenceOfElement(
         method.element,
-      ).newInstance(
+      ).call(
         <Expression>[
           _buildExpressionClosure(
             Code(
@@ -795,7 +794,7 @@ class ComponentBuilderDelegate {
           ),
         ],
       );
-      return newInstance.code;
+      return callExpression;
     }
 
     throw JuggerError(
@@ -824,22 +823,22 @@ class ComponentBuilderDelegate {
   /// ```
   /// SingletonProvider<MyClass>(() => AppModule.provideMyClass());
   /// ```
-  Code _buildProviderFromStaticMethod(j.StaticProvideMethod method) {
+  Expression _buildProviderFromStaticMethod(j.StaticProvideMethod method) {
     final Element moduleClass = method.element.enclosingElement;
-    final Expression newInstance =
-        _getProviderReferenceOfElement(method.element).newInstance(<Expression>[
+    final Expression callExpression =
+        _getProviderReferenceOfElement(method.element).call(<Expression>[
       _buildExpressionClosure(
         Block.of(
           <Code>[
             refer(moduleClass.name!, createElementPath(moduleClass)).code,
             const Code('.'),
-            _buildCallMethod(method.element)
+            _buildCallMethod(method.element).code,
           ],
         ),
       )
     ]);
 
-    return newInstance.code;
+    return callExpression;
   }
 
   /// Returns the code that calls the given constructor. Calls injected methods
@@ -885,22 +884,22 @@ class ComponentBuilderDelegate {
     ).code;
   }
 
-  /// Returns the code that calls the given method. Method can be: module
+  /// Returns the expression that calls the given method. Method can be: module
   /// method, method of another component.
   /// Example of result:
   /// ```
   /// provideMyClass();
   /// ```
-  Code _buildCallMethod(MethodElement method) {
+  Expression _buildCallMethod(MethodElement method) {
     final Reference reference = refer(method.name);
     if (method.parameters.isEmpty) {
-      return reference.newInstance(<Expression>[]).code;
+      return reference.call(<Expression>[]);
     }
 
     return _buildCallArgumentsExpression(
       method.parameters,
       reference,
-    ).code;
+    );
   }
 
   /// Returns a call to the arguments usually of a method or constructor. Only
@@ -964,7 +963,7 @@ class ComponentBuilderDelegate {
         final List<Code> methodsCalls = methods.expand((MethodElement method) {
           return <Code>[
             const Code('..'),
-            _buildCallMethod(method),
+            _buildCallMethod(method).code,
           ];
         }).toList();
         final Block block = Block.of(
