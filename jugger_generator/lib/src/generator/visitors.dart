@@ -372,16 +372,6 @@ class _ComponentBuilderMethodsVisitor extends RecursiveElementVisitor<dynamic> {
   }
 }
 
-class _ModuleMethodsVisitor extends RecursiveElementVisitor<dynamic> {
-  final List<ModuleMethod> _methods = <ModuleMethod>[];
-
-  @override
-  dynamic visitMethodElement(MethodElement element) {
-    // _methods.add(element);
-    return super.visitMethodElement(element);
-  }
-}
-
 class _ComponentMembersVisitor extends GeneralizingElementVisitor<dynamic> {
   final Map<String, ComponentMethod> _members = <String, ComponentMethod>{};
 
@@ -486,12 +476,6 @@ extension VisitorExt on Element {
     final _ProvidesVisitor visitor = _ProvidesVisitor();
     visitChildren(visitor);
     return visitor.methods;
-  }
-
-  List<ModuleMethod> getModuleMethods() {
-    final _ModuleMethodsVisitor visitor = _ModuleMethodsVisitor();
-    visitChildren(visitor);
-    return visitor._methods;
   }
 
   /// Returns all methods of component for inject and validate them. The client
