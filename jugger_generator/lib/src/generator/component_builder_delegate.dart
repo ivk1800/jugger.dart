@@ -433,6 +433,7 @@ class ComponentBuilderDelegate {
     }
 
     return '$name<${type.typeArguments.map((DartType type) {
+      type.checkUnsupportedType();
       return _allocateTypeName(type as InterfaceType);
     }).join(',')}>';
   }

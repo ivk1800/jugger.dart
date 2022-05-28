@@ -1833,6 +1833,38 @@ abstract class AppModule {
         ),
       );
     });
+
+    test('unsupported type in generic type', () async {
+      await checkBuilderResult(
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[Module1])
+abstract class AppComponent {
+  Future<void> get future;
+}
+
+@module
+abstract class Module1 {
+  @provides
+  static Future<void> provideString() async => 's';
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: type_not_supported:\n'
+            'Type void not supported.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#type_not_supported',
+          );
+        },
+        options: const BuilderOptions(
+          <String, dynamic>{
+            'check_unused_providers': true,
+          },
+        ),
+      );
+    });
   });
 
   group('module', () {
