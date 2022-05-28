@@ -394,10 +394,10 @@ class _ComponentMembersVisitor extends GeneralizingElementVisitor<dynamic> {
       for (final InterfaceType interfaceType in allSupertypes) {
         final Element interfaceElement = interfaceType.element;
         if (isFlutterCore(interfaceElement) || isCore(interfaceElement)) {
-          return super.visitElement(element);
+          continue;
         }
 
-        return super.visitElement(interfaceElement);
+        super.visitElement(interfaceElement);
       }
     }
     return super.visitElement(element);

@@ -374,6 +374,18 @@ abstract class AppComponent {
         'component/component_with_overrided_ancestor_properties',
       );
     });
+
+    test('component with implemented ancestors', () async {
+      await checkBuilderOfFile(
+        'component/component_with_implemented_ancestors',
+      );
+    });
+
+    test('component with implemented and extended ancestors', () async {
+      await checkBuilderOfFile(
+        'component/component_with_implemented_and_extended_ancestors',
+      );
+    });
   });
 
   group('interface prefix', () {
