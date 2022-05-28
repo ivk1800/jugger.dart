@@ -710,7 +710,7 @@ class ComponentBuilderDelegate {
     final Expression newInstance =
         _getProviderReferenceOfElement(injectedConstructor)
             .newInstance(<Expression>[
-      _buildExpressionBody(
+      _buildExpressionClosure(
         _buildCallConstructor(injectedConstructor),
       ),
     ]);
@@ -748,7 +748,7 @@ class ComponentBuilderDelegate {
     final Expression newInstance =
         _getProviderReferenceOfElement(method).newInstance(
       <Expression>[
-        _buildExpressionBody(
+        _buildExpressionClosure(
           Code(
             _generateAssignString(
               source.type,
@@ -785,7 +785,7 @@ class ComponentBuilderDelegate {
         method.element,
       ).newInstance(
         <Expression>[
-          _buildExpressionBody(
+          _buildExpressionClosure(
             Code(
               _generateAssignString(
                 method.assignableType,
@@ -808,22 +808,15 @@ class ComponentBuilderDelegate {
 
   // endregion provider
 
-  /// Build expression body with given body of code.
+  /// Build expression closure with given body of code.
   /// Example of result:
   /// ```
   /// () => print('hello')
   /// ```
-  Expression _buildExpressionBody(Code body) {
-    return CodeExpression(
-      Block.of(
-        <Code>[
-          ...<Code>[
-            const Code('() => '),
-            body,
-          ],
-        ],
-      ),
-    );
+  Expression _buildExpressionClosure(Code body) {
+    return Method((b) => b
+      ..body = body
+      ..lambda = true).closure;
   }
 
   /// Build provider from given static method.
@@ -835,7 +828,7 @@ class ComponentBuilderDelegate {
     final Element moduleClass = method.element.enclosingElement;
     final Expression newInstance =
         _getProviderReferenceOfElement(method.element).newInstance(<Expression>[
-      _buildExpressionBody(
+      _buildExpressionClosure(
         Block.of(
           <Code>[
             refer(moduleClass.name!, createElementPath(moduleClass)).code,
@@ -974,12 +967,13 @@ class ComponentBuilderDelegate {
             _buildCallMethod(method),
           ];
         }).toList();
-        return CodeExpression(Block.of(
+        final Block block = Block.of(
           <Code>[
             initialExpression.code,
             ...methodsCalls,
           ],
-        ));
+        );
+        return CodeExpression(block);
       }
     }
 
