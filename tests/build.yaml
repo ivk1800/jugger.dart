@@ -5,3 +5,4 @@ targets:
         options:
           remove_interface_prefix_from_component_name: true
           check_unused_providers: true
+          generated_file_line_length: 80

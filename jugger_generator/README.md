@@ -494,6 +494,7 @@ targets:
         options:
           remove_interface_prefix_from_component_name: true
           check_unused_providers: true
+          generated_file_line_length: 80
 ```
 
 ### remove_interface_prefix_from_component_name
@@ -511,6 +512,10 @@ instead:
 ### check_unused_providers:
 
 If there are classes in the graph that are not used, the generation will fall. By default it is turned on.
+
+### generated_file_line_length:
+
+The number of characters allowed in a single line of generated file. Default value is 80.
 
 # Links
 

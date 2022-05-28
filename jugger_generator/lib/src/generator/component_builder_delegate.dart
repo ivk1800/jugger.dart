@@ -133,7 +133,9 @@ class ComponentBuilderDelegate {
       final String finalFileText = fileText.isEmpty
           ? ''
           : '${ignores.map((String line) => '// $line').join('\n')}\n$fileText';
-      return DartFormatter().format(finalFileText);
+      return DartFormatter(
+        pageWidth: globalConfig.lineLength,
+      ).format(finalFileText);
     }
 
     return '';

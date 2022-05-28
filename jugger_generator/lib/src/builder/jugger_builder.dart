@@ -24,6 +24,7 @@ class JuggerBuilder extends Builder {
           true,
       checkUnusedProviders:
           options.config['check_unused_providers'] as bool? ?? true,
+      lineLength: options.config['generated_file_line_length'] as int? ?? 80,
     );
     final ComponentBuilderDelegate delegate = ComponentBuilderDelegate(
       globalConfig: globalConfig,

@@ -410,6 +410,17 @@ abstract class AppComponent {
         ),
       );
     });
+
+    test('custom line length', () async {
+      await checkBuilderOfFile(
+        'build_config/custom_line_length',
+        const BuilderOptions(
+          <String, dynamic>{
+            'generated_file_line_length': 120,
+          },
+        ),
+      );
+    });
   });
 
   group('injectable field', () {
