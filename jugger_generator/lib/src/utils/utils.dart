@@ -72,7 +72,7 @@ List<Annotation> getAnnotations(Element moduleClass) {
 
     if (annotationElement is PropertyAccessorElement) {
       final ClassElement annotationClassElement =
-          annotationElement.variable.type.element as ClassElement;
+          annotationElement.variable.type.element! as ClassElement;
       final bool isQualifier = annotationClassElement.metadata.isQualifier();
 
       if (isQualifier) {
@@ -149,8 +149,9 @@ List<Annotation> getAnnotations(Element moduleClass) {
 
         // region : check repeated annotation from modules field
         final Map<InterfaceType, List<ModuleAnnotation>> groupedAnnotations =
-            modulesAnnotations.groupListsBy((ModuleAnnotation annotation) =>
-                annotation.moduleElement.thisType);
+            modulesAnnotations.groupListsBy(
+          (ModuleAnnotation annotation) => annotation.moduleElement.thisType,
+        );
         for (final List<ModuleAnnotation> group in groupedAnnotations.values) {
           check(
             group.length == 1,
@@ -252,7 +253,7 @@ List<ClassElement> getClassListFromField(
       ?.toListValue()
       ?.cast<DartObject>()
       // ignore: avoid_as
-      .map((DartObject o) => o.toTypeValue()!.element as ClassElement)
+      .map((DartObject o) => o.toTypeValue()!.element! as ClassElement)
       .toList();
   check(
     result != null,

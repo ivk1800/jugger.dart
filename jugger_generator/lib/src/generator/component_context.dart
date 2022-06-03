@@ -23,8 +23,9 @@ class ComponentContext {
     required this.componentBuilder,
   }) {
     for (final j.DependencyAnnotation dep in component.dependencies) {
-      final Iterable<MethodElement> methods =
-          dep.element.getComponentMethodsAccessors().map((e) => e.method);
+      final Iterable<MethodElement> methods = dep.element
+          .getComponentMethodsAccessors()
+          .map((MethodObjectAccessor e) => e.method);
 
       for (final MethodElement method in methods) {
         _registerSource(
@@ -37,8 +38,9 @@ class ComponentContext {
         );
       }
 
-      final Iterable<PropertyAccessorElement> properties =
-          dep.element.getComponentPropertiesAccessors().map((e) => e.property);
+      final Iterable<PropertyAccessorElement> properties = dep.element
+          .getComponentPropertiesAccessors()
+          .map((PropertyObjectAccessor e) => e.property);
 
       for (final PropertyAccessorElement property in properties) {
         _registerSource(
@@ -99,7 +101,7 @@ class ComponentContext {
       _registerGraphObject(method.method, GraphObjectPlace.component);
     }
     component.propertiesAccessors
-        .map((e) => e.property)
+        .map((PropertyObjectAccessor e) => e.property)
         .forEach(_registerGraphObject);
 
     for (final j.MemberInjectorMethod method in component.memberInjectors) {
@@ -419,7 +421,7 @@ class _Key {
   final Tag? tag;
 
   @override
-  bool operator ==(dynamic o) => o is _Key && type == o.type && tag == o.tag;
+  bool operator ==(Object o) => o is _Key && type == o.type && tag == o.tag;
 
   @override
   int get hashCode => hash2(type.hashCode, tag.hashCode);

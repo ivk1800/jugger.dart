@@ -16,9 +16,8 @@ class ModuleExtractor {
     final List<ClassElement> modules =
         getClassListFromField(elementAnnotation, 'includes');
 
-    final List<ModuleAnnotation> map = modules.map((ClassElement moduleClass) {
-      return getModuleAnnotationOfModuleClass(moduleClass);
-    }).toList();
+    final List<ModuleAnnotation> map =
+        modules.map(getModuleAnnotationOfModuleClass).toList();
     return map;
   }
 

@@ -92,35 +92,43 @@ class ComponentBuilderDelegate {
           componentBuilder: componentBuilder,
         );
 
-        target.body.add(Class((ClassBuilder classBuilder) {
-          classBuilder.fields.addAll(_buildProvidesFields());
-          classBuilder.fields.addAll(_buildConstructorFields(componentBuilder));
-          classBuilder.methods.addAll(
-            _buildComponentMembers(
-              _componentContext.component.methodsAccessors.map((e) => e.method),
-            ),
-          );
-          classBuilder.methods.addAll(
-            _buildComponentMembers(
-              _componentContext.component.propertiesAccessors
-                  .map((e) => e.property),
-            ),
-          );
+        target.body.add(
+          Class((ClassBuilder classBuilder) {
+            classBuilder.fields.addAll(_buildProvidesFields());
+            classBuilder.fields
+                .addAll(_buildConstructorFields(componentBuilder));
+            classBuilder.methods.addAll(
+              _buildComponentMembers(
+                _componentContext.component.methodsAccessors
+                    .map((j.MethodObjectAccessor e) => e.method),
+              ),
+            );
+            classBuilder.methods.addAll(
+              _buildComponentMembers(
+                _componentContext.component.propertiesAccessors
+                    .map((j.PropertyObjectAccessor e) => e.property),
+              ),
+            );
 
-          if (_hasNonLazyProviders()) {
-            classBuilder.methods.add(_buildInitNonLazyMethod());
-          }
+            if (_hasNonLazyProviders()) {
+              classBuilder.methods.add(_buildInitNonLazyMethod());
+            }
 
-          classBuilder.methods.addAll(_buildMembersInjectorMethods(
-              component.memberInjectors, classBuilder));
+            classBuilder.methods.addAll(
+              _buildMembersInjectorMethods(
+                component.memberInjectors,
+                classBuilder,
+              ),
+            );
 
-          classBuilder.implements
-              .add(Reference(component.element.name, createElementPath(lib)));
+            classBuilder.implements
+                .add(Reference(component.element.name, createElementPath(lib)));
 
-          classBuilder.constructors.add(_buildConstructor(componentBuilder));
+            classBuilder.constructors.add(_buildConstructor(componentBuilder));
 
-          classBuilder.name = _createComponentName(component.element.name);
-        }));
+            classBuilder.name = _createComponentName(component.element.name);
+          }),
+        );
       }
 
       final String fileText =
@@ -173,11 +181,7 @@ class ComponentBuilderDelegate {
         ),
       );
       classBuilder.fields.addAll(
-        componentBuilder.parameters.map(
-          (j.ComponentBuilderParameter parameter) {
-            return _buildComponentParameter(parameter);
-          },
-        ),
+        componentBuilder.parameters.map(_buildComponentParameter),
       );
     });
   }
@@ -238,10 +242,12 @@ class ComponentBuilderDelegate {
       final Tag? tag = p.parameter.enclosingElement!.getQualifierTag();
       builder.addExpression(
         CodeExpression(
-          Code('_${_generateFieldName(
-            p.parameter.type,
-            tag?.toAssignTag(),
-          )} = ${p.parameter.name}; return this'),
+          Code(
+            '_${_generateFieldName(
+              p.parameter.type,
+              tag?.toAssignTag(),
+            )} = ${p.parameter.name}; return this',
+          ),
         ),
       );
     });
@@ -258,10 +264,12 @@ class ComponentBuilderDelegate {
         final Tag? tag =
             parameter.parameter.enclosingElement!.getQualifierTag();
         final CodeExpression codeExpression = CodeExpression(
-          Code('_${_generateFieldName(
-            parameter.parameter.tryGetType(),
-            tag?.toAssignTag(),
-          )}!'),
+          Code(
+            '_${_generateFieldName(
+              parameter.parameter.tryGetType(),
+              tag?.toAssignTag(),
+            )}!',
+          ),
         );
         return codeExpression;
       });
@@ -270,10 +278,12 @@ class ComponentBuilderDelegate {
           .map((j.ComponentBuilderParameter parameter) {
         final Tag? tag =
             parameter.parameter.enclosingElement!.getQualifierTag();
-        return Code('assert(_${_generateFieldName(
-          parameter.parameter.type,
-          tag?.toAssignTag(),
-        )} != null) ');
+        return Code(
+          'assert(_${_generateFieldName(
+            parameter.parameter.type,
+            tag?.toAssignTag(),
+          )} != null) ',
+        );
       }).toList();
 
       for (final Code value in assertCodes) {
@@ -319,9 +329,10 @@ class ComponentBuilderDelegate {
   /// generated. If the current component is a graph object, it does not need to
   /// be generated. In this case, the call will be like 'this'.
   Iterable<GraphObject> _filterDependenciesForFields(
-      List<GraphObject> dependencies) {
+    List<GraphObject> dependencies,
+  ) {
     return dependencies.where((GraphObject dependency) {
-      final ClassElement typeElement = dependency.type.element as ClassElement;
+      final ClassElement typeElement = dependency.type.element! as ClassElement;
       final bool isCurrentComponent =
           getComponentAnnotation(typeElement) != null &&
               dependency.type == _componentType;
@@ -362,38 +373,40 @@ class ComponentBuilderDelegate {
       }
 
       if (provider is! ArgumentSource && provider is! AnotherComponentSource) {
-        fields.add(Field((FieldBuilder b) {
-          final Tag? tag = graphObject.tag;
-          b.name = '_${_generateFieldName(
-            graphObject.type,
-            tag?.toAssignTag(),
-          )}Provider';
+        fields.add(
+          Field((FieldBuilder b) {
+            final Tag? tag = graphObject.tag;
+            b.name = '_${_generateFieldName(
+              graphObject.type,
+              tag?.toAssignTag(),
+            )}Provider';
 
-          final String generic = _allocator.allocate(
-            refer(_allocateDependencyTypeName(graphObject)),
-          );
-          b.late = true;
-          b.modifier = FieldModifier.final$;
-
-          final ProviderSource? provider =
-              _componentContext.findProvider(graphObject.type, tag);
-
-          if (provider is ModuleSource) {
-            b.assignment = _buildProviderFromMethod(provider.method).code;
-          } else {
-            final ClassElement typeElement =
-                graphObject.type.element as ClassElement;
-
-            check(
-              !(isCore(typeElement) || typeElement.isAbstract),
-              () => buildProviderNotFoundMessage(graphObject.type, tag),
+            final String generic = _allocator.allocate(
+              refer(_allocateDependencyTypeName(graphObject)),
             );
-            b.assignment = _buildProviderFromType(graphObject.type).code;
-          }
+            b.late = true;
+            b.modifier = FieldModifier.final$;
 
-          b.type =
-              Reference('IProvider<$generic>', 'package:jugger/jugger.dart');
-        }));
+            final ProviderSource? provider =
+                _componentContext.findProvider(graphObject.type, tag);
+
+            if (provider is ModuleSource) {
+              b.assignment = _buildProviderFromMethod(provider.method).code;
+            } else {
+              final ClassElement typeElement =
+                  graphObject.type.element! as ClassElement;
+
+              check(
+                !(isCore(typeElement) || typeElement.isAbstract),
+                () => buildProviderNotFoundMessage(graphObject.type, tag),
+              );
+              b.assignment = _buildProviderFromType(graphObject.type).code;
+            }
+
+            b.type =
+                Reference('IProvider<$generic>', 'package:jugger/jugger.dart');
+          }),
+        );
       }
     }
 
@@ -501,21 +514,29 @@ class ComponentBuilderDelegate {
 
       final ClassElement memberElement =
           parameterElement.type.element! as ClassElement;
-      builder.requiredParameters.add(Parameter((ParameterBuilder b) {
-        b.name = uncapitalize(parameterElement.name);
-        b.type = Reference(parameterElement.type.getName(),
-            createElementPath(parameterElement.type.element!));
-      }));
+      builder.requiredParameters.add(
+        Parameter((ParameterBuilder b) {
+          b.name = uncapitalize(parameterElement.name);
+          b.type = Reference(
+            parameterElement.type.getName(),
+            createElementPath(parameterElement.type.element!),
+          );
+        }),
+      );
 
       final List<j.InjectedMember> members = memberElement.getInjectedMembers();
 
       builder.body = Block((BlockBuilder b) {
         for (final j.InjectedMember member in members.toSet()) {
           final Tag? tag = member.element.getQualifierTag();
-          b.addExpression(CodeExpression(Block.of(<Code>[
-            Code('${parameterElement.name}.${member.element.name}'),
-            Code(' = ${_generateAssignString(member.element.type, tag)}'),
-          ])));
+          b.addExpression(
+            CodeExpression(
+              Block.of(<Code>[
+                Code('${parameterElement.name}.${member.element.name}'),
+                Code(' = ${_generateAssignString(member.element.type, tag)}'),
+              ]),
+            ),
+          );
         }
 
         if (memberElement.getInjectedMethods().isNotEmpty) {
@@ -667,20 +688,27 @@ class ComponentBuilderDelegate {
       final Iterable<ProviderSource> nonLazyProviders = _componentContext
           .providerSources
           .whereType<ModuleSource>()
-          .where((ProviderSource source) => source.annotations.any(
-              (j.Annotation annotation) => annotation is j.NonLazyAnnotation))
+          .where(
+            (ProviderSource source) => source.annotations.any(
+              (j.Annotation annotation) => annotation is j.NonLazyAnnotation,
+            ),
+          )
           .toList()
         // Sort so that the sequence is preserved with each code generation (for
         // test stability)
-        ..sort((ProviderSource a, ProviderSource b) =>
-            a.type.getName().compareTo(b.type.getName()));
+        ..sort(
+          (ProviderSource a, ProviderSource b) =>
+              a.type.getName().compareTo(b.type.getName()),
+        );
 
       for (final ProviderSource source in nonLazyProviders) {
         builder.statements.add(
-          Code('${_generateAssignString(
-            source.type,
-            source.tag,
-          )};'),
+          Code(
+            '${_generateAssignString(
+              source.type,
+              source.tag,
+            )};',
+          ),
         );
       }
     });
@@ -691,9 +719,11 @@ class ComponentBuilderDelegate {
   /// Returns true if there are non-lazy graph objects in the component. The
   /// source in the module must be annotated with @nonLazy.
   bool _hasNonLazyProviders() {
-    return _componentContext.providerSources.any((ProviderSource source) =>
-        source.annotations.any(
-            (j.Annotation annotation) => annotation is j.NonLazyAnnotation));
+    return _componentContext.providerSources.any(
+      (ProviderSource source) => source.annotations.any(
+        (j.Annotation annotation) => annotation is j.NonLazyAnnotation,
+      ),
+    );
   }
 
   // region provider
@@ -815,9 +845,11 @@ class ComponentBuilderDelegate {
   /// () => print('hello')
   /// ```
   Expression _buildExpressionClosure(Code body) {
-    return Method((b) => b
-      ..body = body
-      ..lambda = true).closure;
+    return Method(
+      (MethodBuilder b) => b
+        ..body = body
+        ..lambda = true,
+    ).closure;
   }
 
   /// Build provider from given static method.
@@ -1016,8 +1048,9 @@ class ComponentBuilderDelegate {
     required bool singleton,
   }) {
     return refer(
-        singleton ? 'SingletonProvider<$generic>' : 'Provider<$generic>',
-        'package:jugger/jugger.dart');
+      singleton ? 'SingletonProvider<$generic>' : 'Provider<$generic>',
+      'package:jugger/jugger.dart',
+    );
   }
 
   /// Returns the string class type of the given element and allocates it.
@@ -1026,12 +1059,14 @@ class ComponentBuilderDelegate {
     if (element is ConstructorElement) {
       final ClassElement c = element.enclosingElement;
       return _allocator.allocate(
-          Reference(c.thisType.getName(), c.librarySource.uri.toString()));
+        Reference(c.thisType.getName(), c.librarySource.uri.toString()),
+      );
     } else if (element is MethodElement) {
       return _allocator.allocate(refer(_allocateTypeName(element.returnType)));
     }
     throw JuggerError(
-        'unsupported type: ${element.name}, ${element.runtimeType}');
+      'unsupported type: ${element.name}, ${element.runtimeType}',
+    );
   }
 
   /// Build constructor for this component. If the component has a builder, it
@@ -1047,18 +1082,20 @@ class ComponentBuilderDelegate {
         constructorBuilder.name = 'create';
       } else {
         constructorBuilder.name = '_create';
-        constructorBuilder.requiredParameters.addAll(componentBuilder.parameters
-            .map((j.ComponentBuilderParameter parameter) {
-          return Parameter((ParameterBuilder b) {
-            b.toThis = true;
-            final Tag? tag =
-                parameter.parameter.enclosingElement!.getQualifierTag();
-            b.name = '_${_generateFieldName(
-              parameter.parameter.type,
-              tag?.toAssignTag(),
-            )}';
-          });
-        }));
+        constructorBuilder.requiredParameters.addAll(
+          componentBuilder.parameters
+              .map((j.ComponentBuilderParameter parameter) {
+            return Parameter((ParameterBuilder b) {
+              b.toThis = true;
+              final Tag? tag =
+                  parameter.parameter.enclosingElement!.getQualifierTag();
+              b.name = '_${_generateFieldName(
+                parameter.parameter.type,
+                tag?.toAssignTag(),
+              )}';
+            });
+          }),
+        );
       }
     });
   }

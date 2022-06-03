@@ -113,7 +113,7 @@ class Component {
 }
 
 /// Wrapper class for component builder classes that are annotated by
-/// [componentBuilder].
+/// [ComponentBuilder].
 /// The client of this class must check that the element is definitely a
 /// ComponentBuilder.
 class ComponentBuilder {
@@ -341,7 +341,8 @@ class AbstractProvideMethod extends ProvideMethod {
         parameterType.element?.castToOrThrow<ClassElement>();
 
     final bool isSupertype = typeElement!.allSupertypes.any(
-        (InterfaceType interfaceType) => interfaceType == element.returnType);
+      (InterfaceType interfaceType) => interfaceType == element.returnType,
+    );
 
     check(
       isSupertype,

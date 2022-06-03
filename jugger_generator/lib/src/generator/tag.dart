@@ -13,7 +13,7 @@ class Tag {
   final String originalId;
 
   @override
-  bool operator ==(dynamic other) => other is Tag && uniqueId == other.uniqueId;
+  bool operator ==(Object other) => other is Tag && uniqueId == other.uniqueId;
 
   @override
   int get hashCode => uniqueId.hashCode;

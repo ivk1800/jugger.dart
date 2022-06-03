@@ -198,8 +198,9 @@ class _InjectedMethodsVisitor extends RecursiveElementVisitor<dynamic> {
 
     if (annotations
         .any((Annotation annotation) => annotation is InjectAnnotation)) {
-      if (!methods.any((MethodElement collectedMethod) =>
-          collectedMethod.name == element.name)) {
+      if (!methods.any(
+        (MethodElement collectedMethod) => collectedMethod.name == element.name,
+      )) {
         check(
           element.isPublic,
           () => buildErrorMessage(
@@ -341,11 +342,14 @@ class _ComponentBuildersVisitor extends RecursiveElementVisitor<dynamic> {
         element.parameters.first.type.checkUnsupportedType();
       }
 
-      componentBuilders.add(ComponentBuilder(
+      componentBuilders.add(
+        ComponentBuilder(
           element: element,
           methods: methods,
           // ignore: avoid_as
-          componentClass: buildMethod.returnType.element as ClassElement));
+          componentClass: buildMethod.returnType.element! as ClassElement,
+        ),
+      );
     }
 
     return null;

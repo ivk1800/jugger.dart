@@ -7,7 +7,7 @@ import '../generator/visitors.dart';
 import 'utils.dart';
 
 extension DartTypeExt on DartType {
-  /// Whether this type is a [Provider].
+  /// Whether this type is a Provider.
   bool get isProvider {
     if (element == null) {
       return false;

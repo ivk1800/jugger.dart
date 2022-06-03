@@ -29,7 +29,8 @@ extension ElementExt on Element {
     }
     throw JuggerError(
       buildUnexpectedErrorMessage(
-          message: 'Expected type $T, but was $element'),
+        message: 'Expected type $T, but was $element',
+      ),
     );
   }
 }

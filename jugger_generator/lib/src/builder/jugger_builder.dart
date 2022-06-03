@@ -37,7 +37,7 @@ class JuggerBuilder extends Builder {
     final AssetId outputFile =
         buildStep.inputId.changeExtension('.$outputExtension');
 
-    buildStep.writeAsString(outputFile, outputContents);
+    await buildStep.writeAsString(outputFile, outputContents);
 
     return Future<void>.value();
   }
