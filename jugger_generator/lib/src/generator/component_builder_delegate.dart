@@ -32,8 +32,7 @@ class ComponentBuilderDelegate {
   late ComponentContext _componentContext;
   late final Allocator _allocator = Allocator.simplePrefixing();
   late DartType _componentType;
-  final Expression _overrideAnnotationExpression =
-      const CodeExpression(Code('override'));
+  final Expression _overrideAnnotationExpression = const Reference('override');
   final TypeNameGenerator _typeNameGenerator = TypeNameGenerator();
 
   static const List<String> ignores = <String>[
@@ -243,15 +242,13 @@ class ComponentBuilderDelegate {
           j.ComponentBuilderParameter(parameter: method.parameters[0]);
       final Tag? tag = p.parameter.enclosingElement!.getQualifierTag();
       builder.addExpression(
-        CodeExpression(
-          Code(
-            '_${_generateFieldName(
-              p.parameter.type,
-              tag?.toAssignTag(),
-            )} = ${p.parameter.name}; return this',
-          ),
-        ),
+        refer('_${_generateFieldName(
+          p.parameter.type,
+          tag?.toAssignTag(),
+        )}')
+            .assign(refer(p.parameter.name)),
       );
+      builder.addExpression(const CodeExpression(Code('return this')));
     });
   }
 
@@ -265,15 +262,12 @@ class ComponentBuilderDelegate {
           .map((j.ComponentBuilderParameter parameter) {
         final Tag? tag =
             parameter.parameter.enclosingElement!.getQualifierTag();
-        final CodeExpression codeExpression = CodeExpression(
-          Code(
-            '_${_generateFieldName(
-              parameter.parameter.tryGetType(),
-              tag?.toAssignTag(),
-            )}!',
-          ),
-        );
-        return codeExpression;
+        return refer(
+          '_${_generateFieldName(
+            parameter.parameter.tryGetType(),
+            tag?.toAssignTag(),
+          )}',
+        ).nullChecked;
       });
 
       final List<Code> assertCodes = componentBuilder.parameters
@@ -478,12 +472,10 @@ class ComponentBuilderDelegate {
         b.returns = refer(_allocateTypeName(executable.returnType));
 
         b.lambda = true;
-        b.body = Code(
-          _generateAssignString(
-            executable.returnType,
-            executable.getQualifierTag(),
-          ),
-        );
+        b.body = _generateAssignExpression(
+          executable.returnType,
+          executable.getQualifierTag(),
+        ).code;
         if (executable is PropertyAccessorElement) {
           b.type = MethodType.getter;
         }
@@ -532,19 +524,16 @@ class ComponentBuilderDelegate {
         for (final j.InjectedMember member in members.toSet()) {
           final Tag? tag = member.element.getQualifierTag();
           b.addExpression(
-            CodeExpression(
-              Block.of(<Code>[
-                Code('${parameterElement.name}.${member.element.name}'),
-                Code(' = ${_generateAssignString(member.element.type, tag)}'),
-              ]),
-            ),
+            refer(parameterElement.name)
+                .property(member.element.name)
+                .assign(_generateAssignExpression(member.element.type, tag)),
           );
         }
 
         if (memberElement.getInjectedMethods().isNotEmpty) {
           b.addExpression(
             _callInjectedMethodsIfNeeded(
-              CodeExpression(Code(parameterElement.name)),
+              refer(parameterElement.name),
               memberElement,
             ),
           );
@@ -555,7 +544,7 @@ class ComponentBuilderDelegate {
     }).toList();
   }
 
-  /// Returns a assign of type as string, which can be used in the [Code].
+  /// Returns a assign of type as expression, which can be used as code.
   /// If the component does not have a source for the type, an error will be
   /// thrown.
   ///
@@ -575,7 +564,7 @@ class ComponentBuilderDelegate {
   /// ```
   /// if callGet passed as false.
   ///
-  String _generateAssignString(
+  Expression _generateAssignExpression(
     DartType type,
     Tag? tag, [
     bool callGet = true,
@@ -583,7 +572,7 @@ class ComponentBuilderDelegate {
     type.checkUnsupportedType();
 
     if (type == _componentType) {
-      return 'this';
+      return refer('this');
     }
 
     if (type.isProvider) {
@@ -592,7 +581,7 @@ class ComponentBuilderDelegate {
           _componentContext.findProvider(depType, tag);
 
       if (provider == null && depType.hasInjectedConstructor()) {
-        return _generateAssignString(
+        return _generateAssignExpression(
           depType,
           null,
           false,
@@ -602,7 +591,7 @@ class ComponentBuilderDelegate {
         provider != null,
         () => buildProviderNotFoundMessage(depType, tag),
       );
-      return _generateAssignString(
+      return _generateAssignExpression(
         provider!.type,
         provider.tag,
         false,
@@ -620,11 +609,11 @@ class ComponentBuilderDelegate {
         finalSting = generateMd5(tag.uniqueId);
       }
 
-      return '_${_generateFieldName(type, finalSting)}';
+      return refer('_${_generateFieldName(type, finalSting)}');
     }
 
     if (provider is AnotherComponentSource) {
-      return provider.assignString;
+      return refer(provider.assignString);
     }
 
     final List<ConstructorElement> injectedConstructors =
@@ -646,11 +635,11 @@ class ComponentBuilderDelegate {
     );
   }
 
-  /// Returns a provider call as string, which can be used in the [Code].
+  /// Returns a provider call as expression, which can be used as code.
   /// It is assumed that the provider exists as a field of the component.
   /// [tag] is used as class field prefix if exists.
   /// [callGet] is used to optionally call a .get() on a provider.
-  String _generateProviderCall({
+  Expression _generateProviderCall({
     required Tag? tag,
     required DartType type,
     required bool callGet,
@@ -663,7 +652,12 @@ class ComponentBuilderDelegate {
       finalTag = generateMd5(tag.uniqueId);
     }
 
-    return '_${_generateFieldName(type, finalTag)}Provider${callGet ? '.get()' : ''}';
+    Expression finalExpression =
+        refer('_${_generateFieldName(type, finalTag)}Provider');
+    if (callGet) {
+      finalExpression = finalExpression.property('get').call(<Expression>[]);
+    }
+    return finalExpression;
   }
 
   /// Generate field name of given type. Uses the tag if it exists. Usually
@@ -705,12 +699,10 @@ class ComponentBuilderDelegate {
 
       for (final ProviderSource source in nonLazyProviders) {
         builder.statements.add(
-          Code(
-            '${_generateAssignString(
-              source.type,
-              source.tag,
-            )};',
-          ),
+          _generateAssignExpression(
+            source.type,
+            source.tag,
+          ).statement,
         );
       }
     });
@@ -782,12 +774,10 @@ class ComponentBuilderDelegate {
         _getProviderReferenceOfElement(method).call(
       <Expression>[
         _buildExpressionClosure(
-          Code(
-            _generateAssignString(
-              source.type,
-              source.tag,
-            ),
-          ),
+          _generateAssignExpression(
+            source.type,
+            source.tag,
+          ).code,
         ),
       ],
     );
@@ -819,12 +809,10 @@ class ComponentBuilderDelegate {
       ).call(
         <Expression>[
           _buildExpressionClosure(
-            Code(
-              _generateAssignString(
-                method.assignableType,
-                null,
-              ),
-            ),
+            _generateAssignExpression(
+              method.assignableType,
+              null,
+            ).code,
           ),
         ],
       );
@@ -888,12 +876,10 @@ class ComponentBuilderDelegate {
         _componentContext.findProvider(constructor.type);
 
     if (provider is ModuleSource) {
-      return Code(
-        _generateAssignString(
-          provider.type,
-          provider.tag,
-        ),
-      );
+      return _generateAssignExpression(
+        provider.type,
+        provider.tag,
+      ).code;
     }
     final ClassElement classElement = constructor.enclosingElement;
     final Reference reference =
@@ -1136,17 +1122,13 @@ class ComponentBuilderDelegate {
 
     final Iterable<MapEntry<String, Expression>> map =
         parameters.map((ParameterElement parameter) {
-      final CodeExpression codeExpression = CodeExpression(
-        Block.of(<Code>[
-          Code(
-            _generateAssignString(
-              parameter.type,
-              getQualifierAnnotation(parameter)?.tag,
-            ),
-          ),
-        ]),
+      return MapEntry<String, Expression>(
+        parameter.name,
+        _generateAssignExpression(
+          parameter.type,
+          getQualifierAnnotation(parameter)?.tag,
+        ),
       );
-      return MapEntry<String, Expression>(parameter.name, codeExpression);
     });
     return Map<String, Expression>.fromEntries(map);
   }
