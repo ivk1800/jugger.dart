@@ -215,7 +215,7 @@ class ComponentContext {
       return graphObject;
     }
 
-    throw JuggerError(
+    throw UnexpectedJuggerError(
       buildUnexpectedErrorMessage(
         message:
             'Field ${element.name} unsupported type [${element.runtimeType}]',
@@ -406,7 +406,7 @@ class _Key {
       );
     }
 
-    throw JuggerError(
+    throw UnexpectedJuggerError(
       'field [${element.name}] unsupported type [${element.runtimeType}]',
     );
   }

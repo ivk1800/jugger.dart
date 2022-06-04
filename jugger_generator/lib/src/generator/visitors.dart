@@ -121,7 +121,7 @@ class _ProvidesVisitor extends RecursiveElementVisitor<dynamic>
       return null;
     }
 
-    throw JuggerError(
+    throw UnexpectedJuggerError(
       buildUnexpectedErrorMessage(
         message: 'Unsupported method of module $element',
       ),

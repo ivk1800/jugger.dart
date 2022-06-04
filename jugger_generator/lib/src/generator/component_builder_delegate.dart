@@ -51,7 +51,9 @@ class ComponentBuilderDelegate {
       return await _buildOutputInternal(buildStep);
     } catch (e) {
       if (e is! JuggerError) {
-        throw JuggerError(buildUnexpectedErrorMessage(message: e.toString()));
+        throw UnexpectedJuggerError(
+          buildUnexpectedErrorMessage(message: e.toString()),
+        );
       } else {
         rethrow;
       }
@@ -353,7 +355,7 @@ class ComponentBuilderDelegate {
         _filterDependenciesForFields(_componentContext.objectsGraph);
 
     for (final GraphObject graphObject in filteredDependencies) {
-      check(
+      checkUnexpected(
         !graphObject.type.isProvider,
         () => buildUnexpectedErrorMessage(
           message:
@@ -430,7 +432,7 @@ class ComponentBuilderDelegate {
   /// _i1.Item
   /// ```
   String _allocateTypeName(DartType t) {
-    check(
+    checkUnexpected(
       t is InterfaceType,
       () => buildUnexpectedErrorMessage(message: 'type [$t] not supported'),
     );
@@ -760,7 +762,7 @@ class ComponentBuilderDelegate {
     } else if (method is j.AbstractProvideMethod) {
       return _buildProviderFromAbstractMethod(method);
     } else {
-      throw JuggerError(
+      throw UnexpectedJuggerError(
         buildUnexpectedErrorMessage(
           message:
               'Unsupported method [${method.element.enclosingElement.name}.${method.element.name}]',
@@ -829,7 +831,7 @@ class ComponentBuilderDelegate {
       return callExpression;
     }
 
-    throw JuggerError(
+    throw UnexpectedJuggerError(
       buildUnexpectedErrorMessage(
         message:
             'Unknown provided type of method ${method.element.getDisplayString(withNullability: false)}',
@@ -1017,7 +1019,7 @@ class ComponentBuilderDelegate {
   /// the element.
   /// Only certain element types are supported, otherwise throws an error.
   Reference _getProviderReferenceOfElement(Element element) {
-    check(
+    checkUnexpected(
       element is MethodElement || element is ConstructorElement,
       () => buildUnexpectedErrorMessage(message: '$element not supported'),
     );

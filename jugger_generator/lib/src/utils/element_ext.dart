@@ -15,7 +15,7 @@ extension ElementExt on Element {
       return element.type;
     }
 
-    throw JuggerError(
+    throw UnexpectedJuggerError(
       buildUnexpectedErrorMessage(
         message: 'Unable get type of [$element]',
       ),
@@ -27,7 +27,7 @@ extension ElementExt on Element {
     if (element is T) {
       return element;
     }
-    throw JuggerError(
+    throw UnexpectedJuggerError(
       buildUnexpectedErrorMessage(
         message: 'Expected type $T, but was $element',
       ),

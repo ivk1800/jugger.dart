@@ -23,7 +23,7 @@ class ModuleExtractor {
 
   ModuleAnnotation getModuleAnnotationOfModuleClass(Element moduleClass) {
     if (moduleClass is! ClassElement) {
-      throw JuggerError(
+      throw UnexpectedJuggerError(
         buildUnexpectedErrorMessage(
           message: 'element[$moduleClass] is not ClassElement',
         ),

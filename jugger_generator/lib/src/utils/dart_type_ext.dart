@@ -34,7 +34,7 @@ extension DartTypeExt on DartType {
   /// ```
   DartType get getSingleTypeArgument {
     final InterfaceType interfaceType = this as InterfaceType;
-    check(
+    checkUnexpected(
       interfaceType.typeArguments.length == 1,
       () => buildUnexpectedErrorMessage(
         message: 'interfaceType.typeArguments must be 1',

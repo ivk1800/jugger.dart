@@ -7,3 +7,12 @@ class JuggerError extends Error {
   @override
   String toString() => 'error: $message';
 }
+
+class UnexpectedJuggerError extends Error {
+  UnexpectedJuggerError(this.message);
+
+  final String message;
+
+  @override
+  String toString() => message;
+}

@@ -299,7 +299,7 @@ class StaticProvideMethod extends ProvideMethod {
 
   /// Create method from element and validate.
   factory StaticProvideMethod.fromMethodElement(MethodElement methodElement) {
-    check(
+    checkUnexpected(
       methodElement.returnType.element is ClassElement,
       () => buildUnexpectedErrorMessage(
         message: '${methodElement.returnType.element} not supported.',
@@ -354,7 +354,7 @@ class AbstractProvideMethod extends ProvideMethod {
     );
 
     final Element rawParameter = element.parameters[0].type.element!;
-    check(
+    checkUnexpected(
       element.returnType.element is ClassElement,
       () => buildUnexpectedErrorMessage(
         message: '${element.returnType.element} not supported.',

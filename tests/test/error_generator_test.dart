@@ -196,7 +196,7 @@ abstract class AppComponent { }
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: Null check operator used on a null value\n'
+            'Null check operator used on a null value\n'
             'Unexpected error, please report the issue: https://github.com/ivk1800/jugger.dart/issues/new?assignees=&labels=&template=code-generation-error.md&title=',
           );
         },

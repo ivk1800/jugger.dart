@@ -104,7 +104,7 @@ List<Annotation> getAnnotations(Element moduleClass) {
     }
 
     if (valueElement == null) {
-      throw JuggerError(
+      throw UnexpectedJuggerError(
         buildUnexpectedErrorMessage(
           message: 'value if annotation [$annotation] is null',
         ),
@@ -194,7 +194,7 @@ List<Annotation> getAnnotations(Element moduleClass) {
         annotations.add(const BindAnnotation());
       } else if (valueElement.name == componentBuilder.runtimeType.toString()) {
         if (valueElement is! ClassElement) {
-          throw JuggerError(
+          throw UnexpectedJuggerError(
             buildUnexpectedErrorMessage(
               message: 'element[$valueElement] is not ClassElement',
             ),
@@ -213,7 +213,7 @@ Tag _getTag(ElementAnnotation annotation, ClassElement annotationClassElement) {
   if (annotationClassElement.name == 'Named') {
     final String? stringName =
         annotation.computeConstantValue()!.getField('name')!.toStringValue();
-    check(
+    checkUnexpected(
       stringName != null,
       () => buildUnexpectedErrorMessage(
         message: 'Unable get name of Named',
@@ -255,7 +255,7 @@ List<ClassElement> getClassListFromField(
       // ignore: avoid_as
       .map((DartObject o) => o.toTypeValue()!.element! as ClassElement)
       .toList();
-  check(
+  checkUnexpected(
     result != null,
     () => buildUnexpectedErrorMessage(
       message: 'unable get $name from annotation',
@@ -298,7 +298,7 @@ void check(bool condition, String Function() message) {
 // ignore: avoid_positional_boolean_parameters
 void checkUnexpected(bool condition, String Function() message) {
   if (!condition) {
-    throw JuggerError(message.call());
+    throw UnexpectedJuggerError(message.call());
   }
 }
 
