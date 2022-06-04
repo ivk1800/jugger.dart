@@ -269,15 +269,11 @@ String uncapitalize(String name) {
 }
 
 String createElementPath(Element element) {
-  if (isCore(element)) {
-    return 'dart:core';
-  }
-
   return 'package:${element.source!.uri.path}'.replaceFirst('/lib', '');
 }
 
 bool isCore(Element element) {
-  return element.librarySource!.fullName.startsWith('dart:core');
+  return element.librarySource!.fullName.startsWith('dart:');
 }
 
 bool isFlutterCore(Element element) {

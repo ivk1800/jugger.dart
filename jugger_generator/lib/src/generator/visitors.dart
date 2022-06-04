@@ -35,7 +35,7 @@ class _InjectedMembersVisitor extends RecursiveElementVisitor<dynamic> {
 
     for (final InterfaceType interfaceType in allSupertypes) {
       final Element element = interfaceType.element;
-      if (isFlutterCore(element) || isCore(element)) {
+      if (isCore(element)) {
         continue;
       }
 
@@ -236,7 +236,7 @@ class _InjectedMethodsVisitor extends RecursiveElementVisitor<dynamic> {
 
     for (final InterfaceType interfaceType in allSupertypes) {
       final Element element = interfaceType.element;
-      if (isFlutterCore(element) || isCore(element)) {
+      if (isCore(element)) {
         continue;
       }
 
@@ -399,7 +399,7 @@ class _ComponentMembersVisitor extends GeneralizingElementVisitor<dynamic>
 
       for (final InterfaceType interfaceType in allSupertypes) {
         final Element interfaceElement = interfaceType.element;
-        if (isFlutterCore(interfaceElement) || isCore(interfaceElement)) {
+        if (isCore(interfaceElement)) {
           continue;
         }
 
