@@ -368,6 +368,11 @@ class ComponentBuilderDelegate {
         );
       }
 
+      check(
+        provider != null,
+        () => buildProviderNotFoundMessage(graphObject.type, graphObject.tag),
+      );
+
       if (provider is! ArgumentSource && provider is! AnotherComponentSource) {
         fields.add(
           Field((FieldBuilder b) {
@@ -388,15 +393,15 @@ class ComponentBuilderDelegate {
 
             if (provider is ModuleSource) {
               b.assignment = _buildProviderFromMethod(provider.method).code;
+            } else if (provider is InjectedConstructorSource) {
+              b.assignment =
+                  _buildProviderFromConstructor(provider.element).code;
             } else {
-              final ClassElement typeElement =
-                  graphObject.type.element! as ClassElement;
-
-              check(
-                !(isCore(typeElement) || typeElement.isAbstract),
-                () => buildProviderNotFoundMessage(graphObject.type, tag),
+              throw JuggerError(
+                buildUnexpectedErrorMessage(
+                  message: 'Unexpected provider $provider',
+                ),
               );
-              b.assignment = _buildProviderFromType(graphObject.type).code;
             }
 
             b.type =
@@ -600,6 +605,10 @@ class ComponentBuilderDelegate {
 
     final ProviderSource? provider = _componentContext.findProvider(type, tag);
 
+    if (provider == null) {
+      throw JuggerError(buildProviderNotFoundMessage(type, tag));
+    }
+
     if (provider is ArgumentSource) {
       final String? finalSting;
 
@@ -614,18 +623,6 @@ class ComponentBuilderDelegate {
 
     if (provider is AnotherComponentSource) {
       return refer(provider.assignString);
-    }
-
-    final List<ConstructorElement> injectedConstructors =
-        type.element!.getInjectedConstructors();
-
-    if (injectedConstructors.isEmpty) {
-      final j.ProvideMethod? provideMethod =
-          _componentContext.findProvideMethod(type: type, tag: tag);
-      check(
-        provideMethod != null,
-        () => buildProviderNotFoundMessage(type, tag),
-      );
     }
 
     return _generateProviderCall(
@@ -722,21 +719,16 @@ class ComponentBuilderDelegate {
 
   // region provider
 
-  /// Build provider from given type. Use source for construct assign code of
-  /// provider.
+  /// Build provider from given constructor.
   /// Example of result:
   /// ```
-  /// SingletonProvider<MyClass>(() => AppModule.MyClass());
+  /// SingletonProvider<MyClass>(() => MyClass());
   /// ```
-  Expression _buildProviderFromType(DartType type) {
-    type.checkUnsupportedType();
-    final ConstructorElement injectedConstructor =
-        type.getRequiredInjectedConstructor();
-
+  Expression _buildProviderFromConstructor(ConstructorElement constructor) {
     final Expression callExpression =
-        _getProviderReferenceOfElement(injectedConstructor).call(<Expression>[
+        _getProviderReferenceOfElement(constructor).call(<Expression>[
       _buildExpressionClosure(
-        _buildCallConstructor(injectedConstructor),
+        _buildCallConstructor(constructor),
       ),
     ]);
 
@@ -800,8 +792,12 @@ class ComponentBuilderDelegate {
       return _buildProvider(method.element, provider);
     }
 
-    // if injected constructor is missing it makes no sense to do anything.
-    method.assignableType.getRequiredInjectedConstructor();
+    checkUnexpected(
+      provider is InjectedConstructorSource,
+      () {
+        return 'Expected InjectedConstructorSource, but was $provider.';
+      },
+    );
 
     if (getBindAnnotation(method.element) != null) {
       final Expression callExpression = _getProviderReferenceOfElement(
@@ -872,15 +868,6 @@ class ComponentBuilderDelegate {
   /// MyClass();
   /// ```
   Code _buildCallConstructor(ConstructorElement constructor) {
-    final ProviderSource? provider =
-        _componentContext.findProvider(constructor.type);
-
-    if (provider is ModuleSource) {
-      return _generateAssignExpression(
-        provider.type,
-        provider.tag,
-      ).code;
-    }
     final ClassElement classElement = constructor.enclosingElement;
     final Reference reference =
         refer(classElement.name, createElementPath(classElement));

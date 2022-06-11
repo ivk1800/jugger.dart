@@ -116,6 +116,8 @@ class ComponentContext {
         }
       }
     }
+
+    _registerInjectedConstructorSources();
   }
 
   /// All objects of the component graph.
@@ -367,6 +369,38 @@ class ComponentContext {
       );
     });
   }
+
+  /// Iterates over all graph objects and registers sources for types with
+  /// an injected constructor.
+  void _registerInjectedConstructorSources() {
+    final Map<_Key, GraphObject> objectsGraph = _objectsGraph;
+
+    for (final GraphObject graphObject in objectsGraph.values) {
+      final DartType type = graphObject.type;
+      if (type == component.element.thisType) {
+        continue;
+      }
+
+      final Tag? tag = graphObject.tag;
+      final ProviderSource? source = findProvider(type, tag);
+
+      if (source == null && tag != null) {
+        throw JuggerError(buildProviderNotFoundMessage(type, tag));
+      } else if (source != null || isCore(type.element!)) {
+        continue;
+      }
+      final ConstructorElement injectedConstructor =
+          type.getRequiredInjectedConstructor();
+
+      _registerSource(
+        InjectedConstructorSource(
+          type: type,
+          element: injectedConstructor,
+          annotations: getAnnotations(type.element!),
+        ),
+      );
+    }
+  }
 }
 
 /// Identifier of type source. Serves to build a dependency graph.
@@ -597,4 +631,17 @@ class AnotherComponentSource extends ProviderSource {
 
   @override
   String get sourceString => '${_dependencyClass.name}.${element.name}';
+}
+
+class InjectedConstructorSource extends ProviderSource {
+  InjectedConstructorSource({
+    required DartType type,
+    required this.element,
+    required List<j.Annotation> annotations,
+  }) : super(type, annotations);
+
+  final ConstructorElement element;
+
+  @override
+  String get sourceString => 'constructor of ${element.enclosingElement.name}';
 }
