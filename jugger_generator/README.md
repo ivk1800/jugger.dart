@@ -289,7 +289,7 @@ class MyImplementation implements MyInterface {
 @module
 abstract class MyModule {
   @binds
-  MyInterface provideMyClass(MyImplementation impl);
+  MyInterface bindMyClass(MyImplementation impl);
 }
 ```
 
