@@ -321,21 +321,6 @@ class ComponentBuilderDelegate {
     return 'Jugger$name';
   }
 
-  /// Returns a list of graph objects for which the provider field should be
-  /// generated. If the current component is a graph object, it does not need to
-  /// be generated. In this case, the call will be like 'this'.
-  Iterable<GraphObject> _filterDependenciesForFields(
-    List<GraphObject> dependencies,
-  ) {
-    return dependencies.where((GraphObject dependency) {
-      final ClassElement typeElement = dependency.type.element! as ClassElement;
-      final bool isCurrentComponent =
-          getComponentAnnotation(typeElement) != null &&
-              dependency.type == _componentType;
-      return !isCurrentComponent;
-    });
-  }
-
   /// Returns a list of all providers that are used in the current component.
   /// Example of field:
   /// ```
@@ -346,7 +331,12 @@ class ComponentBuilderDelegate {
     final List<Field> fields = <Field>[];
 
     final Iterable<GraphObject> filteredDependencies =
-        _filterDependenciesForFields(_componentContext.objectsGraph);
+        _componentContext.objectsGraph.where((GraphObject graphObject) {
+      final ProviderSource source =
+          _componentContext.findProvider(graphObject.type, graphObject.tag);
+      // just 'this' for assign expression, field is not needed
+      return source is! ThisComponentSource;
+    });
 
     for (final GraphObject graphObject in filteredDependencies) {
       checkUnexpected(

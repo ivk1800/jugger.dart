@@ -117,7 +117,8 @@ class ComponentContext {
       }
     }
 
-    _registerInjectedConstructorSources();
+    _registerAdditionalSources();
+    _checkMissingProviders();
   }
 
   /// All objects of the component graph.
@@ -380,13 +381,19 @@ class ComponentContext {
   }
 
   /// Iterates over all graph objects and registers sources for types with
-  /// an injected constructor.
-  void _registerInjectedConstructorSources() {
+  /// an injected constructor and 'this' component source.
+  void _registerAdditionalSources() {
     final Map<_Key, GraphObject> objectsGraph = _objectsGraph;
 
     for (final GraphObject graphObject in objectsGraph.values) {
       final DartType type = graphObject.type;
       if (type == component.element.thisType) {
+        _registerSource(
+          ThisComponentSource(
+            type: type,
+            annotations: getAnnotations(type.element!),
+          ),
+        );
         continue;
       }
 
@@ -407,6 +414,19 @@ class ComponentContext {
           element: injectedConstructor,
           annotations: getAnnotations(type.element!),
         ),
+      );
+    }
+  }
+
+  /// Iterates over all graph objects and check missing provider for types.
+  void _checkMissingProviders() {
+    for (final GraphObject graphObject in objectsGraph) {
+      final ProviderSource? provider =
+          findProviderOrNull(graphObject.type, graphObject.tag);
+
+      check(
+        provider != null,
+        () => buildProviderNotFoundMessage(graphObject.type, graphObject.tag),
       );
     }
   }
@@ -653,4 +673,21 @@ class InjectedConstructorSource extends ProviderSource {
 
   @override
   String get sourceString => 'constructor of ${element.enclosingElement.name}';
+}
+
+/// The source of the current component. It means if the current component
+/// is required as a dependency.
+/// Example:
+/// ```
+/// @provides
+///  static String provideString(AppComponent appComponent)
+/// ```
+class ThisComponentSource extends ProviderSource {
+  ThisComponentSource({
+    required DartType type,
+    required List<j.Annotation> annotations,
+  }) : super(type, annotations);
+
+  @override
+  String get sourceString => 'this';
 }
