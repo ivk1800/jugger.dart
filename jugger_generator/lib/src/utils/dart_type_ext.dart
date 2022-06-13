@@ -115,13 +115,6 @@ extension DartTypeExt on DartType {
     return getDisplayString(withNullability: false);
   }
 
-  /// Returns true if it has one injected constructor, otherwise an error will
-  /// be thrown.
-  bool hasInjectedConstructor() {
-    checkUnsupportedType();
-    return getInjectedConstructorOrNull() != null;
-  }
-
   void checkUnsupportedType() {
     check(
       this is InterfaceType,

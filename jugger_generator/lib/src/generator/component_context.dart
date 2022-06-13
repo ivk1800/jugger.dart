@@ -177,15 +177,13 @@ class ComponentContext {
 
     if (element is MethodElement) {
       if (graphObjectPlace == GraphObjectPlace.component) {
-        final ConstructorElement? injectedConstructor =
-            element.returnType.getInjectedConstructorOrNull();
-
         final GraphObject graphObject = GraphObject(
           tag,
           element.returnType,
-          injectedConstructor != null
-              ? _registerConstructorObjects(injectedConstructor)
-              : <GraphObject>[],
+          _registerConstructorObjectsIfNeeded(
+            type: element.returnType,
+            or: const <GraphObject>[],
+          ),
         );
         _registerAndValidateGraphObject(key, graphObject);
         _objectsGraphQueue.removeFirst();
@@ -204,14 +202,13 @@ class ComponentContext {
       _objectsGraphQueue.removeFirst();
       return _registerVariableElementGraphObject(element);
     } else if (element is PropertyAccessorElement) {
-      final ConstructorElement? injectedConstructor =
-          element.returnType.getInjectedConstructorOrNull();
       final GraphObject graphObject = GraphObject(
         tag,
         element.returnType,
-        injectedConstructor != null
-            ? _registerConstructorObjects(injectedConstructor)
-            : <GraphObject>[],
+        _registerConstructorObjectsIfNeeded(
+          type: element.returnType,
+          or: const <GraphObject>[],
+        ),
       );
       _registerAndValidateGraphObject(key, graphObject);
       _objectsGraphQueue.removeFirst();
@@ -224,6 +221,18 @@ class ComponentContext {
             'Field ${element.name} unsupported type [${element.runtimeType}]',
       ),
     );
+  }
+
+  List<GraphObject> _registerConstructorObjectsIfNeeded({
+    required DartType type,
+    required List<GraphObject> or,
+  }) {
+    final ConstructorElement? injectedConstructor =
+        type.getInjectedConstructorOrNull();
+
+    return injectedConstructor != null
+        ? _registerConstructorObjects(injectedConstructor)
+        : or;
   }
 
   /// The method checks the type for a supported one and registers the object.
@@ -239,18 +248,13 @@ class ComponentContext {
       );
       final DartType providerType = object.type.getSingleTypeArgument;
 
-      List<GraphObject> objects = object.dependencies;
-
-      if (providerType.hasInjectedConstructor()) {
-        objects = _registerConstructorObjects(
-          providerType.getRequiredInjectedConstructor(),
-        );
-      }
-
       _objectsGraph[key] = GraphObject(
         object.tag,
         providerType,
-        objects,
+        _registerConstructorObjectsIfNeeded(
+          type: providerType,
+          or: object.dependencies,
+        ),
       );
     } else {
       _objectsGraph[key] = object;
@@ -264,26 +268,13 @@ class ComponentContext {
 
     final _Key key = _Key.of(element, tag);
 
-    final ConstructorElement? injectedConstructor =
-        element.type.getInjectedConstructorOrNull();
-
-    if (injectedConstructor == null) {
-      final GraphObject graphObject = GraphObject(
-        tag,
-        element.type,
-        <GraphObject>[],
-      );
-      _registerAndValidateGraphObject(key, graphObject);
-      return graphObject;
-    }
-
-    final List<GraphObject> objects =
-        _registerConstructorObjects(injectedConstructor);
-
     final GraphObject object = GraphObject(
       tag,
       element.type,
-      objects,
+      _registerConstructorObjectsIfNeeded(
+        type: element.type,
+        or: const <GraphObject>[],
+      ),
     );
     _registerAndValidateGraphObject(key, object);
     return object;
