@@ -336,11 +336,20 @@ class ComponentContext {
     });
   }
 
-  /// Method returns type source by type and tag.
-  ProviderSource? findProvider(DartType type, [Tag? tag]) {
+  /// Returns type source by type and tag or null if not found.
+  ProviderSource? findProviderOrNull(DartType type, [Tag? tag]) {
     return providerSources.firstWhereOrNull((ProviderSource source) {
       return source.type == type && source.tag == tag;
     });
+  }
+
+  /// Returns type source by type and tag or throws error if not found.
+  ProviderSource findProvider(DartType type, [Tag? tag]) {
+    final ProviderSource? source = findProviderOrNull(type, tag);
+    if (source == null) {
+      throw JuggerError(buildProviderNotFoundMessage(type, tag));
+    }
+    return source;
   }
 
   /// Helper function for equals sources. Equals and hash code is not overridden
@@ -382,7 +391,7 @@ class ComponentContext {
       }
 
       final Tag? tag = graphObject.tag;
-      final ProviderSource? source = findProvider(type, tag);
+      final ProviderSource? source = findProviderOrNull(type, tag);
 
       if (source == null && tag != null) {
         throw JuggerError(buildProviderNotFoundMessage(type, tag));

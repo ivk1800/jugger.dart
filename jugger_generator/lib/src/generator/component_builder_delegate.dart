@@ -357,21 +357,8 @@ class ComponentBuilderDelegate {
         ),
       );
 
-      final ProviderSource? provider =
+      final ProviderSource provider =
           _componentContext.findProvider(graphObject.type, graphObject.tag);
-
-      // Do not generate code if method of component annotated with qualifier,
-      // but constructor of class is injected
-      if (provider == null && graphObject.tag != null) {
-        throw JuggerError(
-          buildProviderNotFoundMessage(graphObject.type, graphObject.tag),
-        );
-      }
-
-      check(
-        provider != null,
-        () => buildProviderNotFoundMessage(graphObject.type, graphObject.tag),
-      );
 
       if (provider is! ArgumentSource && provider is! AnotherComponentSource) {
         fields.add(
@@ -388,7 +375,7 @@ class ComponentBuilderDelegate {
             b.late = true;
             b.modifier = FieldModifier.final$;
 
-            final ProviderSource? provider =
+            final ProviderSource provider =
                 _componentContext.findProvider(graphObject.type, tag);
 
             if (provider is ModuleSource) {
@@ -582,32 +569,12 @@ class ComponentBuilderDelegate {
 
     if (type.isProvider) {
       final DartType depType = type.getSingleTypeArgument;
-      final ProviderSource? provider =
+      final ProviderSource provider =
           _componentContext.findProvider(depType, tag);
-
-      if (provider == null && depType.hasInjectedConstructor()) {
-        return _generateAssignExpression(
-          depType,
-          null,
-          false,
-        );
-      }
-      check(
-        provider != null,
-        () => buildProviderNotFoundMessage(depType, tag),
-      );
-      return _generateAssignExpression(
-        provider!.type,
-        provider.tag,
-        false,
-      );
+      return _generateAssignExpression(provider.type, provider.tag, false);
     }
 
-    final ProviderSource? provider = _componentContext.findProvider(type, tag);
-
-    if (provider == null) {
-      throw JuggerError(buildProviderNotFoundMessage(type, tag));
-    }
+    final ProviderSource provider = _componentContext.findProvider(type, tag);
 
     if (provider is ArgumentSource) {
       final String? finalSting;
@@ -783,7 +750,7 @@ class ComponentBuilderDelegate {
   /// SingletonProvider<MyClass>(() => _myClassProvider.get());
   /// ```
   Expression _buildProviderFromAbstractMethod(j.AbstractProvideMethod method) {
-    final ProviderSource? provider =
+    final ProviderSource provider =
         _componentContext.findProvider(method.assignableType);
 
     if (provider is AnotherComponentSource) {
