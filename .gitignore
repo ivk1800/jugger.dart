@@ -6,3 +6,4 @@
 # IntelliJ related
 *.iml
 .idea/
+build.dart
