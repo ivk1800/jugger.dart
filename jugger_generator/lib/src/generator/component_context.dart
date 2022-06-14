@@ -9,6 +9,7 @@ import '../errors_glossary.dart';
 import '../jugger_error.dart';
 import '../utils/dart_type_ext.dart';
 import '../utils/utils.dart';
+import 'entry_points.dart';
 import 'graph_object_place.dart';
 import 'tag.dart';
 import 'visitors.dart';
@@ -339,7 +340,11 @@ class ComponentContext {
   ProviderSource findProvider(DartType type, [Tag? tag]) {
     final ProviderSource? source = findProviderOrNull(type, tag);
     if (source == null) {
-      throw JuggerError(buildProviderNotFoundMessage(type, tag));
+      throw ProviderNotFoundError(
+        type: type,
+        tag: tag,
+        message: buildProviderNotFoundMessage(type, tag),
+      );
     }
     return source;
   }
@@ -374,6 +379,9 @@ class ComponentContext {
   /// Iterates over all graph objects and registers sources for types with
   /// an injected constructor and 'this' component source.
   void _registerAdditionalSources() {
+    final List<ProviderNotFoundError> providerNotFoundErrors =
+        <ProviderNotFoundError>[];
+
     final Map<_Key, GraphObject> objectsGraph = _objectsGraph;
 
     for (final GraphObject graphObject in objectsGraph.values) {
@@ -392,19 +400,49 @@ class ComponentContext {
       final ProviderSource? source = findProviderOrNull(type, tag);
 
       if (source == null && tag != null) {
-        throw JuggerError(buildProviderNotFoundMessage(type, tag));
+        providerNotFoundErrors.add(
+          ProviderNotFoundError(
+            type: type,
+            tag: tag,
+            message: buildProviderNotFoundMessage(type, tag),
+          ),
+        );
+        continue;
       } else if (source != null || isCore(type.element!)) {
         continue;
       }
-      final ConstructorElement injectedConstructor =
-          type.getRequiredInjectedConstructor();
+      try {
+        final ConstructorElement injectedConstructor =
+            type.getRequiredInjectedConstructor();
+        _registerSource(
+          InjectedConstructorSource(
+            type: type,
+            element: injectedConstructor,
+            annotations: getAnnotations(type.element!),
+          ),
+        );
+      }
+      // ignore: avoid_catching_errors
+      on ProviderNotFoundError catch (e) {
+        providerNotFoundErrors.add(e);
+      }
+    }
 
-      _registerSource(
-        InjectedConstructorSource(
-          type: type,
-          element: injectedConstructor,
-          annotations: getAnnotations(type.element!),
-        ),
+    if (providerNotFoundErrors.isNotEmpty) {
+      throw JuggerError(
+        providerNotFoundErrors.map((ProviderNotFoundError error) {
+          final String? entryPoints = findEntryPointsOf(
+            error.type,
+            error.tag,
+            this.objectsGraph,
+            findProvider,
+          );
+          if (entryPoints == null) {
+            return error.message;
+          }
+
+          return '${error.message}\nThe following entry points depend on ${error.type.getName()}:\n$entryPoints';
+        }).join('\n'),
       );
     }
   }
@@ -415,10 +453,14 @@ class ComponentContext {
       final ProviderSource? provider =
           findProviderOrNull(graphObject.type, graphObject.tag);
 
-      check(
-        provider != null,
-        () => buildProviderNotFoundMessage(graphObject.type, graphObject.tag),
-      );
+      if (provider == null) {
+        throw ProviderNotFoundError(
+          type: graphObject.type,
+          tag: graphObject.tag,
+          message:
+              buildProviderNotFoundMessage(graphObject.type, graphObject.tag),
+        );
+      }
     }
   }
 }

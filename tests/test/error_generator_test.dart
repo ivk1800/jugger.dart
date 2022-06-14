@@ -96,7 +96,9 @@ abstract class AppModule {
             error.toString(),
             'error: provider_not_found:\n'
             'Provider for int with qualifier i not found.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#provider_not_found',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#provider_not_found\n'
+            'The following entry points depend on int:\n'
+            'AppModule.provideString(@i int i)',
           );
         },
       );
@@ -358,7 +360,9 @@ class MyClass {
             error.toString(),
             'error: ambiguity_of_injected_constructor:\n'
             'Class MyClass has more than one injected constructor or no injected constructor.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#ambiguity_of_injected_constructor',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#ambiguity_of_injected_constructor\n'
+            'The following entry points depend on MyClass:\n'
+            'AppModule.provideHello(MyClass myClass)',
           );
         },
       );
@@ -715,7 +719,9 @@ const Inject inject = Inject._();
               error.toString(),
               'error: ambiguity_of_injected_constructor:\n'
               'Class MyClass has more than one injected constructor or no injected constructor.\n'
-              'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#ambiguity_of_injected_constructor',
+              'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#ambiguity_of_injected_constructor\n'
+              'The following entry points depend on MyClass:\n'
+              'AppModule.provideHello(MyClass myClass)',
             );
           },
         );
@@ -1461,7 +1467,9 @@ abstract class AppModule {
             error.toString(),
             'error: ambiguity_of_injected_constructor:\n'
             'Class MainRouter has more than one injected constructor or no injected constructor.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#ambiguity_of_injected_constructor',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#ambiguity_of_injected_constructor\n'
+            'The following entry points depend on MainRouter:\n'
+            'AppModule.bindMainRouter(MainRouter impl)',
           );
         },
       );
@@ -2771,6 +2779,204 @@ abstract class BaseClass {
             'error: invalid_injected_method:\n'
             'Injected method init can not be abstract.\n'
             'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_injected_method',
+          );
+        },
+      );
+    });
+  });
+
+  group('entry points', () {
+    test('bind method of module entry point', () async {
+      await checkBuilderResult(
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[AppModule])
+abstract class AppComponent {
+  MyClass get myClass;
+}
+
+@module
+abstract class AppModule {
+  @binds
+  MyClass bindMyClass(MyClassImpl impl);
+}
+
+abstract class MyClass {}
+
+class MyClassImpl implements MyClass {}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: ambiguity_of_injected_constructor:\n'
+            'Class MyClassImpl has more than one injected constructor or no injected constructor.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#ambiguity_of_injected_constructor\n'
+            'The following entry points depend on MyClassImpl:\n'
+            'AppModule.bindMyClass(MyClassImpl impl)',
+          );
+        },
+      );
+    });
+    test('bind method of module entry point with qualifier', () async {
+      await checkBuilderResult(
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[AppModule])
+abstract class AppComponent {
+  MyClass get myClass;
+}
+
+@module
+abstract class AppModule {
+  @binds
+  MyClass bindMyClass(@Named('my') MyClassImpl impl);
+}
+
+abstract class MyClass {}
+
+class MyClassImpl implements MyClass {}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: provider_not_found:\n'
+            'Provider for MyClassImpl with qualifier my not found.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#provider_not_found\n'
+            'The following entry points depend on MyClassImpl:\n'
+            'AppModule.bindMyClass(@my MyClassImpl impl)',
+          );
+        },
+      );
+    });
+    test('constructor entry point', () async {
+      await checkBuilderResult(
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component()
+abstract class AppComponent {
+  MyClass get myClass;
+}
+
+class MyClass {
+  @inject
+  const MyClass(this.myClass2);
+
+  final MyClass2 myClass2;
+}
+
+class MyClass2 {
+  const MyClass2();
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: ambiguity_of_injected_constructor:\n'
+            'Class MyClass2 has more than one injected constructor or no injected constructor.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#ambiguity_of_injected_constructor\n'
+            'The following entry points depend on MyClass2:\n'
+            'MyClass(MyClass2 myClass2)',
+          );
+        },
+      );
+    });
+    test('constructor entry point with qualifier', () async {
+      await checkBuilderResult(
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component()
+abstract class AppComponent {
+  MyClass get myClass;
+}
+
+class MyClass {
+  @inject
+  const MyClass(@Named('my') this.myClass2);
+
+  final MyClass2 myClass2;
+}
+
+class MyClass2 {
+  const MyClass2();
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: provider_not_found:\n'
+            'Provider for MyClass2 with qualifier my not found.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#provider_not_found\n'
+            'The following entry points depend on MyClass2:\n'
+            'MyClass(@my MyClass2 myClass2)',
+          );
+        },
+      );
+    });
+    test('provide method of module entry point', () async {
+      await checkBuilderResult(
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[AppModule])
+abstract class AppComponent {
+  String get string;
+}
+
+@module
+abstract class AppModule {
+  @provides
+  static String provideString(MyClass myClass) => myClass.toString();
+}
+
+class MyClass {
+  const MyClass();
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: ambiguity_of_injected_constructor:\n'
+            'Class MyClass has more than one injected constructor or no injected constructor.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#ambiguity_of_injected_constructor\n'
+            'The following entry points depend on MyClass:\n'
+            'AppModule.provideString(MyClass myClass)',
+          );
+        },
+      );
+    });
+    test('provide method of module entry point with qualifier', () async {
+      await checkBuilderResult(
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[AppModule])
+abstract class AppComponent {
+  String get string;
+}
+
+@module
+abstract class AppModule {
+  @provides
+  static String provideString(@Named('my') MyClass myClass) =>
+      myClass.toString();
+}
+
+class MyClass {
+  const MyClass();
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: provider_not_found:\n'
+            'Provider for MyClass with qualifier my not found.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#provider_not_found\n'
+            'The following entry points depend on MyClass:\n'
+            'AppModule.provideString(@my MyClass myClass)',
           );
         },
       );

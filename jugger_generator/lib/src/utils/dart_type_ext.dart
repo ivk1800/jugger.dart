@@ -4,6 +4,7 @@ import 'package:analyzer/dart/element/type.dart';
 
 import '../errors_glossary.dart';
 import '../generator/visitors.dart';
+import '../jugger_error.dart';
 import 'utils.dart';
 
 extension DartTypeExt on DartType {
@@ -73,14 +74,17 @@ extension DartTypeExt on DartType {
   ConstructorElement _getSingleInjectedConstructor(
     List<ConstructorElement> injectedConstructors,
   ) {
-    check(
-      injectedConstructors.length == 1,
-      () => buildErrorMessage(
-        error: JuggerErrorId.ambiguity_of_injected_constructor,
-        message:
-            'Class ${element?.name} has more than one injected constructor or no injected constructor.',
-      ),
-    );
+    if (injectedConstructors.length != 1) {
+      throw ProviderNotFoundError(
+        type: this,
+        tag: null,
+        message: buildErrorMessage(
+          error: JuggerErrorId.ambiguity_of_injected_constructor,
+          message:
+              'Class ${element?.name} has more than one injected constructor or no injected constructor.',
+        ),
+      );
+    }
     final ConstructorElement constructorElement = injectedConstructors.first;
 
     late final String constructorLogName =
