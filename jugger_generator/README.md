@@ -499,7 +499,7 @@ targets:
 
 ### remove_interface_prefix_from_component_name
 
-If your components have a prefix in the name, then when creating the jagger class, it will be removed. By default it is turned on.
+If your components have a prefix in the name, then when creating the jugger class, it will be removed. By default it is turned on.
 
 ```dart
   final IMyComponent myComponent = JuggerMyComponent.create();

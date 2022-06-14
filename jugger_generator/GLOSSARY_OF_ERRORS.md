@@ -641,10 +641,10 @@ Providers can be:
 1) Method of module; 
 2) Component arguments;
 3) Other component;
-4) If none of the above providers was found, the jagger looks at the injected constructor;
+4) If none of the above providers was found, the jugger looks at the injected constructor;
 
 ### unused_generated_providers
-If there is a registered object in the graph, but it is not used in the construction of objects, jagger will throw an 
+If there is a registered object in the graph, but it is not used in the construction of objects, jugger will throw an 
 error. This is the default behavior if you want to disable:
 
 build.yaml
