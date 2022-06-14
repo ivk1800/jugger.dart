@@ -242,11 +242,12 @@ class ComponentBuilderDelegate {
           j.ComponentBuilderParameter(parameter: method.parameters[0]);
       final Tag? tag = p.parameter.enclosingElement!.getQualifierTag();
       builder.addExpression(
-        refer('_${_generateFieldName(
-          p.parameter.type,
-          tag?.toAssignTag(),
-        )}')
-            .assign(refer(p.parameter.name)),
+        refer(
+          '_${_generateFieldName(
+            p.parameter.type,
+            tag?.toAssignTag(),
+          )}',
+        ).assign(refer(p.parameter.name)),
       );
       builder.addExpression(const CodeExpression(Code('return this')));
     });

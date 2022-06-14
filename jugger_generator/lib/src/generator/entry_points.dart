@@ -29,7 +29,7 @@ String? findEntryPointsOf(
   return providers.map((ProviderSource source) {
     if (source is ModuleSource) {
       final ParameterElement? parameter = source.method.element.parameters
-          .firstWhereOrNull((element) => element.type == type);
+          .firstWhereOrNull((ParameterElement element) => element.type == type);
       final StringBuffer messageBuilder = StringBuffer();
 
       messageBuilder.write(
@@ -46,7 +46,7 @@ String? findEntryPointsOf(
       return messageBuilder.toString();
     } else if (source is InjectedConstructorSource) {
       final ParameterElement? parameter = source.element.parameters
-          .firstWhereOrNull((element) => element.type == type);
+          .firstWhereOrNull((ParameterElement element) => element.type == type);
       final StringBuffer messageBuilder = StringBuffer();
       messageBuilder.write(source.element.enclosingElement.name);
       messageBuilder.write('(');

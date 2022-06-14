@@ -5,7 +5,8 @@ analyzer:
 
 linter:
   rules:
+    always_specify_types: true
     always_use_package_imports: false
     prefer_relative_imports: true
-    require_trailing_commas: false
+    require_trailing_commas: true
     cast_nullable_to_non_nullable: false
