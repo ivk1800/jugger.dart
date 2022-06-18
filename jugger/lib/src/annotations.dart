@@ -1,11 +1,15 @@
 /// Annotates an abstract class for which a dependency-injected implementation
 /// is to be generated from a set of modules.
 class Component {
-  const factory Component({List<Type> modules, List<Type> dependencies}) =
-      Component._;
+  const factory Component({
+    List<Type> modules,
+    List<Type> dependencies,
+  }) = Component._;
 
-  const Component._(
-      {this.modules = const <Type>[], this.dependencies = const <Type>[]});
+  const Component._({
+    this.modules = const <Type>[],
+    this.dependencies = const <Type>[],
+  });
 
   final List<Type> modules;
   final List<Type> dependencies;
@@ -84,3 +88,41 @@ const Inject inject = Inject._();
 const Binds binds = Binds._();
 
 const Qualifier qualifier = Qualifier._();
+
+// region disposal
+
+/// Identifies that this is a graph object disposer.
+class DisposalHandler {
+  const DisposalHandler._();
+}
+
+const DisposalHandler disposalHandler = DisposalHandler._();
+
+/// Identifies that the graph object can be disposed after the life of the
+/// component ends. Disposable object has two disposal strategies:
+/// 1) if the object has a dispose method and the jugger only needs to call it;
+/// 2) if the object has a custom disposal and for this need to declare a
+/// handle method for disposal.
+class Disposable {
+  const factory Disposable({
+    required DisposalStrategy strategy,
+  }) = Disposable._;
+
+  const Disposable._({required this.strategy});
+
+  final DisposalStrategy strategy;
+}
+
+const Disposable disposable = Disposable._(strategy: DisposalStrategy.auto);
+
+enum DisposalStrategy {
+  /// The jugger will try to find a method that matches:
+  /// Future<void> dispose() or void dispose()
+  auto,
+
+  /// To dispose of an object, need to declare the handle method in the module
+  /// with an annotation [disposalHandler]
+  delegated,
+}
+
+// endregion disposal

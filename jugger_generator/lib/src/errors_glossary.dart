@@ -62,6 +62,14 @@ const String modulesCircularDependency =
 const String multipleModuleAnnotations =
     '$_glossary#multiple_module_annotations';
 const String invalidMember = '$_glossary#invalid_member';
+const String missingDisposeMethod = '$_glossary#missing_dispose_method';
+const String invalidHandlerMethod = '$_glossary#invalid_handler_method';
+const String unusedDisposalHandler = '$_glossary#unused_disposal_handler';
+const String redundantDisposalHandler = '$_glossary#redundant_disposal_handler';
+const String multipleDisposalHandlersForType =
+    '$_glossary#multiple_disposal_handlers_for_type';
+const String disposableNotScoped = '$_glossary#disposable_not_scoped';
+const String disposableNotSupported = '$_glossary#disposable_not_supported';
 
 // endregion errors
 
@@ -106,6 +114,13 @@ enum JuggerErrorId {
   circular_modules_dependency,
   multiple_module_annotations,
   invalid_member,
+  missing_dispose_method,
+  invalid_handler_method,
+  unused_disposal_handler,
+  redundant_disposal_handler,
+  multiple_disposal_handlers_for_type,
+  disposable_not_scoped,
+  disposable_not_supported,
 }
 
 // TODO: support Enhanced enums with members in dart 2.17.0
@@ -192,6 +207,20 @@ extension JuggerErrorIdExt on JuggerErrorId {
         return invalidComponent;
       case JuggerErrorId.invalid_member:
         return invalidMember;
+      case JuggerErrorId.missing_dispose_method:
+        return missingDisposeMethod;
+      case JuggerErrorId.invalid_handler_method:
+        return invalidHandlerMethod;
+      case JuggerErrorId.unused_disposal_handler:
+        return unusedGeneratedProviders;
+      case JuggerErrorId.redundant_disposal_handler:
+        return redundantDisposalHandler;
+      case JuggerErrorId.multiple_disposal_handlers_for_type:
+        return multipleDisposalHandlersForType;
+      case JuggerErrorId.disposable_not_scoped:
+        return disposableNotScoped;
+      case JuggerErrorId.disposable_not_supported:
+        return disposableNotSupported;
     }
   }
 }

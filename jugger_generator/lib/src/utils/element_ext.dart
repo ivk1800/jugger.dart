@@ -1,8 +1,11 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
+import 'package:collection/collection.dart';
 
 import '../errors_glossary.dart';
+import '../generator/wrappers.dart';
 import '../jugger_error.dart';
+import 'utils.dart';
 
 extension ElementExt on Element {
   /// The method tries to get the type from the supported element type,
@@ -32,5 +35,11 @@ extension ElementExt on Element {
         message: 'Expected type $T, but was $element',
       ),
     );
+  }
+
+  DisposalHandlerAnnotation? getDisposalHandlerAnnotation() {
+    final Annotation? annotation = getAnnotations(this)
+        .firstWhereOrNull((Annotation a) => a is DisposalHandlerAnnotation);
+    return annotation is DisposalHandlerAnnotation ? annotation : null;
   }
 }

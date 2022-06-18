@@ -1,0 +1,67 @@
+// ignore_for_file: implementation_imports
+// ignore_for_file: prefer_const_constructors
+// ignore_for_file: always_specify_types
+// ignore_for_file: directives_ordering
+// ignore_for_file: non_constant_identifier_names
+import 'package:tests/disposable/auto_disposable_binded_impl_class.dart' as _i1;
+import 'dart:async' as _i2;
+import 'package:jugger/jugger.dart' as _i3;
+
+class JuggerAppComponent implements _i1.AppComponent {
+  JuggerAppComponent.create();
+
+  late final _i3.IProvider<_i1.IMyClass> _iMyClassProvider =
+      _i3.SingletonProvider<_i1.IMyClass>(() => _myClassImplProvider.get());
+
+  late final _i3.IProvider<_i1.MyClassImpl> _myClassImplProvider =
+      _i3.SingletonProvider<_i1.MyClassImpl>(() {
+    _disposableManager.checkDisposed();
+    _i1.MyClassImpl disposable = const _i1.MyClassImpl();
+    _disposableManager.register(disposable.dispose);
+    return disposable;
+  });
+
+  final _DisposableManager _disposableManager =
+      _DisposableManager('AppComponent');
+
+  @override
+  _i1.IMyClass getMyClass() {
+    _disposableManager.checkDisposed();
+    return _iMyClassProvider.get();
+  }
+
+  @override
+  Future<void> dispose() => _disposableManager.dispose();
+}
+
+class _DisposableManager {
+  _DisposableManager(this._componentName);
+
+  bool _disposed = false;
+
+  final String _componentName;
+
+  List<_i2.FutureOr<dynamic> Function()> _disposables =
+      <_i2.FutureOr<dynamic> Function()>[];
+
+  void register(_i2.FutureOr<dynamic> Function() disposable) {
+    assert(!_disposed);
+    _disposables.add(disposable);
+  }
+
+  void checkDisposed() {
+    if (_disposed) {
+      throw StateError('${_componentName} accessed after dispose.');
+    }
+  }
+
+  Future<void> dispose() async {
+    if (_disposed) {
+      return;
+    }
+    _disposed = true;
+    for (_i2.FutureOr<dynamic> Function() value in _disposables.reversed) {
+      await value.call();
+    }
+  }
+}

@@ -782,3 +782,36 @@ abstract class AppModule { }
 
 ### invalid_member
 ...
+
+### missing_dispose_method
+
+`BAD:`
+```dart
+@Component()
+abstract class AppComponent { }
+```
+
+`GOOD:`
+```dart
+@Component()
+abstract class AppComponent {
+  Future<void> dispose();
+}
+```
+
+### invalid_handler_method
+...
+
+### unused_disposal_handler
+...
+
+### redundant_disposal_handler
+...
+### multiple_disposal_handlers_for_type
+...
+
+### disposable_not_scoped
+...
+
+### disposable_not_supported
+...

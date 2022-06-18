@@ -4,6 +4,659 @@ import 'package:test/test.dart';
 import 'utils.dart';
 
 void main() {
+  group('dispose', () {
+    test('disposable type not supported with binds', () async {
+      await checkBuilderResult(
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(
+  modules: <Type>[AppModule],
+)
+abstract class AppComponent {
+  IMyClass getMyClass();
+
+  Future<void> dispose();
+}
+
+@module
+abstract class AppModule {
+  @binds
+  @singleton
+  @disposable
+  IMyClass bindMyClass(MyClassImpl impl);
+}
+
+abstract class IMyClass {}
+
+class MyClassImpl implements IMyClass {
+  @inject
+  const MyClassImpl();
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: disposable_not_supported:\n'
+            'Disposable type IMyClass not supported with binds.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#disposable_not_supported',
+          );
+        },
+      );
+    });
+
+    test('not found disposer for type', () async {
+      await checkBuilderResult(
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+import 'package:tests/injected_method/injected_multiple_parent_methods.dart';
+
+@Component()
+abstract class AppComponent {
+  MyClass getMyClass();
+
+  Future<void> dispose();
+}
+
+@singleton
+@Disposable(strategy: DisposalStrategy.delegated)
+class MyClass {
+  @inject
+  const MyClass();
+
+  void dispose() {}
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: missing_dispose_method:\n'
+            'Not found disposer for MyClass.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#missing_dispose_method',
+          );
+        },
+      );
+    });
+
+    test(
+        'found disposal handler for method, but he does not marked as disposable',
+        () async {
+      await checkBuilderResult(
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+import 'package:tests/injected_method/injected_multiple_parent_methods.dart';
+
+@Component(
+  modules: <Type>[AppComponentModule],
+)
+abstract class AppComponent {
+  MyClass getMyClass();
+
+  Future<void> dispose();
+}
+
+@module
+abstract class AppComponentModule {
+  @disposalHandler
+  static Future<void> disposeMyClass(MyClass myClass) async {
+    myClass.dispose();
+  }
+}
+
+class MyClass {
+  @inject
+  const MyClass();
+
+  void dispose() {}
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: unused_disposal_handler:\n'
+            'Found unused disposal handler AppComponentModule.disposeMyClass.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#unused_generated_providers',
+          );
+        },
+      );
+    });
+
+    test('method annotated with DisposalHandler must have one parameter',
+        () async {
+      await checkBuilderResult(
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+import 'package:tests/injected_method/injected_multiple_parent_methods.dart';
+
+@Component(
+  modules: <Type>[AppComponentModule],
+)
+abstract class AppComponent {
+  MyClass getMyClass();
+
+  Future<void> dispose();
+}
+
+@module
+abstract class AppComponentModule {
+  @disposalHandler
+  static Future<void> disposeMyClass(MyClass myClass, MyClass myClass2) async {
+    myClass.dispose();
+  }
+}
+
+@singleton
+@Disposable(strategy: DisposalStrategy.delegated)
+class MyClass {
+  @inject
+  const MyClass();
+
+  void dispose() {}
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: invalid_handler_method:\n'
+            'Method AppComponentModule.disposeMyClass annotated with DisposalHandler must have one parameter.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_handler_method',
+          );
+        },
+      );
+    });
+
+    test('missing dispose method', () async {
+      await checkBuilderResult(
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component()
+abstract class AppComponent {
+  MyClass getMyClass();
+}
+
+@singleton
+@disposable
+class MyClass {
+  @inject
+  MyClass();
+
+  void dispose() {}
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: missing_dispose_method:\n'
+            'Missing dispose method of component AppComponent.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#missing_dispose_method',
+          );
+        },
+      );
+    });
+
+    test('wrong disposable handler return type', () async {
+      await checkBuilderResult(
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(
+  modules: <Type>[AppModule],
+)
+abstract class AppComponent {
+  MyClass getMyClass();
+
+  Future<void> dispose();
+}
+
+@module
+abstract class AppModule {
+  @disposalHandler
+  static disposeMyClass(MyClass myClass) {
+    myClass.dispose();
+  }
+
+  @provides
+  @singleton
+  @Disposable(strategy: DisposalStrategy.delegated)
+  static MyClass provideMyClass() => MyClass();
+}
+
+class MyClass {
+  void dispose() {}
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: invalid_handler_method:\n'
+            'Disposal handler must return type Future<void> or void.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_handler_method',
+          );
+        },
+      );
+    });
+
+    test('abstract dispose handler', () async {
+      await checkBuilderResult(
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(
+  modules: <Type>[Module1, Module2],
+)
+abstract class AppComponent {
+  MyClass getMyClass();
+
+  Future<void> dispose();
+}
+
+@Module(includes: <Type>[Module3])
+abstract class Module1 {
+  @provides
+  @singleton
+  @Disposable(strategy: DisposalStrategy.delegated)
+  static MyClass provideMyClass() => MyClass();
+}
+
+@Module(includes: <Type>[Module3])
+abstract class Module2 {}
+
+@module
+abstract class Module3 {
+  @disposalHandler
+  Future<void> disposeMyClass(MyClass myClass);
+}
+
+class MyClass {
+  void dispose2() {}
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: invalid_handler_method:\n'
+            'Method Module3.disposeMyClass marked with @DisposalHandler must be static.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_handler_method',
+          );
+        },
+      );
+    });
+
+    test('multiple dispose handlers in multiple modules', () async {
+      await checkBuilderResult(
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(
+  modules: <Type>[Module1, Module2],
+)
+abstract class AppComponent {
+  MyClass getMyClass();
+
+  Future<void> dispose();
+}
+
+@module
+abstract class Module1 {
+  @disposalHandler
+  static Future<void> disposeMyClass(MyClass myClass) async {
+    myClass.dispose2();
+  }
+
+  @provides
+  @singleton
+  @Disposable(strategy: DisposalStrategy.delegated)
+  static MyClass provideMyClass() => MyClass();
+}
+
+@module
+abstract class Module2 {
+  @disposalHandler
+  static Future<void> disposeMyClass(MyClass myClass) async {
+    myClass.dispose2();
+  }
+}
+
+class MyClass {
+  void dispose2() {}
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: multiple_disposal_handlers_for_type:\n'
+            'Disposal handler for MyClass provided multiple times: Module1.disposeMyClass, Module2.disposeMyClass\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#multiple_disposal_handlers_for_type',
+          );
+        },
+      );
+    });
+
+    test('multiple dispose handlers in one module', () async {
+      await checkBuilderResult(
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(
+  modules: <Type>[AppModule],
+)
+abstract class AppComponent {
+  MyClass getMyClass();
+
+  Future<void> dispose();
+}
+
+@module
+abstract class AppModule {
+  @disposalHandler
+  static Future<void> disposeMyClass(MyClass myClass) async {
+    myClass.dispose2();
+  }
+
+  @disposalHandler
+  static Future<void> disposeMyClass2(MyClass myClass) async {
+    myClass.dispose2();
+  }
+
+  @provides
+  @singleton
+  @Disposable(strategy: DisposalStrategy.delegated)
+  static MyClass provideMyClass() => MyClass();
+}
+
+class MyClass {
+  void dispose2() {}
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: multiple_disposal_handlers_for_type:\n'
+            'Disposal handler for MyClass provided multiple times: AppModule.disposeMyClass, AppModule.disposeMyClass2\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#multiple_disposal_handlers_for_type',
+          );
+        },
+      );
+    });
+
+    test('injected type marked as disposable, but not scoped.', () async {
+      await checkBuilderResult(
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(
+  modules: <Type>[AppComponentModule],
+)
+abstract class AppComponent {
+  MyClass getMyClass();
+
+  Future<void> dispose();
+}
+
+@module
+abstract class AppComponentModule {
+  @disposalHandler
+  static Future<void> disposeMyClass(MyClass myClass) async {
+    myClass.dispose();
+  }
+}
+
+@Disposable(strategy: DisposalStrategy.delegated)
+class MyClass {
+  @inject
+  const MyClass();
+
+  void dispose() {}
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: disposable_not_scoped:\n'
+            'MyClass marked as disposable, but not scoped.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#disposable_not_scoped',
+          );
+        },
+      );
+    });
+
+    test('provided type marked as disposable, but not scoped.', () async {
+      await checkBuilderResult(
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(
+  modules: <Type>[AppModule],
+)
+abstract class AppComponent {
+  MyClass getMyClass();
+
+  Future<void> dispose();
+}
+
+@module
+abstract class AppModule {
+  @disposalHandler
+  static Future<void> disposeMyClass(MyClass myClass) async {
+    myClass.dispose2();
+  }
+
+  @provides
+  @Disposable(strategy: DisposalStrategy.delegated)
+  static MyClass provideMyClass() => MyClass();
+}
+
+class MyClass {
+  void dispose2() {}
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: disposable_not_scoped:\n'
+            'MyClass marked as disposable, but not scoped.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#disposable_not_scoped',
+          );
+        },
+      );
+    });
+
+    test('auto disposable with declared handler', () async {
+      await checkBuilderResult(
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(
+  modules: <Type>[AppModule],
+)
+abstract class AppComponent {
+  MyClass getMyClass();
+
+  Future<void> dispose();
+}
+
+@module
+abstract class AppModule {
+  @disposalHandler
+  static Future<void> disposeMyClass(MyClass myClass) async {}
+
+  @provides
+  @singleton
+  static MyClass provideMyClass() => MyClass();
+}
+
+class MyClass {}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: unused_disposal_handler:\n'
+            'Found unused disposal handler AppModule.disposeMyClass.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#unused_generated_providers',
+          );
+        },
+      );
+    });
+
+    test('unused handler for type', () async {
+      await checkBuilderResult(
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(
+  modules: <Type>[AppModule],
+)
+abstract class AppComponent {
+  MyClass getMyClass();
+
+  Future<void> dispose();
+}
+
+@module
+abstract class AppModule {
+  @disposalHandler
+  static Future<void> disposeMyClass(MyClass myClass) async {
+    myClass.dispose();
+  }
+
+  @provides
+  @singleton
+  @Disposable(strategy: DisposalStrategy.auto)
+  static MyClass provideMyClass() => MyClass();
+}
+
+class MyClass {
+  void dispose() {}
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: redundant_disposal_handler:\n'
+            'MyClass marked as auto disposable, but declared handler AppModule.disposeMyClass.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#redundant_disposal_handler',
+          );
+        },
+      );
+    });
+
+    test('missing dispose method on disposable object', () async {
+      await checkBuilderResult(
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component()
+abstract class AppComponent {
+  MyClass1 getMyClass1();
+
+  Future<void> dispose();
+}
+
+@componentBuilder
+abstract class AppComponentBuilder {
+  @disposable
+  AppComponentBuilder setMyClass1(MyClass1 c);
+
+  AppComponent build();
+}
+
+class MyClass1 {
+  const MyClass1();
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: missing_dispose_method:\n'
+            'MyClass1 marked as auto disposable, but not found properly dispose method.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#missing_dispose_method',
+          );
+        },
+      );
+    });
+
+    test('invalid return type of  dispose method on disposable object',
+        () async {
+      await checkBuilderResult(
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component()
+abstract class AppComponent {
+  MyClass1 getMyClass1();
+
+  Future<void> dispose();
+}
+
+@componentBuilder
+abstract class AppComponentBuilder {
+  @disposable
+  AppComponentBuilder setMyClass1(MyClass1 c);
+
+  AppComponent build();
+}
+
+class MyClass1 {
+  const MyClass1();
+
+  Future<int> dispose() async => 0;
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: missing_dispose_method:\n'
+            'MyClass1 marked as auto disposable, but not found properly dispose method.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#missing_dispose_method',
+          );
+        },
+      );
+    });
+
+    test('invalid return type of dispose method', () async {
+      await checkBuilderResult(
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component()
+abstract class AppComponent {
+  void dispose();
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: invalid_handler_method:\n'
+            'Dispose method dispose of component must have type Future<void>.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_handler_method',
+          );
+        },
+      );
+    });
+
+    test('invalid parameters of dispose method', () async {
+      await checkBuilderResult(
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component()
+abstract class AppComponent {
+  Future<void> dispose(int i);
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: invalid_handler_method:\n'
+            'Disposal method dispose of component must have zero parameters.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_handler_method',
+          );
+        },
+      );
+    });
+  });
+
   group('missing provider', () {
     test('missing provider of type for component', () async {
       await checkBuilderResult(

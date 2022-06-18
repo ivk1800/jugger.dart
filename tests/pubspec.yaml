@@ -4,7 +4,7 @@ environment:
   sdk: ">=2.12.0 <3.0.0"
 
 dependencies:
-  jugger: 2.1.0
+  jugger: 2.2.0-dev.1
 
 dev_dependencies:
   build: ^2.2.1

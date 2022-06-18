@@ -4,6 +4,78 @@ import 'package:test/test.dart';
 import 'utils.dart';
 
 void main() {
+  group('disposable', () {
+    test('dispose method of disposable object from mixin', () async {
+      await checkBuilderOfFile(
+        'disposable/dispose_method_of_disposable_object_from_mixin',
+      );
+    });
+
+    test('auto disposable argument class', () async {
+      await checkBuilderOfFile('disposable/auto_disposable_argument_class');
+    });
+
+    test('delegated disposable argument class', () async {
+      await checkBuilderOfFile(
+        'disposable/delegated_disposable_argument_class',
+      );
+    });
+
+    test('delegated disposable provided class', () async {
+      await checkBuilderOfFile(
+        'disposable/delegated_disposable_provided_class',
+      );
+    });
+
+    test('delegated disposable injected class', () async {
+      await checkBuilderOfFile(
+        'disposable/delegated_disposable_injected_class',
+      );
+    });
+
+    test('dispose method of component from ancestor', () async {
+      await checkBuilderOfFile(
+        'disposable/dispose_method_of_component_from_ancestor',
+      );
+    });
+
+    test('module with dispose handler include by multiple modules', () async {
+      await checkBuilderOfFile(
+        'disposable/module_with_dispose_handler_include_by_multiple_modules',
+      );
+    });
+
+    test('auto disposable binded impl class', () async {
+      await checkBuilderOfFile(
+        'disposable/auto_disposable_binded_impl_class',
+      );
+    });
+
+    test('auto disposable injected class', () async {
+      await checkBuilderOfFile(
+        'disposable/auto_disposable_injected_class',
+      );
+    });
+
+    test('delegated disposable binded class', () async {
+      await checkBuilderOfFile(
+        'disposable/delegated_disposable_binded_class',
+      );
+    });
+
+    test('dispose method of component from another interface', () async {
+      await checkBuilderOfFile(
+        'disposable/dispose_method_of_component_from_another_interface',
+      );
+    });
+
+    test('void and async disposable handler', () async {
+      await checkBuilderOfFile(
+        'disposable/void_and_async_disposable_handler',
+      );
+    });
+  });
+
   group('field name generation', () {
     test('should generate type names from module', () async {
       await checkBuilderResult(

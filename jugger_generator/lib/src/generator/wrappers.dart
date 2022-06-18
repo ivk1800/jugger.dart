@@ -1,7 +1,10 @@
+import 'dart:collection';
+
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
 import 'package:jugger/jugger.dart' as j;
+import 'package:jugger/jugger.dart';
 
 import '../errors_glossary.dart';
 import '../utils/dart_type_ext.dart';
@@ -23,6 +26,8 @@ class Component {
     required this.modules,
     required this.dependencies,
     required this.modulesProvideMethods,
+    required this.disposalHandlerMethods,
+    required this.disposeMethod,
   });
 
   factory Component.fromElement(
@@ -58,6 +63,8 @@ class Component {
           // if module is used several times, just make unique methods
           .toSet()
           .toList(),
+      disposalHandlerMethods: _getDisposalHandlerMethodsFromModules(modules),
+      disposeMethod: element.getDisposeMethod(),
     );
   }
 
@@ -77,6 +84,9 @@ class Component {
   /// ```
   final List<MemberInjectorMethod> memberInjectors;
 
+  /// If not null, the component has such a method.
+  final DisposeMethod? disposeMethod;
+
   /// Returns the modules that are included to the component.
   final List<ModuleAnnotation> modules;
 
@@ -87,6 +97,8 @@ class Component {
   /// Returns all methods of modules that are included to the component.
   /// Methods are not repeated if one module is used several times.
   final List<ProvideMethod> modulesProvideMethods;
+
+  final List<DisposalHandlerMethod> disposalHandlerMethods;
 
   /// Returns methods of the component that return some type, do not include
   /// methods with the void type.
@@ -110,6 +122,56 @@ class Component {
   /// }
   /// ```
   final List<PropertyObjectAccessor> propertiesAccessors;
+}
+
+List<DisposalHandlerMethod> _getDisposalHandlerMethodsFromModules(
+  List<ModuleAnnotation> modules,
+) {
+  bool equalsHelper(DisposalHandlerMethod h1, DisposalHandlerMethod h2) {
+    return h1.disposableType == h2.disposableType && h1.tag == h2.tag;
+  }
+
+  final Set<DisposalHandlerMethod> handlers = HashSet<DisposalHandlerMethod>(
+    equals: equalsHelper,
+    hashCode: (DisposalHandlerMethod handler) {
+      return Object.hash(handler.disposableType.hashCode, handler.tag.hashCode);
+    },
+  );
+
+  final Iterable<DisposalHandlerMethod> methods = modules
+      .map(
+        (ModuleAnnotation module) =>
+            module.moduleElement.getDisposalHandlerMethods(),
+      )
+      .expand((List<DisposalHandlerMethod> methods) => methods)
+      // if module is used several times, just make unique methods
+      .toSet()
+      .toList();
+
+  for (final DisposalHandlerMethod method in methods) {
+    check(handlers.add(method), () {
+      final List<DisposalHandlerMethod> registeredHandlers =
+          <DisposalHandlerMethod>[
+        methods.firstWhere(
+          (DisposalHandlerMethod handler) => equalsHelper(handler, method),
+        ),
+        method
+      ];
+
+      final String places = registeredHandlers
+          .map(
+            (DisposalHandlerMethod handler) =>
+                '${handler.element.enclosingElement.name}.${handler.element.name}',
+          )
+          .join(', ');
+      return buildErrorMessage(
+        error: JuggerErrorId.multiple_disposal_handlers_for_type,
+        message:
+            'Disposal handler for ${method.disposableType.getName()} provided multiple times: $places',
+      );
+    });
+  }
+  return handlers.toList(growable: false);
 }
 
 /// Wrapper class for component builder classes that are annotated by
@@ -211,6 +273,18 @@ class NonLazyAnnotation implements Annotation {
   const NonLazyAnnotation();
 }
 
+/// Wrapper class for disposable annotation.
+class DisposableAnnotation implements Annotation {
+  DisposableAnnotation(this.strategy);
+
+  final DisposalStrategy strategy;
+}
+
+/// Wrapper class for disposalHandler annotation.
+class DisposalHandlerAnnotation implements Annotation {
+  const DisposalHandlerAnnotation();
+}
+
 /// Wrapper class for componentBuilder annotation.
 class ComponentBuilderAnnotation implements Annotation {
   const ComponentBuilderAnnotation(this.element);
@@ -289,6 +363,20 @@ abstract class ProvideMethod extends ModuleMethod {
   final Tag? tag;
 }
 
+extension ProvideMethodExt on ProvideMethod {
+  bool get _hasScoped =>
+      annotations.firstWhereOrNull(
+          (Annotation annotation) => annotation is SingletonAnnotation) !=
+      null;
+
+  bool get hasDisposable =>
+      annotations.firstWhereOrNull(
+          (Annotation annotation) => annotation is DisposableAnnotation) !=
+      null;
+
+  bool get isDisposable => _hasScoped && hasDisposable;
+}
+
 /// Static provide method.
 class StaticProvideMethod extends ProvideMethod {
   StaticProvideMethod._({
@@ -311,6 +399,40 @@ class StaticProvideMethod extends ProvideMethod {
       tag: getQualifierAnnotation(methodElement)?.tag,
     );
   }
+}
+
+/// Static method of dispose graph object.
+class DisposalHandlerMethod extends ModuleMethod {
+  DisposalHandlerMethod._({
+    required MethodElement element,
+    required List<Annotation> annotations,
+    required this.tag,
+    required this.disposableType,
+  }) : super(element: element, annotations: annotations);
+
+  /// Create method from element and validate.
+  factory DisposalHandlerMethod.fromMethodElement(MethodElement element) {
+    check(
+      element.parameters.length == 1,
+      () => buildErrorMessage(
+        error: JuggerErrorId.invalid_handler_method,
+        message:
+            'Method ${element.enclosingElement.name}.${element.name} annotated with ${j.disposalHandler.runtimeType} must have one parameter.',
+      ),
+    );
+
+    final DartType parameterType = element.parameters.first.type;
+    parameterType.checkUnsupportedType();
+    return DisposalHandlerMethod._(
+      element: element,
+      annotations: getAnnotations(element),
+      tag: getQualifierAnnotation(element)?.tag,
+      disposableType: parameterType,
+    );
+  }
+
+  final Tag? tag;
+  final DartType disposableType;
 }
 
 /// Bind provide method.
@@ -417,6 +539,17 @@ class MemberInjectorMethod extends ComponentMethod {
   const MemberInjectorMethod(this.element);
 
   final MethodElement element;
+}
+
+/// Wrapper for method of dispose component.
+/// ```dart
+/// @Component()
+/// abstract class AppComponent {
+///   Future<void> dispose(); <---
+/// }
+/// ```
+class DisposeMethod extends ComponentMethod {
+  const DisposeMethod();
 }
 
 // endregion component

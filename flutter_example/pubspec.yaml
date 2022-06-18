@@ -11,7 +11,7 @@ dependencies:
   flutter_bloc: 8.0.1
   flutter_lints: 1.0.4
   freezed_annotation: 1.1.0
-  jugger: 2.1.0
+  jugger: 2.2.0-dev.1
   meta: 1.7.0
 
 dev_dependencies:

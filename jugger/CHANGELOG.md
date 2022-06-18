@@ -1,3 +1,7 @@
+## 2.2.0-dev.1
+
+* Added annotations: disposable, disposalHandler
+
 ## 2.1.0
 
 * Add includes for module

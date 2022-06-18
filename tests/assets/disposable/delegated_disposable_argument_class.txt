@@ -1,0 +1,96 @@
+// ignore_for_file: implementation_imports
+// ignore_for_file: prefer_const_constructors
+// ignore_for_file: always_specify_types
+// ignore_for_file: directives_ordering
+// ignore_for_file: non_constant_identifier_names
+import 'package:tests/disposable/delegated_disposable_argument_class.dart'
+    as _i1;
+import 'dart:async' as _i2;
+
+class JuggerAppComponentBuilder implements _i1.AppComponentBuilder {
+  _i1.MyClass1? _myClass1;
+
+  _i1.MyClass2? _myClass2;
+
+  @override
+  _i1.AppComponentBuilder setMyClass1(_i1.MyClass1 c) {
+    _myClass1 = c;
+    return this;
+  }
+
+  @override
+  _i1.AppComponentBuilder setMyClass2(_i1.MyClass2 c) {
+    _myClass2 = c;
+    return this;
+  }
+
+  @override
+  _i1.AppComponent build() {
+    assert(_myClass1 != null);
+    assert(_myClass2 != null);
+    return JuggerAppComponent._create(_myClass1!, _myClass2!);
+  }
+}
+
+class JuggerAppComponent implements _i1.AppComponent {
+  JuggerAppComponent._create(this._myClass1, this._myClass2) {
+    _registerDisposableArguments();
+  }
+
+  final _i1.MyClass1 _myClass1;
+
+  final _i1.MyClass2 _myClass2;
+
+  final _DisposableManager _disposableManager =
+      _DisposableManager('AppComponent');
+
+  @override
+  _i1.MyClass1 getMyClass1() {
+    _disposableManager.checkDisposed();
+    return _myClass1;
+  }
+
+  @override
+  _i1.MyClass2 get myClass2 {
+    _disposableManager.checkDisposed();
+    return _myClass2;
+  }
+
+  void _registerDisposableArguments() => _disposableManager
+    ..register(() => _i1.Module.disposeMyClass1(_myClass1))
+    ..register(() => _i1.Module.disposeMyClass2(_myClass2));
+  @override
+  Future<void> dispose() => _disposableManager.dispose();
+}
+
+class _DisposableManager {
+  _DisposableManager(this._componentName);
+
+  bool _disposed = false;
+
+  final String _componentName;
+
+  List<_i2.FutureOr<dynamic> Function()> _disposables =
+      <_i2.FutureOr<dynamic> Function()>[];
+
+  void register(_i2.FutureOr<dynamic> Function() disposable) {
+    assert(!_disposed);
+    _disposables.add(disposable);
+  }
+
+  void checkDisposed() {
+    if (_disposed) {
+      throw StateError('${_componentName} accessed after dispose.');
+    }
+  }
+
+  Future<void> dispose() async {
+    if (_disposed) {
+      return;
+    }
+    _disposed = true;
+    for (_i2.FutureOr<dynamic> Function() value in _disposables.reversed) {
+      await value.call();
+    }
+  }
+}

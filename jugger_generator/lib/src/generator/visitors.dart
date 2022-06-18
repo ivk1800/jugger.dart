@@ -7,6 +7,7 @@ import 'package:jugger/jugger.dart' as j;
 import '../errors_glossary.dart';
 import '../jugger_error.dart';
 import '../utils/dart_type_ext.dart';
+import '../utils/element_ext.dart';
 import '../utils/utils.dart';
 import 'wrappers.dart';
 
@@ -56,14 +57,13 @@ class _InjectedMembersVisitor extends RecursiveElementVisitor<dynamic> {
   }
 }
 
-class _ProvidesVisitor extends RecursiveElementVisitor<dynamic>
+class _ModuleMethodsVisitor extends RecursiveElementVisitor<dynamic>
     with CheckSupportedMemberMixin<dynamic> {
-  final List<ProvideMethod> methods = <ProvideMethod>[];
+  final List<ModuleMethod> _methods = <ModuleMethod>[];
 
   @override
   dynamic visitMethodElement(MethodElement element) {
     final Element moduleElement = element.enclosingElement;
-    element.returnType.checkUnsupportedType();
 
     check(
       element.isAbstract || element.isStatic,
@@ -85,6 +85,8 @@ class _ProvidesVisitor extends RecursiveElementVisitor<dynamic>
 
     final ProvideAnnotation? provideAnnotation = getProvideAnnotation(element);
     final BindAnnotation? bindAnnotation = getBindAnnotation(element);
+    final DisposalHandlerAnnotation? disposalHandlerAnnotation =
+        element.getDisposalHandlerAnnotation();
 
     check(
       !(bindAnnotation != null && provideAnnotation != null),
@@ -96,6 +98,21 @@ class _ProvidesVisitor extends RecursiveElementVisitor<dynamic>
     );
 
     if (element.isStatic) {
+      if (disposalHandlerAnnotation != null) {
+        final String type = element.returnType.getName();
+        check(
+          type == 'Future<void>' || type == 'void',
+          () => buildErrorMessage(
+            error: JuggerErrorId.invalid_handler_method,
+            message: 'Disposal handler must return type Future<void> or void.',
+          ),
+        );
+        _methods.add(DisposalHandlerMethod.fromMethodElement(element));
+        return null;
+      }
+
+      element.returnType.checkUnsupportedType();
+
       check(
         provideAnnotation != null,
         () => buildErrorMessage(
@@ -104,11 +121,21 @@ class _ProvidesVisitor extends RecursiveElementVisitor<dynamic>
               'Found static method ${moduleElement.name}.${element.name}, but is not annotated with @${j.provides.runtimeType}.',
         ),
       );
-      methods.add(StaticProvideMethod.fromMethodElement(element));
+      _methods.add(StaticProvideMethod.fromMethodElement(element));
       return null;
     }
 
     if (element.isAbstract) {
+      check(
+        disposalHandlerAnnotation == null,
+        () => buildErrorMessage(
+          error: JuggerErrorId.invalid_handler_method,
+          message:
+              'Method ${element.enclosingElement.name}.${element.name} marked with @${j.disposalHandler.runtimeType} must be static.',
+        ),
+      );
+
+      element.returnType.checkUnsupportedType();
       check(
         bindAnnotation != null,
         () => buildErrorMessage(
@@ -117,7 +144,7 @@ class _ProvidesVisitor extends RecursiveElementVisitor<dynamic>
               'Found abstract method ${moduleElement.name}.${element.name}, but is not annotated with @${j.binds.runtimeType}.',
         ),
       );
-      methods.add(AbstractProvideMethod.fromMethodElement(element));
+      _methods.add(AbstractProvideMethod.fromMethodElement(element));
       return null;
     }
 
@@ -387,9 +414,40 @@ class _ComponentBuilderMethodsVisitor extends RecursiveElementVisitor<dynamic>
   String get subjectName => 'ComponentBuilder';
 }
 
+class _MethodsVisitor extends GeneralizingElementVisitor<dynamic> {
+  final List<MethodElement> _methods = <MethodElement>[];
+
+  @override
+  dynamic visitElement(Element element) {
+    if (element is ConstructorElement) {
+      final List<InterfaceType> allSupertypes =
+          element.enclosingElement.allSupertypes;
+
+      for (final InterfaceType interfaceType in allSupertypes) {
+        final Element interfaceElement = interfaceType.element;
+        if (isFlutterCore(interfaceElement) || isCore(interfaceElement)) {
+          continue;
+        }
+
+        super.visitElement(interfaceElement);
+      }
+    }
+    return super.visitElement(element);
+  }
+
+  @override
+  dynamic visitMethodElement(MethodElement method) {
+    _methods.add(method);
+    return super.visitMethodElement(method);
+  }
+}
+
 class _ComponentMembersVisitor extends GeneralizingElementVisitor<dynamic>
     with CheckSupportedMemberMixin<dynamic> {
   final Map<String, ComponentMethod> _members = <String, ComponentMethod>{};
+
+  @override
+  dynamic visitFieldElement(FieldElement element) => null;
 
   @override
   dynamic visitElement(Element element) {
@@ -435,41 +493,64 @@ class _ComponentMembersVisitor extends GeneralizingElementVisitor<dynamic>
       ),
     );
 
+    if (method.name == 'dispose') {
+      check(
+        method.returnType.getName() == 'Future<void>',
+        () => buildErrorMessage(
+          error: JuggerErrorId.invalid_handler_method,
+          message:
+              'Dispose method ${method.name} of component must have type Future<void>.',
+        ),
+      );
+
+      check(
+        method.parameters.isEmpty,
+        () => buildErrorMessage(
+          error: JuggerErrorId.invalid_handler_method,
+          message:
+              'Disposal method ${method.name} of component must have zero parameters.',
+        ),
+      );
+
+      _members.putIfAbsent(method.name, () => const DisposeMethod());
+      return null;
+    }
+
     // It is method for inject object.
     if (method.returnType is VoidType) {
       check(
         method.parameters.length == 1,
-        () => buildErrorMessage(
-          error: JuggerErrorId.invalid_injectable_method,
-          message: 'Injected method ${method.name} must have one parameter.',
-        ),
+        () {
+          return buildErrorMessage(
+            error: JuggerErrorId.invalid_injectable_method,
+            message: 'Injected method ${method.name} must have one parameter.',
+          );
+        },
       );
       _members.putIfAbsent(
         method.name,
         () => MemberInjectorMethod(method),
       );
-    } else {
-      // It is method for access of object.
+      return null;
+    }
+    // It is method for access of object.
 
-      check(
-        method.parameters.isEmpty,
-        () => buildErrorMessage(
+    check(
+      method.parameters.isEmpty,
+      () {
+        return buildErrorMessage(
           error: JuggerErrorId.invalid_method_of_component,
           message:
               'Method ${method.name} of component must have zero parameters.',
-        ),
-      );
+        );
+      },
+    );
 
-      _members.putIfAbsent(
-        method.name,
-        () => MethodObjectAccessor(method),
-      );
-    }
-    return null;
-  }
+    _members.putIfAbsent(
+      method.name,
+      () => MethodObjectAccessor(method),
+    );
 
-  @override
-  dynamic visitFieldElement(FieldElement element) {
     return null;
   }
 
@@ -591,12 +672,26 @@ extension VisitorExt on Element {
     return visitor.members;
   }
 
-  /// Returns all methods of module and validate them. The client must
-  /// check that the element is a module.
+  /// Returns all provides and binds methods of module and validate them. The
+  /// client must check that the element is a module.
   List<ProvideMethod> getProvides() {
-    final _ProvidesVisitor visitor = _ProvidesVisitor();
+    return getModuleMethods()
+        .whereType<ProvideMethod>()
+        .cast<ProvideMethod>()
+        .toList();
+  }
+
+  List<ModuleMethod> getModuleMethods() {
+    final _ModuleMethodsVisitor visitor = _ModuleMethodsVisitor();
     visitChildren(visitor);
-    return visitor.methods;
+    return visitor._methods;
+  }
+
+  List<DisposalHandlerMethod> getDisposalHandlerMethods() {
+    return getModuleMethods()
+        .whereType<DisposalHandlerMethod>()
+        .cast<DisposalHandlerMethod>()
+        .toList();
   }
 
   /// Returns all methods of component for inject and validate them. The client
@@ -606,6 +701,12 @@ extension VisitorExt on Element {
         .whereType<MemberInjectorMethod>()
         .cast<MemberInjectorMethod>()
         .toList(growable: false);
+  }
+
+  DisposeMethod? getDisposeMethod() {
+    return getComponentMembers().firstWhereOrNull(
+      (ComponentMethod method) => method is DisposeMethod,
+    ) as DisposeMethod?;
   }
 
   /// Returns all components of library and validate them. The client must check
@@ -675,5 +776,11 @@ extension VisitorExt on Element {
     final _ComponentMembersVisitor visitor = _ComponentMembersVisitor();
     visitChildren(visitor);
     return visitor._members.values.toList(growable: false);
+  }
+
+  List<MethodElement> getMethods() {
+    final _MethodsVisitor visitor = _MethodsVisitor();
+    visitChildren(visitor);
+    return visitor._methods;
   }
 }
