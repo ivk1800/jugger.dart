@@ -1,6 +1,8 @@
-## 2.4.0-dev.1
+## 2.4.0
 
 * Feature: disposable component. 
+* Support analyzer 4.0.0.
+* Added entry points into error report.
 
 ## 2.3.0
 

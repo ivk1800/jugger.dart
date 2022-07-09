@@ -1,4 +1,4 @@
-## 2.2.0-dev.1
+## 2.2.0
 
 * Added annotations: disposable, disposalHandler
 
