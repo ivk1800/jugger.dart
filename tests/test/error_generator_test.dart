@@ -658,6 +658,37 @@ abstract class AppComponent {
   });
 
   group('missing provider', () {
+    test('missing provider of type in injected constructor', () async {
+      await checkBuilderResult(
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component()
+abstract class AppComponent {
+  Foo getFoo();
+}
+
+@singleton
+class Foo {
+  @inject
+  const Foo(this.i);
+
+  final int i;
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: provider_not_found:\n'
+            'Provider for int not found.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#provider_not_found\n'
+            'The following entry points depend on int:\n'
+            'Foo(int i)',
+          );
+        },
+      );
+    });
+
     test('missing provider of type for component', () async {
       await checkBuilderResult(
         mainContent: '''
@@ -721,7 +752,9 @@ abstract class AppModule {
             error.toString(),
             'error: provider_not_found:\n'
             'Provider for int not found.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#provider_not_found',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#provider_not_found\n'
+            'The following entry points depend on int:\n'
+            'AppModule.provideString(int i)',
           );
         },
       );
@@ -1191,7 +1224,9 @@ abstract class AppModule {
             error.toString(),
             'error: provider_not_found:\n'
             'Provider for String not found.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#provider_not_found',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#provider_not_found\n'
+            'The following entry points depend on String:\n'
+            'AppModule.provideStrings(String s)',
           );
         },
       );
@@ -1218,7 +1253,9 @@ abstract class AppModule {
             error.toString(),
             'error: provider_not_found:\n'
             'Provider for Future<String> not found.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#provider_not_found',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#provider_not_found\n'
+            'The following entry points depend on Future<String>:\n'
+            'AppModule.provideStrings(Future<String> f)',
           );
         },
       );

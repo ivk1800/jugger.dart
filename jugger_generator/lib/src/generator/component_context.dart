@@ -428,13 +428,41 @@ class ComponentContext {
       }
     }
 
+    _checkForThrows(providerNotFoundErrors);
+  }
+
+  /// Iterates over all graph objects and check missing provider for types.
+  void _checkMissingProviders() {
+    final List<ProviderNotFoundError> providerNotFoundErrors =
+        <ProviderNotFoundError>[];
+
+    for (final GraphObject graphObject in objectsGraph) {
+      final ProviderSource? provider =
+          findProviderOrNull(graphObject.type, graphObject.tag);
+
+      if (provider == null) {
+        providerNotFoundErrors.add(
+          ProviderNotFoundError(
+            type: graphObject.type,
+            tag: graphObject.tag,
+            message:
+                buildProviderNotFoundMessage(graphObject.type, graphObject.tag),
+          ),
+        );
+      }
+    }
+
+    _checkForThrows(providerNotFoundErrors);
+  }
+
+  void _checkForThrows(List<ProviderNotFoundError> providerNotFoundErrors) {
     if (providerNotFoundErrors.isNotEmpty) {
       throw JuggerError(
         providerNotFoundErrors.map((ProviderNotFoundError error) {
           final String? entryPoints = findEntryPointsOf(
             error.type,
             error.tag,
-            this.objectsGraph,
+            objectsGraph,
             findProvider,
           );
           if (entryPoints == null) {
@@ -444,23 +472,6 @@ class ComponentContext {
           return '${error.message}\nThe following entry points depend on ${error.type.getName()}:\n$entryPoints';
         }).join('\n'),
       );
-    }
-  }
-
-  /// Iterates over all graph objects and check missing provider for types.
-  void _checkMissingProviders() {
-    for (final GraphObject graphObject in objectsGraph) {
-      final ProviderSource? provider =
-          findProviderOrNull(graphObject.type, graphObject.tag);
-
-      if (provider == null) {
-        throw ProviderNotFoundError(
-          type: graphObject.type,
-          tag: graphObject.tag,
-          message:
-              buildProviderNotFoundMessage(graphObject.type, graphObject.tag),
-        );
-      }
     }
   }
 }
