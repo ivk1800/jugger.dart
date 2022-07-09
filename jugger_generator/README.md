@@ -32,6 +32,7 @@ jugger_generator:
         - [Injected constructor](#injected-constructor)
         - [Injected method](#injected-method)
         - [Qualifiers](#qualifiers)
+        - [Disposable component](#disposable-component)
     - [build.yaml](#buildyaml)
     - [remove_interface_prefix_from_component_name](#remove_interface_prefix_from_component_name)
     - [check_unused_providers](#check_unused_providers)
@@ -483,6 +484,77 @@ static AppConfig provideDevAppConfig() {
   return const AppConfig('https://dev.com/');
 }
 ```
+
+### Disposable component
+Objects whose life cycle is the same as the component can be disposed. Usually they are singleton objects. To dispose of such objects, you need to add a method to the component:
+
+```dart
+@Component()
+abstract class AppComponent {
+  Future<void> dispose();
+}
+```
+
+The objects themselves must be a scoped(singleton):
+```dart
+@singleton
+@disposable
+class MySingleton {
+  @inject
+  constMySingleton();
+}
+```
+Or in a module:
+```dart
+@module
+abstract class AppModule {
+  @provides
+  @singleton
+  @disposable
+  static MySingleton provideMySingleton() => MySingleton();
+}
+```
+
+Disposable objects must have a dispose method:
+```dart
+class MySingleton {
+  @inject
+  const MySingleton();
+
+  void dispose() { }
+  // or
+  Future<void> dispose() async {}
+}
+```
+
+If it is not possible to declare a dispose method, you can assign another method for disposal.
+
+To do this, you need to specify the delegated strategy for the disposable annotation:
+```dart
+@provides
+@singleton
+@Disposable(strategy: DisposalStrategy.delegated)
+static MySingleton provideMySingleton() => MySingleton();
+```
+
+And add a method to the module to dispose of the object:
+```dart
+@disposalHandler
+static Future<void> disposeMySingleton(MySingleton mySingleton) async {
+  await mySingleton.close();
+}
+```
+
+The disposable object looks like this:
+```dart
+class MySingleton {
+  @inject
+  const MySingleton();
+
+  Future<void> close() async {}
+}
+```
+To dispose of component objects, simply call dispose. After that, the component will not be usable. The operation will be idempotent.
 
 ### build.yaml
 
