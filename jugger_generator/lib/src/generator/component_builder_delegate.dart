@@ -17,10 +17,12 @@ import '../utils/tag_ext.dart';
 import '../utils/utils.dart';
 import 'check_unused_providers.dart';
 import 'component_context.dart';
+import 'disposable_manager.dart';
 import 'tag.dart';
 import 'type_name_registry.dart';
 import 'visitors.dart';
 import 'wrappers.dart' as j;
+import 'wrappers.dart';
 
 /// Delegate to generate the jugger component.
 class ComponentBuilderDelegate {
@@ -30,6 +32,7 @@ class ComponentBuilderDelegate {
 
   final GlobalConfig globalConfig;
   late ComponentContext _componentContext;
+  late DisposablesManager _disposablesManager;
   late final Allocator _allocator = Allocator.simplePrefixing();
   late DartType _componentType;
   final Expression _overrideAnnotationExpression = const Reference('override');
@@ -92,9 +95,21 @@ class ComponentBuilderDelegate {
           component: component,
           componentBuilder: componentBuilder,
         );
+        _disposablesManager = DisposablesManager(_componentContext);
 
         target.body.add(
           Class((ClassBuilder classBuilder) {
+            if (_disposablesManager.hasDisposables()) {
+              check(
+                component.disposeMethod != null,
+                () => buildErrorMessage(
+                  error: JuggerErrorId.missing_dispose_method,
+                  message:
+                      'Missing dispose method of component ${component.element.name}.',
+                ),
+              );
+            }
+
             classBuilder.fields.addAll(_buildProvidesFields());
             classBuilder.fields
                 .addAll(_buildConstructorFields(componentBuilder));
@@ -128,8 +143,25 @@ class ComponentBuilderDelegate {
             classBuilder.constructors.add(_buildConstructor(componentBuilder));
 
             classBuilder.name = _createComponentName(component.element.name);
+
+            if (_disposablesManager.hasDisposables()) {
+              classBuilder.fields.add(_buildDisposableManagerField());
+            }
+
+            if (_disposablesManager.disposableArguments.isNotEmpty) {
+              classBuilder.methods
+                  .add(_buildRegisterDisposableArgumentsMethod());
+            }
+
+            if (_disposablesManager.hasDisposables()) {
+              classBuilder.methods.add(_buildDisposeMethod());
+            }
           }),
         );
+      }
+
+      if (_disposablesManager.hasDisposables()) {
+        target.body.add(_buildDisposableManagerClass());
       }
 
       final String fileText =
@@ -454,11 +486,20 @@ class ComponentBuilderDelegate {
         b.name = executable.name;
         b.returns = refer(_allocateTypeName(executable.returnType));
 
-        b.lambda = true;
-        b.body = _generateAssignExpression(
+        final Expression assignReference = _generateAssignExpression(
           executable.returnType,
           executable.getQualifierTag(),
-        ).code;
+        );
+        if (_disposablesManager.hasDisposables()) {
+          b.body = Block.of(
+            <Code>[
+              _buildCheckDisposed(),
+              assignReference.returned.statement,
+            ],
+          );
+        } else {
+          b.body = assignReference.code;
+        }
         if (executable is PropertyAccessorElement) {
           b.type = MethodType.getter;
         }
@@ -684,11 +725,14 @@ class ComponentBuilderDelegate {
   /// ```
   Expression _buildProviderFromConstructor(ConstructorElement constructor) {
     final Expression callExpression =
-        _getProviderReferenceOfElement(constructor).call(<Expression>[
-      _buildExpressionClosure(
-        _buildCallConstructor(constructor),
-      ),
-    ]);
+        _getProviderReferenceOfElement(constructor).newInstance(
+      <Expression>[
+        _buildBodyWithRegisterDisposableOfType(
+          type: constructor.enclosingElement.thisType,
+          returnBlock: _buildCallConstructor(constructor),
+        )
+      ],
+    );
 
     return callExpression;
   }
@@ -804,9 +848,10 @@ class ComponentBuilderDelegate {
   Expression _buildProviderFromStaticMethod(j.StaticProvideMethod method) {
     final Element moduleClass = method.element.enclosingElement;
     final Expression callExpression =
-        _getProviderReferenceOfElement(method.element).call(<Expression>[
-      _buildExpressionClosure(
-        Block.of(
+        _getProviderReferenceOfElement(method.element).newInstance(<Expression>[
+      _buildBodyWithRegisterDisposable(
+        method: method,
+        returnBlock: Block.of(
           <Code>[
             refer(moduleClass.name!, createElementPath(moduleClass)).code,
             const Code('.'),
@@ -1030,6 +1075,10 @@ class ComponentBuilderDelegate {
           }),
         );
       }
+
+      if (_disposablesManager.disposableArguments.isNotEmpty) {
+        constructorBuilder.body = const Code('_registerDisposableArguments();');
+      }
     });
   }
 
@@ -1077,4 +1126,334 @@ class ComponentBuilderDelegate {
     });
     return Map<String, Expression>.fromEntries(map);
   }
+
+  // region disposable
+
+  /// Builds a method which immediately registers disposable objects after the
+  /// initialization of the component.
+  Method _buildRegisterDisposableArgumentsMethod() {
+    final List<DisposableInfo> arguments =
+        _disposablesManager.disposableArguments;
+
+    checkUnexpected(
+      arguments.isNotEmpty,
+      () => buildUnexpectedErrorMessage(
+        message: 'disposable arguments is empty!',
+      ),
+    );
+
+    Expression callExpression = refer('_disposableManager');
+
+    for (final DisposableInfo info in arguments) {
+      callExpression = callExpression.cascade('register').call(
+        <Expression>[_buildDisposeMethodCall(info)],
+      );
+    }
+
+    return Method(
+      (MethodBuilder methodBuilder) {
+        methodBuilder.name = '_registerDisposableArguments';
+        methodBuilder.returns = refer('void');
+        methodBuilder.body = callExpression.code;
+      },
+    );
+  }
+
+  /// Returns an expression in which the method is called to dispose of the
+  /// object.
+  /// Results:
+  /// ````
+  /// () => _i1.Module.disposeMyClass1(_myClass1)
+  /// _myClass1.dispose
+  /// ```
+  Expression _buildDisposeMethodCall(DisposableInfo disposableInfo) {
+    final DisposeHandler disposeHandler = disposableInfo.disposeHandler;
+    if (disposeHandler is SelfDisposeHandler) {
+      return _generateAssignExpression(disposableInfo.type, disposableInfo.tag)
+          .property('dispose');
+    } else if (disposeHandler is DelegateDisposeHandler) {
+      final Expression body = refer(
+        disposeHandler.method.enclosingElement.name!,
+        createElementPath(disposeHandler.method.enclosingElement),
+      ).property(disposeHandler.method.name).call(
+        <Expression>[
+          refer(
+            '_${_generateFieldName(
+              disposableInfo.type,
+              disposableInfo.tag?.toAssignTag(),
+            )}',
+          )
+        ],
+      );
+
+      return Method((MethodBuilder builder) {
+        builder
+          ..body = body.code
+          ..lambda = true;
+      }).closure;
+    }
+    throw JuggerError(
+      buildUnexpectedErrorMessage(
+        message: 'Unknown dispose handler $disposeHandler',
+      ),
+    );
+  }
+
+  /// Returns an expression in which the object is instantiated and registered
+  /// in the disposable manager. If the object doesn't need to be disposed,
+  /// it simply returns the instantiation of the object.
+  Expression _buildBodyWithRegisterDisposableOfType({
+    required DartType type,
+    required Code returnBlock,
+  }) {
+    final DisposableInfo? disposableInfo =
+        _disposablesManager.findDisposableInfo(type, null);
+
+    if (disposableInfo == null) {
+      return Method(
+        (MethodBuilder b) => b
+          ..lambda = true
+          ..body = returnBlock,
+      ).closure;
+    }
+    return _buildCallDisposableFromInfo(
+      returnBlock: returnBlock,
+      info: disposableInfo,
+    );
+  }
+
+  /// Returns an expression in which the object is instantiated and registered
+  /// in the disposable manager. If the object doesn't need to be disposed,
+  /// it simply returns the instantiation of the object.
+  Expression _buildBodyWithRegisterDisposable({
+    required ProvideMethod method,
+    required Code returnBlock,
+  }) {
+    final DisposableInfo? disposableInfo = _disposablesManager
+        .findDisposableInfo(method.element.returnType, method.tag);
+
+    if (method.isDisposable) {
+      check(
+        disposableInfo != null,
+        () => buildUnexpectedErrorMessage(
+          message:
+              'Method ${method.element.name} marked as disposable, but disposal handler not found.',
+        ),
+      );
+      return _buildCallDisposableFromInfo(
+        returnBlock: returnBlock,
+        info: disposableInfo!,
+      );
+    } else {
+      check(
+        disposableInfo == null,
+        () => buildUnexpectedErrorMessage(
+          message:
+              'Found disposal handler for method ${method.element.name}, but he does not marked as disposable.',
+        ),
+      );
+    }
+
+    return Method(
+      (MethodBuilder b) => b
+        ..lambda = true
+        ..body = returnBlock,
+    ).closure;
+  }
+
+  CodeExpression _buildCallDisposableFromInfo({
+    required DisposableInfo info,
+    required Code returnBlock,
+  }) {
+    return CodeExpression(
+      Block.of(
+        <Code>[
+          ...<Code>[
+            const Code('() {'),
+            _buildCheckDisposed(),
+            Code('${_allocateTypeName(info.type)} disposable = '),
+            returnBlock,
+            const Code(';'),
+            _buildRegisterDisposableCall(info: info),
+            const Code('return disposable;'),
+            const Code('}'),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Code _buildCheckDisposed() =>
+      const Code('_disposableManager.checkDisposed();');
+
+  Code _buildRegisterDisposableCall({
+    required DisposableInfo info,
+  }) {
+    final DisposeHandler disposeHandler = info.disposeHandler;
+    if (disposeHandler is SelfDisposeHandler) {
+      return const Code('_disposableManager.register(disposable.dispose);');
+    } else if (disposeHandler is DelegateDisposeHandler) {
+      final Element moduleClass = disposeHandler.method.enclosingElement;
+      return refer('_disposableManager').property('register').call(<Expression>[
+        Method((MethodBuilder b) {
+          b.body = refer(moduleClass.name!, createElementPath(moduleClass))
+              .property(disposeHandler.method.name)
+              .call(
+            <Expression>[const CodeExpression(Code('disposable'))],
+          ).code;
+        }).closure,
+      ]).statement;
+    }
+
+    throw JuggerError(
+      buildUnexpectedErrorMessage(
+        message: 'Unknown disposeHandler $disposeHandler',
+      ),
+    );
+  }
+
+  /// Builds the disposable manager field for the component implementation.
+  Field _buildDisposableManagerField() {
+    return Field(
+      (FieldBuilder fieldBuilder) {
+        fieldBuilder.name = '_disposableManager';
+        fieldBuilder.type = refer('_DisposableManager');
+        fieldBuilder.modifier = FieldModifier.final$;
+        fieldBuilder.assignment = refer('_DisposableManager').newInstance(
+          <Expression>[
+            refer("'${_componentContext.component.element.name}'").expression,
+          ],
+        ).code;
+      },
+    );
+  }
+
+  /// Builds dispose method of Component.
+  Method _buildDisposeMethod() {
+    return Method(
+      (MethodBuilder methodBuilder) {
+        methodBuilder.annotations.add(_overrideAnnotationExpression);
+        methodBuilder.name = 'dispose';
+        methodBuilder.returns = refer('Future<void>');
+        methodBuilder.body = const Code('_disposableManager.dispose()');
+        methodBuilder.lambda = true;
+      },
+    );
+  }
+
+  /// Builds a disposable manager field that is used in the component
+  /// implementation. Need to build only if the graph contains disposable
+  /// objects.
+  Class _buildDisposableManagerClass() {
+    final String futureOr =
+        _allocator.allocate(refer('FutureOr', 'dart:async'));
+
+    return Class(
+      (ClassBuilder classBuilder) {
+        classBuilder.name = '_DisposableManager';
+        classBuilder.fields.addAll(
+          <Field>[
+            Field(
+              (FieldBuilder fieldBuilder) {
+                fieldBuilder.name = '_disposed';
+                fieldBuilder.type = refer('bool');
+                fieldBuilder.assignment = const Code('false');
+              },
+            ),
+            Field(
+              (FieldBuilder fieldBuilder) {
+                fieldBuilder.name = '_componentName';
+                fieldBuilder.type = refer('String');
+                fieldBuilder.modifier = FieldModifier.final$;
+              },
+            ),
+            Field(
+              (FieldBuilder fieldBuilder) {
+                fieldBuilder.name = '_disposables';
+                fieldBuilder.type =
+                    refer('List<$futureOr<dynamic> Function()>');
+                fieldBuilder.assignment =
+                    Code('<$futureOr<dynamic> Function()>[]');
+              },
+            ),
+          ],
+        );
+        classBuilder.constructors.add(
+          Constructor(
+            (ConstructorBuilder builder) {
+              builder.requiredParameters.add(
+                Parameter(
+                  (ParameterBuilder parameterBuilder) {
+                    parameterBuilder.toThis = true;
+                    parameterBuilder.name = '_componentName';
+                  },
+                ),
+              );
+            },
+          ),
+        );
+        classBuilder.methods.addAll(
+          <Method>[
+            Method(
+              (MethodBuilder methodBuilder) {
+                methodBuilder.name = 'register';
+                methodBuilder.returns = refer('void');
+                methodBuilder.requiredParameters.add(
+                  Parameter(
+                    (ParameterBuilder parameterBuilder) {
+                      parameterBuilder.name = 'disposable';
+                      parameterBuilder.type = refer(
+                        '$futureOr<dynamic> Function()',
+                      );
+                    },
+                  ),
+                );
+                methodBuilder.body = Block.of(
+                  <Code>[
+                    const Code('assert(!_disposed);'),
+                    const Code('_disposables.add(disposable);'),
+                  ],
+                );
+              },
+            ),
+            Method(
+              (MethodBuilder methodBuilder) {
+                methodBuilder.name = 'checkDisposed';
+                methodBuilder.returns = refer('void');
+                methodBuilder.body = const Code(
+                  r'''
+if (_disposed) {
+  throw StateError('${_componentName} accessed after dispose.');
+}
+                ''',
+                );
+              },
+            ),
+            Method(
+              (MethodBuilder methodBuilder) {
+                methodBuilder.name = 'dispose';
+                methodBuilder.modifier = MethodModifier.async;
+                methodBuilder.returns = refer('Future<void>');
+                methodBuilder.body = Block.of(
+                  <Code>[
+                    const Code('if (_disposed) {'),
+                    const Code('return;'),
+                    const Code('}'),
+                    const Code('_disposed = true;'),
+                    Code(
+                      'for ($futureOr<dynamic> Function() value in _disposables.reversed) {',
+                    ),
+                    const Code('await value.call();'),
+                    const Code('}'),
+                  ],
+                );
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+// endregion
 }

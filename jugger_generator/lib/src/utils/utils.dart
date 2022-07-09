@@ -203,6 +203,16 @@ List<Annotation> getAnnotations(Element moduleClass) {
         annotations.add(ComponentBuilderAnnotation(valueElement));
       } else if (valueElement.name == nonLazy.runtimeType.toString()) {
         annotations.add(const NonLazyAnnotation());
+      } else if (valueElement.name == disposable.runtimeType.toString()) {
+        final int enumIndex = annotation
+            .computeConstantValue()!
+            .getField('strategy')!
+            .getField('index')!
+            .toIntValue()!;
+        annotations
+            .add(DisposableAnnotation(DisposalStrategy.values[enumIndex]));
+      } else if (valueElement.name == disposalHandler.runtimeType.toString()) {
+        annotations.add(const DisposalHandlerAnnotation());
       }
     }
   }

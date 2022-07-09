@@ -782,3 +782,58 @@ abstract class AppModule { }
 
 ### invalid_member
 ...
+
+### missing_dispose_method
+
+`BAD:`
+```dart
+@Component()
+abstract class AppComponent { }
+```
+
+`GOOD:`
+```dart
+@Component()
+abstract class AppComponent {
+  Future<void> dispose();
+}
+```
+
+### invalid_handler_method
+Disposal handler contract not respected, check error message for more information.
+
+### unused_disposal_handler
+A dispose handler has been declared, but it will not be used by the component.
+
+### redundant_disposal_handler
+Declared a disposal handler for an object that will be disposed of automatically, no additional handler needed.
+
+### multiple_disposal_handlers_for_type
+Multiple disposal handlers for the same type are not allowed.
+
+### disposable_not_scoped
+Disposable objects must be in a single instance within one component.
+
+`BAD:`
+```dart
+class MyClass {
+  @inject
+  MyClass();
+
+  void dispose() {}
+}
+```
+
+`GOOD:`
+```dart
+@disposable
+class MyClass {
+  @inject
+  MyClass();
+
+  void dispose() {}
+}
+```
+
+### disposable_not_supported
+Disposable type not supported with binds. You need to dispose of the implementation, not the interface.

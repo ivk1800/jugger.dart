@@ -1,3 +1,7 @@
+## 2.4.0-dev.1
+
+* Feature: disposable component. 
+
 ## 2.3.0
 
 * Internal refactoring.

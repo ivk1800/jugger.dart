@@ -1,9 +1,11 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
+import 'package:collection/collection.dart';
 
 import '../errors_glossary.dart';
 import '../generator/visitors.dart';
+import '../generator/wrappers.dart';
 import '../jugger_error.dart';
 import 'utils.dart';
 
@@ -117,6 +119,33 @@ extension DartTypeExt on DartType {
 
   String getName() {
     return getDisplayString(withNullability: false);
+  }
+
+  /// Returns true if it has one injected constructor, otherwise an error will
+  /// be thrown.
+  bool hasInjectedConstructor() {
+    checkUnsupportedType();
+    return getInjectedConstructorOrNull() != null;
+  }
+
+  DisposableAnnotation? getDisposableAnnotation() {
+    return getAnnotations(element!).firstWhereOrNull(
+      (Annotation annotation) => annotation is DisposableAnnotation,
+    ) as DisposableAnnotation?;
+  }
+
+  bool isDisposable() {
+    return (getAnnotations(element!).firstWhereOrNull(
+          (Annotation annotation) => annotation is DisposableAnnotation,
+        ) as DisposableAnnotation?) !=
+        null;
+  }
+
+  bool isScoped() {
+    return (getAnnotations(element!).firstWhereOrNull(
+          (Annotation annotation) => annotation is SingletonAnnotation,
+        ) as SingletonAnnotation?) !=
+        null;
   }
 
   void checkUnsupportedType() {
