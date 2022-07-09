@@ -77,14 +77,27 @@ extension DartTypeExt on DartType {
     List<ConstructorElement> injectedConstructors,
   ) {
     if (injectedConstructors.length != 1) {
+      final String message;
+      if (injectedConstructors.isEmpty) {
+        message =
+            'Class ${element?.name} cannot be provided without an @inject constructor.';
+      } else {
+        message =
+            'Class ${element?.name} may only contain one injected constructor.';
+      }
+
+      final JuggerErrorId error;
+
+      if (injectedConstructors.isEmpty) {
+        error = JuggerErrorId.missing_injected_constructor;
+      } else {
+        error = JuggerErrorId.multiple_injected_constructors;
+      }
+
       throw ProviderNotFoundError(
         type: this,
         tag: null,
-        message: buildErrorMessage(
-          error: JuggerErrorId.ambiguity_of_injected_constructor,
-          message:
-              'Class ${element?.name} has more than one injected constructor or no injected constructor.',
-        ),
+        message: buildErrorMessage(error: error, message: message),
       );
     }
     final ConstructorElement constructorElement = injectedConstructors.first;

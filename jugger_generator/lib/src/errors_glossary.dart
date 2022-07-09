@@ -40,8 +40,10 @@ const String bindWrongType = '$_glossary#bind_wrong_type';
 const String ambiguityOfProvideMethod =
     '$_glossary#ambiguity_of_provide_method';
 const String typeNotSupported = '$_glossary#type_not_supported';
-const String ambiguityOfInjectedConstructor =
-    '$_glossary#ambiguity_of_injected_constructor';
+const String missingInjectedConstructor =
+    '$_glossary#missing_injected_constructor';
+const String multipleInjectedConstructors =
+    '$_glossary#multiple_injected_constructors';
 const String invalidParametersTypes = '$_glossary#invalid_parameters_types';
 const String multipleProvidersForType =
     '$_glossary#multiple_providers_for_type';
@@ -98,7 +100,8 @@ enum JuggerErrorId {
   bind_wrong_type,
   ambiguity_of_provide_method,
   type_not_supported,
-  ambiguity_of_injected_constructor,
+  missing_injected_constructor,
+  multiple_injected_constructors,
   invalid_parameters_types,
   multiple_providers_for_type,
   invalid_injected_constructor,
@@ -173,8 +176,6 @@ extension JuggerErrorIdExt on JuggerErrorId {
         return ambiguityOfProvideMethod;
       case JuggerErrorId.type_not_supported:
         return typeNotSupported;
-      case JuggerErrorId.ambiguity_of_injected_constructor:
-        return ambiguityOfInjectedConstructor;
       case JuggerErrorId.invalid_parameters_types:
         return invalidParametersTypes;
       case JuggerErrorId.multiple_providers_for_type:
@@ -221,6 +222,10 @@ extension JuggerErrorIdExt on JuggerErrorId {
         return disposableNotScoped;
       case JuggerErrorId.disposable_not_supported:
         return disposableNotSupported;
+      case JuggerErrorId.missing_injected_constructor:
+        return missingInjectedConstructor;
+      case JuggerErrorId.multiple_injected_constructors:
+        return multipleInjectedConstructors;
     }
   }
 }

@@ -478,6 +478,52 @@ abstract class AppModule {
 }
 ```
 
+### missing_injected_constructor
+For a class to be used in an object graph, it must have only one constructor injected.
+If there is no injected constructor, the jugger will not understand what to do.
+
+`BAD:`
+```dart
+class MyClass {
+  MyClass();
+}
+```
+
+`GOOD:`
+```dart
+class MyClass {
+  @inject
+  MyClass();
+}
+```
+
+### multiple_injected_constructors
+
+`BAD:`
+```dart
+class Foo {
+  @inject
+  Foo(this.i);
+
+  @inject
+  Foo.custom() : this.i = 0;
+
+  final int i;
+}
+```
+
+`GOOD:`
+```dart
+class Foo {
+  @inject
+  Foo(this.i);
+
+  Foo.custom() : this.i = 0;
+
+  final int i;
+}
+```
+
 ### ambiguity_of_injected_constructor
 For a class to be used in an object graph, it must have only one constructor injected. 
 If there is no injected constructor, the jugger will not understand what to do.

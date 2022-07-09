@@ -1044,9 +1044,9 @@ class MyClass {
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: ambiguity_of_injected_constructor:\n'
-            'Class MyClass has more than one injected constructor or no injected constructor.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#ambiguity_of_injected_constructor\n'
+            'error: missing_injected_constructor:\n'
+            'Class MyClass cannot be provided without an @inject constructor.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#missing_injected_constructor\n'
             'The following entry points depend on MyClass:\n'
             'AppModule.provideHello(MyClass myClass)',
           );
@@ -1081,9 +1081,9 @@ class MyClass {
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: ambiguity_of_injected_constructor:\n'
-            'Class MyClass has more than one injected constructor or no injected constructor.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#ambiguity_of_injected_constructor',
+            'error: multiple_injected_constructors:\n'
+            'Class MyClass may only contain one injected constructor.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#multiple_injected_constructors',
           );
         },
       );
@@ -1407,9 +1407,9 @@ const Inject inject = Inject._();
           onError: (Object error) {
             expect(
               error.toString(),
-              'error: ambiguity_of_injected_constructor:\n'
-              'Class MyClass has more than one injected constructor or no injected constructor.\n'
-              'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#ambiguity_of_injected_constructor\n'
+              'error: missing_injected_constructor:\n'
+              'Class MyClass cannot be provided without an @inject constructor.\n'
+              'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#missing_injected_constructor\n'
               'The following entry points depend on MyClass:\n'
               'AppModule.provideHello(MyClass myClass)',
             );
@@ -2155,9 +2155,9 @@ abstract class AppModule {
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: ambiguity_of_injected_constructor:\n'
-            'Class MainRouter has more than one injected constructor or no injected constructor.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#ambiguity_of_injected_constructor\n'
+            'error: missing_injected_constructor:\n'
+            'Class MainRouter cannot be provided without an @inject constructor.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#missing_injected_constructor\n'
             'The following entry points depend on MainRouter:\n'
             'AppModule.bindMainRouter(MainRouter impl)',
           );
@@ -3499,9 +3499,9 @@ class MyClassImpl implements MyClass {}
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: ambiguity_of_injected_constructor:\n'
-            'Class MyClassImpl has more than one injected constructor or no injected constructor.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#ambiguity_of_injected_constructor\n'
+            'error: missing_injected_constructor:\n'
+            'Class MyClassImpl cannot be provided without an @inject constructor.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#missing_injected_constructor\n'
             'The following entry points depend on MyClassImpl:\n'
             'AppModule.bindMyClass(MyClassImpl impl)',
           );
@@ -3564,9 +3564,9 @@ class MyClass2 {
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: ambiguity_of_injected_constructor:\n'
-            'Class MyClass2 has more than one injected constructor or no injected constructor.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#ambiguity_of_injected_constructor\n'
+            'error: missing_injected_constructor:\n'
+            'Class MyClass2 cannot be provided without an @inject constructor.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#missing_injected_constructor\n'
             'The following entry points depend on MyClass2:\n'
             'MyClass(MyClass2 myClass2)',
           );
@@ -3629,9 +3629,9 @@ class MyClass {
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: ambiguity_of_injected_constructor:\n'
-            'Class MyClass has more than one injected constructor or no injected constructor.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#ambiguity_of_injected_constructor\n'
+            'error: missing_injected_constructor:\n'
+            'Class MyClass cannot be provided without an @inject constructor.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#missing_injected_constructor\n'
             'The following entry points depend on MyClass:\n'
             'AppModule.provideString(MyClass myClass)',
           );
