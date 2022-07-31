@@ -3,6 +3,7 @@
 // ignore_for_file: always_specify_types
 // ignore_for_file: directives_ordering
 // ignore_for_file: non_constant_identifier_names
+// ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:tests/injectable_field/simple_injectable_field.dart' as _i1;
 import 'package:jugger/jugger.dart' as _i2;
 

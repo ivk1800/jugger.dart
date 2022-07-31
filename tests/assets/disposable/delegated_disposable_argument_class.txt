@@ -3,6 +3,7 @@
 // ignore_for_file: always_specify_types
 // ignore_for_file: directives_ordering
 // ignore_for_file: non_constant_identifier_names
+// ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:tests/disposable/delegated_disposable_argument_class.dart'
     as _i1;
 import 'dart:async' as _i2;
