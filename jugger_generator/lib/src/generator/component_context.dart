@@ -13,7 +13,6 @@ import 'entry_points.dart';
 import 'graph_object_place.dart';
 import 'tag.dart';
 import 'visitors.dart';
-import 'wrappers.dart';
 import 'wrappers.dart' as j;
 
 /// Class containing all information about the component, including the object
@@ -26,7 +25,7 @@ class ComponentContext {
     for (final j.DependencyAnnotation dep in component.dependencies) {
       final Iterable<MethodElement> methods = dep.element
           .getComponentMethodsAccessors()
-          .map((MethodObjectAccessor e) => e.method);
+          .map((j.MethodObjectAccessor e) => e.method);
 
       for (final MethodElement method in methods) {
         _registerSource(
@@ -41,7 +40,7 @@ class ComponentContext {
 
       final Iterable<PropertyAccessorElement> properties = dep.element
           .getComponentPropertiesAccessors()
-          .map((PropertyObjectAccessor e) => e.property);
+          .map((j.PropertyObjectAccessor e) => e.property);
 
       for (final PropertyAccessorElement property in properties) {
         _registerSource(
@@ -80,7 +79,7 @@ class ComponentContext {
     }
 
     for (final ParameterElement parameter in componentBuilder?.parameters
-            .map((ComponentBuilderParameter p) => p.parameter)
+            .map((j.ComponentBuilderParameter p) => p.parameter)
             .toList() ??
         <ParameterElement>[]) {
       _registerSource(
@@ -98,18 +97,18 @@ class ComponentContext {
       _registerGraphObject(element);
     }
 
-    for (final MethodObjectAccessor method in component.methodsAccessors) {
+    for (final j.MethodObjectAccessor method in component.methodsAccessors) {
       _registerGraphObject(method.method, GraphObjectPlace.component);
     }
     component.propertiesAccessors
-        .map((PropertyObjectAccessor e) => e.property)
+        .map((j.PropertyObjectAccessor e) => e.property)
         .forEach(_registerGraphObject);
 
     for (final j.MemberInjectorMethod method in component.memberInjectors) {
       final MethodElement element = method.element;
 
       for (final ParameterElement parameter in element.parameters) {
-        final List<InjectedMember> members =
+        final List<j.InjectedMember> members =
             parameter.type.element!.getInjectedMembers();
 
         for (final j.InjectedMember member in members) {
@@ -593,9 +592,9 @@ abstract class ProviderSource {
 
   /// Source qualifier. This is a custom qualifier or a named annotation.
   j.QualifierAnnotation? get qualifierAnnotation {
-    final Annotation? annotation = annotations
+    final j.Annotation? annotation = annotations
         .firstWhereOrNull((j.Annotation a) => a is j.QualifierAnnotation);
-    return annotation is QualifierAnnotation ? annotation : null;
+    return annotation is j.QualifierAnnotation ? annotation : null;
   }
 
   /// Source tag. This is a custom qualifier or a named annotation. Can be used
