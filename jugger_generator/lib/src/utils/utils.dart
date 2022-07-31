@@ -137,15 +137,30 @@ List<Annotation> getAnnotations(Element moduleClass) {
           return ModuleExtractor().getModuleAnnotationOfModuleClass(moduleDep);
         }).toList();
 
-        final List<ModuleAnnotation> allModules =
-            modulesAnnotations.expand((ModuleAnnotation module) {
+        List<ModuleAnnotation> getModules(ModuleAnnotation module) {
+          if (module.includes.isEmpty) {
+            return <ModuleAnnotation>[];
+          }
+
           //check repeated annotation from includes field
           checkUniqueClasses(
             module.includes
                 .map((ModuleAnnotation annotation) => annotation.moduleElement),
           );
-          return List<ModuleAnnotation>.from(module.includes)..add(module);
-        }).toList();
+          return module.includes +
+              module.includes
+                  .expand((ModuleAnnotation module) => getModules(module))
+                  .toList(growable: false);
+        }
+
+        final List<ModuleAnnotation> allModules = modulesAnnotations
+            .expand((ModuleAnnotation module) {
+              final List<ModuleAnnotation> modules = getModules(module);
+              return List<ModuleAnnotation>.from(modules + module.includes)
+                ..add(module);
+            })
+            .toSet()
+            .toList(growable: false);
 
         // region : check repeated annotation from modules field
         final Map<InterfaceType, List<ModuleAnnotation>> groupedAnnotations =

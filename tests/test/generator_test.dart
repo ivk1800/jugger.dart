@@ -584,6 +584,12 @@ abstract class AppComponent {
   });
 
   group('module', () {
+    test('deep included modules', () async {
+      await checkBuilderOfFile(
+        'module/deep_included_modules',
+      );
+    });
+
     test('module included by another modules', () async {
       await checkBuilderOfFile(
         'module/module_included_by_another_modules',

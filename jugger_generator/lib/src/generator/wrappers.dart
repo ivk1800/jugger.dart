@@ -366,12 +366,14 @@ abstract class ProvideMethod extends ModuleMethod {
 extension ProvideMethodExt on ProvideMethod {
   bool get _hasScoped =>
       annotations.firstWhereOrNull(
-          (Annotation annotation) => annotation is SingletonAnnotation) !=
+        (Annotation annotation) => annotation is SingletonAnnotation,
+      ) !=
       null;
 
   bool get hasDisposable =>
       annotations.firstWhereOrNull(
-          (Annotation annotation) => annotation is DisposableAnnotation) !=
+        (Annotation annotation) => annotation is DisposableAnnotation,
+      ) !=
       null;
 
   bool get isDisposable => _hasScoped && hasDisposable;

@@ -1,0 +1,27 @@
+// ignore_for_file: implementation_imports
+// ignore_for_file: prefer_const_constructors
+// ignore_for_file: always_specify_types
+// ignore_for_file: directives_ordering
+// ignore_for_file: non_constant_identifier_names
+import 'package:tests/module/deep_included_modules.dart' as _i1;
+import 'package:jugger/jugger.dart' as _i2;
+
+class JuggerAppComponent implements _i1.AppComponent {
+  JuggerAppComponent.create();
+
+  late final _i2.IProvider<bool> _boolProvider =
+      _i2.Provider<bool>(() => _i1.Module4.providerBool());
+
+  late final _i2.IProvider<double> _doubleProvider =
+      _i2.Provider<double>(() => _i1.Module3.providerDouble());
+
+  late final _i2.IProvider<int> _intProvider =
+      _i2.Provider<int>(() => _i1.Module2.providerInt());
+
+  late final _i2.IProvider<String> _stringProvider = _i2.Provider<String>(() =>
+      _i1.Module1.providerString(
+          _intProvider.get(), _doubleProvider.get(), _boolProvider.get()));
+
+  @override
+  String get string => _stringProvider.get();
+}
