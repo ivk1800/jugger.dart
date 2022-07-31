@@ -10,10 +10,10 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
-        sdk: [ stable ]
+        sdk: [ 2.17.0 ]
     steps:
       - uses: actions/checkout@v2
       - uses: dart-lang/setup-dart@v1
