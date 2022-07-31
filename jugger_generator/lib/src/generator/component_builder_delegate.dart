@@ -423,7 +423,7 @@ class ComponentBuilderDelegate {
 
     // Sort so that the sequence is preserved with each code generation (for
     // test stability)
-    return fields..sort((Field a, Field b) => a.name.compareTo(b.name));
+    return fields.sortedBy((Field field) => field.name);
   }
 
   /// A helper function that allocates the given type of object graph and
@@ -509,7 +509,7 @@ class ComponentBuilderDelegate {
 
     // Sort so that the sequence is preserved with each code generation (for
     // test stability)
-    return newMembers..sort((Method a, Method b) => a.name!.compareTo(b.name!));
+    return newMembers.sortedBy((Method method) => method.name!);
   }
 
   /// Returns a list of component properties, their implementation, each
@@ -686,12 +686,9 @@ class ComponentBuilderDelegate {
             ),
           )
           .toList()
-        // Sort so that the sequence is preserved with each code generation (for
-        // test stability)
-        ..sort(
-          (ProviderSource a, ProviderSource b) =>
-              a.type.getName().compareTo(b.type.getName()),
-        );
+          // Sort so that the sequence is preserved with each code generation (for
+          // test stability)
+          .sortedBy((ModuleSource source) => source.type.getName());
 
       for (final ProviderSource source in nonLazyProviders) {
         builder.statements.add(

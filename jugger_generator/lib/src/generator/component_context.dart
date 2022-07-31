@@ -135,10 +135,11 @@ class ComponentContext {
   );
 
   /// All graph objects of the component.
-  List<GraphObject> get graphObjects => _graphObjects.values.toList()
-    // Sort so that the sequence is preserved with each code generation (for
-    // test stability)
-    ..sort((GraphObject a, GraphObject b) => a.compareTo(b));
+  List<GraphObject> get graphObjects => _graphObjects.values
+      .toList()
+      // Sort so that the sequence is preserved with each code generation (for
+      // test stability)
+      .sorted((GraphObject a, GraphObject b) => a.compareTo(b));
 
   /// Queue to detect circular dependencies.
   final Queue<_Key> _graphObjectsQueue = Queue<_Key>();
