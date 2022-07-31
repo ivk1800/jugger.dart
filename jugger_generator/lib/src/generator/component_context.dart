@@ -178,9 +178,9 @@ class ComponentContext {
     if (element is MethodElement) {
       if (graphObjectPlace == GraphObjectPlace.component) {
         final GraphObject graphObject = GraphObject(
-          tag,
-          element.returnType,
-          _registerConstructorObjectsIfNeeded(
+          tag: tag,
+          type: element.returnType,
+          dependencies: _registerConstructorObjectsIfNeeded(
             type: element.returnType,
             or: const <GraphObject>[],
           ),
@@ -191,9 +191,9 @@ class ComponentContext {
       }
 
       final GraphObject graphObject = GraphObject(
-        tag,
-        element.returnType,
-        _registerMethodObjects(element),
+        tag: tag,
+        type: element.returnType,
+        dependencies: _registerMethodObjects(element),
       );
       _registerAndValidateGraphObject(key, graphObject);
       _graphObjectsQueue.removeFirst();
@@ -203,9 +203,9 @@ class ComponentContext {
       return _registerVariableElementGraphObject(element);
     } else if (element is PropertyAccessorElement) {
       final GraphObject graphObject = GraphObject(
-        tag,
-        element.returnType,
-        _registerConstructorObjectsIfNeeded(
+        tag: tag,
+        type: element.returnType,
+        dependencies: _registerConstructorObjectsIfNeeded(
           type: element.returnType,
           or: const <GraphObject>[],
         ),
@@ -249,9 +249,9 @@ class ComponentContext {
       final DartType providerType = object.type.getSingleTypeArgument;
 
       _graphObjects[key] = GraphObject(
-        object.tag,
-        providerType,
-        _registerConstructorObjectsIfNeeded(
+        tag: object.tag,
+        type: providerType,
+        dependencies: _registerConstructorObjectsIfNeeded(
           type: providerType,
           or: object.dependencies,
         ),
@@ -269,9 +269,9 @@ class ComponentContext {
     final _Key key = _Key.of(element, tag);
 
     final GraphObject object = GraphObject(
-      tag,
-      element.type,
-      _registerConstructorObjectsIfNeeded(
+      tag: tag,
+      type: element.type,
+      dependencies: _registerConstructorObjectsIfNeeded(
         type: element.type,
         or: const <GraphObject>[],
       ),
@@ -538,11 +538,11 @@ class _Key {
 
 /// Object of graph.
 class GraphObject implements Comparable<GraphObject> {
-  const GraphObject(
-    this.tag,
-    this.type,
-    this.dependencies,
-  );
+  const GraphObject({
+    required this.tag,
+    required this.type,
+    required this.dependencies,
+  });
 
   /// Object type.
   final DartType type;
