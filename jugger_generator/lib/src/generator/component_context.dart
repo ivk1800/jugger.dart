@@ -123,7 +123,7 @@ class ComponentContext {
   }
 
   /// All objects of the component graph.
-  final Map<_Key, GraphObject> _objectsGraph = HashMap<_Key, GraphObject>();
+  final Map<_Key, GraphObject> _graphObjects = HashMap<_Key, GraphObject>();
   final j.Component component;
   final j.ComponentBuilder? componentBuilder;
 
@@ -136,13 +136,13 @@ class ComponentContext {
   );
 
   /// All graph objects of the component.
-  List<GraphObject> get objectsGraph => _objectsGraph.values.toList()
+  List<GraphObject> get graphObjects => _graphObjects.values.toList()
     // Sort so that the sequence is preserved with each code generation (for
     // test stability)
     ..sort((GraphObject a, GraphObject b) => a.compareTo(b));
 
   /// Queue to detect circular dependencies.
-  final Queue<_Key> _objectsGraphQueue = Queue<_Key>();
+  final Queue<_Key> _graphObjectsQueue = Queue<_Key>();
 
   /// Registers a graph object with validation. Detects circular dependency.
   /// [element] an element that is a graph object. The element must be of a
@@ -159,21 +159,21 @@ class ComponentContext {
 
     final _Key key = _Key.of(element, tag);
 
-    if (_objectsGraphQueue.contains(key)) {
-      _objectsGraphQueue.addFirst(key);
+    if (_graphObjectsQueue.contains(key)) {
+      _graphObjectsQueue.addFirst(key);
       throw JuggerError(
         buildErrorMessage(
           error: JuggerErrorId.circular_dependency,
           message:
-              'Found circular dependency! ${_objectsGraphQueue.toList().reversed.join('->')}',
+              'Found circular dependency! ${_graphObjectsQueue.toList().reversed.join('->')}',
         ),
       );
     }
-    _objectsGraphQueue.addFirst(key);
+    _graphObjectsQueue.addFirst(key);
 
-    if (_objectsGraph.containsKey(key)) {
-      _objectsGraphQueue.removeFirst();
-      return _objectsGraph[key]!;
+    if (_graphObjects.containsKey(key)) {
+      _graphObjectsQueue.removeFirst();
+      return _graphObjects[key]!;
     }
 
     if (element is MethodElement) {
@@ -187,7 +187,7 @@ class ComponentContext {
           ),
         );
         _registerAndValidateGraphObject(key, graphObject);
-        _objectsGraphQueue.removeFirst();
+        _graphObjectsQueue.removeFirst();
         return graphObject;
       }
 
@@ -197,10 +197,10 @@ class ComponentContext {
         _registerMethodObjects(element),
       );
       _registerAndValidateGraphObject(key, graphObject);
-      _objectsGraphQueue.removeFirst();
+      _graphObjectsQueue.removeFirst();
       return graphObject;
     } else if (element is VariableElement) {
-      _objectsGraphQueue.removeFirst();
+      _graphObjectsQueue.removeFirst();
       return _registerVariableElementGraphObject(element);
     } else if (element is PropertyAccessorElement) {
       final GraphObject graphObject = GraphObject(
@@ -212,7 +212,7 @@ class ComponentContext {
         ),
       );
       _registerAndValidateGraphObject(key, graphObject);
-      _objectsGraphQueue.removeFirst();
+      _graphObjectsQueue.removeFirst();
       return graphObject;
     }
 
@@ -249,7 +249,7 @@ class ComponentContext {
       );
       final DartType providerType = object.type.getSingleTypeArgument;
 
-      _objectsGraph[key] = GraphObject(
+      _graphObjects[key] = GraphObject(
         object.tag,
         providerType,
         _registerConstructorObjectsIfNeeded(
@@ -258,7 +258,7 @@ class ComponentContext {
         ),
       );
     } else {
-      _objectsGraph[key] = object;
+      _graphObjects[key] = object;
     }
   }
 
@@ -382,9 +382,9 @@ class ComponentContext {
     final List<ProviderNotFoundError> providerNotFoundErrors =
         <ProviderNotFoundError>[];
 
-    final Map<_Key, GraphObject> objectsGraph = _objectsGraph;
+    final Map<_Key, GraphObject> graphObjects = _graphObjects;
 
-    for (final GraphObject graphObject in objectsGraph.values) {
+    for (final GraphObject graphObject in graphObjects.values) {
       final DartType type = graphObject.type;
       if (type == component.element.thisType) {
         _registerSource(
@@ -436,7 +436,7 @@ class ComponentContext {
     final List<ProviderNotFoundError> providerNotFoundErrors =
         <ProviderNotFoundError>[];
 
-    for (final GraphObject graphObject in objectsGraph) {
+    for (final GraphObject graphObject in graphObjects) {
       final ProviderSource? provider =
           findProviderOrNull(graphObject.type, graphObject.tag);
 
@@ -462,7 +462,7 @@ class ComponentContext {
           final String? entryPoints = findEntryPointsOf(
             error.type,
             error.tag,
-            objectsGraph,
+            graphObjects,
             findProvider,
           );
           if (entryPoints == null) {

@@ -364,7 +364,7 @@ class ComponentBuilderDelegate {
     final List<Field> fields = <Field>[];
 
     final Iterable<GraphObject> filteredDependencies =
-        _componentContext.objectsGraph.where((GraphObject graphObject) {
+        _componentContext.graphObjects.where((GraphObject graphObject) {
       final ProviderSource source =
           _componentContext.findProvider(graphObject.type, graphObject.tag);
       // just 'this' for assign expression, field is not needed

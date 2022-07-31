@@ -84,7 +84,7 @@ class DisposablesManager {
 
   /// Find all objects for disposing.
   List<DisposableInfo> _findDisposableGraphObjects(ComponentContext context) {
-    final List<GraphObject> graphObjects = context.objectsGraph;
+    final List<GraphObject> graphObjects = context.graphObjects;
 
     final List<DisposableInfo> sources = <DisposableInfo>[];
 
