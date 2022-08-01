@@ -495,8 +495,8 @@ class ComponentBuilderDelegate {
         b.returns = refer(_allocateTypeName(executable.returnType));
 
         final Expression assignReference = _generateAssignExpression(
-          executable.returnType,
-          executable.getQualifierTag(),
+          type: executable.returnType,
+          tag: executable.getQualifierTag(),
         );
         if (_disposablesManager.hasDisposables()) {
           b.body = Block.of(
@@ -556,9 +556,12 @@ class ComponentBuilderDelegate {
         for (final j.InjectedMember member in members.toSet()) {
           final Tag? tag = member.element.getQualifierTag();
           b.addExpression(
-            refer(parameterElement.name)
-                .property(member.element.name)
-                .assign(_generateAssignExpression(member.element.type, tag)),
+            refer(parameterElement.name).property(member.element.name).assign(
+                  _generateAssignExpression(
+                    type: member.element.type,
+                    tag: tag,
+                  ),
+                ),
           );
         }
 
@@ -596,11 +599,11 @@ class ComponentBuilderDelegate {
   /// ```
   /// if callGet passed as false.
   ///
-  Expression _generateAssignExpression(
-    DartType type,
-    Tag? tag, [
+  Expression _generateAssignExpression({
+    required DartType type,
+    Tag? tag,
     bool callGet = true,
-  ]) {
+  }) {
     type.checkUnsupportedType();
 
     if (type == _componentType) {
@@ -611,7 +614,11 @@ class ComponentBuilderDelegate {
       final DartType depType = type.getSingleTypeArgument;
       final ProviderSource provider =
           _componentContext.findProvider(depType, tag);
-      return _generateAssignExpression(provider.type, provider.tag, false);
+      return _generateAssignExpression(
+        type: provider.type,
+        tag: provider.tag,
+        callGet: false,
+      );
     }
 
     final ProviderSource provider = _componentContext.findProvider(type, tag);
@@ -701,8 +708,8 @@ class ComponentBuilderDelegate {
       for (final ProviderSource source in nonLazyProviders) {
         builder.statements.add(
           _generateAssignExpression(
-            source.type,
-            source.tag,
+            type: source.type,
+            tag: source.tag,
           ).statement,
         );
       }
@@ -774,8 +781,8 @@ class ComponentBuilderDelegate {
       <Expression>[
         _buildExpressionClosure(
           _generateAssignExpression(
-            source.type,
-            source.tag,
+            type: source.type,
+            tag: source.tag,
           ).code,
         ),
       ],
@@ -813,8 +820,7 @@ class ComponentBuilderDelegate {
         <Expression>[
           _buildExpressionClosure(
             _generateAssignExpression(
-              method.assignableType,
-              null,
+              type: method.assignableType,
             ).code,
           ),
         ],
@@ -1124,8 +1130,8 @@ class ComponentBuilderDelegate {
       return MapEntry<String, Expression>(
         parameter.name,
         _generateAssignExpression(
-          parameter.type,
-          getQualifierAnnotation(parameter)?.tag,
+          type: parameter.type,
+          tag: getQualifierAnnotation(parameter)?.tag,
         ),
       );
     });
@@ -1174,8 +1180,10 @@ class ComponentBuilderDelegate {
   Expression _buildDisposeMethodCall(DisposableInfo disposableInfo) {
     final DisposeHandler disposeHandler = disposableInfo.disposeHandler;
     if (disposeHandler is SelfDisposeHandler) {
-      return _generateAssignExpression(disposableInfo.type, disposableInfo.tag)
-          .property('dispose');
+      return _generateAssignExpression(
+        type: disposableInfo.type,
+        tag: disposableInfo.tag,
+      ).property('dispose');
     } else if (disposeHandler is DelegateDisposeHandler) {
       final Expression body = refer(
         disposeHandler.method.enclosingElement.name!,
