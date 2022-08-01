@@ -226,8 +226,8 @@ class ComponentBuilderDelegate {
       b.type = refer('${_allocateTypeName(parameter.parameter.type)}?');
       final Tag? tag = parameter.parameter.enclosingElement!.getQualifierTag();
       b.name = '_${_generateFieldName(
-        parameter.parameter.type,
-        tag?.toAssignTag(),
+        type: parameter.parameter.type,
+        tag: tag?.toAssignTag(),
       )}';
     });
   }
@@ -276,8 +276,8 @@ class ComponentBuilderDelegate {
       builder.addExpression(
         refer(
           '_${_generateFieldName(
-            p.parameter.type,
-            tag?.toAssignTag(),
+            type: p.parameter.type,
+            tag: tag?.toAssignTag(),
           )}',
         ).assign(refer(p.parameter.name)),
       );
@@ -297,8 +297,8 @@ class ComponentBuilderDelegate {
             parameter.parameter.enclosingElement!.getQualifierTag();
         return refer(
           '_${_generateFieldName(
-            parameter.parameter.tryGetType(),
-            tag?.toAssignTag(),
+            type: parameter.parameter.tryGetType(),
+            tag: tag?.toAssignTag(),
           )}',
         ).nullChecked;
       });
@@ -310,7 +310,10 @@ class ComponentBuilderDelegate {
         final StringBuffer code = StringBuffer()
           ..write('assert(_')
           ..write(
-            _generateFieldName(parameter.parameter.type, tag?.toAssignTag()),
+            _generateFieldName(
+              type: parameter.parameter.type,
+              tag: tag?.toAssignTag(),
+            ),
           )
           ..write(' != null) ');
         return Code(code.toString());
@@ -389,8 +392,8 @@ class ComponentBuilderDelegate {
           Field((FieldBuilder b) {
             final Tag? tag = graphObject.tag;
             b.name = '_${_generateFieldName(
-              graphObject.type,
-              tag?.toAssignTag(),
+              type: graphObject.type,
+              tag: tag?.toAssignTag(),
             )}Provider';
 
             final String generic = _allocator.allocate(
@@ -632,7 +635,7 @@ class ComponentBuilderDelegate {
         finalSting = generateMd5(tag.uniqueId);
       }
 
-      return refer('_${_generateFieldName(type, finalSting)}');
+      return refer('_${_generateFieldName(type: type, tag: finalSting)}');
     }
 
     if (provider is AnotherComponentSource) {
@@ -664,7 +667,7 @@ class ComponentBuilderDelegate {
     }
 
     Expression finalExpression =
-        refer('_${_generateFieldName(type, finalTag)}Provider');
+        refer('_${_generateFieldName(type: type, tag: finalTag)}Provider');
     if (callGet) {
       finalExpression = finalExpression.property('get').call(<Expression>[]);
     }
@@ -675,7 +678,10 @@ class ComponentBuilderDelegate {
   /// generates a name for a class field.
   /// If the type has invalid characters, such as brackets, they will be
   /// stripped.
-  String _generateFieldName(DartType type, String? tag) {
+  String _generateFieldName({
+    required DartType type,
+    required String? tag,
+  }) {
     final String typeName = _typeNameGenerator.generate(type);
     if (tag != null) {
       return 'named_${tag}_$typeName';
@@ -1079,8 +1085,8 @@ class ComponentBuilderDelegate {
               final Tag? tag =
                   parameter.parameter.enclosingElement!.getQualifierTag();
               b.name = '_${_generateFieldName(
-                parameter.parameter.type,
-                tag?.toAssignTag(),
+                type: parameter.parameter.type,
+                tag: tag?.toAssignTag(),
               )}';
             });
           }),
@@ -1107,8 +1113,8 @@ class ComponentBuilderDelegate {
         final Tag? tag =
             parameter.parameter.enclosingElement!.getQualifierTag();
         b.name = '_${_generateFieldName(
-          parameter.parameter.type,
-          tag?.toAssignTag(),
+          type: parameter.parameter.type,
+          tag: tag?.toAssignTag(),
         )}';
         b.modifier = FieldModifier.final$;
         b.type = refer(_allocateTypeName(parameter.parameter.type));
@@ -1192,8 +1198,8 @@ class ComponentBuilderDelegate {
         <Expression>[
           refer(
             '_${_generateFieldName(
-              disposableInfo.type,
-              disposableInfo.tag?.toAssignTag(),
+              type: disposableInfo.type,
+              tag: disposableInfo.tag?.toAssignTag(),
             )}',
           )
         ],
