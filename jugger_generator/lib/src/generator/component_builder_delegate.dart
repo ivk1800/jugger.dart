@@ -307,12 +307,13 @@ class ComponentBuilderDelegate {
           .map((j.ComponentBuilderParameter parameter) {
         final Tag? tag =
             parameter.parameter.enclosingElement!.getQualifierTag();
-        return Code(
-          'assert(_${_generateFieldName(
-            parameter.parameter.type,
-            tag?.toAssignTag(),
-          )} != null) ',
-        );
+        final StringBuffer code = StringBuffer()
+          ..write('assert(_')
+          ..write(
+            _generateFieldName(parameter.parameter.type, tag?.toAssignTag()),
+          )
+          ..write(' != null) ');
+        return Code(code.toString());
       }).toList();
 
       for (final Code value in assertCodes) {
@@ -458,10 +459,17 @@ class ComponentBuilderDelegate {
       return name;
     }
 
-    return '$name<${type.typeArguments.map((DartType type) {
-      type.checkUnsupportedType();
-      return _allocateTypeName(type as InterfaceType);
-    }).join(',')}>';
+    final StringBuffer typeNameBuilder = StringBuffer()
+      ..write(name)
+      ..write('<')
+      ..write(
+        type.typeArguments.map((DartType type) {
+          type.checkUnsupportedType();
+          return _allocateTypeName(type as InterfaceType);
+        }).join(','),
+      )
+      ..write('>');
+    return typeNameBuilder.toString();
   }
 
   /// Returns a list of component members or properties, their implementation,
