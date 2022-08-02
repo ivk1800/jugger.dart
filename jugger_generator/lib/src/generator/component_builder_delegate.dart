@@ -610,7 +610,7 @@ class ComponentBuilderDelegate {
     type.checkUnsupportedType();
 
     if (type == _componentType) {
-      return refer('this');
+      return const Reference('this');
     }
 
     if (type.isProvider) {
@@ -1159,7 +1159,7 @@ class ComponentBuilderDelegate {
       ),
     );
 
-    Expression callExpression = refer('_disposableManager');
+    Expression callExpression = const Reference('_disposableManager');
 
     for (final DisposableInfo info in arguments) {
       callExpression = callExpression.cascade('register').call(
@@ -1170,7 +1170,7 @@ class ComponentBuilderDelegate {
     return Method(
       (MethodBuilder methodBuilder) {
         methodBuilder.name = '_registerDisposableArguments';
-        methodBuilder.returns = refer('void');
+        methodBuilder.returns = const Reference('void');
         methodBuilder.body = callExpression.code;
       },
     );
@@ -1313,7 +1313,9 @@ class ComponentBuilderDelegate {
       return const Code('_disposableManager.register(disposable.dispose);');
     } else if (disposeHandler is DelegateDisposeHandler) {
       final Element moduleClass = disposeHandler.method.enclosingElement;
-      return refer('_disposableManager').property('register').call(<Expression>[
+      return const Reference('_disposableManager')
+          .property('register')
+          .call(<Expression>[
         Method((MethodBuilder b) {
           b.body = refer(moduleClass.name!, createElementPath(moduleClass))
               .property(disposeHandler.method.name)
@@ -1336,9 +1338,10 @@ class ComponentBuilderDelegate {
     return Field(
       (FieldBuilder fieldBuilder) {
         fieldBuilder.name = '_disposableManager';
-        fieldBuilder.type = refer('_DisposableManager');
+        fieldBuilder.type = const Reference('_DisposableManager');
         fieldBuilder.modifier = FieldModifier.final$;
-        fieldBuilder.assignment = refer('_DisposableManager').newInstance(
+        fieldBuilder.assignment =
+            const Reference('_DisposableManager').newInstance(
           <Expression>[
             refer("'${_componentContext.component.element.name}'").expression,
           ],
@@ -1353,7 +1356,7 @@ class ComponentBuilderDelegate {
       (MethodBuilder methodBuilder) {
         methodBuilder.annotations.add(_overrideAnnotationExpression);
         methodBuilder.name = 'dispose';
-        methodBuilder.returns = refer('Future<void>');
+        methodBuilder.returns = const Reference('Future<void>');
         methodBuilder.body = const Code('_disposableManager.dispose()');
         methodBuilder.lambda = true;
       },
@@ -1365,7 +1368,7 @@ class ComponentBuilderDelegate {
   /// objects.
   Class _buildDisposableManagerClass() {
     final String futureOr =
-        _allocator.allocate(refer('FutureOr', 'dart:async'));
+        _allocator.allocate(const Reference('FutureOr', 'dart:async'));
 
     return Class(
       (ClassBuilder classBuilder) {
@@ -1375,14 +1378,14 @@ class ComponentBuilderDelegate {
             Field(
               (FieldBuilder fieldBuilder) {
                 fieldBuilder.name = '_disposed';
-                fieldBuilder.type = refer('bool');
+                fieldBuilder.type = const Reference('bool');
                 fieldBuilder.assignment = const Code('false');
               },
             ),
             Field(
               (FieldBuilder fieldBuilder) {
                 fieldBuilder.name = '_componentName';
-                fieldBuilder.type = refer('String');
+                fieldBuilder.type = const Reference('String');
                 fieldBuilder.modifier = FieldModifier.final$;
               },
             ),
@@ -1416,7 +1419,7 @@ class ComponentBuilderDelegate {
             Method(
               (MethodBuilder methodBuilder) {
                 methodBuilder.name = 'register';
-                methodBuilder.returns = refer('void');
+                methodBuilder.returns = const Reference('void');
                 methodBuilder.requiredParameters.add(
                   Parameter(
                     (ParameterBuilder parameterBuilder) {
@@ -1438,7 +1441,7 @@ class ComponentBuilderDelegate {
             Method(
               (MethodBuilder methodBuilder) {
                 methodBuilder.name = 'checkDisposed';
-                methodBuilder.returns = refer('void');
+                methodBuilder.returns = const Reference('void');
                 methodBuilder.body = const Code(
                   r'''
 if (_disposed) {
@@ -1452,7 +1455,7 @@ if (_disposed) {
               (MethodBuilder methodBuilder) {
                 methodBuilder.name = 'dispose';
                 methodBuilder.modifier = MethodModifier.async;
-                methodBuilder.returns = refer('Future<void>');
+                methodBuilder.returns = const Reference('Future<void>');
                 methodBuilder.body = Block.of(
                   <Code>[
                     const Code('if (_disposed) {'),
