@@ -11,6 +11,9 @@ import '../utils/dart_type_ext.dart';
 import '../utils/utils.dart';
 import 'entry_points.dart';
 import 'graph_object_place.dart';
+import 'multibindings/multibindings_group.dart';
+import 'multibindings/multibindings_info.dart';
+import 'multibindings/multibindings_manager.dart';
 import 'tag.dart';
 import 'visitors.dart';
 import 'wrappers.dart' as j;
@@ -74,6 +77,7 @@ class ComponentContext {
           type: element.returnType,
           method: method,
           annotations: getAnnotations(element),
+          multibindingsInfo: element.getMultibindingsInfo(),
         ),
       );
     }
@@ -94,6 +98,9 @@ class ComponentContext {
 
     for (final j.ProvideMethod method in component.modulesProvideMethods) {
       final MethodElement element = method.element;
+      if (element.isMultibindings()) {
+        multibindingsManager.handleGraphObject(element);
+      }
       _registerGraphObject(element);
     }
 
@@ -117,6 +124,19 @@ class ComponentContext {
       }
     }
 
+    final List<MultibindingsGroup> bindingsInfo =
+        multibindingsManager.getBindingsInfo();
+
+    for (final MultibindingsGroup info in bindingsInfo) {
+      _registerSource(
+        MultibindingsSource(
+          type: info.graphObject.type,
+          multibindingsGroup: info,
+          annotations: info.annotations,
+        ),
+      );
+    }
+
     _registerAdditionalSources();
     _checkMissingProviders();
   }
@@ -130,9 +150,16 @@ class ComponentContext {
   late final Set<ProviderSource> providerSources = HashSet<ProviderSource>(
     equals: _providesSourceEquals,
     hashCode: (ProviderSource p) {
-      return Object.hash(p.type.hashCode, p.key.hashCode);
+      return Object.hash(
+        p.type.hashCode,
+        p.key.hashCode,
+        p.multibindingsInfo?.hashCode,
+      );
     },
   );
+
+  late final MultibindingsManager multibindingsManager =
+      MultibindingsManager(this);
 
   /// All graph objects of the component.
   List<GraphObject> get graphObjects => _graphObjects.values
@@ -195,6 +222,7 @@ class ComponentContext {
         tag: tag,
         type: element.returnType,
         dependencies: _registerMethodObjects(element),
+        multibindingsInfo: element.getMultibindingsInfo(),
       );
       _registerAndValidateGraphObject(key, graphObject);
       _graphObjectsQueue.removeFirst();
@@ -322,20 +350,36 @@ class ComponentContext {
   }) {
     return component.modulesProvideMethods
         .firstWhereOrNull((j.ProvideMethod method) {
-      return method.element.returnType == type && method.tag == tag;
+      return method.element.returnType == type &&
+          method.tag == tag &&
+          !method.element.isMultibindings();
     });
   }
 
   /// Returns type source by type and tag or null if not found.
-  ProviderSource? findProviderOrNull(DartType type, [Tag? tag]) {
+  ProviderSource? findProviderOrNull(
+    DartType type, [
+    Tag? tag,
+    MultibindingsInfo? multibindingsInfo,
+  ]) {
     return providerSources.firstWhereOrNull((ProviderSource source) {
-      return source.type == type && source.tag == tag;
+      return source.type == type &&
+          source.tag == tag &&
+          source.multibindingsInfo == multibindingsInfo;
     });
   }
 
   /// Returns type source by type and tag or throws error if not found.
-  ProviderSource findProvider(DartType type, [Tag? tag]) {
-    final ProviderSource? source = findProviderOrNull(type, tag);
+  ProviderSource findProvider(
+    DartType type, [
+    Tag? tag,
+    MultibindingsInfo? multibindingsInfo,
+  ]) {
+    final ProviderSource? source = findProviderOrNull(
+      type,
+      tag,
+      multibindingsInfo,
+    );
     if (source == null) {
       throw ProviderNotFoundError(
         type: type,
@@ -346,15 +390,52 @@ class ComponentContext {
     return source;
   }
 
+  GraphObject findGraphObject({
+    required DartType type,
+    required Tag? tag,
+    required MultibindingsInfo? multibindingsInfo,
+  }) {
+    final GraphObject? object =
+        graphObjects.firstWhereOrNull((GraphObject element) {
+      return element.tag == tag &&
+          element.type == type &&
+          element.multibindingsInfo == multibindingsInfo;
+    });
+    if (object == null) {
+      throw UnexpectedJuggerError(
+        buildUnexpectedErrorMessage(message: 'object is null'),
+      );
+    }
+
+    return object;
+  }
+
   /// Helper function for equals sources. Equals and hash code is not overridden
   /// in the source, so you need to use this function.
   bool _providesSourceEquals(ProviderSource p1, ProviderSource p2) {
+    if (p1 is MultibindingsSource && p2 is MultibindingsSource) {
+      return p1.type == p2.type &&
+          p1.key == p2.key &&
+          p1.multibindingsInfo == p2.multibindingsInfo;
+    }
+
     return p1.type == p2.type && p1.key == p2.key;
   }
 
   /// Register the source, but if a source with this type is already registered,
   /// throws an error.
   void _registerSource(ProviderSource source) {
+    if (source.isMultibindings()) {
+      multibindingsManager.handleSource(source);
+    }
+
+    _registerSourceOf(providerSources, source);
+  }
+
+  void _registerSourceOf(
+    Set<ProviderSource> providerSources,
+    ProviderSource source,
+  ) {
     check(providerSources.add(source), () {
       final List<ProviderSource> sources = <ProviderSource>[
         providerSources
@@ -394,7 +475,11 @@ class ComponentContext {
       }
 
       final Tag? tag = graphObject.tag;
-      final ProviderSource? source = findProviderOrNull(type, tag);
+      final ProviderSource? source = findProviderOrNull(
+        type,
+        tag,
+        graphObject.multibindingsInfo,
+      );
 
       if (source == null && tag != null) {
         providerNotFoundErrors.add(
@@ -434,8 +519,11 @@ class ComponentContext {
         <ProviderNotFoundError>[];
 
     for (final GraphObject graphObject in graphObjects) {
-      final ProviderSource? provider =
-          findProviderOrNull(graphObject.type, graphObject.tag);
+      final ProviderSource? provider = findProviderOrNull(
+        graphObject.type,
+        graphObject.tag,
+        graphObject.multibindingsInfo,
+      );
 
       if (provider == null) {
         providerNotFoundErrors.add(
@@ -479,6 +567,7 @@ class _Key {
     required this.tag,
     required this.type,
     required Element element,
+    this.multibindingsInfo,
   }) : _element = element;
 
   factory _Key.of(Element element, Tag? tag) {
@@ -487,6 +576,7 @@ class _Key {
         tag: tag,
         element: element,
         type: element.returnType,
+        multibindingsInfo: element.getMultibindingsInfo(),
       );
     } else if (element is VariableElement) {
       if (element.type.isValueProvider) {
@@ -518,6 +608,8 @@ class _Key {
   /// An element that provides an object of type.
   final Element _element;
 
+  final MultibindingsInfo? multibindingsInfo;
+
   /// The type to which the key belongs.
   final DartType type;
 
@@ -525,10 +617,14 @@ class _Key {
   final Tag? tag;
 
   @override
-  bool operator ==(Object o) => o is _Key && type == o.type && tag == o.tag;
+  bool operator ==(Object o) =>
+      o is _Key &&
+      type == o.type &&
+      tag == o.tag &&
+      multibindingsInfo == o.multibindingsInfo;
 
   @override
-  int get hashCode => hash2(type.hashCode, tag.hashCode);
+  int get hashCode => hash3(type.hashCode, tag.hashCode, multibindingsInfo);
 
   @override
   String toString() => '${_element.name}';
@@ -540,6 +636,7 @@ class GraphObject implements Comparable<GraphObject> {
     required this.tag,
     required this.type,
     required this.dependencies,
+    this.multibindingsInfo,
   });
 
   /// Object type.
@@ -555,6 +652,8 @@ class GraphObject implements Comparable<GraphObject> {
   /// Object tag, the tag is constructed from a type and a qualifier.
   final Tag? tag;
 
+  final MultibindingsInfo? multibindingsInfo;
+
   @override
   String toString() {
     return type.getName();
@@ -569,13 +668,15 @@ class GraphObject implements Comparable<GraphObject> {
 
 /// Base type of graph object source.
 abstract class ProviderSource {
-  ProviderSource(this.type, this.annotations);
+  ProviderSource(this.type, this.annotations, [this.multibindingsInfo]);
 
   /// The type that the source provides.
   final DartType type;
 
   /// All source annotations, see implementations of this interface for details.
   final List<j.Annotation> annotations;
+
+  final MultibindingsInfo? multibindingsInfo;
 
   /// A unique key of source. Qualifier and type will be combined.
   /// Should be used to identify the source.
@@ -605,14 +706,20 @@ abstract class ProviderSource {
   String get sourceString;
 }
 
+abstract class MultibindingsElementProvider {
+  MethodElement get element;
+}
+
 /// Type source is module.
-class ModuleSource extends ProviderSource {
+class ModuleSource extends ProviderSource
+    implements MultibindingsElementProvider {
   ModuleSource({
     required this.moduleClass,
     required DartType type,
     required List<j.Annotation> annotations,
     required this.method,
-  }) : super(type, annotations);
+    required MultibindingsInfo? multibindingsInfo,
+  }) : super(type, annotations, multibindingsInfo);
 
   /// The module in which the method is located.
   final ClassElement moduleClass;
@@ -629,6 +736,20 @@ class ModuleSource extends ProviderSource {
 
   @override
   String get sourceString => '${moduleClass.name}.${method.element.name}';
+
+  @override
+  late final Object key = () {
+    if (annotations
+        .whereType<j.MultibindingsGroupAnnotation>()
+        .toList(growable: false)
+        .isNotEmpty) {
+      return '${super.key}_${method.hashCode}';
+    }
+    return super.key;
+  }();
+
+  @override
+  MethodElement get element => method.element;
 }
 
 /// Type source is argument of component builder.
@@ -731,4 +852,70 @@ class ThisComponentSource extends ProviderSource {
 
   @override
   String get sourceString => 'this';
+}
+
+class MultibindingsSource extends ProviderSource {
+  MultibindingsSource({
+    required DartType type,
+    required this.multibindingsGroup,
+    required List<j.Annotation> annotations,
+  }) : super(type, annotations);
+
+  final MultibindingsGroup multibindingsGroup;
+
+  @override
+  String get sourceString =>
+      'Multibinding of: ${multibindingsGroup.graphObject.type.getName()}';
+}
+
+extension _ProviderSourceExt on ProviderSource {
+  bool isMultibindings() {
+    return annotations.any(
+      (j.Annotation annotation) =>
+          annotation is j.IntoSetAnnotation ||
+          annotation is j.IntoMapAnnotation,
+    );
+  }
+}
+
+extension _ElementExt on Element {
+  bool isMultibindings() {
+    return getAnnotations(this).any(
+      (j.Annotation annotation) =>
+          annotation is j.IntoSetAnnotation ||
+          annotation is j.IntoMapAnnotation,
+    );
+  }
+}
+
+extension _MethodElementExt on MethodElement {
+  MultibindingsInfo? getMultibindingsInfo() {
+    final j.MultibindingsGroupAnnotation? annotation =
+        getMultibindingsGroupAnnotationOrNull();
+
+    if (annotation == null) {
+      return null;
+    }
+
+    final String methodPath = '${(enclosingElement as ClassElement).name}.'
+        '$name';
+
+    if (annotation is j.IntoSetAnnotation) {
+      return MultibindingsInfo(
+        tag: getQualifierTag(),
+        methodPath: methodPath,
+      );
+    } else if (annotation is j.IntoMapAnnotation) {
+      return MultibindingsInfo(
+        tag: getQualifierTag(),
+        methodPath: methodPath,
+      );
+    } else {
+      throw JuggerError(
+        buildUnexpectedErrorMessage(
+          message: 'Unknown Multibinding annotation $annotation.',
+        ),
+      );
+    }
+  }
 }

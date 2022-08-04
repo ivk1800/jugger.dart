@@ -18,6 +18,7 @@ import '../utils/utils.dart';
 import 'check_unused_providers.dart';
 import 'component_context.dart';
 import 'disposable_manager.dart';
+import 'multibindings/multibindings_group.dart';
 import 'tag.dart';
 import 'type_name_registry.dart';
 import 'visitors.dart';
@@ -46,6 +47,8 @@ class ComponentBuilderDelegate {
     'ignore_for_file: non_constant_identifier_names',
   ];
 
+  static const String jugger = 'package:jugger/jugger.dart';
+
   /// Returns the generated component code, null if there is nothing to generate
   /// for buildStep.
   Future<String?> buildOutput(BuildStep buildStep) async {
@@ -53,6 +56,7 @@ class ComponentBuilderDelegate {
       return await _buildOutputInternal(buildStep);
     } catch (e) {
       if (e is! JuggerError) {
+        // print((e as Error).stackTrace);
         throw UnexpectedJuggerError(
           buildUnexpectedErrorMessage(message: e.toString()),
         );
@@ -163,6 +167,13 @@ class ComponentBuilderDelegate {
       if (_disposablesManager.hasDisposables()) {
         target.body.add(_buildDisposableManagerClass());
       }
+
+      _componentContext.multibindingsManager
+          .getBindingsInfo()
+          .map((MultibindingsGroup info) =>
+              _buildMultibindingsProviderClass(info))
+          .sortedBy((Class c) => c.name)
+          .forEach(target.body.add);
 
       final String fileText =
           target.build().accept(DartEmitter(allocator: _allocator)).toString();
@@ -368,9 +379,16 @@ class ComponentBuilderDelegate {
     final List<Field> fields = <Field>[];
 
     final Iterable<GraphObject> filteredDependencies =
-        _componentContext.graphObjects.where((GraphObject graphObject) {
-      final ProviderSource source =
-          _componentContext.findProvider(graphObject.type, graphObject.tag);
+        _componentContext.graphObjects.where(
+      (GraphObject graphObject) {
+        return graphObject.multibindingsInfo == null;
+      },
+    ).where((GraphObject graphObject) {
+      final ProviderSource source = _componentContext.findProvider(
+        graphObject.type,
+        graphObject.tag,
+        graphObject.multibindingsInfo,
+      );
       // just 'this' for assign expression, field is not needed
       return source is! ThisComponentSource;
     });
@@ -384,17 +402,33 @@ class ComponentBuilderDelegate {
         ),
       );
 
-      final ProviderSource provider =
-          _componentContext.findProvider(graphObject.type, graphObject.tag);
+      final ProviderSource provider = _componentContext.findProvider(
+        graphObject.type,
+        graphObject.tag,
+        graphObject.multibindingsInfo,
+      );
 
       if (provider is! ArgumentSource && provider is! AnotherComponentSource) {
         fields.add(
           Field((FieldBuilder b) {
             final Tag? tag = graphObject.tag;
-            b.name = '_${_generateFieldName(
-              type: graphObject.type,
-              tag: tag?.toAssignTag(),
-            )}Provider';
+
+            final StringBuffer fieldNameBuilder = StringBuffer();
+            fieldNameBuilder.write(
+              _generateFieldName(
+                type: graphObject.type,
+                tag: tag?.toAssignTag(),
+              ),
+            );
+            if (graphObject.multibindingsInfo != null) {
+              fieldNameBuilder.write(
+                generateMd5(graphObject.multibindingsInfo!.methodPath),
+              );
+            }
+            fieldNameBuilder.write('Provider');
+
+            final String fieldName = fieldNameBuilder.toString();
+            b.name = '_$fieldName';
 
             final String generic = _allocator.allocate(
               refer(_allocateDependencyTypeName(graphObject)),
@@ -402,14 +436,36 @@ class ComponentBuilderDelegate {
             b.late = true;
             b.modifier = FieldModifier.final$;
 
-            final ProviderSource provider =
-                _componentContext.findProvider(graphObject.type, tag);
+            final ProviderSource provider = _componentContext.findProvider(
+              graphObject.type,
+              tag,
+              graphObject.multibindingsInfo,
+            );
 
             if (provider is ModuleSource) {
-              b.assignment = _buildProviderFromMethod(provider.method).code;
+              b.assignment =
+                  _buildProviderFromMethod(provider.method, null).code;
             } else if (provider is InjectedConstructorSource) {
               b.assignment =
                   _buildProviderFromConstructor(provider.element).code;
+            } else if (provider is MultibindingsSource) {
+              final Iterable<GraphObject> collectedObjects =
+                  _collectMultibindingsObjects(provider.multibindingsGroup);
+
+              final bool hasDependencies = collectedObjects
+                  .any((GraphObject object) => object.dependencies.isNotEmpty);
+
+              final Code assignment = Block.of(
+                <Code>[
+                  Code('_${capitalize(fieldName)}'),
+                  if (hasDependencies)
+                    const Code('(this)')
+                  else
+                    const Code('()')
+                ],
+              );
+
+              b.assignment = assignment;
             } else {
               throw JuggerError(
                 buildUnexpectedErrorMessage(
@@ -418,8 +474,7 @@ class ComponentBuilderDelegate {
               );
             }
 
-            b.type =
-                Reference('IProvider<$generic>', 'package:jugger/jugger.dart');
+            b.type = refer('IProvider<$generic>', jugger);
           }),
         );
       }
@@ -606,10 +661,14 @@ class ComponentBuilderDelegate {
     required DartType type,
     Tag? tag,
     bool callGet = true,
+    String? prefixScope,
   }) {
     type.checkUnsupportedType();
 
     if (type == _componentType) {
+      if (prefixScope != null) {
+        return refer(prefixScope);
+      }
       return const Reference('this');
     }
 
@@ -634,25 +693,41 @@ class ComponentBuilderDelegate {
     final ProviderSource provider = _componentContext.findProvider(type, tag);
 
     if (provider is ArgumentSource) {
-      final String? finalSting;
+      String? finalSting;
 
-      if (tag == null) {
-        finalSting = null;
-      } else {
+      if (tag != null) {
         finalSting = generateMd5(tag.uniqueId);
       }
 
-      return refer('_${_generateFieldName(type: type, tag: finalSting)}');
+      final StringBuffer assignExpressionBuilder = StringBuffer();
+      if (prefixScope != null) {
+        assignExpressionBuilder
+          ..write(prefixScope)
+          ..write('.');
+      }
+      assignExpressionBuilder
+        ..write('_')
+        ..write(_generateFieldName(type: type, tag: finalSting));
+
+      return refer(assignExpressionBuilder.toString());
     }
 
     if (provider is AnotherComponentSource) {
-      return refer(provider.assignString);
+      final StringBuffer assignExpressionBuilder = StringBuffer();
+      if (prefixScope != null) {
+        assignExpressionBuilder
+          ..write(prefixScope)
+          ..write('.');
+      }
+      assignExpressionBuilder.write(provider.assignString);
+      return refer(assignExpressionBuilder.toString());
     }
 
     return _generateProviderCall(
       tag: tag,
       type: type,
       callGet: callGet,
+      prefixScope: prefixScope,
     );
   }
 
@@ -664,6 +739,7 @@ class ComponentBuilderDelegate {
     required Tag? tag,
     required DartType type,
     required bool callGet,
+    required String? prefixScope,
   }) {
     final String? finalTag;
 
@@ -673,8 +749,16 @@ class ComponentBuilderDelegate {
       finalTag = generateMd5(tag.uniqueId);
     }
 
-    Expression finalExpression =
-        refer('_${_generateFieldName(type: type, tag: finalTag)}Provider');
+    final StringBuffer finalExpressionBuilder = StringBuffer();
+    if (prefixScope != null) {
+      finalExpressionBuilder.write('$prefixScope.');
+    }
+    finalExpressionBuilder
+      ..write('_')
+      ..write(_generateFieldName(type: type, tag: finalTag))
+      ..write('Provider');
+
+    Expression finalExpression = refer(finalExpressionBuilder.toString());
     if (callGet) {
       finalExpression = finalExpression.property('get').call(<Expression>[]);
     }
@@ -767,11 +851,14 @@ class ComponentBuilderDelegate {
   /// ```
   /// SingletonProvider<MyClass>(() => AppModule.provideMyClass());
   /// ```
-  Expression _buildProviderFromMethod(j.ProvideMethod method) {
+  Expression _buildProviderFromMethod(
+    j.ProvideMethod method,
+    String? prefixScope,
+  ) {
     if (method is j.StaticProvideMethod) {
-      return _buildProviderFromStaticMethod(method);
+      return _buildProviderFromStaticMethod(method, prefixScope);
     } else if (method is j.AbstractProvideMethod) {
-      return _buildProviderFromAbstractMethod(method);
+      return _buildProviderFromAbstractMethod(method, prefixScope);
     } else {
       throw UnexpectedJuggerError(
         'Unsupported method [${method.element.enclosingElement.name}.'
@@ -807,7 +894,10 @@ class ComponentBuilderDelegate {
   /// ```
   /// SingletonProvider<MyClass>(() => _myClassProvider.get());
   /// ```
-  Expression _buildProviderFromAbstractMethod(j.AbstractProvideMethod method) {
+  Expression _buildProviderFromAbstractMethod(
+    j.AbstractProvideMethod method,
+    String? prefixScope,
+  ) {
     final ProviderSource provider =
         _componentContext.findProvider(method.assignableType);
 
@@ -832,6 +922,7 @@ class ComponentBuilderDelegate {
           _buildExpressionClosure(
             _generateAssignExpression(
               type: method.assignableType,
+              prefixScope: prefixScope,
             ).code,
           ),
         ],
@@ -865,7 +956,10 @@ class ComponentBuilderDelegate {
   /// ```
   /// SingletonProvider<MyClass>(() => AppModule.provideMyClass());
   /// ```
-  Expression _buildProviderFromStaticMethod(j.StaticProvideMethod method) {
+  Expression _buildProviderFromStaticMethod(
+    j.StaticProvideMethod method,
+    String? prefixScope,
+  ) {
     final Element moduleClass = method.element.enclosingElement;
     final Expression callExpression =
         _getProviderReferenceOfElement(method.element).newInstance(<Expression>[
@@ -875,7 +969,7 @@ class ComponentBuilderDelegate {
           <Code>[
             refer(moduleClass.name!, createElementPath(moduleClass)).code,
             const Code('.'),
-            _buildCallMethod(method.element).code,
+            _buildCallMethod(method.element, prefixScope).code,
           ],
         ),
       )
@@ -909,6 +1003,7 @@ class ComponentBuilderDelegate {
     final Expression newInstanceExpression = _buildCallArgumentsExpression(
       constructor.parameters,
       reference,
+      null,
     );
     return _callInjectedMethodsIfNeeded(
       newInstanceExpression,
@@ -922,7 +1017,10 @@ class ComponentBuilderDelegate {
   /// ```
   /// provideMyClass();
   /// ```
-  Expression _buildCallMethod(MethodElement method) {
+  Expression _buildCallMethod(
+    MethodElement method,
+    String? prefixScope,
+  ) {
     final Reference reference = refer(method.name);
     if (method.parameters.isEmpty) {
       return reference.call(<Expression>[]);
@@ -931,6 +1029,7 @@ class ComponentBuilderDelegate {
     return _buildCallArgumentsExpression(
       method.parameters,
       reference,
+      prefixScope,
     );
   }
 
@@ -946,6 +1045,7 @@ class ComponentBuilderDelegate {
   Expression _buildCallArgumentsExpression(
     List<ParameterElement> parameters,
     Reference reference,
+    String? prefixScope,
   ) {
     final bool isPositional =
         parameters.any((ParameterElement p) => p.isPositional);
@@ -962,14 +1062,14 @@ class ComponentBuilderDelegate {
 
     if (isPositional) {
       return reference.newInstance(
-        _buildArgumentsExpressions(parameters).values.toList(),
+        _buildArgumentsExpressions(parameters, prefixScope).values.toList(),
       );
     }
 
     if (isNamed) {
       final Expression newInstance = reference.newInstance(
         <Expression>[],
-        _buildArgumentsExpressions(parameters),
+        _buildArgumentsExpressions(parameters, prefixScope),
       );
       return newInstance;
     }
@@ -995,7 +1095,7 @@ class ComponentBuilderDelegate {
         final List<Code> methodsCalls = methods.expand((MethodElement method) {
           return <Code>[
             const Code('..'),
-            _buildCallMethod(method).code,
+            _buildCallMethod(method, null).code,
           ];
         }).toList();
         final Block block = Block.of(
@@ -1047,7 +1147,7 @@ class ComponentBuilderDelegate {
   }) {
     return refer(
       singleton ? 'SingletonProvider<$generic>' : 'Provider<$generic>',
-      'package:jugger/jugger.dart',
+      jugger,
     );
   }
 
@@ -1129,22 +1229,24 @@ class ComponentBuilderDelegate {
   /// [parameters] parameters used for arguments.
   Map<String, Expression> _buildArgumentsExpressions(
     List<ParameterElement> parameters,
+    String? prefixScope,
   ) {
     if (parameters.isEmpty) {
       return HashMap<String, Expression>();
     }
 
-    final Iterable<MapEntry<String, Expression>> map =
+    final Iterable<MapEntry<String, Expression>> entries =
         parameters.map((ParameterElement parameter) {
       return MapEntry<String, Expression>(
         parameter.name,
         _generateAssignExpression(
           type: parameter.type,
           tag: getQualifierAnnotation(parameter)?.tag,
+          prefixScope: prefixScope,
         ),
       );
     });
-    return Map<String, Expression>.fromEntries(map);
+    return Map<String, Expression>.fromEntries(entries);
   }
 
   // region disposable
@@ -1481,4 +1583,308 @@ if (_disposed) {
   }
 
 // endregion
+
+// region multibindings
+
+  Iterable<GraphObject> _collectMultibindingsObjects(MultibindingsGroup info) {
+    return info.providers.map((ProviderSource provider) {
+      return _componentContext.findGraphObject(
+        type: provider.type,
+        tag: provider.tag,
+        multibindingsInfo: provider.multibindingsInfo,
+      );
+    });
+  }
+
+  Class _buildMultibindingsProviderClass(MultibindingsGroup group) {
+    final GraphObject classGraphObject = group.graphObject;
+
+    final String multibindingsTag = classGraphObject.multibindingsInfo == null
+        ? ''
+        : generateMd5(classGraphObject.multibindingsInfo!.methodPath);
+    final String fieldName = _generateFieldName(
+      type: classGraphObject.type,
+      tag: group.tag?.toAssignTag(),
+    );
+    final String providerName = capitalize(
+      '$fieldName${multibindingsTag}Provider',
+    );
+    final String className = '_$providerName';
+
+    final String generic = _allocator.allocate(
+      refer(_allocateDependencyTypeName(classGraphObject)),
+    );
+
+    final Iterable<GraphObject> collectedObjects =
+        _collectMultibindingsObjects(group);
+    final Iterable<Field> fields = collectedObjects
+        .map(
+          (GraphObject graphObject) => Field((FieldBuilder b) {
+            final Tag? tag = graphObject.tag;
+
+            final StringBuffer fieldNameBuilder = StringBuffer();
+            fieldNameBuilder.write(
+              _generateFieldName(
+                type: graphObject.type,
+                tag: tag?.toAssignTag(),
+              ),
+            );
+            if (graphObject.multibindingsInfo != null) {
+              fieldNameBuilder.write(
+                generateMd5(graphObject.multibindingsInfo!.methodPath),
+              );
+            }
+            fieldNameBuilder.write('Provider');
+
+            b.name = '_${fieldNameBuilder.toString()}';
+
+            final String generic = _allocator.allocate(
+              refer(_allocateDependencyTypeName(graphObject)),
+            );
+            b.late = true;
+            b.modifier = FieldModifier.final$;
+
+            final ProviderSource provider = _componentContext.findProvider(
+              graphObject.type,
+              tag,
+              graphObject.multibindingsInfo,
+            );
+
+            if (provider is ModuleSource) {
+              b.assignment =
+                  _buildProviderFromMethod(provider.method, '_component').code;
+            } else {
+              throw JuggerError(
+                buildUnexpectedErrorMessage(
+                  message: 'Unexpected provider $provider',
+                ),
+              );
+            }
+
+            b.type = refer('IProvider<$generic>', jugger);
+          }),
+        )
+        .sortedBy((Field element) => element.name);
+
+    final bool hasDependencies = collectedObjects
+        .any((GraphObject object) => object.dependencies.isNotEmpty);
+
+    return Class(
+      (ClassBuilder classBuilder) {
+        classBuilder
+          ..implements.add(refer('IProvider<$generic>', jugger))
+          ..name = className
+          ..fields.addAll(fields);
+        if (hasDependencies) {
+          classBuilder
+            ..fields.add(
+              Field(
+                (FieldBuilder fieldBuilder) {
+                  fieldBuilder
+                    ..name = '_component'
+                    ..type = refer(
+                      _createComponentName(
+                        _componentContext.component.element.name,
+                      ),
+                    )
+                    ..modifier = FieldModifier.final$;
+                },
+              ),
+            )
+            ..constructors.add(
+              Constructor(
+                (ConstructorBuilder builder) {
+                  builder.requiredParameters.add(
+                    Parameter(
+                      (ParameterBuilder parameterBuilder) {
+                        parameterBuilder
+                          ..toThis = true
+                          ..name = '_component';
+                      },
+                    ),
+                  );
+                },
+              ),
+            );
+        }
+
+        final Code body;
+        final DartType type = classGraphObject.type;
+
+        if (type.isDartCoreMap) {
+          body = _createMapBody(
+            collectedObjects: collectedObjects,
+            type: type as InterfaceType,
+          ).code;
+        } else if (type.isDartCoreSet) {
+          body = _createSetBody(
+            collectedObjects: collectedObjects,
+            type: type as InterfaceType,
+          ).code;
+        } else {
+          throw 'unknown type';
+        }
+
+        classBuilder.methods.addAll(
+          <Method>[
+            Method(
+              (MethodBuilder methodBuilder) {
+                methodBuilder
+                  ..annotations.add(_overrideAnnotationExpression)
+                  ..name = 'get'
+                  ..returns = refer(generic)
+                  ..body = body;
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Expression _createMapBody({
+    required Iterable<GraphObject> collectedObjects,
+    required InterfaceType type,
+  }) {
+    final Iterable<MapEntry<Expression, Reference>> entries =
+        collectedObjects.map((GraphObject graphObject) {
+      final ModuleSource provider = _componentContext.findProvider(
+        graphObject.type,
+        graphObject.tag,
+        graphObject.multibindingsInfo,
+      ) as ModuleSource;
+
+      final j.MultibindingsKeyAnnotation<Object?> keyAnnotation =
+          provider.element.getSingleMultibindsKeyAnnotation();
+
+      final Expression keyExpression;
+
+      if (keyAnnotation is EnumAnnotation) {
+        keyExpression = refer(
+          '${_allocateTypeName(keyAnnotation.type)}.${keyAnnotation.key}',
+        );
+      } else if (keyAnnotation is MultibindingsKeyAnnotation<String>) {
+        keyExpression = literalString(keyAnnotation.key);
+      } else if (keyAnnotation is MultibindingsKeyAnnotation<int>) {
+        keyExpression = literalNum(keyAnnotation.key);
+      } else if (keyAnnotation is MultibindingsKeyAnnotation<double>) {
+        keyExpression = literalNum(keyAnnotation.key);
+      } else if (keyAnnotation is MultibindingsKeyAnnotation<bool>) {
+        keyExpression = literalBool(keyAnnotation.key);
+      } else if (keyAnnotation is MultibindingsKeyAnnotation<DartType>) {
+        keyExpression = refer(
+          _allocateTypeName(
+            (keyAnnotation.key.element! as ClassElement).thisType,
+          ),
+        );
+      } else {
+        throw UnexpectedJuggerError(
+          buildUnexpectedErrorMessage(
+            message: 'Unknown keyAnnotation $keyAnnotation',
+          ),
+        );
+      }
+
+      final StringBuffer fieldNameBuilder = StringBuffer()
+        ..write('_')
+        ..write(
+          _generateFieldName(
+            type: graphObject.type,
+            tag: graphObject.tag?.toAssignTag(),
+          ),
+        );
+
+      if (graphObject.multibindingsInfo != null) {
+        fieldNameBuilder.write(
+          generateMd5(
+            graphObject.multibindingsInfo!.methodPath,
+          ),
+        );
+      }
+
+      fieldNameBuilder.write('Provider.get()');
+
+      final String fieldName = fieldNameBuilder.toString();
+
+      return MapEntry<Expression, Reference>(keyExpression, refer(fieldName));
+    });
+
+    final Map<Expression, Reference> baseMap =
+        Map<Expression, Reference>.fromEntries(entries);
+
+    final SplayTreeMap<Expression, Reference> values =
+        SplayTreeMap<Expression, Reference>.from(
+      baseMap,
+      (Expression key1, Expression key2) {
+        final Reference ref1 = baseMap[key1]!;
+        final Reference ref2 = baseMap[key2]!;
+        return '${ref1.symbol}${ref1.symbol}'
+            .compareTo('${ref2.symbol}${ref2.symbol}');
+      },
+    );
+
+    return const Reference('Map').newInstanceNamed(
+      'unmodifiable',
+      <Expression>[
+        CodeExpression(
+          Block.of(
+            <Code>[
+              Code(
+                '<${_allocateTypeName(type.typeArguments[0])}, '
+                '${_allocateTypeName(type.typeArguments[1])}>',
+              ),
+              literalMap(values).code,
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Expression _createSetBody({
+    required Iterable<GraphObject> collectedObjects,
+    required InterfaceType type,
+  }) {
+    final Expression setExpression = literalSet(
+      collectedObjects
+          .map((GraphObject graphObject) {
+            final StringBuffer fieldNameBuilder = StringBuffer()
+              ..write('_')
+              ..write(
+                _generateFieldName(
+                  type: graphObject.type,
+                  tag: graphObject.tag?.toAssignTag(),
+                ),
+              );
+
+            if (graphObject.multibindingsInfo != null) {
+              fieldNameBuilder.write(
+                generateMd5(
+                  graphObject.multibindingsInfo!.methodPath,
+                ),
+              );
+            }
+
+            fieldNameBuilder.write('Provider.get()');
+            return fieldNameBuilder.toString();
+          })
+          .sortedBy((String fieldName) => fieldName)
+          .map((String fieldName) => refer(fieldName)),
+    );
+    return const Reference('Set').newInstanceNamed(
+      'unmodifiable',
+      <Expression>[
+        CodeExpression(
+          Block.of(
+            <Code>[
+              Code('<${_allocateTypeName(type.typeArguments[0])}>'),
+              setExpression.code,
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+// endregion multibindings
 }

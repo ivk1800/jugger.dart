@@ -268,6 +268,34 @@ class BindAnnotation implements Annotation {
   const BindAnnotation();
 }
 
+abstract class MultibindingsGroupAnnotation implements Annotation {
+  const MultibindingsGroupAnnotation();
+}
+
+class IntoSetAnnotation implements MultibindingsGroupAnnotation {
+  const IntoSetAnnotation();
+}
+
+class IntoMapAnnotation implements MultibindingsGroupAnnotation {
+  const IntoMapAnnotation();
+}
+
+class MultibindingsKeyAnnotation<K> implements Annotation {
+  const MultibindingsKeyAnnotation(this.key, this.type);
+
+  final K key;
+  final DartType type;
+}
+
+class EnumAnnotation implements MultibindingsKeyAnnotation<String> {
+  const EnumAnnotation(this.key, this.type);
+
+  @override
+  final String key;
+  @override
+  final DartType type;
+}
+
 /// Wrapper class for nonLazy annotation.
 class NonLazyAnnotation implements Annotation {
   const NonLazyAnnotation();

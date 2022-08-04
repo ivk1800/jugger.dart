@@ -89,8 +89,11 @@ class DisposablesManager {
     final List<DisposableInfo> sources = <DisposableInfo>[];
 
     for (final GraphObject graphObject in graphObjects) {
-      final ProviderSource source =
-          context.findProvider(graphObject.type, graphObject.tag);
+      final ProviderSource source = context.findProvider(
+        graphObject.type,
+        graphObject.tag,
+        graphObject.multibindingsInfo,
+      );
 
       if (source is InjectedConstructorSource) {
         final DisposableAnnotation? disposableAnnotation =

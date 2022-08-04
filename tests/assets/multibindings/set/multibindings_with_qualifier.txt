@@ -1,0 +1,40 @@
+// ignore_for_file: implementation_imports
+// ignore_for_file: prefer_const_constructors
+// ignore_for_file: always_specify_types
+// ignore_for_file: directives_ordering
+// ignore_for_file: non_constant_identifier_names
+// ignore_for_file: no_leading_underscores_for_library_prefixes
+import 'package:tests/multibindings/set/multibindings_with_qualifier.dart'
+    as _i1;
+import 'package:jugger/jugger.dart' as _i2;
+
+class JuggerAppComponent implements _i1.AppComponent {
+  JuggerAppComponent.create();
+
+  late final _i2.IProvider<Set<String>>
+      _named_3364029304b2717304e2855490532d1c_Set_String_Provider =
+      _Named_3364029304b2717304e2855490532d1c_Set_String_Provider();
+
+  @override
+  Set<String> get strings =>
+      _named_3364029304b2717304e2855490532d1c_Set_String_Provider.get();
+}
+
+class _Named_3364029304b2717304e2855490532d1c_Set_String_Provider
+    implements _i2.IProvider<Set<String>> {
+  late final _i2.IProvider<String>
+      _named_3364029304b2717304e2855490532d1c_String1cd1812dfa95f93a293be610f6aa4d36Provider =
+      _i2.Provider<String>(() => _i1.Module1.provideString2());
+
+  late final _i2.IProvider<String>
+      _named_3364029304b2717304e2855490532d1c_String6e8c47e1b62c97a19ee198441b3d8f97Provider =
+      _i2.Provider<String>(() => _i1.Module1.provideString1());
+
+  @override
+  Set<String> get() => Set.unmodifiable(<String>{
+        _named_3364029304b2717304e2855490532d1c_String1cd1812dfa95f93a293be610f6aa4d36Provider
+            .get(),
+        _named_3364029304b2717304e2855490532d1c_String6e8c47e1b62c97a19ee198441b3d8f97Provider
+            .get()
+      });
+}

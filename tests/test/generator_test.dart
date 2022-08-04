@@ -4,6 +4,236 @@ import 'package:test/test.dart';
 import 'utils.dart';
 
 void main() {
+  group('multibindings', () {
+    group('set', () {
+      test('simple multibindings', () async {
+        await checkBuilderOfFile(
+          'multibindings/set/simple_multibindings',
+        );
+      });
+
+      test('multibindings with singleton', () async {
+        await checkBuilderOfFile(
+          'multibindings/set/multibindings_with_singleton',
+        );
+      });
+
+      test('multibindings with qualifier', () async {
+        await checkBuilderOfFile(
+          'multibindings/set/multibindings_with_qualifier',
+        );
+      });
+
+      test('multibindings with mixed qualifiers', () async {
+        await checkBuilderOfFile(
+          'multibindings/set/multibindings_with_mixed_qualifiers',
+        );
+      });
+
+      test('multibindings with dependencies from module', () async {
+        await checkBuilderOfFile(
+          'multibindings/set/multibindings_with_dependencies_from_module',
+        );
+      });
+
+      test('multibindings with dependencies from injected constructor',
+          () async {
+        await checkBuilderOfFile(
+          'multibindings/set/multibindings_with_dependencies_from_injected_constructor',
+        );
+      });
+
+      test('multibindings with component dependency', () async {
+        await checkBuilderOfFile(
+          'multibindings/set/multibindings_with_component_dependency',
+        );
+      });
+
+      test('multibindings from multiple modules', () async {
+        await checkBuilderOfFile(
+          'multibindings/set/multibindings_from_multiple_modules',
+        );
+      });
+
+      test('multibindings from included modules', () async {
+        await checkBuilderOfFile(
+          'multibindings/set/multibindings_from_included_modules',
+        );
+      });
+
+      test('multibindings with dependencies from args', () async {
+        await checkBuilderOfFile(
+          'multibindings/set/multibindings_with_dependencies_from_args',
+        );
+      });
+
+      test('multibindings with dependency in module method', () async {
+        await checkBuilderOfFile(
+          'multibindings/set/multibindings_with_dependency_in_module_method',
+        );
+      });
+
+      test('multibindings with dependency in injected constructor', () async {
+        await checkBuilderOfFile(
+          'multibindings/set/multibindings_with_dependency_in_injected_constructor',
+        );
+      });
+
+      test('multibindings with binds', () async {
+        await checkBuilderOfFile(
+          'multibindings/set/multibindings_with_binds',
+        );
+      });
+
+      test('multibindings with dependencies from another component', () async {
+        await checkBuilderOfFile(
+          'multibindings/set/multibindings_with_dependencies_from_another_component',
+        );
+      });
+    });
+
+    group('map', () {
+      test('simple multibindings with int key', () async {
+        await checkBuilderOfFile(
+          'multibindings/map/simple_multibindings_with_int_key',
+        );
+      });
+
+      test('simple multibindings with string key', () async {
+        await checkBuilderOfFile(
+          'multibindings/map/simple_multibindings_with_string_key',
+        );
+      });
+
+      test('simple multibindings with type key', () async {
+        await checkBuilderOfFile(
+          'multibindings/map/simple_multibindings_with_type_key',
+        );
+      });
+
+      test('multibindings with custom bool key', () async {
+        await checkBuilderOfFile(
+          'multibindings/map/multibindings_with_custom_bool_key',
+        );
+      });
+
+      test('multibindings with custom double key', () async {
+        await checkBuilderOfFile(
+          'multibindings/map/multibindings_with_custom_double_key',
+        );
+      });
+
+      test('multibindings with custom enum key', () async {
+        await checkBuilderOfFile(
+          'multibindings/map/multibindings_with_custom_enum_key',
+        );
+      });
+
+      test('multibindings with custom int key', () async {
+        await checkBuilderOfFile(
+          'multibindings/map/multibindings_with_custom_int_key',
+        );
+      });
+
+      test('multibindings with custom string key', () async {
+        await checkBuilderOfFile(
+          'multibindings/map/multibindings_with_custom_string_key',
+        );
+      });
+
+      test('multibindings with custom type key', () async {
+        await checkBuilderOfFile(
+          'multibindings/map/multibindings_with_custom_type_key',
+        );
+      });
+
+      test('simple multibindings with custom type key', () async {
+        await checkBuilderOfFile(
+          'multibindings/map/simple_multibindings_with_custom_type_key',
+        );
+      });
+
+      test('multibindings from included modules', () async {
+        await checkBuilderOfFile(
+          'multibindings/map/multibindings_from_included_modules',
+        );
+      });
+
+      test('multibindings from multiple modules', () async {
+        await checkBuilderOfFile(
+          'multibindings/map/multibindings_from_multiple_modules',
+        );
+      });
+
+      test('multibindings with binds', () async {
+        await checkBuilderOfFile(
+          'multibindings/map/multibindings_with_binds',
+        );
+      });
+
+      test('multibindings with component dependency', () async {
+        await checkBuilderOfFile(
+          'multibindings/map/multibindings_with_component_dependency',
+        );
+      });
+
+      test('multibindings with dependencies from another component', () async {
+        await checkBuilderOfFile(
+          'multibindings/map/multibindings_with_dependencies_from_another_component',
+        );
+      });
+
+      test('multibindings with dependencies from args', () async {
+        await checkBuilderOfFile(
+          'multibindings/map/multibindings_with_dependencies_from_args',
+        );
+      });
+
+      test('multibindings with dependencies from injected constructor',
+          () async {
+        await checkBuilderOfFile(
+          'multibindings/map/multibindings_with_dependencies_from_injected_constructor',
+        );
+      });
+
+      test('multibindings with dependencies from module', () async {
+        await checkBuilderOfFile(
+          'multibindings/map/multibindings_with_dependencies_from_module',
+        );
+      });
+
+      test('multibindings with dependency in injected constructor', () async {
+        await checkBuilderOfFile(
+          'multibindings/map/multibindings_with_dependency_in_injected_constructor',
+        );
+      });
+
+      test('multibindings with dependency in module method', () async {
+        await checkBuilderOfFile(
+          'multibindings/map/multibindings_with_dependency_in_module_method',
+        );
+      });
+
+      test('multibindings with mixed qualifiers', () async {
+        await checkBuilderOfFile(
+          'multibindings/map/multibindings_with_mixed_qualifiers',
+        );
+      });
+
+      test('multibindings with qualifier', () async {
+        await checkBuilderOfFile(
+          'multibindings/map/multibindings_with_qualifier',
+        );
+      });
+
+      test('multibindings with singleton', () async {
+        await checkBuilderOfFile(
+          'multibindings/map/multibindings_with_singleton',
+        );
+      });
+    });
+  });
+
   group('disposable', () {
     test('dispose method of disposable object from mixin', () async {
       await checkBuilderOfFile(

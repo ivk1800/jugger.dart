@@ -1,0 +1,61 @@
+// ignore_for_file: implementation_imports
+// ignore_for_file: prefer_const_constructors
+// ignore_for_file: always_specify_types
+// ignore_for_file: directives_ordering
+// ignore_for_file: non_constant_identifier_names
+// ignore_for_file: no_leading_underscores_for_library_prefixes
+import 'package:tests/multibindings/map/multibindings_with_dependencies_from_another_component.dart'
+    as _i1;
+import 'package:jugger/jugger.dart' as _i2;
+
+class JuggerComponent2Builder implements _i1.Component2Builder {
+  _i1.Component1? _component1;
+
+  @override
+  _i1.Component2Builder setComponent1(_i1.Component1 component1) {
+    _component1 = component1;
+    return this;
+  }
+
+  @override
+  _i1.Component2 build() {
+    assert(_component1 != null);
+    return JuggerComponent2._create(_component1!);
+  }
+}
+
+class JuggerComponent1 implements _i1.Component1 {
+  JuggerComponent1.create();
+
+  late final _i2.IProvider<int> _intProvider =
+      _i2.Provider<int>(() => _i1.Module1.provideInt());
+
+  @override
+  int get i => _intProvider.get();
+}
+
+class JuggerComponent2 implements _i1.Component2 {
+  JuggerComponent2._create(this._component1);
+
+  late final _i2.IProvider<Map<int, String>> _map_int_String_Provider =
+      _Map_int_String_Provider(this);
+
+  final _i1.Component1 _component1;
+
+  @override
+  Map<int, String> get strings => _map_int_String_Provider.get();
+}
+
+class _Map_int_String_Provider implements _i2.IProvider<Map<int, String>> {
+  _Map_int_String_Provider(this._component);
+
+  late final _i2.IProvider<String>
+      _stringda5b2834f095eea8b570d10ba69b3dd7Provider = _i2.Provider<String>(
+          () => _i1.Module2.provideString1(_component._component1.i));
+
+  final JuggerComponent2 _component;
+
+  @override
+  Map<int, String> get() => Map.unmodifiable(
+      <int, String>{1: _stringda5b2834f095eea8b570d10ba69b3dd7Provider.get()});
+}
