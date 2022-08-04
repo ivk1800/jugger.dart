@@ -904,10 +904,8 @@ extension _MethodElementExt on MethodElement {
         methodPath: methodPath,
       );
     } else {
-      throw JuggerError(
-        buildUnexpectedErrorMessage(
-          message: 'Unknown Multibinding annotation $annotation.',
-        ),
+      throw UnexpectedJuggerError(
+        'Unknown Multibinding annotation $annotation.',
       );
     }
   }

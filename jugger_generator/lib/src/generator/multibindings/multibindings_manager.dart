@@ -70,11 +70,7 @@ class MultibindingsManager {
           provider.element.getMultibindingsGroupAnnotationOrNull();
 
       if (annotation == null) {
-        throw JuggerError(
-          buildUnexpectedErrorMessage(
-            message: 'MultibindingsGroupAnnotation is null',
-          ),
-        );
+        throw UnexpectedJuggerError('MultibindingsGroupAnnotation is null');
       }
 
       final _MultibindsGroup multibindsGroup;
