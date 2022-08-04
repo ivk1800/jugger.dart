@@ -26,10 +26,14 @@ Future<void> checkBuilderOfFile(
   final File codeContentFile =
       File('${Directory.current.path}/lib/$fileName.dart');
 
-  assert(resultContentFile.existsSync(),
-      'result file is missing, ${resultContentFile.path}');
-  assert(codeContentFile.existsSync(),
-      'code file is missing, ${codeContentFile.path}');
+  assert(
+    resultContentFile.existsSync(),
+    'result file is missing, ${resultContentFile.path}',
+  );
+  assert(
+    codeContentFile.existsSync(),
+    'code file is missing, ${codeContentFile.path}',
+  );
 
   final String resultContent = await resultContentFile.readAsString();
 
@@ -78,14 +82,15 @@ Future<void> checkBuilderResult({
   BuilderOptions options = BuilderOptions.empty,
 }) async {
   const String fileName = 'test';
-  String content = resultContent != null ? await resultContent.call() : '';
+  final String content =
+      resultContent != null ? await resultContent.call() : '';
   try {
     await testBuilder(
       JuggerBuilder(options: options),
       <String, String>{
         'tests|lib/$fileName.dart': mainContent,
         ...assets.map(
-          (key, value) {
+          (String key, String value) {
             return MapEntry<String, String>('tests|lib/$key', value);
           },
         ),

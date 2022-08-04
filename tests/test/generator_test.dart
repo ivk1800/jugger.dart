@@ -76,18 +76,22 @@ void main() {
     });
   });
 
-  group('field name generation', () {
-    test('should generate type names from module', () async {
-      await checkBuilderResult(
-        assets: {
-          'my1.dart': '''
+  group(
+    'field name generation',
+    () {
+      test(
+        'should generate type names from module',
+        () async {
+          await checkBuilderResult(
+            assets: <String, String>{
+              'my1.dart': '''
           class First {}
           ''',
-          'my2.dart': '''
+              'my2.dart': '''
           class First {}
           ''',
-        },
-        mainContent: '''
+            },
+            mainContent: '''
 import 'package:jugger/jugger.dart';
 import 'my1.dart' as m1;
 import 'my2.dart' as m2;
@@ -108,22 +112,24 @@ abstract class Module {
   static m2.First provideFirst2() => m2.First();
 }
         ''',
-        resultContent: () {
-          return readAssetFile('fields_names/from_module');
+            resultContent: () {
+              return readAssetFile('fields_names/from_module');
+            },
+          );
         },
+        skip: true,
       );
-    }, skip: true);
-    test('should generate type names from component arguments', () async {
-      await checkBuilderResult(
-        assets: {
-          'my1.dart': '''
+      test('should generate type names from component arguments', () async {
+        await checkBuilderResult(
+          assets: <String, String>{
+            'my1.dart': '''
           class First {}
           ''',
-          'my2.dart': '''
+            'my2.dart': '''
           class First {}
           ''',
-        },
-        mainContent: '''
+          },
+          mainContent: '''
 import 'package:jugger/jugger.dart';
 import 'my1.dart' as m1;
 import 'my2.dart' as m2;
@@ -144,15 +150,15 @@ abstract class AppComponentBuilder {
   AppComponent build();
 }
         ''',
-        resultContent: () {
-          return readAssetFile('fields_names/from_component_arguments');
-        },
-      );
-    });
-    test('should generate type names from injected constructor', () async {
-      await checkBuilderResult(
-        assets: {
-          'my1.dart': '''
+          resultContent: () {
+            return readAssetFile('fields_names/from_component_arguments');
+          },
+        );
+      });
+      test('should generate type names from injected constructor', () async {
+        await checkBuilderResult(
+          assets: <String, String>{
+            'my1.dart': '''
 import 'package:jugger/jugger.dart';
 
 class First {
@@ -160,7 +166,7 @@ class First {
   const First();
 }
           ''',
-          'my2.dart': '''
+            'my2.dart': '''
 import 'package:jugger/jugger.dart';
 
 class First {
@@ -168,8 +174,8 @@ class First {
   const First();
 }
           ''',
-        },
-        mainContent: '''
+          },
+          mainContent: '''
 // ignore_for_file: avoid_classes_with_only_static_members
 
 import 'package:jugger/jugger.dart';
@@ -183,12 +189,14 @@ abstract class AppComponent {
   m2.First get first2;
 }
         ''',
-        resultContent: () {
-          return readAssetFile('fields_names/from_injected_constructor');
-        },
-      );
-    });
-  }, skip: true);
+          resultContent: () {
+            return readAssetFile('fields_names/from_injected_constructor');
+          },
+        );
+      });
+    },
+    skip: true,
+  );
 
   group('binds', () {
     test('from another module', () async {
@@ -320,22 +328,26 @@ abstract class AppComponent {
     });
     test('named qualifier provides param', () async {
       await checkBuilderOfFile(
-          'qualifier/named/named_qualifier_provides_param');
+        'qualifier/named/named_qualifier_provides_param',
+      );
     });
 
     test('qualified multiple instances same type', () async {
       await checkBuilderOfFile(
-          'qualifier/qualified_multiple_instances_same_type');
+        'qualifier/qualified_multiple_instances_same_type',
+      );
     });
 
     test('component arguments with custom qualifier', () async {
       await checkBuilderOfFile(
-          'qualifier/component_arguments_with_custom_qualifier');
+        'qualifier/component_arguments_with_custom_qualifier',
+      );
     });
 
     test('component arguments with named qualifier', () async {
       await checkBuilderOfFile(
-          'qualifier/component_arguments_with_named_qualifier');
+        'qualifier/component_arguments_with_named_qualifier',
+      );
     });
   });
 
@@ -346,32 +358,38 @@ abstract class AppComponent {
 
     test('empty injected const constructor', () async {
       await checkBuilderOfFile(
-          'inject/constructor/empty_injected_const_constructor');
+        'inject/constructor/empty_injected_const_constructor',
+      );
     });
 
     test('injected const constructor with params', () async {
       await checkBuilderOfFile(
-          'inject/constructor/injected_const_constructor_with_params');
+        'inject/constructor/injected_const_constructor_with_params',
+      );
     });
 
     test('injected constructor with singleton scope', () async {
       await checkBuilderOfFile(
-          'inject/constructor/injected_constructor_with_singleton_scope');
+        'inject/constructor/injected_constructor_with_singleton_scope',
+      );
     });
 
     test('injected constructor with positional params', () async {
       await checkBuilderOfFile(
-          'inject/constructor/injected_constructor_with_positional_params');
+        'inject/constructor/injected_constructor_with_positional_params',
+      );
     });
 
     test('injected constructor deep tree', () async {
       await checkBuilderOfFile(
-          'inject/constructor/injected_constructor_deep_tree');
+        'inject/constructor/injected_constructor_deep_tree',
+      );
     });
 
     test('injected constructor deep tree 2', () async {
       await checkBuilderOfFile(
-          'inject/constructor/injected_constructor_deep_tree_2');
+        'inject/constructor/injected_constructor_deep_tree_2',
+      );
     });
   });
 
@@ -402,7 +420,8 @@ abstract class AppComponent {
   group('component', () {
     test('component with build instance dependency', () async {
       await checkBuilderOfFile(
-          'component/component_with_build_instance_dependency');
+        'component/component_with_build_instance_dependency',
+      );
     });
 
     test('component without module', () async {

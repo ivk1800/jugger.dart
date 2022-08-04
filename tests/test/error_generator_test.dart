@@ -1620,10 +1620,11 @@ abstract class MyModule {
         ''',
         onError: (Object error) {
           expect(
-              error.toString(),
-              'error: missing_component_dependency:\n'
-              'Dependency (AppComponent) not provided.\n'
-              'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#missing_component_dependency');
+            error.toString(),
+            'error: missing_component_dependency:\n'
+            'Dependency (AppComponent) not provided.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#missing_component_dependency',
+          );
         },
       );
     });
