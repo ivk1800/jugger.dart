@@ -56,7 +56,6 @@ class ComponentBuilderDelegate {
       return await _buildOutputInternal(buildStep);
     } catch (e) {
       if (e is! JuggerError) {
-        // print((e as Error).stackTrace);
         throw UnexpectedJuggerError(
           buildUnexpectedErrorMessage(message: e.toString()),
         );
@@ -170,9 +169,7 @@ class ComponentBuilderDelegate {
 
       _componentContext.multibindingsManager
           .getBindingsInfo()
-          .map(
-            (MultibindingsGroup info) => _buildMultibindingsProviderClass(info),
-          )
+          .map(_buildMultibindingsProviderClass)
           .sortedBy((Class c) => c.name)
           .forEach(target.body.add);
 
@@ -1610,17 +1607,11 @@ if (_disposed) {
     final String providerName = capitalize(
       '$fieldName${multibindingsTag}Provider',
     );
-    final String className = '_$providerName';
-
-    final String generic = _allocator.allocate(
-      refer(_allocateDependencyTypeName(classGraphObject)),
-    );
-
     final Iterable<GraphObject> collectedObjects =
         _collectMultibindingsObjects(group);
     final Iterable<Field> fields = collectedObjects
         .map(
-          (GraphObject graphObject) => Field((FieldBuilder b) {
+          (GraphObject graphObject) => Field((FieldBuilder fieldBuilder) {
             final Tag? tag = graphObject.tag;
 
             final StringBuffer fieldNameBuilder = StringBuffer();
@@ -1637,13 +1628,15 @@ if (_disposed) {
             }
             fieldNameBuilder.write('Provider');
 
-            b.name = '_${fieldNameBuilder.toString()}';
-
-            final String generic = _allocator.allocate(
+            final String fieldTypeString = _allocator.allocate(
               refer(_allocateDependencyTypeName(graphObject)),
             );
-            b.late = true;
-            b.modifier = FieldModifier.final$;
+
+            fieldBuilder
+              ..type = refer('IProvider<$fieldTypeString>', jugger)
+              ..name = '_${fieldNameBuilder.toString()}'
+              ..late = true
+              ..modifier = FieldModifier.final$;
 
             final ProviderSource provider = _componentContext.findProvider(
               graphObject.type,
@@ -1652,7 +1645,7 @@ if (_disposed) {
             );
 
             if (provider is ModuleSource) {
-              b.assignment =
+              fieldBuilder.assignment =
                   _buildProviderFromMethod(provider.method, '_component').code;
             } else {
               throw JuggerError(
@@ -1661,8 +1654,6 @@ if (_disposed) {
                 ),
               );
             }
-
-            b.type = refer('IProvider<$generic>', jugger);
           }),
         )
         .sortedBy((Field element) => element.name);
@@ -1670,11 +1661,15 @@ if (_disposed) {
     final bool hasDependencies = collectedObjects
         .any((GraphObject object) => object.dependencies.isNotEmpty);
 
+    final String classTypeString = _allocator.allocate(
+      refer(_allocateDependencyTypeName(classGraphObject)),
+    );
+
     return Class(
       (ClassBuilder classBuilder) {
         classBuilder
-          ..implements.add(refer('IProvider<$generic>', jugger))
-          ..name = className
+          ..implements.add(refer('IProvider<$classTypeString>', jugger))
+          ..name = '_$providerName'
           ..fields.addAll(fields);
         if (hasDependencies) {
           classBuilder
@@ -1723,7 +1718,7 @@ if (_disposed) {
             type: type as InterfaceType,
           ).code;
         } else {
-          throw 'unknown type';
+          throw UnexpectedJuggerError('Unknown type $type');
         }
 
         classBuilder.methods.addAll(
@@ -1733,7 +1728,7 @@ if (_disposed) {
                 methodBuilder
                   ..annotations.add(_overrideAnnotationExpression)
                   ..name = 'get'
-                  ..returns = refer(generic)
+                  ..returns = refer(classTypeString)
                   ..body = body;
               },
             ),

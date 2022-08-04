@@ -421,9 +421,8 @@ class ComponentContext {
   void _registerSource(ProviderSource source) {
     if (source.isMultibindings()) {
       multibindingsManager.handleSource(source);
-    } else {
-      _registerSourceOf(providerSources, source);
     }
+    _registerSourceOf(providerSources, source);
   }
 
   void _registerSourceOf(
