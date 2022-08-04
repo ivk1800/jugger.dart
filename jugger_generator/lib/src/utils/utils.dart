@@ -62,16 +62,7 @@ QualifierAnnotation? getQualifierAnnotation(Element element) {
 
 String generateMd5(String input) => md5.convert(utf8.encode(input)).toString();
 
-final Map<Element, List<Annotation>> _cache = <Element, List<Annotation>>{};
-
 List<Annotation> getAnnotations(Element element) {
-  return _getAnnotations(element);
-  // return _cache.putIfAbsent(element, () => _getAnnotations(element));
-}
-
-List<Annotation> _getAnnotations(Element element) {
-  check(!_cache.containsKey(element), () => 'cache is exist');
-
   final List<Annotation> annotations = <Annotation>[];
 
   for (int i = 0; i < element.metadata.length; i++) {
@@ -361,9 +352,7 @@ String uncapitalize(String name) {
   return name[0].toLowerCase() + name.substring(1);
 }
 
-String capitalize(String name) {
-  return name[0].toUpperCase() + name.substring(1);
-}
+String capitalize(String name) => name[0].toUpperCase() + name.substring(1);
 
 String createElementPath(Element element) {
   return 'package:${element.source!.uri.path}'.replaceFirst('/lib', '');
@@ -426,18 +415,15 @@ extension ElementExt on Element {
   String toNameWithPath() => '$name ${library?.identifier}';
 
   List<MultibindingsGroupAnnotation> getMultibindingsAnnotations() {
-    final List<MultibindingsGroupAnnotation> annotations = getAnnotations(this)
+    return getAnnotations(this)
         .whereType<MultibindingsGroupAnnotation>()
         .toList(growable: false);
-    return annotations;
   }
 
   List<MultibindingsKeyAnnotation<Object?>> getMultibindsKeyAnnotations() {
-    final List<MultibindingsKeyAnnotation<Object?>> annotations =
-        getAnnotations(this)
-            .whereType<MultibindingsKeyAnnotation<Object?>>()
-            .toList(growable: false);
-    return annotations;
+    return getAnnotations(this)
+        .whereType<MultibindingsKeyAnnotation<Object?>>()
+        .toList(growable: false);
   }
 
   MultibindingsKeyAnnotation<Object?> getSingleMultibindsKeyAnnotation() {

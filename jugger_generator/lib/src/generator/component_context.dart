@@ -97,11 +97,7 @@ class ComponentContext {
     }
 
     for (final j.ProvideMethod method in component.modulesProvideMethods) {
-      final MethodElement element = method.element;
-      if (element.isMultibindings()) {
-        multibindingsManager.handleGraphObject(element);
-      }
-      _registerGraphObject(element);
+      _registerGraphObject(method.element);
     }
 
     for (final j.MethodObjectAccessor method in component.methodsAccessors) {
@@ -402,9 +398,7 @@ class ComponentContext {
           element.multibindingsInfo == multibindingsInfo;
     });
     if (object == null) {
-      throw UnexpectedJuggerError(
-        buildUnexpectedErrorMessage(message: 'object is null'),
-      );
+      throw UnexpectedJuggerError('Unable find graph object.');
     }
 
     return object;
@@ -427,9 +421,9 @@ class ComponentContext {
   void _registerSource(ProviderSource source) {
     if (source.isMultibindings()) {
       multibindingsManager.handleSource(source);
+    } else {
+      _registerSourceOf(providerSources, source);
     }
-
-    _registerSourceOf(providerSources, source);
   }
 
   void _registerSourceOf(

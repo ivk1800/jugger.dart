@@ -170,8 +170,9 @@ class ComponentBuilderDelegate {
 
       _componentContext.multibindingsManager
           .getBindingsInfo()
-          .map((MultibindingsGroup info) =>
-              _buildMultibindingsProviderClass(info))
+          .map(
+            (MultibindingsGroup info) => _buildMultibindingsProviderClass(info),
+          )
           .sortedBy((Class c) => c.name)
           .forEach(target.body.add);
 

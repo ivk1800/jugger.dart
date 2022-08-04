@@ -29,19 +29,12 @@ class MultibindingsManager {
 
       if (source == null) {
         throw UnexpectedJuggerError(
-          buildUnexpectedErrorMessage(
-            message: 'Expected MultibindingsElementProvider, '
-                'but was ${p.runtimeType}',
-          ),
+          'Expected MultibindingsElementProvider, but was ${p.runtimeType}',
         );
       }
       return source.element.hashCode;
     },
   );
-
-  /// All methods that return objects for multibindings. Such methods can have
-  /// annotations [IntoMap] or [IntoSet].
-  final List<MethodElement> _multibindingsMethods = <MethodElement>[];
 
   void handleSource(ProviderSource source) {
     checkUnexpected(
@@ -65,10 +58,6 @@ class MultibindingsManager {
         message: message,
       );
     });
-  }
-
-  void handleGraphObject(MethodElement element) {
-    _multibindingsMethods.add(element);
   }
 
   List<MultibindingsGroup> getBindingsInfo() {
@@ -106,9 +95,7 @@ class MultibindingsManager {
         );
       } else {
         throw UnexpectedJuggerError(
-          buildUnexpectedErrorMessage(
-            message: 'Unknown multibindings annotation $annotation',
-          ),
+          'Unknown multibindings annotation $annotation',
         );
       }
 
@@ -126,9 +113,7 @@ class MultibindingsManager {
         return _createGroupForMap(key, providers);
       }
 
-      throw UnexpectedJuggerError(
-        buildUnexpectedErrorMessage(message: 'Unknown group $key'),
-      );
+      throw UnexpectedJuggerError('Unknown group $key');
     }).toList(growable: false);
   }
 
