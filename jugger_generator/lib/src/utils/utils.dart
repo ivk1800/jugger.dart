@@ -104,11 +104,7 @@ List<Annotation> getAnnotations(Element moduleClass) {
     }
 
     if (valueElement == null) {
-      throw UnexpectedJuggerError(
-        buildUnexpectedErrorMessage(
-          message: 'value if annotation [$annotation] is null',
-        ),
-      );
+      throw UnexpectedJuggerError('value if annotation [$annotation] is null');
     } else {
       final bool isJuggerLibrary = valueElement.library!.isJuggerLibrary;
 
@@ -210,9 +206,7 @@ List<Annotation> getAnnotations(Element moduleClass) {
       } else if (valueElement.name == componentBuilder.runtimeType.toString()) {
         if (valueElement is! ClassElement) {
           throw UnexpectedJuggerError(
-            buildUnexpectedErrorMessage(
-              message: 'element[$valueElement] is not ClassElement',
-            ),
+            'element [$valueElement] is not ClassElement',
           );
         }
         annotations.add(ComponentBuilderAnnotation(valueElement));

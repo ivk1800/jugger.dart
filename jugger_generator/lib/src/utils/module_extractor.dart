@@ -23,11 +23,7 @@ class ModuleExtractor {
 
   ModuleAnnotation getModuleAnnotationOfModuleClass(Element moduleClass) {
     if (moduleClass is! ClassElement) {
-      throw UnexpectedJuggerError(
-        buildUnexpectedErrorMessage(
-          message: 'element[$moduleClass] is not ClassElement',
-        ),
-      );
+      throw UnexpectedJuggerError('element[$moduleClass] is not ClassElement');
     }
     check(
       moduleClass.hasAnnotatedAsModule(),

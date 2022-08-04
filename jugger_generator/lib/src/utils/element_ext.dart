@@ -18,11 +18,7 @@ extension ElementExt on Element {
       return element.type;
     }
 
-    throw UnexpectedJuggerError(
-      buildUnexpectedErrorMessage(
-        message: 'Unable get type of [$element]',
-      ),
-    );
+    throw UnexpectedJuggerError('Unable get type of [$element]');
   }
 
   T castToOrThrow<T extends Element>() {
@@ -30,11 +26,7 @@ extension ElementExt on Element {
     if (element is T) {
       return element;
     }
-    throw UnexpectedJuggerError(
-      buildUnexpectedErrorMessage(
-        message: 'Expected type $T, but was $element',
-      ),
-    );
+    throw UnexpectedJuggerError('Expected type $T, but was $element');
   }
 
   DisposalHandlerAnnotation? getDisposalHandlerAnnotation() {

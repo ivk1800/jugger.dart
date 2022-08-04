@@ -217,10 +217,7 @@ class ComponentContext {
     }
 
     throw UnexpectedJuggerError(
-      buildUnexpectedErrorMessage(
-        message:
-            'Field ${element.name} unsupported type [${element.runtimeType}]',
-      ),
+      'Field ${element.name} unsupported type [${element.runtimeType}]',
     );
   }
 
@@ -514,7 +511,7 @@ class _Key {
     }
 
     throw UnexpectedJuggerError(
-      'field [${element.name}] unsupported type [${element.runtimeType}]',
+      'Field [${element.name}] unsupported type [${element.runtimeType}]',
     );
   }
 

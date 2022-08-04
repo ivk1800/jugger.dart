@@ -148,11 +148,7 @@ class _ModuleMethodsVisitor extends RecursiveElementVisitor<dynamic>
       return null;
     }
 
-    throw UnexpectedJuggerError(
-      buildUnexpectedErrorMessage(
-        message: 'Unsupported method of module $element',
-      ),
-    );
+    throw UnexpectedJuggerError('Unsupported method of module $element');
   }
 
   @override

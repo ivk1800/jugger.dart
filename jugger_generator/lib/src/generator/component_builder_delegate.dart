@@ -767,10 +767,8 @@ class ComponentBuilderDelegate {
       return _buildProviderFromAbstractMethod(method);
     } else {
       throw UnexpectedJuggerError(
-        buildUnexpectedErrorMessage(
-          message:
-              'Unsupported method [${method.element.enclosingElement.name}.${method.element.name}]',
-        ),
+        'Unsupported method [${method.element.enclosingElement.name}.'
+        '${method.element.name}]',
       );
     }
   }
@@ -835,10 +833,8 @@ class ComponentBuilderDelegate {
     }
 
     throw UnexpectedJuggerError(
-      buildUnexpectedErrorMessage(
-        message:
-            'Unknown provided type of method ${method.element.getDisplayString(withNullability: false)}',
-      ),
+      'Unknown provided type of method '
+      '${method.element.getDisplayString(withNullability: false)}',
     );
   }
 
