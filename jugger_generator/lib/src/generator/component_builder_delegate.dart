@@ -377,7 +377,7 @@ class ComponentBuilderDelegate {
 
     for (final GraphObject graphObject in filteredDependencies) {
       checkUnexpected(
-        !graphObject.type.isProvider,
+        !graphObject.type.isValueProvider,
         () => buildUnexpectedErrorMessage(
           message:
               'found registered dependency of provider [${graphObject.type.getName()}]',
@@ -613,14 +613,21 @@ class ComponentBuilderDelegate {
       return const Reference('this');
     }
 
-    if (type.isProvider) {
+    if (type.isValueProvider) {
       final DartType depType = type.getSingleTypeArgument;
       final ProviderSource provider =
           _componentContext.findProvider(depType, tag);
-      return _generateAssignExpression(
-        type: provider.type,
-        tag: provider.tag,
-        callGet: false,
+      return CodeExpression(
+        Block.of(
+          <Code>[
+            _generateAssignExpression(
+              type: provider.type,
+              tag: provider.tag,
+              callGet: false,
+            ).code,
+            if (type.isLazyType) const Code('.toLazy()'),
+          ],
+        ),
       );
     }
 

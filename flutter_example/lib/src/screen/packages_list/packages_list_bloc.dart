@@ -34,14 +34,16 @@ class PackagesListBloc extends Bloc<PackagesListEvent, PackagesListState> {
 
   Future<void> _onFetchEvent(
       PackagesListEventFetch event, Emitter<PackagesListState> emit) async {
-    // TODO(Ivan): handle errors
-    final List<Package> packages = await _packagesRepository.getPackages();
-
-    emit(
-      PackagesListState.data(
-        items: _packageModelMapper.mapToPackageModels(packages),
-      ),
-    );
+    try {
+      final List<Package> packages = await _packagesRepository.getPackages();
+      emit(
+        PackagesListState.data(
+          items: _packageModelMapper.mapToPackageModels(packages),
+        ),
+      );
+    } on Exception catch (e) {
+      emit(PackagesListState.error(message: e.toString()));
+    }
   }
 
   void _onPackageTap(

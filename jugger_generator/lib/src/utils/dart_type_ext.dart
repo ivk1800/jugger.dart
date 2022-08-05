@@ -10,8 +10,8 @@ import '../jugger_error.dart';
 import 'utils.dart';
 
 extension DartTypeExt on DartType {
-  /// Whether this type is a Provider.
-  bool get isProvider {
+  /// Whether this type is a [IProvider] or [ILazy].
+  bool get isValueProvider {
     if (element == null) {
       return false;
     }
@@ -23,9 +23,28 @@ extension DartTypeExt on DartType {
     }
 
     return library.location!.components.any(
-          (String component) => component == 'package:jugger/src/provider.dart',
+          (String component) =>
+              component == 'package:jugger/src/provider.dart' ||
+              component == 'package:jugger/src/lazy.dart',
         ) &&
-        element!.name == 'IProvider';
+        (element!.name == 'IProvider' || element!.name == 'ILazy');
+  }
+
+  /// Whether this type is a [ILazy].
+  bool get isLazyType {
+    if (element == null) {
+      return false;
+    }
+
+    final LibraryElement? library = element!.library;
+
+    if (library == null) {
+      return false;
+    }
+
+    return library.location!.components.any((String component) =>
+            component == 'package:jugger/src/lazy.dart') &&
+        element!.name == 'ILazy';
   }
 
   /// Returns the only generic type, if not one throws an error.
