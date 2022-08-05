@@ -3476,6 +3476,63 @@ abstract class BaseClass {
     });
   });
 
+  group('lazy', () {
+    test('missing lazy of type for module method arg 2', () async {
+      await checkBuilderResult(
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[AppModule])
+abstract class AppComponent {
+  String getString();
+}
+
+@module
+abstract class AppModule {
+  @provides
+  static String provideString(ILazy<int> i) => '';
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: provider_not_found:\n'
+            'Provider for int not found.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#provider_not_found',
+          );
+        },
+      );
+    });
+
+    test('missing lazy of type with qualifier for module method arg 2',
+        () async {
+      await checkBuilderResult(
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[AppModule])
+abstract class AppComponent {
+  String getString();
+}
+
+@module
+abstract class AppModule {
+  @provides
+  static String provideString(@Named('i') ILazy<int> i) => '';
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: provider_not_found:\n'
+            'Provider for int with qualifier i not found.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#provider_not_found',
+          );
+        },
+      );
+    });
+  });
+
   group('entry points', () {
     test('bind method of module entry point', () async {
       await checkBuilderResult(

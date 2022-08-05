@@ -4,6 +4,7 @@ import 'package:flutter_example/src/screen/packages_list/packages_list_screen_fa
 import 'package:flutter_example/src/screen/packages_list/packages_list_screen_router.dart';
 import 'package:jugger/jugger.dart' as j;
 
+import 'app_module.dart';
 import 'data_module.dart';
 import 'route_module.dart';
 
@@ -11,6 +12,7 @@ import 'route_module.dart';
   modules: <Type>[
     RouteModule,
     DataModule,
+    AppModule,
   ],
 )
 abstract class IAppComponent {

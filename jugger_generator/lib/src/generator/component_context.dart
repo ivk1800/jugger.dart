@@ -237,7 +237,7 @@ class ComponentContext {
   void _registerAndValidateGraphObject(_Key key, GraphObject object) {
     key.type.checkUnsupportedType();
 
-    if (object.type.isProvider) {
+    if (object.type.isValueProvider) {
       check(
         object.dependencies.isEmpty,
         () => buildUnexpectedErrorMessage(
@@ -489,7 +489,7 @@ class _Key {
         type: element.returnType,
       );
     } else if (element is VariableElement) {
-      if (element.type.isProvider) {
+      if (element.type.isValueProvider) {
         return _Key(
           tag: tag,
           element: element,

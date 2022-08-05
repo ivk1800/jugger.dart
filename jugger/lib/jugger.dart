@@ -20,3 +20,5 @@ export 'src/annotations.dart'
         Named;
 
 export 'src/provider.dart' show Provider, SingletonProvider, IProvider;
+export 'src/lazy.dart' show ILazy;
+export 'src/provider_extensions.dart';

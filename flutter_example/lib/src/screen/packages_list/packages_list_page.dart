@@ -37,6 +37,9 @@ class _Body extends StatelessWidget {
           data: (PackagesListStateData data) {
             return _Data(data: data);
           },
+          error: (PackagesListStateError value) {
+            return Center(child: Text(value.message));
+          },
         );
       },
     );
