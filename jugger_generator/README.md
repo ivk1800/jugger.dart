@@ -34,6 +34,9 @@ jugger_generator:
         - [Qualifiers](#qualifiers)
         - [Disposable component](#disposable-component)
         - [Multibindings](#multibindings)
+             - [Set multibindings](#set-multibindings)
+             - [Map multibindings](#map-multibindings)
+        - [Lazy initialization](#lazy-initialization)
     - [build.yaml](#buildyaml)
     - [remove_interface_prefix_from_component_name](#remove_interface_prefix_from_component_name)
     - [check_unused_providers](#check_unused_providers)
@@ -645,6 +648,26 @@ class MyKey {
   final double value;
 }
 ```
+
+### Lazy initialization
+
+Sometimes a dependency needs to be initialized not immediately, but later. You can use Lazy for this. This is useful for not initializing dependencies if they are not going to be used. As an example, this is the choice of which dependency to use in the provider method:
+
+```dart
+@j.provides
+static Repository provideRepository(
+  ILazy<OfflineRepository> offline, 
+  ILazy<OnlineRepository> online,
+  bool isOnline,
+) {
+    if (isOnline) {
+      return online.get();
+    } else {
+      return offline.get();
+    }
+}
+```
+In this example, a repository will be provided, depending on the isOnline flag, you need to use a specific repository. When used, the Lale one will only initialize the required repository.
 
 ### build.yaml
 
