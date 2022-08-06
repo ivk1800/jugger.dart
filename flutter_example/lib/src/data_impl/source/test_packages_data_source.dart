@@ -8,6 +8,22 @@ class TestPackagesDataSource {
   Future<List<Package>> getPackages() async {
     return <Package>[
       const Package(
+        name: 'jugger',
+        likes: 2,
+        popularity: 57,
+        pubPoints: 110,
+        shortDescription:
+            'Annotations for jugger_generator. This package does nothing without jugger_generator.',
+      ),
+      const Package(
+        name: 'jugger_generator',
+        likes: 8,
+        popularity: 16,
+        pubPoints: 100,
+        shortDescription:
+            'Compile-time dependency injection for Dart and Flutter. Inspired by inject.dart and Dagger 2.',
+      ),
+      const Package(
         name: 'http',
         likes: 4336,
         popularity: 100,
@@ -22,14 +38,6 @@ class TestPackagesDataSource {
         pubPoints: 130,
         shortDescription:
             'Flutter plugin for launching a URL. Supports web, phone, SMS, and email schemes.',
-      ),
-      const Package(
-        name: 'provider',
-        likes: 6278,
-        popularity: 100,
-        pubPoints: 130,
-        shortDescription:
-            'A wrapper around InheritedWidget to make them easier to use and more reusable.',
       ),
       const Package(
         name: 'image_picker',
