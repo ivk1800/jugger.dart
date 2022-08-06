@@ -1,3 +1,8 @@
+## 2.5.0
+
+* Feature: multibindings.
+* Feature: lazy provider.
+
 ## 2.4.0
 
 * Feature: disposable component. 

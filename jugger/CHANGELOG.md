@@ -1,3 +1,8 @@
+## 2.3.0
+
+* Added annotations: intoSet, intoMap, mapKey, StringKey, IntKey, TypeKey;
+* Add Lazy provider
+
 ## 2.2.0
 
 * Added annotations: disposable, disposalHandler
