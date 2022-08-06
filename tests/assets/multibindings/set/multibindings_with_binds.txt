@@ -1,0 +1,53 @@
+// ignore_for_file: implementation_imports
+// ignore_for_file: prefer_const_constructors
+// ignore_for_file: always_specify_types
+// ignore_for_file: directives_ordering
+// ignore_for_file: non_constant_identifier_names
+// ignore_for_file: no_leading_underscores_for_library_prefixes
+import 'package:tests/multibindings/set/multibindings_with_binds.dart' as _i1;
+import 'package:jugger/jugger.dart' as _i2;
+
+class JuggerAppComponent implements _i1.AppComponent {
+  JuggerAppComponent.create();
+
+  late final _i2.IProvider<_i1.MyClassImpl1> _myClassImpl1Provider =
+      _i2.Provider<_i1.MyClassImpl1>(() => const _i1.MyClassImpl1());
+
+  late final _i2.IProvider<_i1.MyClassImpl2> _myClassImpl2Provider =
+      _i2.Provider<_i1.MyClassImpl2>(() => const _i1.MyClassImpl2());
+
+  late final _i2.IProvider<_i1.MyClassImpl3> _myClassImpl3Provider =
+      _i2.Provider<_i1.MyClassImpl3>(() => const _i1.MyClassImpl3());
+
+  late final _i2.IProvider<Set<_i1.MyClass>> _set_MyClass_Provider =
+      _Set_MyClass_Provider(this);
+
+  @override
+  Set<_i1.MyClass> get myClasses => _set_MyClass_Provider.get();
+}
+
+class _Set_MyClass_Provider implements _i2.IProvider<Set<_i1.MyClass>> {
+  _Set_MyClass_Provider(this._component);
+
+  late final _i2.IProvider<_i1.MyClass>
+      _myClass4d432aa8b085fa0be1ad8b0c8ce464ccProvider =
+      _i2.Provider<_i1.MyClass>(() => _component._myClassImpl1Provider.get());
+
+  late final _i2.IProvider<_i1.MyClass>
+      _myClass7125adde72c403cbc51d5190613e851dProvider =
+      _i2.Provider<_i1.MyClass>(() => _component._myClassImpl2Provider.get());
+
+  late final _i2.IProvider<_i1.MyClass>
+      _myClass87c8a1903875e10ae3385fafb7018187Provider =
+      _i2.SingletonProvider<_i1.MyClass>(
+          () => _component._myClassImpl3Provider.get());
+
+  final JuggerAppComponent _component;
+
+  @override
+  Set<_i1.MyClass> get() => Set.unmodifiable(<_i1.MyClass>{
+        _myClass4d432aa8b085fa0be1ad8b0c8ce464ccProvider.get(),
+        _myClass7125adde72c403cbc51d5190613e851dProvider.get(),
+        _myClass87c8a1903875e10ae3385fafb7018187Provider.get()
+      });
+}

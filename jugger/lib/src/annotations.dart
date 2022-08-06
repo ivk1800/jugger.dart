@@ -126,3 +126,69 @@ enum DisposalStrategy {
 }
 
 // endregion disposal
+
+// region multibindings
+
+class IntoSet {
+  const IntoSet._();
+}
+
+/// The method's return type forms the generic type argument of a Set<T>, and
+/// the returned value is contributed to the set. The object graph will pass
+/// dependencies to the method as parameters. The Set<T> produced from the
+/// accumulation of values will be immutable.
+const IntoSet intoSet = IntoSet._();
+
+class IntoMap {
+  const IntoMap._();
+}
+
+/// The method's return type forms the type argument for the value of a
+/// Map<K, V>, and the combination of the annotated key and the returned value
+/// is contributed to the map as a key/value pair. The Map<K, V> produced from
+/// the accumulation of values will be immutable.
+const IntoMap intoMap = IntoMap._();
+
+/// Identifies annotation types that are used to associate keys with values in
+/// order to compose a map [IntoMap].
+///
+/// Every provider method annotated with [IntoMap] must also have an annotation
+/// that identifies the key for that map entry. That annotation's type must be
+/// annotated with [MapKey].
+const MapKey mapKey = MapKey._();
+
+class MapKey {
+  const MapKey._();
+}
+
+/// A [MapKey] annotation for maps with [String] keys.
+@mapKey
+class StringKey {
+  const factory StringKey(String value) = StringKey._;
+
+  const StringKey._(this.value);
+
+  final String value;
+}
+
+/// A [MapKey] annotation for maps with [int] keys.
+@mapKey
+class IntKey {
+  const factory IntKey(int value) = IntKey._;
+
+  const IntKey._(this.value);
+
+  final int value;
+}
+
+/// A [MapKey] annotation for maps with [Type] keys.
+@mapKey
+class TypeKey {
+  const factory TypeKey(Type value) = TypeKey._;
+
+  const TypeKey._(this.value);
+
+  final Type value;
+}
+
+// endregion multibindings

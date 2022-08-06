@@ -883,3 +883,173 @@ class MyClass {
 
 ### disposable_not_supported
 Disposable type not supported with binds. You need to dispose of the implementation, not the interface.
+
+### multiple_multibinding_annotation
+
+`BAD:`
+```dart
+@provides
+@intoSet
+@intoMap
+static String provideString1() => '1';
+```
+
+`GOOD:`
+```dart
+@disposable
+@provides
+@intoSet
+static String provideString1() => '1';
+```
+
+### unused_multibinding
+
+`BAD:`
+```dart
+import 'package:jugger/jugger.dart';
+
+@Component(
+  modules: <Type>[Module1],
+)
+abstract class AppComponent {}
+
+@module
+abstract class Module1 {
+  @provides
+  @intoSet
+  static String provideString1() => '1';
+}
+```
+
+`GOOD:`
+```dart
+import 'package:jugger/jugger.dart';
+
+@Component(
+  modules: <Type>[Module1],
+)
+abstract class AppComponent {
+  Set<String> get strings;
+}
+
+@module
+abstract class Module1 {
+  @provides
+  @intoSet
+  static String provideString1() => '1';
+}
+```
+
+### multibindings_duplicates_keys
+
+`BAD:`
+```dart
+@module
+abstract class Module1 {
+  @provides
+  @intoMap
+  @IntKey(1)
+  static String provideString1() => '1';
+
+  @provides
+  @intoMap
+  @IntKey(1)
+  static String provideString2() => '2';
+}
+```
+
+`GOOD:`
+```dart
+@module
+abstract class Module1 {
+  @provides
+  @intoMap
+  @IntKey(1)
+  static String provideString1() => '1';
+
+  @provides
+  @intoMap
+  @IntKey(2)
+  static String provideString2() => '2';
+}
+```
+
+### multibindings_missing_key
+
+`BAD:`
+```dart
+@module
+abstract class Module1 {
+  @provides
+  @intoMap
+  static String provideString2() => '2';
+}
+```
+
+`GOOD:`
+```dart
+@module
+abstract class Module1 {
+  @provides
+  @intoMap
+  @IntKey(1)
+  static String provideString2() => '2';
+}
+```
+
+### multibindings_multiple_keys
+
+`BAD:`
+```dart
+@module
+abstract class Module1 {
+  @provides
+  @IntKey(1)
+  @IntKey(2)
+  static String provideString2() => '2';
+}
+```
+
+`GOOD:`
+```dart
+@module
+abstract class Module1 {
+  @provides
+  @intoMap
+  @IntKey(1)
+  static String provideString2() => '2';
+}
+```
+
+### multibindings_invalid_key
+
+`BAD:`
+```dart
+@mapKey
+class MyKey {
+  const MyKey(this.value2);
+
+  final bool key;
+}
+```
+
+`GOOD:`
+```dart
+@mapKey
+class MyKey {
+  const MyKey(this.value2);
+
+  final bool value;
+}
+```
+
+### multibindings_unsupported_key_type
+
+Supported types:
+- String
+- int
+- double
+- bool
+- Type
+- Enum
+

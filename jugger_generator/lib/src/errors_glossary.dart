@@ -72,6 +72,17 @@ const String multipleDisposalHandlersForType =
     '$_glossary#multiple_disposal_handlers_for_type';
 const String disposableNotScoped = '$_glossary#disposable_not_scoped';
 const String disposableNotSupported = '$_glossary#disposable_not_supported';
+const String multipleMultibindingAnnotation =
+    '$_glossary#multiple_multibinding_annotation';
+const String unusedMultibinding = '$_glossary#unused_multibinding';
+const String multibindingsDuplicatesKeys =
+    '$_glossary#multibindings_duplicates_keys';
+const String multibindingsMissingKey = '$_glossary#multibindings_missing_key';
+const String multibindingsMultipleKeys =
+    '$_glossary#multibindings_multiple_keys';
+const String multibindingsInvalidKey = '$_glossary#multibindings_invalid_key';
+const String multibindingsUnsupportedKeyType =
+    '$_glossary#multibindings_unsupported_key_type';
 
 // endregion errors
 
@@ -124,6 +135,13 @@ enum JuggerErrorId {
   multiple_disposal_handlers_for_type,
   disposable_not_scoped,
   disposable_not_supported,
+  multiple_multibinding_annotation,
+  unused_multibinding,
+  multibindings_duplicates_keys,
+  multibindings_missing_key,
+  multibindings_multiple_keys,
+  multibindings_invalid_key,
+  multibindings_unsupported_key_type,
 }
 
 // TODO: support Enhanced enums with members in dart 2.17.0
@@ -226,6 +244,20 @@ extension JuggerErrorIdExt on JuggerErrorId {
         return missingInjectedConstructor;
       case JuggerErrorId.multiple_injected_constructors:
         return multipleInjectedConstructors;
+      case JuggerErrorId.multiple_multibinding_annotation:
+        return multipleMultibindingAnnotation;
+      case JuggerErrorId.unused_multibinding:
+        return unusedMultibinding;
+      case JuggerErrorId.multibindings_duplicates_keys:
+        return multibindingsDuplicatesKeys;
+      case JuggerErrorId.multibindings_missing_key:
+        return multibindingsMissingKey;
+      case JuggerErrorId.multibindings_multiple_keys:
+        return multibindingsMultipleKeys;
+      case JuggerErrorId.multibindings_invalid_key:
+        return multibindingsInvalidKey;
+      case JuggerErrorId.multibindings_unsupported_key_type:
+        return multibindingsUnsupportedKeyType;
     }
   }
 }

@@ -4,6 +4,329 @@ import 'package:test/test.dart';
 import 'utils.dart';
 
 void main() {
+  group('multibindings', () {
+    group('set', () {
+      test('multiple multibinding annotation', () async {
+        await checkBuilderResult(
+          mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(
+  modules: <Type>[Module1],
+)
+abstract class AppComponent {
+  Set<String> get strings;
+}
+
+@module
+abstract class Module1 {
+  @provides
+  @intoSet
+  @intoMap
+  static String provideString1() => '1';
+}
+        ''',
+          onError: (Object error) {
+            expect(
+              error.toString(),
+              'error: multiple_multibinding_annotation:\n'
+              'Methods cannot have more than one multibinding annotation:\n'
+              'Module1.provideString1\n'
+              'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#multiple_multibinding_annotation',
+            );
+          },
+        );
+      });
+
+      test('unused multibinding', () async {
+        await checkBuilderResult(
+          mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(
+  modules: <Type>[Module1],
+)
+abstract class AppComponent {}
+
+@module
+abstract class Module1 {
+  @provides
+  @intoSet
+  static String provideString1() => '1';
+}
+        ''',
+          onError: (Object error) {
+            expect(
+              error.toString(),
+              'error: unused_multibinding:\n'
+              'Multibindings Set<String> is declared, but not used.\n'
+              'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#unused_multibinding',
+            );
+          },
+        );
+      });
+
+      test('depend by self type', () async {
+        await checkBuilderResult(
+          mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(
+  modules: <Type>[Module1],
+)
+abstract class AppComponent {
+  Set<String> get strings;
+}
+
+@module
+abstract class Module1 {
+  @provides
+  @intoSet
+  static String provideString1(String s) => '1';
+}
+        ''',
+          onError: (Object error) {
+            expect(
+              error.toString(),
+              'error: provider_not_found:\n'
+              'Provider for String not found.\n'
+              'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#provider_not_found',
+            );
+          },
+        );
+      });
+    });
+
+    group('map', () {
+      test('duplicates keys', () async {
+        await checkBuilderResult(
+          mainContent: '''
+// ignore_for_file: avoid_classes_with_only_static_members
+
+import 'package:jugger/jugger.dart';
+
+@Component(
+  modules: <Type>[Module1],
+)
+abstract class AppComponent {
+  Map<int, String> get strings;
+}
+
+@module
+abstract class Module1 {
+  @provides
+  @intoMap
+  @IntKey(1)
+  static String provideString1() => '1';
+
+  @provides
+  @intoMap
+  @IntKey(1)
+  static String provideString2() => '2';
+}
+        ''',
+          onError: (Object error) {
+            expect(
+              error.toString(),
+              'error: multibindings_duplicates_keys:\n'
+              'Multibindings not allowed with duplicates keys:\n'
+              'Module1.provideString1\n'
+              'Module1.provideString2\n'
+              'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#multibindings_duplicates_keys',
+            );
+          },
+        );
+      });
+
+      test('duplicates keys from multiple modules', () async {
+        await checkBuilderResult(
+          mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(
+  modules: <Type>[Module1, Module2],
+)
+abstract class AppComponent {
+  Map<Type, String> get strings;
+}
+
+@module
+abstract class Module1 {
+  @provides
+  @intoMap
+  @TypeKey(String)
+  static String provideString1() => '1';
+}
+
+@module
+abstract class Module2 {
+  @provides
+  @intoMap
+  @TypeKey(String)
+  static String provideString2() => '2';
+}
+        ''',
+          onError: (Object error) {
+            expect(
+              error.toString(),
+              'error: multibindings_duplicates_keys:\n'
+              'Multibindings not allowed with duplicates keys:\n'
+              'Module1.provideString1\n'
+              'Module2.provideString2\n'
+              'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#multibindings_duplicates_keys',
+            );
+          },
+        );
+      });
+
+      test('missing key', () async {
+        await checkBuilderResult(
+          mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(
+  modules: <Type>[Module1],
+)
+abstract class AppComponent {
+  Map<int, String> get strings;
+}
+
+@module
+abstract class Module1 {
+  @provides
+  @intoMap
+  static String provideString1() => '1';
+}
+        ''',
+          onError: (Object error) {
+            expect(
+              error.toString(),
+              'error: multibindings_missing_key:\n'
+              'Methods of type map must declare a map key:\n'
+              'Module1.provideString1\n'
+              'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#multibindings_missing_key',
+            );
+          },
+        );
+      });
+
+      test('multiple keys', () async {
+        await checkBuilderResult(
+          mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(
+  modules: <Type>[Module1],
+)
+abstract class AppComponent {
+  Map<int, String> get strings;
+}
+
+@module
+abstract class Module1 {
+  @provides
+  @intoMap
+  @IntKey(1)
+  @IntKey(0)
+  static String provideString2() => '2';
+}
+        ''',
+          onError: (Object error) {
+            expect(
+              error.toString(),
+              'error: multibindings_multiple_keys:\n'
+              'Methods may not have more than one map key:\n'
+              'Module1.provideString2\n'
+              'keys: 1, 0\n'
+              'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#multibindings_multiple_keys',
+            );
+          },
+        );
+      });
+
+      test('missing value field of key', () async {
+        await checkBuilderResult(
+          mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(
+  modules: <Type>[Module1],
+)
+abstract class AppComponent {
+  Map<bool, String> get strings;
+}
+
+@module
+abstract class Module1 {
+  @provides
+  @intoMap
+  @MyKey(false)
+  static String provideString1() => '1';
+}
+
+@mapKey
+class MyKey {
+  const MyKey(this.value2);
+
+  final bool key;
+}
+        ''',
+          onError: (Object error) {
+            expect(
+              error.toString(),
+              'error: multibindings_invalid_key:\n'
+              'Unable resolve value. Did you forget to add value field?\n'
+              'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#multibindings_invalid_key',
+            );
+          },
+        );
+      });
+
+      test('unsupported type', () async {
+        await checkBuilderResult(
+          mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(
+  modules: <Type>[Module1],
+)
+abstract class AppComponent {
+  Map<String, String> get strings;
+}
+
+@module
+abstract class Module1 {
+  @provides
+  @intoMap
+  @MyKey(Symbol("name"))
+  static String provideString1() => '1';
+
+  @provides
+  @intoMap
+  @MyKey(Symbol("name"))
+  static String provideString2() => '2';
+}
+
+@mapKey
+class MyKey {
+  const MyKey(this.value);
+
+  final Symbol value;
+}
+        ''',
+          onError: (Object error) {
+            expect(
+              error.toString(),
+              'error: multibindings_unsupported_key_type:\n'
+              'Type Symbol (#name) unsupported.\n'
+              'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#multibindings_unsupported_key_type',
+            );
+          },
+        );
+      });
+    });
+  });
+
   group('dispose', () {
     test('disposable type not supported with binds', () async {
       await checkBuilderResult(
@@ -884,7 +1207,7 @@ abstract class AppComponent { }
         onError: (Object error) {
           expect(
             error.toString(),
-            'Null check operator used on a null value\n'
+            'Unable resolve valueElement.\n'
             'Unexpected error, please report the issue: https://github.com/ivk1800/jugger.dart/issues/new?assignees=&labels=&template=code-generation-error.md&title=',
           );
         },

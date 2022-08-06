@@ -33,6 +33,7 @@ jugger_generator:
         - [Injected method](#injected-method)
         - [Qualifiers](#qualifiers)
         - [Disposable component](#disposable-component)
+        - [Multibindings](#multibindings)
     - [build.yaml](#buildyaml)
     - [remove_interface_prefix_from_component_name](#remove_interface_prefix_from_component_name)
     - [check_unused_providers](#check_unused_providers)
@@ -555,6 +556,95 @@ class MySingleton {
 }
 ```
 To dispose of component objects, simply call dispose. After that, the component will not be usable. The operation will be idempotent.
+
+### Multibindings
+
+Jugger allows you to bind several objects into a collection even when the objects are bound in different modules using multibindings. Dagger assembles the collection so that application code can inject it without depending directly on the individual bindings.
+
+#### Set multibindings
+
+In order to contribute one element to an injectable multibound set, add an @IntoSet annotation to your module method:
+
+```dart
+@module
+abstract class Module {
+  @provides
+  @intoSet
+  static String provideString1() => '1';
+
+  @provides
+  @intoSet
+  static String provideString2() => '2';
+}
+```
+
+Now the component can provide the set:
+
+```dart
+@Component(modules: <Type>[Module])
+abstract class AppComponent {
+  Set<String> get strings;
+}
+```
+
+Or a binding in that component can depend on the set:
+
+```dart
+@provides
+static int provideCount(Set<String> strings) => strings.length;
+```
+
+#### Map multibindings
+
+Jugger lets you use multibindings to contribute entries to an injectable map as long as the map keys are known at compile time.
+
+To contribute an entry to a multibound map, add a method to a module that returns the value and is annotated with @IntoMap and with another custom annotation that specifies the map key for that entry.
+
+For maps with keys that are strings or boxed primitives, use one of the standard annotations:
+
+```dart
+@module
+abstract class Module {
+  @provides
+  @intoMap
+  @StringKey('b')
+  static int provideInt1() => 1;
+
+  @provides
+  @intoMap
+  @StringKey('a')
+  static int provideInt2() => 2;
+}
+
+@Component(modules: <Type>[Module])
+abstract class AppComponent {
+  Map<String, int> get ints;
+}
+```
+
+The following key types are supported:
+- String
+- int
+- double
+- bool
+- Type
+- Enum
+
+Jugger already has several pre-built annotations:
+- @StringKey
+- @IntKey
+- @TypeKey
+
+But you can also create a custom annotation:
+
+```dart
+@mapKey
+class MyKey {
+  const MyKey(this.value);
+
+  final double value;
+}
+```
 
 ### build.yaml
 

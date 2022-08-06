@@ -62,11 +62,11 @@ QualifierAnnotation? getQualifierAnnotation(Element element) {
 
 String generateMd5(String input) => md5.convert(utf8.encode(input)).toString();
 
-List<Annotation> getAnnotations(Element moduleClass) {
+List<Annotation> getAnnotations(Element element) {
   final List<Annotation> annotations = <Annotation>[];
 
-  for (int i = 0; i < moduleClass.metadata.length; i++) {
-    final ElementAnnotation annotation = moduleClass.metadata[i];
+  for (int i = 0; i < element.metadata.length; i++) {
+    final ElementAnnotation annotation = element.metadata[i];
 
     final Element? annotationElement = annotation.element;
 
@@ -92,23 +92,85 @@ List<Annotation> getAnnotations(Element moduleClass) {
     }
   }
 
-  final List<ElementAnnotation> resolvedMetadata = moduleClass.metadata;
+  final List<ElementAnnotation> resolvedMetadata = element.metadata;
 
   for (int i = 0; i < resolvedMetadata.length; i++) {
     final ElementAnnotation annotation = resolvedMetadata[i];
     final Element? valueElement =
         annotation.computeConstantValue()?.type?.element;
 
-    if (!annotation.element!.library!.isJuggerLibrary) {
-      continue;
-    }
-
     if (valueElement == null) {
-      throw UnexpectedJuggerError('value if annotation [$annotation] is null');
+      throw UnexpectedJuggerError('Unable resolve valueElement.');
     } else {
-      final bool isJuggerLibrary = valueElement.library!.isJuggerLibrary;
+      if (valueElement.metadata.isMapKey()) {
+        final DartObject? field =
+            annotation.computeConstantValue()?.getField('value');
 
-      if (isJuggerLibrary && valueElement.name == 'Component') {
+        if (field == null) {
+          throw JuggerError(
+            buildErrorMessage(
+              error: JuggerErrorId.multibindings_invalid_key,
+              message: 'Unable resolve value. '
+                  'Did you forget to add value field?',
+            ),
+          );
+        }
+
+        late final String? stringValue = field.toStringValue();
+        late final int? intValue = field.toIntValue();
+        late final double? doubleValue = field.toDoubleValue();
+        late final bool? boolValue = field.toBoolValue();
+        late final DartType? typeValue = field.toTypeValue();
+        late final ClassElement? enumClass =
+            field.type?.element as ClassElement?;
+
+        if (stringValue != null) {
+          annotations.add(
+            MultibindingsKeyAnnotation<String>(stringValue, field.type!),
+          );
+        } else if (intValue != null) {
+          annotations
+              .add(MultibindingsKeyAnnotation<int>(intValue, field.type!));
+        } else if (doubleValue != null) {
+          annotations.add(
+            MultibindingsKeyAnnotation<double>(doubleValue, field.type!),
+          );
+        } else if (boolValue != null) {
+          annotations
+              .add(MultibindingsKeyAnnotation<bool>(boolValue, field.type!));
+        } else if (typeValue != null) {
+          annotations.add(
+            MultibindingsKeyAnnotation<DartType>(typeValue, field.type!),
+          );
+        } else if (enumClass?.isEnum == true) {
+          final String enumValue = annotation
+                  .computeConstantValue()
+                  ?.getField('value')
+                  ?.getField('_name')
+                  ?.toStringValue() ??
+              (throw JuggerError(
+                buildUnexpectedErrorMessage(
+                  message: 'Unable resolve name of enum key!',
+                ),
+              ));
+
+          annotations.add(EnumAnnotation(enumValue, field.type!));
+        } else {
+          throw JuggerError(
+            buildErrorMessage(
+              error: JuggerErrorId.multibindings_unsupported_key_type,
+              message: 'Type $field unsupported.',
+            ),
+          );
+        }
+        continue;
+      }
+
+      if (!annotation.element!.library!.isJuggerLibrary) {
+        continue;
+      }
+
+      if (valueElement.name == 'Component') {
         final List<ClassElement> modules = getClassListFromField(
           annotation,
           'modules',
@@ -120,11 +182,10 @@ List<Annotation> getAnnotations(Element moduleClass) {
         );
 
         check(
-          !dependencies.contains(moduleClass),
+          !dependencies.contains(element),
           () => buildErrorMessage(
             error: JuggerErrorId.component_depend_himself,
-            message:
-                'A component ${moduleClass.name} cannot depend on himself.',
+            message: 'A component ${element.name} cannot depend on himself.',
           ),
         );
 
@@ -197,7 +258,7 @@ List<Annotation> getAnnotations(Element moduleClass) {
         annotations.add(const InjectAnnotation());
       } else if (valueElement.name == module.runtimeType.toString()) {
         annotations.add(
-          ModuleExtractor().getModuleAnnotationOfModuleClass(moduleClass),
+          ModuleExtractor().getModuleAnnotationOfModuleClass(element),
         );
       } else if (valueElement.name == singleton.runtimeType.toString()) {
         annotations.add(const SingletonAnnotation());
@@ -222,6 +283,10 @@ List<Annotation> getAnnotations(Element moduleClass) {
             .add(DisposableAnnotation(DisposalStrategy.values[enumIndex]));
       } else if (valueElement.name == disposalHandler.runtimeType.toString()) {
         annotations.add(const DisposalHandlerAnnotation());
+      } else if (valueElement.name == intoSet.runtimeType.toString()) {
+        annotations.add(const IntoSetAnnotation());
+      } else if (valueElement.name == intoMap.runtimeType.toString()) {
+        annotations.add(const IntoMapAnnotation());
       }
     }
   }
@@ -287,6 +352,8 @@ String uncapitalize(String name) {
   return name[0].toLowerCase() + name.substring(1);
 }
 
+String capitalize(String name) => name[0].toUpperCase() + name.substring(1);
+
 String createElementPath(Element element) {
   return 'package:${element.source!.uri.path}'.replaceFirst('/lib', '');
 }
@@ -346,6 +413,73 @@ extension ElementExt on Element {
   Tag? getQualifierTag() => getQualifierAnnotation(this)?.tag;
 
   String toNameWithPath() => '$name ${library?.identifier}';
+
+  List<MultibindingsGroupAnnotation> getMultibindingsAnnotations() {
+    return getAnnotations(this)
+        .whereType<MultibindingsGroupAnnotation>()
+        .toList(growable: false);
+  }
+
+  List<MultibindingsKeyAnnotation<Object?>> getMultibindsKeyAnnotations() {
+    return getAnnotations(this)
+        .whereType<MultibindingsKeyAnnotation<Object?>>()
+        .toList(growable: false);
+  }
+
+  MultibindingsKeyAnnotation<Object?> getSingleMultibindsKeyAnnotation() {
+    check(
+      this is MethodElement,
+      () => buildUnexpectedErrorMessage(
+        message: 'Expected MethodElement, but was $this',
+      ),
+    );
+
+    final List<MultibindingsKeyAnnotation<Object?>> keys =
+        getMultibindsKeyAnnotations();
+
+    check(
+      keys.isNotEmpty,
+      () => buildErrorMessage(
+        error: JuggerErrorId.multibindings_missing_key,
+        message: 'Methods of type map must declare a map key:\n'
+            '${(enclosingElement as ClassElement).name}.$name',
+      ),
+    );
+
+    check(
+      keys.length == 1,
+      () => buildErrorMessage(
+        error: JuggerErrorId.multibindings_multiple_keys,
+        message: 'Methods may not have more than one map key:\n'
+            '${(enclosingElement as ClassElement).name}.$name\n'
+            'keys: ${keys.map((MultibindingsKeyAnnotation<Object?> annotation) => annotation.key).join(', ')}',
+      ),
+    );
+
+    return keys.first;
+  }
+}
+
+extension MethodElementExt on MethodElement {
+  MultibindingsGroupAnnotation? getMultibindingsGroupAnnotationOrNull() {
+    final List<MultibindingsGroupAnnotation> multibindingsAnnotations =
+        getMultibindingsAnnotations();
+
+    if (multibindingsAnnotations.isEmpty) {
+      return null;
+    }
+
+    check(
+      multibindingsAnnotations.length == 1,
+      () => buildErrorMessage(
+        error: JuggerErrorId.multiple_multibinding_annotation,
+        message: 'Methods cannot have more than one multibinding annotation:\n'
+            '${enclosingElement.name}.$name',
+      ),
+    );
+
+    return multibindingsAnnotations.first;
+  }
 }
 
 extension ElementAnnotationExt on List<ElementAnnotation> {
@@ -353,5 +487,10 @@ extension ElementAnnotationExt on List<ElementAnnotation> {
         (ElementAnnotation a) =>
             a.element!.library!.isJuggerLibrary &&
             a.element!.name == 'qualifier',
+      );
+
+  bool isMapKey() => any(
+        (ElementAnnotation a) =>
+            a.element!.library!.isJuggerLibrary && a.element!.name == 'mapKey',
       );
 }

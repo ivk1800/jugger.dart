@@ -17,6 +17,12 @@ export 'src/annotations.dart'
         nonLazy,
         componentBuilder,
         qualifier,
+        intoSet,
+        intoMap,
+        mapKey,
+        StringKey,
+        IntKey,
+        TypeKey,
         Named;
 
 export 'src/provider.dart' show Provider, SingletonProvider, IProvider;

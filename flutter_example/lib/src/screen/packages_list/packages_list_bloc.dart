@@ -1,5 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:flutter_example/src/app/data/data.dart';
+import 'package:flutter_example/src/common/logger.dart';
 import 'package:flutter_example/src/screen/packages_list/packages_list_screen_router.dart';
 import 'package:jugger/jugger.dart' as j;
 
@@ -14,12 +15,15 @@ class PackagesListBloc extends Bloc<PackagesListEvent, PackagesListState> {
     required IPackagesListScreenRouter router,
     required IPackagesRepository packagesRepository,
     required PackageModelMapper packageModelMapper,
+    required Logger logger,
   })  : _router = router,
         _packagesRepository = packagesRepository,
         _packageModelMapper = packageModelMapper,
+        _logger = logger,
         super(const PackagesListState.loading()) {
     on<PackagesListEventFetch>(_onFetchEvent);
     on<PackagesListEventPackageTap>(_onPackageTap);
+    _logger.d('PackagesList showed');
   }
 
   // injected method example
@@ -31,6 +35,7 @@ class PackagesListBloc extends Bloc<PackagesListEvent, PackagesListState> {
   final IPackagesListScreenRouter _router;
   final IPackagesRepository _packagesRepository;
   final PackageModelMapper _packageModelMapper;
+  final Logger _logger;
 
   Future<void> _onFetchEvent(
       PackagesListEventFetch event, Emitter<PackagesListState> emit) async {
