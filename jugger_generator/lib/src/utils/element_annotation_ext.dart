@@ -41,8 +41,11 @@ extension ElementAnnotationExt on Element {
   DisposalHandlerAnnotation? getDisposalHandlerAnnotationOrNull() =>
       getAnnotationOrNull<DisposalHandlerAnnotation>();
 
-  ModuleAnnotation? getModuleAnnotation() =>
-      getAnnotationOrNull<ModuleAnnotation>();
+  ModuleAnnotation? getModuleAnnotation() {
+    final Annotation? annotation = getAnnotations(this)
+        .firstWhereOrNull((Annotation a) => a is ModuleAnnotation);
+    return annotation is ModuleAnnotation ? annotation : null;
+  }
 
   bool hasAnnotatedAsModule() {
     final Element element = this;
@@ -58,10 +61,9 @@ extension ElementAnnotationExt on Element {
   }
 
   bool hasAnnotatedAsInject() =>
-      getAnnotations(this).anyInstance<InjectAnnotation>();
+      getAnnotations(this).any((Annotation a) => a is InjectAnnotation);
 
-  bool hasAnnotatedAsSingleton() =>
-      getAnnotations(this).anyInstance<SingletonAnnotation>();
+  bool hasScoped() => getAnnotationOrNull<ScopeAnnotation>() != null;
 
   List<MultibindingsGroupAnnotation> getMultibindingsAnnotations() {
     return getAnnotations(this)
@@ -155,5 +157,10 @@ extension ListElementAnnotationExt on List<ElementAnnotation> {
   bool isMapKey() => any(
         (ElementAnnotation a) =>
             a.element!.library!.isJuggerLibrary && a.element!.name == 'mapKey',
+      );
+
+  bool isScope() => any(
+        (ElementAnnotation a) =>
+            a.element!.library!.isJuggerLibrary && a.element!.name == 'scope',
       );
 }

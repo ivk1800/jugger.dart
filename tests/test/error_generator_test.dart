@@ -368,6 +368,7 @@ import 'package:jugger/jugger.dart';
 @Component(
   modules: <Type>[AppModule],
 )
+@singleton
 abstract class AppComponent {
   IMyClass getMyClass();
 
@@ -407,6 +408,7 @@ import 'package:jugger/jugger.dart';
 import 'package:tests/injected_method/injected_multiple_parent_methods.dart';
 
 @Component()
+@singleton
 abstract class AppComponent {
   MyClass getMyClass();
 
@@ -526,6 +528,7 @@ class MyClass {
 import 'package:jugger/jugger.dart';
 
 @Component()
+@singleton
 abstract class AppComponent {
   MyClass getMyClass();
 }
@@ -825,6 +828,7 @@ import 'package:jugger/jugger.dart';
 @Component(
   modules: <Type>[AppModule],
 )
+@singleton
 abstract class AppComponent {
   MyClass getMyClass();
 
@@ -862,6 +866,7 @@ import 'package:jugger/jugger.dart';
 @Component(
   modules: <Type>[AppModule],
 )
+@singleton
 abstract class AppComponent {
   MyClass getMyClass();
 
@@ -901,7 +906,9 @@ class MyClass {
         mainContent: '''
 import 'package:jugger/jugger.dart';
 
-@Component()
+@Component(
+  builder: AppComponentBuilder,
+)
 abstract class AppComponent {
   MyClass1 getMyClass1();
 
@@ -937,7 +944,9 @@ class MyClass1 {
         mainContent: '''
 import 'package:jugger/jugger.dart';
 
-@Component()
+@Component(
+  builder: AppComponentBuilder,
+)
 abstract class AppComponent {
   MyClass1 getMyClass1();
 
@@ -1019,6 +1028,7 @@ abstract class AppComponent {
 import 'package:jugger/jugger.dart';
 
 @Component()
+@singleton
 abstract class AppComponent {
   Foo getFoo();
 }
@@ -1806,6 +1816,535 @@ const Inject inject = Inject._();
   });
 
   group('subcomponent', () {
+    test('should failed if circular dependencies of subcomponents', () async {
+      await checkBuilderResult(
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component()
+abstract class MyComponent {
+  @subcomponentFactory
+  MySubcomponent1 createMySubcomponent();
+}
+
+@Subcomponent()
+abstract class MySubcomponent1 {
+  @subcomponentFactory
+  MySubcomponent2 createMySubcomponent();
+}
+
+@Subcomponent()
+abstract class MySubcomponent2 {
+  @subcomponentFactory
+  MySubcomponent1 createMySubcomponent();
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: circular_dependency:\n'
+            'Found circular dependency! MyComponent->MySubcomponent1->MySubcomponent2->MySubcomponent1\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#circular_dependency',
+          );
+        },
+      );
+    });
+
+    test('should failed if subcomponent contain factory for self', () async {
+      await checkBuilderResult(
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component()
+abstract class MyComponent {
+  @subcomponentFactory
+  MySubcomponent1 createMySubcomponent();
+}
+
+@Subcomponent()
+abstract class MySubcomponent1 {
+  @subcomponentFactory
+  MySubcomponent1 createMySubcomponent();
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: circular_dependency:\n'
+            'Found circular dependency! MyComponent->MySubcomponent1->MySubcomponent1\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#circular_dependency',
+          );
+        },
+      );
+    });
+
+    test('should failed if components with same scope', () async {
+      await checkBuilderResult(
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+import 'package:tests/util/scopes.dart';
+
+@Component()
+@scope1
+abstract class MyComponent {
+  @subcomponentFactory
+  MySubcomponent createMySubcomponent();
+}
+
+@Subcomponent()
+@scope1
+abstract class MySubcomponent {}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: scope must be different:\n'
+            'MySubcomponent: Scope1\n'
+            'MyComponent: Scope1',
+          );
+        },
+      );
+    });
+
+    test('should failed if component build method return not subcomponent',
+        () async {
+      await checkBuilderResult(
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component()
+abstract class AppComponent {
+  @subcomponentFactory
+  MyComponent createMyComponent();
+}
+
+abstract class MyComponent {}
+
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: wrong_subcomponent_factory:\n'
+            'Factory method AppComponent.createMyComponent must return subcomponent type.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#wrong_subcomponent_factory',
+          );
+        },
+      );
+    });
+
+    test(
+        'should fail if the component factory method has a non-builder parameter',
+        () async {
+      await checkBuilderResult(
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component()
+abstract class AppComponent {
+  @subcomponentFactory
+  MyComponent createMyComponent(String builder);
+}
+
+@Subcomponent(
+  builder: MyComponentBuilder,
+)
+abstract class MyComponent {}
+
+@componentBuilder
+abstract class MyComponentBuilder {
+  MyComponent build();
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: invalid_subcomponent_factory:\n'
+            'Class String must be annotated with @componentBuilder annotation.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_subcomponent_factory',
+          );
+        },
+      );
+    });
+
+    test('should fail if the component build method with multiple parameters',
+        () async {
+      await checkBuilderResult(
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component()
+abstract class AppComponent {
+  @subcomponentFactory
+  MyComponent createMyComponent(String s1, String s2);
+}
+
+@Subcomponent(
+  builder: MyComponentBuilder,
+)
+abstract class MyComponent {}
+
+@componentBuilder
+abstract class MyComponentBuilder {
+  MyComponent build();
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: invalid_subcomponent_factory:\n'
+            'Subcomponent factory method must have 1 parameter. And it should be a subcomponent builder\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_subcomponent_factory',
+          );
+        },
+      );
+    });
+
+    test(
+        'should fail if the component build method return different type than method.',
+        () async {
+      await checkBuilderResult(
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(
+  builder: AppComponentBuilder,
+)
+abstract class AppComponent {
+  @subcomponentFactory
+  MyComponent createMyComponent(AppComponentBuilder builder);
+}
+
+@componentBuilder
+abstract class AppComponentBuilder {
+  AppComponent build();
+}
+
+@Subcomponent(
+  builder: MyComponentBuilder,
+)
+abstract class MyComponent {}
+
+@componentBuilder
+abstract class MyComponentBuilder {
+  MyComponent build();
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: wrong_subcomponent_factory:\n'
+            'Subcomponent builder must return the same type as the method.\n'
+            'Method return: MyComponent,\n'
+            'Builder return: AppComponent.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#wrong_subcomponent_factory',
+          );
+        },
+      );
+    });
+
+    test('should fail if the component build method with nullable parameter',
+        () async {
+      await checkBuilderResult(
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component()
+abstract class AppComponent {
+  @subcomponentFactory
+  MyComponent createMyComponent(MyComponentBuilder? builder);
+}
+
+@Subcomponent(
+  builder: MyComponentBuilder,
+)
+abstract class MyComponent {
+}
+
+@componentBuilder
+abstract class MyComponentBuilder {
+  MyComponent build();
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: wrong_subcomponent_factory:\n'
+            'Method AppComponent.createMyComponent is invalid. Nullable parameter not allowed.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#wrong_subcomponent_factory',
+          );
+        },
+      );
+    });
+
+    test('should fail if the component build method with named parameter',
+        () async {
+      await checkBuilderResult(
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component()
+abstract class AppComponent {
+  @subcomponentFactory
+  MyComponent createMyComponent({required MyComponentBuilder builder});
+}
+
+@Subcomponent(
+  builder: MyComponentBuilder,
+)
+abstract class MyComponent {
+}
+
+@componentBuilder
+abstract class MyComponentBuilder {
+  MyComponent build();
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: wrong_subcomponent_factory:\n'
+            'Method AppComponent.createMyComponent is invalid. Named parameter not allowed.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#wrong_subcomponent_factory',
+          );
+        },
+      );
+    });
+
+    test('should fail if the component build method with optional parameter',
+        () async {
+      await checkBuilderResult(
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component()
+abstract class AppComponent {
+  @subcomponentFactory
+  MyComponent createMyComponent([MyComponentBuilder? builder]);
+}
+
+@Subcomponent(
+  builder: MyComponentBuilder,
+)
+abstract class MyComponent {
+}
+
+@componentBuilder
+abstract class MyComponentBuilder {
+  MyComponent build();
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: wrong_subcomponent_factory:\n'
+            'Method AppComponent.createMyComponent is invalid. Optional parameter not allowed.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#wrong_subcomponent_factory',
+          );
+        },
+      );
+    });
+
+    test('should fail if object provided in parent component and subcomponent',
+        () async {
+      await checkBuilderResult(
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+import 'package:tests/util/scopes.dart';
+
+@Component(modules: <Type>[MyComponentModule])
+@scope1
+abstract class MyComponent {
+  @subcomponentFactory
+  MySubcomponent createMyComponent();
+}
+
+@module
+abstract class MyComponentModule {
+  @provides
+  static String provideString() => "";
+}
+
+@Subcomponent(
+  modules: <Type>[MySubcomponentModule],
+)
+@scope2
+abstract class MySubcomponent {
+  String get string;
+}
+
+@module
+abstract class MySubcomponentModule {
+  @provides
+  static String provideString() => "";
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: multiple_providers_for_type:\n'
+            'String provided multiple times: MyComponentModule.provideString(MyComponent), MySubcomponentModule.provideString\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#multiple_providers_for_type',
+          );
+        },
+      );
+    });
+  });
+
+  group('custom scope', () {
+    test(
+        'should failed if component uscoped, but provider of module with scope',
+        () async {
+      await checkBuilderResult(
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[AppModule])
+abstract class AppComponent {
+  String get string;
+}
+
+@module
+abstract class AppModule {
+  @provides
+  @myScope
+  static String provideString() => 'Hello';
+}
+
+@scope
+class MyScope {
+  const MyScope._();
+}
+
+const MyScope myScope = MyScope._();
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: AppComponent (unscoped) may not reference scoped bindings: MyScope(AppModule.provideString)',
+          );
+        },
+      );
+    });
+
+    test(
+        'should failed if component and provider of module with different scopes',
+        () async {
+      await checkBuilderResult(
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[AppModule])
+@singleton
+abstract class AppComponent {
+  String get string;
+}
+
+@module
+abstract class AppModule {
+  @provides
+  @myScope
+  static String provideString() => 'Hello';
+}
+
+@scope
+class MyScope {
+  const MyScope._();
+}
+
+const MyScope myScope = MyScope._();
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: AppComponent (scoped Singleton) may not reference scoped bindings: MyScope(AppModule.provideString)',
+          );
+        },
+      );
+    });
+
+    test(
+        'should failed if component unscoped, but multiple providers of module with different scopes',
+        () async {
+      await checkBuilderResult(
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[AppModule])
+abstract class AppComponent {
+  String get string;
+  int get i;
+}
+
+@module
+abstract class AppModule {
+  @provides
+  @myScope
+  static String provideString() => 'Hello';
+
+  @provides
+  @singleton
+  static int provideInt() => 0;
+}
+
+@scope
+class MyScope {
+  const MyScope._();
+}
+
+const MyScope myScope = MyScope._();
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: AppComponent (unscoped) may not reference scoped bindings: MyScope(AppModule.provideString)',
+          );
+        },
+      );
+    });
+
+    test(
+        'should failed if component scoped and multiple providers of module with different scopes',
+        () async {
+      await checkBuilderResult(
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[AppModule])
+@myScope
+abstract class AppComponent {
+  String get string;
+  int get i;
+}
+
+@module
+abstract class AppModule {
+  @provides
+  @myScope
+  static String provideString() => 'Hello';
+
+  @provides
+  @singleton
+  static int provideInt() => 0;
+}
+
+@scope
+class MyScope {
+  const MyScope._();
+}
+
+const MyScope myScope = MyScope._();
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: AppComponent (scoped MyScope) may not reference scoped bindings: Singleton(AppModule.provideInt)',
+          );
+        },
+      );
+    });
+  });
+
+  group('Component as dependency', () {
     test('should failed if component builder not found', () async {
       await checkBuilderResult(
         mainContent: '''
@@ -1818,6 +2357,7 @@ class AppConfig {
 }
 
 @Component(modules: <Type>[AppModule])
+@singleton
 abstract class AppComponent {
   AppConfig get appConfig;
 }
@@ -1866,6 +2406,7 @@ class AppConfig {
 }
 
 @Component(modules: <Type>[AppModule])
+@singleton
 abstract class AppComponent {
   AppConfig get appConfig;
 }
@@ -1880,6 +2421,7 @@ abstract class AppModule {
 @Component(
   dependencies: <Type>[AppComponent],
   modules: <Type>[MyModule],
+  builder: MyComponentBuilder,
 )
 abstract class MyComponent {
   String get helloString;
@@ -1918,7 +2460,10 @@ class AppConfig {
   final String hello;
 }
 
-@Component(modules: <Type>[AppModule])
+@Component(
+  modules: <Type>[AppModule],
+  builder: AppComponentBuilder,
+)
 abstract class AppComponent {
   AppConfig get appConfig;
 }
@@ -1974,6 +2519,7 @@ class AppConfig {
 }
 
 @Component(modules: <Type>[AppModule])
+@singleton
 abstract class AppComponent {
   AppConfig get appConfig;
 }
@@ -1988,6 +2534,7 @@ abstract class AppModule {
 @Component(
   dependencies: <Type>[AppComponent],
   modules: <Type>[MyModule],
+  builder: MyComponentBuilder
 )
 abstract class MyComponent {
   String get helloString;
@@ -2029,6 +2576,7 @@ class AppConfig {
 }
 
 @Component(modules: <Type>[AppModule])
+@singleton
 abstract class AppComponent {
   AppConfig get appConfig;
 }
@@ -2043,6 +2591,7 @@ abstract class AppModule {
 @Component(
   dependencies: <Type>[AppComponent],
   modules: <Type>[MyModule],
+  builder: MyComponentBuilder,
 )
 abstract class MyComponent {
   String get helloString;
@@ -2180,7 +2729,10 @@ abstract class AppModule2 {
         mainContent: '''
 import 'package:jugger/jugger.dart';
 
-@Component(modules: <Type>[AppModule1])
+@Component(
+  modules: <Type>[AppModule1],
+  builder: AppComponentBuilder,
+)
 abstract class AppComponent {
   String get string;
 }
@@ -2215,7 +2767,10 @@ abstract class AppComponentBuilder {
         mainContent: '''
 import 'package:jugger/jugger.dart';
 
-@Component(modules: <Type>[AppModule1])
+@Component(
+  modules: <Type>[AppModule1],
+  builder: AppComponentBuilder,
+  )
 abstract class AppComponent {
   String get string;
 }
@@ -2267,6 +2822,7 @@ abstract class AppModule {
 @Component(
   dependencies: <Type>[AppComponent],
   modules: <Type>[MyModule],
+  builder: MyComponentBuilder,
 )
 abstract class MyComponent {
   String get helloString;
@@ -2438,6 +2994,7 @@ class InjectableClass {
 }
 
 @Component(modules: <Type>[AppModule])
+@singleton
 abstract class AppComponent {
   void inject(InjectableClass c);
 }
@@ -2798,7 +3355,9 @@ abstract class AppModule {
         mainContent: '''
 import 'package:jugger/jugger.dart';
 
-@Component()
+@Component(
+  builder: MyComponentBuilder,
+)
 abstract class AppComponent {
   String get string;
 }
@@ -2831,7 +3390,9 @@ abstract class MyComponentBuilder {
         mainContent: '''
 import 'package:jugger/jugger.dart';
 
-@Component()
+@Component(
+  builder: MyComponentBuilder,
+)
 abstract class AppComponent {
   String get string;
 }
@@ -3253,9 +3814,9 @@ abstract class MyComponent {}
           onError: (Object error) {
             expect(
               error.toString(),
-              'error: wrong_component_builder:\n'
+              'error: invalid_subcomponent_factory:\n'
               'The MyComponentBuilder is not suitable for the AppComponent it is bound to.\n'
-              'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#wrong_component_builder',
+              'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_subcomponent_factory',
             );
           },
         );
@@ -3279,9 +3840,9 @@ abstract class MyComponentBuilder {
           onError: (Object error) {
             expect(
               error.toString(),
-              'error: wrong_component_builder:\n'
+              'error: invalid_subcomponent_factory:\n'
               'MyComponentBuilder is not component builder.\n'
-              'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#wrong_component_builder',
+              'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_subcomponent_factory',
             );
           },
         );
@@ -3319,7 +3880,9 @@ abstract class AppComponent {
           mainContent: '''
 import 'package:jugger/jugger.dart';
 
-@Component()
+@Component(
+  builder: MyComponentBuilder,
+)
 abstract class AppComponent {
   String get string;
 }
@@ -3676,7 +4239,10 @@ abstract class AppComponent {}
         mainContent: '''
 import 'package:jugger/jugger.dart';
 
-@Component(modules: <Type>[])
+@Component(
+  modules: <Type>[],
+  builder: _MyComponentBuilder,
+)
 abstract class AppComponent {}
 
 @componentBuilder
@@ -3700,7 +4266,9 @@ abstract class _MyComponentBuilder {
         mainContent: '''
 import 'package:jugger/jugger.dart';
 
-@Component()
+@Component(
+  builder: ComponentBuilder,
+)
 abstract class AppComponent {}
 
 @componentBuilder
@@ -3726,7 +4294,9 @@ abstract class ComponentBuilder {
         mainContent: '''
 import 'package:jugger/jugger.dart';
 
-@Component()
+@Component(
+  builder: ComponentBuilder,
+)
 abstract class AppComponent {}
 
 @componentBuilder
@@ -3750,7 +4320,9 @@ abstract class ComponentBuilder {
         mainContent: '''
 import 'package:jugger/jugger.dart';
 
-@Component()
+@Component(
+  builder: MyComponentBuilder,
+)
 abstract class AppComponent {
   String get string;
 }
@@ -3780,7 +4352,9 @@ abstract class MyComponentBuilder {
         mainContent: '''
 import 'package:jugger/jugger.dart';
 
-@Component()
+@Component(
+  builder: MyComponentBuilder,
+)
 abstract class AppComponent {
   String get string;
 }

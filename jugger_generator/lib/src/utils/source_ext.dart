@@ -10,5 +10,5 @@ extension SourceExt on ProviderSource {
     );
   }
 
-  bool get isScoped => annotations.anyInstance<SingletonAnnotation>();
+  bool get isScoped => annotations.anyInstance<ScopeAnnotation>();
 }

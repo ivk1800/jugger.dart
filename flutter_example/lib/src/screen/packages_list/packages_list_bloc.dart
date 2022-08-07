@@ -1,6 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:flutter_example/src/app/data/data.dart';
 import 'package:flutter_example/src/common/logger.dart';
+import 'package:flutter_example/src/di/scope.dart';
 import 'package:flutter_example/src/screen/packages_list/packages_list_screen_router.dart';
 import 'package:jugger/jugger.dart' as j;
 
@@ -8,7 +9,7 @@ import 'package_model_mapper.dart';
 import 'packages_list_event.dart';
 import 'packages_list_state.dart';
 
-@j.singleton
+@screenScope
 class PackagesListBloc extends Bloc<PackagesListEvent, PackagesListState> {
   @j.inject
   PackagesListBloc({

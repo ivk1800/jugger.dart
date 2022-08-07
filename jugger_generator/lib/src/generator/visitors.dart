@@ -272,16 +272,6 @@ class _InjectedMethodsVisitor extends RecursiveElementVisitor<dynamic> {
   }
 }
 
-ComponentBuilder? getComponentBuilderFromTypeOrNull(DartType type) {
-  final _ComponentBuildersVisitor visitor = _ComponentBuildersVisitor();
-
-  final ClassElement? classElement = type.element as ClassElement?;
-  if (classElement != null) {
-    visitor.visitClassElement(classElement);
-  }
-  return visitor.componentBuilders.firstOrNull;
-}
-
 class _ComponentBuildersVisitor extends RecursiveElementVisitor<dynamic> {
   List<ComponentBuilder> componentBuilders = <ComponentBuilder>[];
 
@@ -353,13 +343,12 @@ class _ComponentBuildersVisitor extends RecursiveElementVisitor<dynamic> {
       );
       buildMethod = buildMethodNullable!;
 
-      final ComponentAnnotation? componentAnnotation =
-          buildMethod.returnType.element?.getComponentAnnotationOrNull();
+      final BaseComponentAnnotation componentAnnotation =
+          buildMethod.returnType.element!.getAnnotation();
 
       final Iterable<MethodElement> externalDependenciesMethods =
           methods.where((MethodElement me) => me.name != buildMethodName);
-      for (final DependencyAnnotation dep
-          in componentAnnotation!.dependencies) {
+      for (final DependencyAnnotation dep in componentAnnotation.dependencies) {
         final bool dependencyProvided =
             externalDependenciesMethods.any((MethodElement me) {
           return me.parameters[0].type.element == dep.element;
@@ -404,8 +393,8 @@ class _ComponentBuilderMethodsVisitor extends RecursiveElementVisitor<dynamic>
   @override
   dynamic visitMethodElement(MethodElement element) {
     if (element.name == 'build') {
-      final ComponentAnnotation? componentAnnotation =
-          element.returnType.element?.getComponentAnnotationOrNull();
+      final BaseComponentAnnotation? componentAnnotation =
+          element.returnType.element!.getAnnotationOrNull();
       check(
         componentAnnotation != null,
         () => buildErrorMessage(
@@ -501,6 +490,29 @@ class _ComponentMembersVisitor extends GeneralizingElementVisitor<dynamic>
         message: 'Method ${method.name} of component must be public.',
       ),
     );
+
+    final List<Annotation> annotations = getAnnotations(method);
+
+    if (annotations.any(
+      (Annotation a) => a is SubcomponentFactoryAnnotation,
+    )) {
+      final SubcomponentAnnotation? subcomponentAnnotation = method
+          .returnType.element
+          ?.getAnnotationOrNull<SubcomponentAnnotation>();
+      check(subcomponentAnnotation != null, () {
+        return buildErrorMessage(
+          error: JuggerErrorId.wrong_subcomponent_factory,
+          message:
+              "Factory method ${method.enclosingElement.name}.${method.name} "
+              "must return subcomponent type.",
+        );
+      });
+      _members.putIfAbsent(
+        method.name,
+        () => SubcomponentFactoryMethod(method),
+      );
+      return null;
+    }
 
     if (method.name == 'dispose') {
       check(
@@ -723,12 +735,14 @@ extension VisitorExt on Element {
     return visitor.methods;
   }
 
-  /// Returns all component builders of library and validate them. The client
-  /// must check that the element is a LibraryElement.
-  List<ComponentBuilder> getComponentBuilders() {
+  ComponentBuilder? getComponentBuilderOrNull() {
     final _ComponentBuildersVisitor visitor = _ComponentBuildersVisitor();
-    visitChildren(visitor);
-    return visitor.componentBuilders;
+
+    final ClassElement? classElement = this as ClassElement?;
+    if (classElement != null) {
+      visitor.visitClassElement(classElement);
+    }
+    return visitor.componentBuilders.firstOrNull;
   }
 
   /// Returns all injected constructors of class and validate them. The client

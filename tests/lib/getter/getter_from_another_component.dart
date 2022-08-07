@@ -9,6 +9,7 @@ class AppConfig {
 ////////////////////////////////////////////////////////////////////////////////
 
 @Component(modules: <Type>[AppModule])
+@singleton
 abstract class AppComponent {
   AppConfig get appConfig;
 }
@@ -22,9 +23,12 @@ abstract class AppModule {
 ////////////////////////////////////////////////////////////////////////////////
 
 @Component(
+  // ignore: deprecated_member_use
   dependencies: <Type>[AppComponent],
   modules: <Type>[MyScreenModule],
+  builder: MyScreenComponentBuilder,
 )
+@singleton
 abstract class MyScreenComponent {
   String get screenName;
 }

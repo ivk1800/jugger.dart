@@ -6,7 +6,7 @@ import 'package:jugger/jugger.dart' as j;
 
 import '../errors_glossary.dart';
 import '../utils/dart_type_ext.dart';
-import '../utils/list_ext.dart';
+import '../utils/source_ext.dart';
 import '../utils/utils.dart';
 import 'component_context.dart';
 import 'tag.dart';
@@ -84,7 +84,7 @@ class DisposablesManager {
     );
   }
 
-  /// Find all objects for disposing.
+  /// Find all objects for disposing. Filters objects from parent.
   List<DisposableInfo> _findDisposableGraphObjects(ComponentContext context) {
     final List<GraphObject> graphObjects = context.graphObjects;
 
@@ -96,6 +96,11 @@ class DisposablesManager {
         graphObject.tag,
         graphObject.multibindingsInfo,
       );
+
+      if (source is ParentComponentSource) {
+        // disposable object from parent - no need to do anything with it
+        continue;
+      }
 
       if (source is InjectedConstructorSource) {
         final DisposableAnnotation? disposableAnnotation =
@@ -164,10 +169,8 @@ class DisposablesManager {
         ),
       );
 
-      final bool isScoped =
-          source.annotations.anyInstance<SingletonAnnotation>();
       check(
-        isScoped,
+        source.isScoped,
         () => buildErrorMessage(
           error: JuggerErrorId.disposable_not_scoped,
           message:

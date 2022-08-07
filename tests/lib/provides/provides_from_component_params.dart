@@ -6,7 +6,10 @@ class MainRouter {}
 
 ////////////////////////////////////////////////////////////////////////////////
 
-@Component(modules: <Type>[AppModule])
+@Component(
+  modules: <Type>[AppModule],
+  builder: AppComponentBuilder,
+)
 abstract class AppComponent {
   MainRouter getMainRouter();
 }
@@ -17,5 +20,6 @@ abstract class AppModule {}
 @componentBuilder
 abstract class AppComponentBuilder {
   AppComponentBuilder createNewChatComponent(MainRouter router);
+
   AppComponent build();
 }

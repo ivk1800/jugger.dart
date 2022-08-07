@@ -11,6 +11,7 @@ class MainRouter implements IMainRouter {}
 ////////////////////////////////////////////////////////////////////////////////
 
 @Component(modules: <Type>[AppModule])
+@singleton
 abstract class AppComponent {
   IMainRouter getMainRouter();
 }
@@ -25,9 +26,12 @@ abstract class AppModule {
 ////////////////////////////////////////////////////////////////////////////////
 
 @Component(
+  // ignore: deprecated_member_use
   dependencies: <Type>[AppComponent],
   modules: <Type>[MyScreenModule],
+  builder: MyScreenComponentBuilder,
 )
+@singleton
 abstract class MyScreenComponent {
   IMyScreenRouter get myScreenRouter;
 }

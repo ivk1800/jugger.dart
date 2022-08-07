@@ -674,8 +674,175 @@ abstract class AppComponent {
   });
 
   group('subcomponent', () {
-    test('simple', () async {
-      await checkBuilderOfFile('subcomponent/simple_subcomponent');
+    group('disposable', () {
+      test('disposable in parent and subcomponent', () async {
+        await checkBuilderOfFile(
+          'subcomponent/disposable/disposable_in_parent_and_subcomponent',
+        );
+      });
+
+      test('disposable only in parent', () async {
+        await checkBuilderOfFile(
+          'subcomponent/disposable/disposable_only_in_parent',
+        );
+      });
+
+      test('disposable only in subcomponent', () async {
+        await checkBuilderOfFile(
+          'subcomponent/disposable/disposable_only_in_subcomponent',
+        );
+      });
+    });
+
+    group('multibindings', () {
+      group('set', () {
+        test('multibindings only from parent component', () async {
+          await checkBuilderOfFile(
+            'subcomponent/multibindings/set/multibindings_only_from_parent_component',
+          );
+        });
+
+        test('multibindings set from parent component and subcomponent',
+            () async {
+          await checkBuilderOfFile(
+            'subcomponent/multibindings/set/multibindings_set_from_parent_component_and_subcomponent',
+          );
+        });
+
+        test(
+            'multibindings set from parent component and subcomponent with different scope',
+            () async {
+          await checkBuilderOfFile(
+            'subcomponent/multibindings/set/multibindings_set_from_parent_component_and_subcomponent_with_different_scope',
+          );
+        });
+      });
+    });
+
+    group('binds', () {
+      test('subcomponent bind implementation from parent component', () async {
+        await checkBuilderOfFile(
+          'subcomponent/binds/subcomponent_bind_implementation_from_parent_component',
+        );
+      });
+    });
+
+    group('non_lazy', () {
+      test('non lazy in parent component and subcomponent', () async {
+        await checkBuilderOfFile(
+          'subcomponent/non_lazy/non_lazy_in_parent_component_and_subcomponent',
+        );
+      });
+
+      test('non lazy only in parent component', () async {
+        await checkBuilderOfFile(
+          'subcomponent/non_lazy/non_lazy_only_in_parent_component',
+        );
+      });
+    });
+
+    group('subcomponents chain', () {
+      test('subcomponents chain dependency from arguments', () async {
+        await checkBuilderOfFile(
+          'subcomponent/subcomponents_chain/subcomponents_chain_dependency_from_arguments',
+        );
+      });
+
+      test('subcomponents chain dependency from modules', () async {
+        await checkBuilderOfFile(
+          'subcomponent/subcomponents_chain/subcomponents_chain_dependency_from_modules',
+        );
+      });
+
+      test('subcomponents chain multibindings from modules', () async {
+        await checkBuilderOfFile(
+          'subcomponent/subcomponents_chain/subcomponents_chain_multibindings_from_modules',
+        );
+      });
+    });
+
+    test('subcomponent builder from another file', () async {
+      await checkBuilderResult(
+        assets: <String, String>{
+          'component_builder.dart': '''
+import 'package:jugger/jugger.dart';
+
+import 'test.dart';
+
+@componentBuilder
+abstract class MyComponentBuilder {
+  AppComponent build();
+}
+          ''',
+        },
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+
+import 'component_builder.dart';
+
+@Component(builder: MyComponentBuilder)
+abstract class AppComponent {}
+        ''',
+        resultContent: () {
+          return readAssetFile('component/component_builder_from_another_file');
+        },
+      );
+    });
+
+    test('subcomponent dependency from parent module', () async {
+      await checkBuilderOfFile(
+        'subcomponent/subcomponent_dependency_from_parent_module',
+      );
+    });
+
+    test('subcomponent dependency from parent argument', () async {
+      await checkBuilderOfFile(
+        'subcomponent/subcomponent_dependency_from_parent_argument',
+      );
+    });
+
+    test('subcomponent with builder', () async {
+      await checkBuilderOfFile(
+        'subcomponent/subcomponent_with_builder',
+      );
+    });
+
+    test('scoped object from parent component in unscoped subcomponent',
+        () async {
+      await checkBuilderOfFile(
+        'subcomponent/scoped_object_from_parent_component_in_unscoped_subcomponent',
+      );
+    });
+
+    test('subcomponent dependency from parent module as component accessor',
+        () async {
+      await checkBuilderOfFile(
+        'subcomponent/subcomponent_dependency_from_parent_module_as_component_accessor',
+      );
+    });
+
+    test(
+        'subcomponent dependency from parent module as dependency in injected constructor',
+        () async {
+      await checkBuilderOfFile(
+        'subcomponent/subcomponent_dependency_from_parent_module_as_dependency_in_injected_constructor',
+      );
+    });
+
+    test(
+        'subcomponent injected class dependency from parent in subcomponent as accessor',
+        () async {
+      await checkBuilderOfFile(
+        'subcomponent/subcomponent_injected_class_dependency_from_parent_in_subcomponent_as_accessor',
+      );
+    });
+
+    test(
+        'subcomponent scoped injected class dependency from parent in scoped subcomponent as accessor',
+        () async {
+      await checkBuilderOfFile(
+        'subcomponent/subcomponent_scoped_injected_class_dependency_from_parent_in_scoped_subcomponent_as_accessor',
+      );
     });
   });
 

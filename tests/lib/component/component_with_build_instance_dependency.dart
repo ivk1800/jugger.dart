@@ -2,7 +2,9 @@
 
 import 'package:jugger/jugger.dart';
 
-@Component()
+@Component(
+  builder: MyComponentBuilder,
+)
 abstract class AppComponent {
   String get string;
 }

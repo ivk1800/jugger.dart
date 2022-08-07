@@ -13,6 +13,7 @@ import '../utils/dart_type_ext.dart';
 import '../utils/element_annotation_ext.dart';
 import '../utils/element_ext.dart';
 import '../utils/list_ext.dart';
+import '../utils/object_ext.dart';
 import '../utils/source_ext.dart';
 import '../utils/tag_ext.dart';
 import '../utils/utils.dart';
@@ -22,6 +23,7 @@ import 'component_result.dart';
 import 'disposable_manager.dart';
 import 'multibindings/multibindings_group.dart';
 import 'multibindings/multibindings_info.dart';
+import 'subcomponent/parent_component_provider.dart';
 import 'tag.dart';
 import 'type_name_registry.dart';
 import 'unique_name_registry.dart';
@@ -38,6 +40,7 @@ class ComponentBuilderDelegate {
   static const String _jugger = 'package:jugger/jugger.dart';
 
   static const Expression _overrideAnnotationExpression = Reference('override');
+  static const String _parent = "_parent";
 
   final AssetContext _assetContext;
 
@@ -45,8 +48,13 @@ class ComponentBuilderDelegate {
   late DisposablesManager _disposablesManager;
   late DartType _componentType;
 
-  late final String _thisComponentName =
-      _createComponentName(_componentContext.component.element.name);
+  late final String _thisComponentName = _createComponentName(
+    _componentContext.component.element.name,
+    _componentContext.parentComponentProvider?.componentName,
+  );
+
+  late final ParentComponentProvider _thisParentComponentProvider =
+      _ParentComponentProvider(this);
 
   GlobalConfig get globalConfig => _assetContext.globalConfig;
 
@@ -58,20 +66,26 @@ class ComponentBuilderDelegate {
 
   ComponentResult generateComponent({
     required Component component,
+  }) =>
+      _generateComponent(component: component, parentComponentProvider: null);
+
+  ComponentResult _generateComponent({
+    required Component component,
+    required ParentComponentProvider? parentComponentProvider,
   }) {
     _componentType = component.element.thisType;
     _componentContext = ComponentContext(
       component: component,
-      componentBuilder: component.resolveComponentBuilder() ??
-          // for compatibility, will be removed in future release
-          _assetContext.getComponentBuilderOf(
-            component.element.thisType,
-          ),
+      componentBuilder: component.resolveComponentBuilder(),
+      parentComponentProvider: parentComponentProvider,
     );
     _disposablesManager = DisposablesManager(_componentContext);
 
-    final bool hasDisposables = _disposablesManager.hasDisposables();
     final Class componentClass = _createComponentClass();
+
+    bool hasDisposables = _disposablesManager.hasDisposables();
+
+    final List<Class> componentClasses = <Class>[componentClass];
 
     final List<Class> multibindingsProviderClasses = _componentContext
         .multibindingsManager
@@ -82,13 +96,40 @@ class ComponentBuilderDelegate {
     final j.ComponentBuilder? componentBuilder =
         _componentContext.componentBuilder;
 
+    final List<Class> componentBuilders = <Class>[
+      if (componentBuilder != null)
+        _buildComponentBuilderClass(componentBuilder)
+    ];
+
+    _assetContext.componentCircularDependencyDetector.beginHandleComponent(
+      _componentContext.component.element,
+    );
+
+    _getSubcomponents(component).map((j.Component subcomponent) {
+      return ComponentBuilderDelegate(assetContext: _assetContext)
+          ._generateComponent(
+        component: subcomponent,
+        parentComponentProvider: _thisParentComponentProvider,
+      );
+    }).forEach((ComponentResult subcomponentResult) {
+      if (subcomponentResult.hasDisposables) {
+        hasDisposables = true;
+      }
+      componentClasses.addAll(subcomponentResult.componentClasses);
+      multibindingsProviderClasses
+          .addAll(subcomponentResult.multibindingsProviderClasses);
+      componentBuilders.addAll(subcomponentResult.componentBuilders);
+    });
+
+    _assetContext.componentCircularDependencyDetector.endHandleComponent(
+      _componentContext.component.element,
+    );
+
     return ComponentResult(
-      componentClass: componentClass,
+      componentClasses: componentClasses,
       multibindingsProviderClasses: multibindingsProviderClasses,
       hasDisposables: hasDisposables,
-      componentBuilder: componentBuilder != null
-          ? _buildComponentBuilderClass(componentBuilder)
-          : null,
+      componentBuilders: componentBuilders,
     );
   }
 
@@ -118,6 +159,12 @@ class ComponentBuilderDelegate {
         );
       }
 
+      final Field? parentField = _buildParentFieldIfNeeded();
+
+      if (parentField != null) {
+        classBuilder.fields.add(parentField);
+      }
+
       classBuilder
         ..fields.addAll(_buildProvidesFields())
         ..fields.addAll(
@@ -139,6 +186,11 @@ class ComponentBuilderDelegate {
           _buildMembersInjectorMethods(
             component.memberInjectors,
             classBuilder,
+          ),
+        )
+        ..methods.addAll(
+          _buildSubcomponentsBuilders(
+            _componentContext.component.subcomponentFactoryMethods,
           ),
         )
         ..implements.add(
@@ -181,6 +233,19 @@ class ComponentBuilderDelegate {
           createElementPath(componentBuilder.element),
         ),
       );
+
+      final ParentComponentProvider? parent =
+          _componentContext.parentComponentProvider;
+      if (parent != null) {
+        classBuilder.methods.add(
+          _buildSetParentMethod(
+            componentBuilder: componentBuilder,
+            parent: parent,
+          ),
+        );
+        classBuilder.fields.add(_buildParentField(parent: parent));
+      }
+
       classBuilder.methods.addAll(
         componentBuilder.methods.map(
           (MethodElement m) {
@@ -199,7 +264,7 @@ class ComponentBuilderDelegate {
   Field _buildComponentParameter(j.ComponentBuilderParameter parameter) {
     return Field((FieldBuilder b) {
       b.type = refer('${_allocateTypeName(parameter.parameter.type)}?');
-      final Tag? tag = parameter.parameter.enclosingElement!.getQualifierTag();
+      final Tag? tag = parameter.parameter.enclosingElement?.getQualifierTag();
       b.name = '_${_generateFieldName(
         type: parameter.parameter.type,
         tag: tag?.toAssignTag(),
@@ -266,7 +331,7 @@ class ComponentBuilderDelegate {
     DartType componentType,
   ) {
     return Block((BlockBuilder builder) {
-      final Iterable<Expression> parameters = componentBuilder.parameters
+      final Iterable<Expression> builderParameters = componentBuilder.parameters
           .map((j.ComponentBuilderParameter parameter) {
         final Tag? tag =
             parameter.parameter.enclosingElement!.getQualifierTag();
@@ -277,6 +342,11 @@ class ComponentBuilderDelegate {
           )}',
         ).nullChecked;
       });
+      final List<Expression> parameters = <Expression>[
+        if (_componentContext.parentComponentProvider != null)
+          const CodeExpression(Code(_parent)).nullChecked,
+        ...builderParameters,
+      ];
 
       final List<Code> assertCodes = componentBuilder.parameters
           .map((j.ComponentBuilderParameter parameter) {
@@ -296,6 +366,12 @@ class ComponentBuilderDelegate {
 
       for (final Code value in assertCodes) {
         builder.addExpression(CodeExpression(value));
+      }
+
+      if (_componentContext.parentComponentProvider != null) {
+        builder.addExpression(
+          const CodeExpression(Code('assert($_parent != null)')),
+        );
       }
 
       final Expression call =
@@ -318,18 +394,25 @@ class ComponentBuilderDelegate {
   /// [name] The name of the component for which you want to generate a name.
   /// Usually the class name.
   ///
-  String _createComponentName(String name) {
+  String _createComponentName(String name, [String? parentComponentName]) {
+    final String baseName;
+    if (parentComponentName != null) {
+      baseName = "JuggerSubcomponent\$";
+    } else {
+      baseName = "Jugger";
+    }
+
     if (!globalConfig.removeInterfacePrefixFromComponentName ||
         name.length == 1) {
-      return 'Jugger$name';
+      return '$baseName$name';
     }
 
     final String nextChar = name[1];
     if (name.startsWith('I') && nextChar == nextChar.toUpperCase()) {
-      return 'Jugger${name.substring(1, name.length)}';
+      return '$baseName${name.substring(1, name.length)}';
     }
 
-    return 'Jugger$name';
+    return '$baseName$name';
   }
 
   /// Returns a list of all providers that are used in the current component.
@@ -353,7 +436,9 @@ class ComponentBuilderDelegate {
         graphObject.multibindingsInfo,
       );
       // just 'this' for assign expression, field is not needed
-      return source is! ThisComponentSource;
+      return source is! ThisComponentSource &&
+          // for objects from the parent component fields are not needed
+          source is! ParentComponentSource;
     });
 
     for (final GraphObject graphObject in filteredDependencies) {
@@ -371,7 +456,10 @@ class ComponentBuilderDelegate {
         graphObject.multibindingsInfo,
       );
 
-      if (provider is! ArgumentSource && provider is! AnotherComponentSource) {
+      if (provider is! ArgumentSource &&
+          provider is! AnotherComponentSource &&
+          !(provider is ParentComponentSource &&
+              provider.originalSource is ArgumentSource)) {
         fields.add(
           Field((FieldBuilder b) {
             final Tag? tag = graphObject.tag;
@@ -394,6 +482,13 @@ class ComponentBuilderDelegate {
               graphObject.multibindingsInfo,
             );
 
+            late final String providerClassName =
+                '_${_createMultibindingsProviderClassName(
+              type: graphObject.type,
+              tag: graphObject.tag,
+              multibindingsInfo: graphObject.multibindingsInfo,
+            )}';
+
             if (provider is ModuleSource) {
               b.assignment =
                   _buildProviderFromMethod(provider.method, null).code;
@@ -404,18 +499,12 @@ class ComponentBuilderDelegate {
               final Iterable<GraphObject> collectedObjects =
                   _collectMultibindingsObjects(provider.multibindingsGroup);
 
-              final bool hasDependencies = collectedObjects
-                  .any((GraphObject object) => object.dependencies.isNotEmpty);
+              final bool hasDependencies =
+                  _hasMultibindingsDependencies(collectedObjects);
 
               final Code assignment = Block.of(
                 <Code>[
-                  Code(
-                    '_${_createMultibindingsProviderClassName(
-                      type: graphObject.type,
-                      tag: graphObject.tag,
-                      multibindingsInfo: graphObject.multibindingsInfo,
-                    )}',
-                  ),
+                  Code(providerClassName),
                   if (hasDependencies)
                     const Code('(this)')
                   else
@@ -424,6 +513,15 @@ class ComponentBuilderDelegate {
               );
 
               b.assignment = assignment;
+            } else if (provider is ParentComponentSource) {
+              // todo it code is called?
+              if (provider.originalSource is ArgumentSource) {
+                throw UnexpectedJuggerError(
+                  '$ArgumentSource not allowed here.',
+                );
+              } else {
+                b.assignment = Code('$_parent.${b.name}');
+              }
             } else {
               throw JuggerError(
                 buildUnexpectedErrorMessage(
@@ -432,7 +530,13 @@ class ComponentBuilderDelegate {
               );
             }
 
-            b.type = refer('IProvider<$generic>', _jugger);
+            if (provider is MultibindingsSource) {
+              // Subcomponents need access to the provider in order to form a
+              // Map or Set
+              b.type = refer(providerClassName);
+            } else {
+              b.type = refer('IProvider<$generic>', _jugger);
+            }
           }),
         );
       }
@@ -647,27 +751,25 @@ class ComponentBuilderDelegate {
         ),
       );
     }
-
     final ProviderSource provider = _componentContext.findProvider(type, tag);
 
+    return _generateProviderAssignExpression(
+      provider: provider,
+      callGet: callGet,
+      prefixScope: prefixScope,
+    );
+  }
+
+  Expression _generateProviderAssignExpression({
+    required ProviderSource provider,
+    bool callGet = true,
+    String? prefixScope,
+  }) {
     if (provider is ArgumentSource) {
-      String? finalSting;
-
-      if (tag != null) {
-        finalSting = generateMd5(tag.uniqueId);
-      }
-
-      final StringBuffer assignExpressionBuilder = StringBuffer();
-      if (prefixScope != null) {
-        assignExpressionBuilder
-          ..write(prefixScope)
-          ..write('.');
-      }
-      assignExpressionBuilder
-        ..write('_')
-        ..write(_generateFieldName(type: type, tag: finalSting));
-
-      return refer(assignExpressionBuilder.toString());
+      return _generateArgumentSourceAssignExpression(
+        source: provider,
+        prefixScope: prefixScope,
+      );
     }
 
     if (provider is AnotherComponentSource) {
@@ -679,14 +781,61 @@ class ComponentBuilderDelegate {
       }
       assignExpressionBuilder.write(provider.assignString);
       return refer(assignExpressionBuilder.toString());
+    } else if (provider is ParentComponentSource) {
+      if (provider.originalSource is ArgumentSource) {
+        checkUnexpected(
+          prefixScope == null,
+          () => 'prefixScope not allowed for $ParentComponentSource',
+        );
+      }
+      return _generateProviderAssignExpression(
+        provider: provider.originalSource,
+        prefixScope: _getParentChain(
+          _componentContext.getDepthOfParent(parentId: provider.id),
+        ),
+      );
     }
 
     return _generateProviderCall(
-      tag: tag,
-      type: type,
+      tag: provider.tag,
+      type: provider.type,
       callGet: callGet,
       prefixScope: prefixScope,
     );
+  }
+
+  final Map<int, String> _parentChainCache = <int, String>{};
+
+  String _getParentChain(int depth) {
+    return _parentChainCache.putIfAbsent(
+      depth,
+      () => List<String>.generate(depth, (int _) => _parent).join('.'),
+    );
+  }
+
+  Expression _generateArgumentSourceAssignExpression({
+    required ArgumentSource source,
+    String? prefixScope,
+  }) {
+    final Tag? tag = source.tag;
+
+    String? finalSting;
+
+    if (tag != null) {
+      finalSting = generateMd5(tag.uniqueId);
+    }
+
+    final StringBuffer assignExpressionBuilder = StringBuffer();
+    if (prefixScope != null) {
+      assignExpressionBuilder
+        ..write(prefixScope)
+        ..write('.');
+    }
+    assignExpressionBuilder
+      ..write('_')
+      ..write(_generateFieldName(type: source.type, tag: finalSting));
+
+    return refer(assignExpressionBuilder.toString());
   }
 
   /// Returns a provider call as expression, which can be used as code.
@@ -749,15 +898,11 @@ class ComponentBuilderDelegate {
     builder.body = Block((BlockBuilder builder) {
       final Iterable<ProviderSource> nonLazyProviders = _componentContext
           .providerSources
-          .whereType<ModuleSource>()
-          .where(
-            (ProviderSource source) =>
-                source.annotations.anyInstance<j.NonLazyAnnotation>(),
-          )
+          .where(_nonLazySourceFilter)
           .toList()
           // Sort so that the sequence is preserved with each code generation (for
           // test stability)
-          .sortedBy((ModuleSource source) => source.type.getName());
+          .sortedBy((ProviderSource source) => source.type.getName());
 
       for (final ProviderSource source in nonLazyProviders) {
         check(
@@ -783,11 +928,13 @@ class ComponentBuilderDelegate {
 
   /// Returns true if there are non-lazy graph objects in the component. The
   /// source in the module must be annotated with @nonLazy.
-  bool _hasNonLazyProviders() {
-    return _componentContext.providerSources.any(
-      (ProviderSource source) =>
-          source.annotations.anyInstance<j.NonLazyAnnotation>(),
-    );
+  bool _hasNonLazyProviders() =>
+      _componentContext.providerSources.any(_nonLazySourceFilter);
+
+  bool _nonLazySourceFilter(ProviderSource source) {
+    return source is ModuleSource &&
+        source.scope == _componentContext.component.scope &&
+        source.annotations.anyInstance<j.NonLazyAnnotation>();
   }
 
   // region provider
@@ -868,14 +1015,16 @@ class ComponentBuilderDelegate {
 
     if (provider is AnotherComponentSource) {
       return _buildProvider(method.element, provider);
-    } else if (provider is ModuleSource) {
+    } else if (provider is ModuleSource ||
+        (provider is ParentComponentSource &&
+            provider.originalSource is ModuleSource)) {
       return _buildProvider(method.element, provider);
     }
 
     checkUnexpected(
       provider is InjectedConstructorSource,
       () {
-        return 'Expected InjectedConstructorSource, but was $provider.';
+        return 'Expected $InjectedConstructorSource, but was $provider.';
       },
     );
 
@@ -1091,13 +1240,13 @@ class ComponentBuilderDelegate {
     if (element is ConstructorElement) {
       return _getProviderReference(
         generic: generic,
-        singleton: element.enclosingElement.hasAnnotatedAsSingleton(),
+        isScoped: element.enclosingElement.hasScoped(),
       );
     }
 
     return _getProviderReference(
       generic: generic,
-      singleton: element.hasAnnotatedAsSingleton(),
+      isScoped: element.hasScoped(),
     );
   }
 
@@ -1105,13 +1254,13 @@ class ComponentBuilderDelegate {
   /// [generic] it is type which will be enclosed in brackets '<>'. Must be
   /// allocated by Allocator, otherwise there will be syntax errors.
   ///
-  /// [singleton] true if provider type is singleton.
+  /// [isScoped] true if provider type is singleton.
   Reference _getProviderReference({
     required String generic,
-    required bool singleton,
+    required bool isScoped,
   }) {
     return refer(
-      singleton ? 'SingletonProvider<$generic>' : 'Provider<$generic>',
+      isScoped ? 'SingletonProvider<$generic>' : 'Provider<$generic>',
       _jugger,
     );
   }
@@ -1139,6 +1288,15 @@ class ComponentBuilderDelegate {
     return Constructor((ConstructorBuilder constructorBuilder) {
       if (_hasNonLazyProviders()) {
         constructorBuilder.body = const Code('_initNonLazy();');
+      }
+
+      if (_componentContext.parentComponentProvider != null) {
+        constructorBuilder.requiredParameters.add(
+          Parameter((ParameterBuilder b) {
+            b.toThis = true;
+            b.name = _parent;
+          }),
+        );
       }
 
       if (componentBuilder == null) {
@@ -1573,13 +1731,15 @@ if (_disposed) {
               refer(_allocateDependencyTypeName(graphObject)),
             );
 
+            final String providerFieldName =
+                '_${_createMultibindingsProviderFieldName(
+              type: graphObject.type,
+              tag: graphObject.tag,
+              multibindingsInfo: graphObject.multibindingsInfo,
+            )}';
             fieldBuilder
               ..type = refer('IProvider<$fieldTypeString>', _jugger)
-              ..name = '_${_createMultibindingsProviderFieldName(
-                type: graphObject.type,
-                tag: graphObject.tag,
-                multibindingsInfo: graphObject.multibindingsInfo,
-              )}'
+              ..name = providerFieldName
               ..late = true
               ..modifier = FieldModifier.final$;
 
@@ -1592,6 +1752,22 @@ if (_disposed) {
             if (provider is ModuleSource) {
               fieldBuilder.assignment =
                   _buildProviderFromMethod(provider.method, '_component').code;
+            } else if (provider is ParentMultibindingsItemSource) {
+              final ProviderSource originalSource = provider.originalSource;
+              if (originalSource is ModuleSource) {
+                fieldBuilder.assignment =
+                    _createMultibindingsClassFieldFromParentCode(
+                  group: group,
+                  providerFieldName: providerFieldName,
+                );
+              } else {
+                throw JuggerError(
+                  buildUnexpectedErrorMessage(
+                    message: 'Original source $originalSource not allowed in '
+                        '$ParentMultibindingsItemSource',
+                  ),
+                );
+              }
             } else {
               throw JuggerError(
                 buildUnexpectedErrorMessage(
@@ -1603,8 +1779,8 @@ if (_disposed) {
         )
         .sortedBy((Field element) => element.name);
 
-    final bool hasDependencies = collectedObjects
-        .any((GraphObject object) => object.dependencies.isNotEmpty);
+    final bool hasDependencies =
+        _hasMultibindingsDependencies(collectedObjects);
 
     final String classTypeString = _allocator.allocate(
       refer(_allocateDependencyTypeName(classGraphObject)),
@@ -1682,6 +1858,33 @@ if (_disposed) {
         );
       },
     );
+  }
+
+  Code _createMultibindingsClassFieldFromParentCode({
+    required MultibindingsGroup group,
+    required String providerFieldName,
+  }) {
+    final String parentGroupName = _createMultibindingsProviderFieldName(
+      type: group.graphObject.type,
+      tag: group.graphObject.tag,
+      multibindingsInfo: group.graphObject.multibindingsInfo,
+    );
+
+    return Code('_component.$_parent._$parentGroupName.$providerFieldName');
+  }
+
+  bool _hasMultibindingsDependencies(Iterable<GraphObject> objects) {
+    return objects.any((GraphObject object) {
+      if (object.dependencies.isNotEmpty) {
+        return true;
+      }
+      final ProviderSource provider = _componentContext.findProvider(
+        object.type,
+        object.tag,
+        object.multibindingsInfo,
+      );
+      return provider is ParentMultibindingsItemSource;
+    });
   }
 
   Expression _createMapBody({
@@ -1844,7 +2047,7 @@ if (_disposed) {
     fieldNameBuilder
       ..write(componentName)
       ..write('_')
-      ..write(_uniqueIdGenerator.generate(componentName))
+      ..write(componentName)
       ..write('_')
       ..write('Provider');
 
@@ -1874,4 +2077,185 @@ if (_disposed) {
   }
 
 // endregion multibindings
+
+// region subcomponents
+
+  Field? _buildParentFieldIfNeeded() {
+    final ParentComponentProvider? parent =
+        _componentContext.parentComponentProvider;
+    if (parent != null) {
+      return Field((FieldBuilder builder) {
+        builder
+          ..name = _parent
+          ..docs.add("  // ignore: unused_field")
+          ..modifier = FieldModifier.final$
+          ..type = refer(parent.componentName);
+      });
+    } else {
+      return null;
+    }
+  }
+
+  List<Method> _buildSubcomponentsBuilders(
+    Iterable<SubcomponentFactoryMethod> methods,
+  ) {
+    return methods.map((j.SubcomponentFactoryMethod method) {
+      return Method((MethodBuilder builder) {
+        builder.name = method.element.name;
+        builder.returns = refer(
+          method.element.returnType.getName(),
+          createElementPath(method.element.returnType.element!),
+        );
+
+        final j.BaseComponentAnnotation? baseComponentAnnotation = method
+            .element.returnType.element
+            ?.getAnnotation<BaseComponentAnnotation>();
+
+        checkUnexpected(
+          baseComponentAnnotation != null,
+          () => 'Missing component annotation',
+        );
+
+        final DartType? builderType = baseComponentAnnotation?.builder;
+        if (builderType != null) {
+          checkUnexpected(
+            builderType == method.resolveBuilderParameterClass().thisType,
+            () {
+              return 'Builder type not matched with method return type.';
+            },
+          );
+        }
+
+        if (builderType != null) {
+          builder.requiredParameters.add(
+            Parameter((ParameterBuilder parameterBuilder) {
+              final ParameterElement builderParameter =
+                  method.resolveBuilderParameter();
+              parameterBuilder.name = builderParameter.name;
+              parameterBuilder.type = refer(
+                builderParameter.type.getName(),
+                createElementPath(method.resolveBuilderParameterClass()),
+              );
+            }),
+          );
+        }
+        builder.body = _buildSubcomponentFactoryMethodBody(
+          method: method,
+          withBuilder: builderType != null,
+        );
+      });
+    }).toList(growable: false);
+  }
+
+  Code _buildSubcomponentFactoryMethodBody({
+    required j.SubcomponentFactoryMethod method,
+    required bool withBuilder,
+  }) {
+    if (!withBuilder) {
+      return CodeExpression(
+        Code(
+          _createComponentName(
+            method.element.returnType.getName(),
+            _thisParentComponentProvider.componentName,
+          ),
+        ),
+      )
+          .property("create")
+          .call(<Expression>[const CodeExpression(Code('this'))])
+          .returned
+          .statement;
+    } else {
+      final String builderClassName = '${_createComponentName(
+        method.element.returnType.element!.name!,
+        _thisComponentName,
+      )}Builder';
+      final Code code2 =
+          CodeExpression(Code(method.resolveBuilderParameter().name))
+              .asA(CodeExpression(Code(builderClassName)))
+              .property('_setParent')
+              .call(<Expression>[const CodeExpression(Code('this'))])
+              .property('build')
+              .call(<Expression>[])
+              .returned
+              .statement;
+      return CodeExpression(
+        Block.of(<Code>[
+          Code('assert(builder is $builderClassName);'),
+          code2,
+        ]),
+      ).code;
+    }
+  }
+
+  Iterable<j.Component> _getSubcomponents(j.Component component) {
+    final Iterable<j.Component> subcomponents = component
+        .subcomponentFactoryMethods
+        .map((j.SubcomponentFactoryMethod m) {
+      final ClassElement classElement =
+          m.element.returnType.element.requiredType();
+      final j.BaseComponentAnnotation subcomponentAnnotation =
+          classElement.getAnnotation();
+
+      return Component.fromElement(classElement, subcomponentAnnotation);
+    });
+
+    return subcomponents;
+  }
+
+  Field _buildParentField({
+    required ParentComponentProvider parent,
+  }) {
+    return Field((FieldBuilder b) {
+      b.type = refer('${parent.componentName}?');
+      b.name = _parent;
+    });
+  }
+
+  Method _buildSetParentMethod({
+    required ParentComponentProvider parent,
+    required j.ComponentBuilder componentBuilder,
+  }) {
+    return Method((MethodBuilder builder) {
+      builder.name = '_setParent';
+      builder.returns = refer(
+        componentBuilder.element.thisType.getName(),
+        createElementPath(componentBuilder.element),
+      );
+      builder.requiredParameters.add(
+        Parameter((ParameterBuilder parameterBuilder) {
+          parameterBuilder.name = 'parent';
+          parameterBuilder.type = refer(parent.componentName);
+        }),
+      );
+      builder.body = Block.of(
+        <Code>[
+          const Code('$_parent = parent;'),
+          const Code('return this;'),
+        ],
+      );
+    });
+  }
+
+// endregion subcomponents
+
+}
+
+class _ParentComponentProvider implements ParentComponentProvider {
+  _ParentComponentProvider(this._delegate);
+
+  final ComponentBuilderDelegate _delegate;
+
+  @override
+  String get componentName => _delegate._thisComponentName;
+
+  @override
+  ClassElement get componentClassElement =>
+      _delegate._componentContext.component.element;
+
+  @override
+  List<ParentComponentInfo> get fullInfo =>
+      _delegate._componentContext.fullParentInfoWithSelf;
+
+  @override
+  String toString() => componentName;
 }

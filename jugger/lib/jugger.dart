@@ -23,6 +23,9 @@ export 'src/annotations.dart'
         StringKey,
         IntKey,
         TypeKey,
+        Subcomponent,
+        subcomponentFactory,
+        scope,
         Named;
 
 export 'src/provider.dart' show Provider, SingletonProvider, IProvider;

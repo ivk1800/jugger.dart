@@ -19,16 +19,17 @@ class JuggerAppComponent implements _i1.AppComponent {
   late final _i2.IProvider<_i1.MyClassImpl3> _myClassImpl3Provider =
       _i2.Provider<_i1.MyClassImpl3>(() => const _i1.MyClassImpl3());
 
-  late final _i2.IProvider<Set<_i1.MyClass>> _set_MyClass_Provider =
-      _Set_MyClass_AppComponent_0_Provider(this);
+  late final _Set_MyClass_AppComponent_AppComponent_Provider
+      _set_MyClass_Provider =
+      _Set_MyClass_AppComponent_AppComponent_Provider(this);
 
   @override
   Set<_i1.MyClass> get myClasses => _set_MyClass_Provider.get();
 }
 
-class _Set_MyClass_AppComponent_0_Provider
+class _Set_MyClass_AppComponent_AppComponent_Provider
     implements _i2.IProvider<Set<_i1.MyClass>> {
-  _Set_MyClass_AppComponent_0_Provider(this._component);
+  _Set_MyClass_AppComponent_AppComponent_Provider(this._component);
 
   late final _i2.IProvider<_i1.MyClass>
       _myClass4d432aa8b085fa0be1ad8b0c8ce464ccProvider =

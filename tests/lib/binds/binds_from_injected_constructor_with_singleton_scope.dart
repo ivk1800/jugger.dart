@@ -11,6 +11,7 @@ class MainRouter implements IMainRouter {
 ////////////////////////////////////////////////////////////////////////////////
 
 @Component(modules: <Type>[AppModule])
+@singleton
 abstract class AppComponent {
   IMainRouter getMainRouter();
 }

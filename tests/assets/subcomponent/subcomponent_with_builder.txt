@@ -1,0 +1,61 @@
+// ignore_for_file: implementation_imports
+// ignore_for_file: prefer_const_constructors
+// ignore_for_file: always_specify_types
+// ignore_for_file: directives_ordering
+// ignore_for_file: non_constant_identifier_names
+// ignore_for_file: no_leading_underscores_for_library_prefixes
+import 'package:tests/subcomponent/subcomponent_with_builder.dart' as _i1;
+import 'package:jugger/jugger.dart' as _i2;
+
+class JuggerAppComponent implements _i1.AppComponent {
+  JuggerAppComponent.create();
+
+  late final _i2.IProvider<String> _stringProvider =
+      _i2.SingletonProvider<String>(() => _i1.AppModule.provideString());
+
+  _i1.MyComponent createMyComponent(_i1.MyComponentBuilder builder) {
+    assert(builder is JuggerSubcomponent$MyComponentBuilder);
+    return (builder as JuggerSubcomponent$MyComponentBuilder)
+        ._setParent(this)
+        .build();
+  }
+}
+
+class JuggerSubcomponent$MyComponent implements _i1.MyComponent {
+  JuggerSubcomponent$MyComponent._create(this._parent, this._double);
+
+  // ignore: unused_field
+  final JuggerAppComponent _parent;
+
+  late final _i2.IProvider<int> _intProvider = _i2.Provider<int>(
+      () => _i1.MyModule.provideCount(_parent._stringProvider.get(), _double));
+
+  final double _double;
+
+  @override
+  int get count => _intProvider.get();
+}
+
+class JuggerSubcomponent$MyComponentBuilder implements _i1.MyComponentBuilder {
+  JuggerAppComponent? _parent;
+
+  double? _double;
+
+  _i1.MyComponentBuilder _setParent(JuggerAppComponent parent) {
+    _parent = parent;
+    return this;
+  }
+
+  @override
+  _i1.MyComponentBuilder setDouble(double d) {
+    _double = d;
+    return this;
+  }
+
+  @override
+  _i1.MyComponent build() {
+    assert(_double != null);
+    assert(_parent != null);
+    return JuggerSubcomponent$MyComponent._create(_parent!, _double!);
+  }
+}

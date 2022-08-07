@@ -32,4 +32,10 @@ extension ComponentMethodsExt on List<ComponentMethod> {
       (ComponentMethod method) => method is DisposeMethod,
     ) as DisposeMethod?;
   }
+
+  List<SubcomponentFactoryMethod> getSubcomponentFactoryMethods() {
+    return whereType<SubcomponentFactoryMethod>()
+        .cast<SubcomponentFactoryMethod>()
+        .toList(growable: false);
+  }
 }
