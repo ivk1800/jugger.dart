@@ -7,6 +7,7 @@ import 'package:jugger/jugger.dart' as j;
 import 'package:jugger/jugger.dart';
 
 import '../errors_glossary.dart';
+import '../utils/component_methods_ext.dart';
 import '../utils/dart_type_ext.dart';
 import '../utils/element_ext.dart';
 import '../utils/utils.dart';
@@ -20,14 +21,11 @@ class Component {
   Component._({
     required this.element,
     required this.annotations,
-    required this.memberInjectors,
-    required this.methodsAccessors,
-    required this.propertiesAccessors,
     required this.modules,
     required this.dependencies,
     required this.modulesProvideMethods,
     required this.disposalHandlerMethods,
-    required this.disposeMethod,
+    required this.componentMembers,
   });
 
   factory Component.fromElement(
@@ -38,23 +36,6 @@ class Component {
     return Component._(
       element: element,
       annotations: <Annotation>[component],
-      memberInjectors: element.getComponentMemberInjectorMethods(),
-      methodsAccessors: element
-          .getComponentMethodsAccessors()
-          // Sort so that the sequence is preserved with each code generation (for
-          // test stability)
-          .sortedByCompare<String>(
-            (MethodObjectAccessor element) => element.method.name,
-            (String a, String b) => a.compareTo(b),
-          ),
-      propertiesAccessors: element
-          .getComponentPropertiesAccessors()
-          // Sort so that the sequence is preserved with each code generation (for
-          // test stability)
-          .sortedByCompare<String>(
-            (PropertyObjectAccessor element) => element.property.name,
-            (String a, String b) => a.compareTo(b),
-          ),
       modules: modules,
       dependencies: component.dependencies,
       modulesProvideMethods: modules
@@ -64,9 +45,11 @@ class Component {
           .toSet()
           .toList(),
       disposalHandlerMethods: _getDisposalHandlerMethodsFromModules(modules),
-      disposeMethod: element.getDisposeMethod(),
+      componentMembers: element.getComponentMembers(),
     );
   }
+
+  final List<ComponentMethod> componentMembers;
 
   /// Element associated with this component.
   final ClassElement element;
@@ -82,10 +65,11 @@ class Component {
   ///   void inject(MyClass myClass); // there her is
   /// }
   /// ```
-  final List<MemberInjectorMethod> memberInjectors;
+  late final List<MemberInjectorMethod> memberInjectors =
+      componentMembers.getComponentMemberInjectorMethods();
 
   /// If not null, the component has such a method.
-  final DisposeMethod? disposeMethod;
+  late final DisposeMethod? disposeMethod = componentMembers.getDisposeMethod();
 
   /// Returns the modules that are included to the component.
   final List<ModuleAnnotation> modules;
@@ -110,7 +94,14 @@ class Component {
   ///   String getName(); // <---
   /// }
   /// ```
-  final List<MethodObjectAccessor> methodsAccessors;
+  late final List<MethodObjectAccessor> methodsAccessors = componentMembers
+      .getComponentMethodsAccessors()
+      // Sort so that the sequence is preserved with each code generation (for
+      // test stability)
+      .sortedByCompare<String>(
+        (MethodObjectAccessor element) => element.method.name,
+        (String a, String b) => a.compareTo(b),
+      );
 
   /// Returns properties of the component that return some type.
   ///
@@ -121,7 +112,14 @@ class Component {
   ///   String get name; // <---
   /// }
   /// ```
-  final List<PropertyObjectAccessor> propertiesAccessors;
+  late final List<PropertyObjectAccessor> propertiesAccessors = componentMembers
+      .getComponentPropertiesAccessors()
+      // Sort so that the sequence is preserved with each code generation (for
+      // test stability)
+      .sortedByCompare<String>(
+        (PropertyObjectAccessor element) => element.property.name,
+        (String a, String b) => a.compareTo(b),
+      );
 }
 
 List<DisposalHandlerMethod> _getDisposalHandlerMethodsFromModules(

@@ -690,21 +690,6 @@ extension VisitorExt on Element {
         .toList();
   }
 
-  /// Returns all methods of component for inject and validate them. The client
-  /// must check that the element is a module.
-  List<MemberInjectorMethod> getComponentMemberInjectorMethods() {
-    return getComponentMembers()
-        .whereType<MemberInjectorMethod>()
-        .cast<MemberInjectorMethod>()
-        .toList(growable: false);
-  }
-
-  DisposeMethod? getDisposeMethod() {
-    return getComponentMembers().firstWhereOrNull(
-      (ComponentMethod method) => method is DisposeMethod,
-    ) as DisposeMethod?;
-  }
-
   /// Returns all components of library and validate them. The client must check
   /// that the element is a LibraryElement.
   List<Component> getComponents() {
@@ -745,24 +730,6 @@ extension VisitorExt on Element {
         _ComponentBuilderMethodsVisitor();
     visitChildren(visitor);
     return visitor._methods;
-  }
-
-  /// Returns all provide methods of the component and validate them.The client
-  /// must check that the element is a component.
-  List<MethodObjectAccessor> getComponentMethodsAccessors() {
-    return getComponentMembers()
-        .whereType<MethodObjectAccessor>()
-        .cast<MethodObjectAccessor>()
-        .toList(growable: false);
-  }
-
-  /// Returns all properties of the component and validate them. The
-  /// client must check that the element is a component.
-  List<PropertyObjectAccessor> getComponentPropertiesAccessors() {
-    return getComponentMembers()
-        .whereType<PropertyObjectAccessor>()
-        .cast<PropertyObjectAccessor>()
-        .toList(growable: false);
   }
 
   /// Returns all members of the component and validate them. Will throw an

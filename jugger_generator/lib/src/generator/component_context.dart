@@ -7,6 +7,7 @@ import 'package:quiver/core.dart';
 
 import '../errors_glossary.dart';
 import '../jugger_error.dart';
+import '../utils/component_methods_ext.dart';
 import '../utils/dart_type_ext.dart';
 import '../utils/utils.dart';
 import 'entry_points.dart';
@@ -26,7 +27,9 @@ class ComponentContext {
     required this.componentBuilder,
   }) {
     for (final j.DependencyAnnotation dep in component.dependencies) {
-      final Iterable<MethodElement> methods = dep.element
+      final List<j.ComponentMethod> componentMembers =
+          dep.element.getComponentMembers();
+      final Iterable<MethodElement> methods = componentMembers
           .getComponentMethodsAccessors()
           .map((j.MethodObjectAccessor e) => e.method);
 
@@ -41,7 +44,7 @@ class ComponentContext {
         );
       }
 
-      final Iterable<PropertyAccessorElement> properties = dep.element
+      final Iterable<PropertyAccessorElement> properties = componentMembers
           .getComponentPropertiesAccessors()
           .map((j.PropertyObjectAccessor e) => e.property);
 
