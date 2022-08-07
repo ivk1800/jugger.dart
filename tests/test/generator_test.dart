@@ -6,6 +6,18 @@ import 'utils.dart';
 void main() {
   group('multibindings', () {
     group('set', () {
+      test('multibindings multiple components with same groups', () async {
+        await checkBuilderOfFile(
+          'multibindings/set/multibindings_multiple_components_with_same_groups',
+        );
+      });
+
+      test('multibindings with multiple groups', () async {
+        await checkBuilderOfFile(
+          'multibindings/set/multibindings_with_multiple_groups',
+        );
+      });
+
       test('simple multibindings', () async {
         await checkBuilderOfFile(
           'multibindings/set/simple_multibindings',
@@ -93,6 +105,18 @@ void main() {
     });
 
     group('map', () {
+      test('multibindings multiple components with same groups', () async {
+        await checkBuilderOfFile(
+          'multibindings/map/multibindings_multiple_components_with_same_groups',
+        );
+      });
+
+      test('multibindings with multiple groups', () async {
+        await checkBuilderOfFile(
+          'multibindings/map/multibindings_with_multiple_groups',
+        );
+      });
+
       test('simple multibindings with int key', () async {
         await checkBuilderOfFile(
           'multibindings/map/simple_multibindings_with_int_key',
@@ -231,6 +255,12 @@ void main() {
           'multibindings/map/multibindings_with_singleton',
         );
       });
+    });
+
+    test('multibindings multiple components with different groups', () async {
+      await checkBuilderOfFile(
+        'multibindings/multibindings_multiple_components_with_different_groups',
+      );
     });
   });
 

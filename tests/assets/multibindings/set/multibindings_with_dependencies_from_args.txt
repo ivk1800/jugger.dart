@@ -28,7 +28,7 @@ class JuggerAppComponent implements _i1.AppComponent {
   JuggerAppComponent._create(this._int);
 
   late final _i2.IProvider<Set<String>> _set_String_Provider =
-      _Set_String_Provider(this);
+      _Set_String_cde40349700eb50bb67018e169e4a6a4Provider(this);
 
   final int _int;
 
@@ -36,8 +36,9 @@ class JuggerAppComponent implements _i1.AppComponent {
   Set<String> get strings => _set_String_Provider.get();
 }
 
-class _Set_String_Provider implements _i2.IProvider<Set<String>> {
-  _Set_String_Provider(this._component);
+class _Set_String_cde40349700eb50bb67018e169e4a6a4Provider
+    implements _i2.IProvider<Set<String>> {
+  _Set_String_cde40349700eb50bb67018e169e4a6a4Provider(this._component);
 
   late final _i2.IProvider<String>
       _string6e8c47e1b62c97a19ee198441b3d8f97Provider =

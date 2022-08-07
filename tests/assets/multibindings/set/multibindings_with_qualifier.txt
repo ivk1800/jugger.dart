@@ -13,14 +13,14 @@ class JuggerAppComponent implements _i1.AppComponent {
 
   late final _i2.IProvider<Set<String>>
       _named_3364029304b2717304e2855490532d1c_Set_String_Provider =
-      _Named_3364029304b2717304e2855490532d1c_Set_String_Provider();
+      _Named_3364029304b2717304e2855490532d1c_Set_String_cde40349700eb50bb67018e169e4a6a4Provider();
 
   @override
   Set<String> get strings =>
       _named_3364029304b2717304e2855490532d1c_Set_String_Provider.get();
 }
 
-class _Named_3364029304b2717304e2855490532d1c_Set_String_Provider
+class _Named_3364029304b2717304e2855490532d1c_Set_String_cde40349700eb50bb67018e169e4a6a4Provider
     implements _i2.IProvider<Set<String>> {
   late final _i2.IProvider<String>
       _named_3364029304b2717304e2855490532d1c_String1cd1812dfa95f93a293be610f6aa4d36Provider =

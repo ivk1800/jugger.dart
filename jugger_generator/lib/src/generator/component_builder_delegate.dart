@@ -161,17 +161,17 @@ class ComponentBuilderDelegate {
             }
           }),
         );
+
+        _componentContext.multibindingsManager
+            .getBindingsInfo()
+            .map(_buildMultibindingsProviderClass)
+            .sortedBy((Class c) => c.name)
+            .forEach(target.body.add);
       }
 
       if (_disposablesManager.hasDisposables()) {
         target.body.add(_buildDisposableManagerClass());
       }
-
-      _componentContext.multibindingsManager
-          .getBindingsInfo()
-          .map(_buildMultibindingsProviderClass)
-          .sortedBy((Class c) => c.name)
-          .forEach(target.body.add);
 
       final String fileText =
           target.build().accept(DartEmitter(allocator: _allocator)).toString();
@@ -411,22 +411,7 @@ class ComponentBuilderDelegate {
           Field((FieldBuilder b) {
             final Tag? tag = graphObject.tag;
 
-            final StringBuffer fieldNameBuilder = StringBuffer();
-            fieldNameBuilder.write(
-              _generateFieldName(
-                type: graphObject.type,
-                tag: tag?.toAssignTag(),
-              ),
-            );
-            if (graphObject.multibindingsInfo != null) {
-              fieldNameBuilder.write(
-                generateMd5(graphObject.multibindingsInfo!.methodPath),
-              );
-            }
-            fieldNameBuilder.write('Provider');
-
-            final String fieldName = fieldNameBuilder.toString();
-            b.name = '_$fieldName';
+            b.name = '_${_createMultibindingsProviderFieldName(graphObject)}';
 
             final String generic = _allocator.allocate(
               refer(_allocateDependencyTypeName(graphObject)),
@@ -455,7 +440,9 @@ class ComponentBuilderDelegate {
 
               final Code assignment = Block.of(
                 <Code>[
-                  Code('_${capitalize(fieldName)}'),
+                  Code(
+                    '_${_createMultibindingsProviderClassName(graphObject)}',
+                  ),
                   if (hasDependencies)
                     const Code('(this)')
                   else
@@ -1597,50 +1584,24 @@ if (_disposed) {
   Class _buildMultibindingsProviderClass(MultibindingsGroup group) {
     final GraphObject classGraphObject = group.graphObject;
 
-    final String multibindingsTag = classGraphObject.multibindingsInfo == null
-        ? ''
-        : generateMd5(classGraphObject.multibindingsInfo!.methodPath);
-    final String fieldName = _generateFieldName(
-      type: classGraphObject.type,
-      tag: group.tag?.toAssignTag(),
-    );
-    final String providerName = capitalize(
-      '$fieldName${multibindingsTag}Provider',
-    );
     final Iterable<GraphObject> collectedObjects =
         _collectMultibindingsObjects(group);
     final Iterable<Field> fields = collectedObjects
         .map(
           (GraphObject graphObject) => Field((FieldBuilder fieldBuilder) {
-            final Tag? tag = graphObject.tag;
-
-            final StringBuffer fieldNameBuilder = StringBuffer();
-            fieldNameBuilder.write(
-              _generateFieldName(
-                type: graphObject.type,
-                tag: tag?.toAssignTag(),
-              ),
-            );
-            if (graphObject.multibindingsInfo != null) {
-              fieldNameBuilder.write(
-                generateMd5(graphObject.multibindingsInfo!.methodPath),
-              );
-            }
-            fieldNameBuilder.write('Provider');
-
             final String fieldTypeString = _allocator.allocate(
               refer(_allocateDependencyTypeName(graphObject)),
             );
 
             fieldBuilder
               ..type = refer('IProvider<$fieldTypeString>', jugger)
-              ..name = '_${fieldNameBuilder.toString()}'
+              ..name = '_${_createMultibindingsProviderFieldName(graphObject)}'
               ..late = true
               ..modifier = FieldModifier.final$;
 
             final ProviderSource provider = _componentContext.findProvider(
               graphObject.type,
-              tag,
+              graphObject.tag,
               graphObject.multibindingsInfo,
             );
 
@@ -1669,7 +1630,8 @@ if (_disposed) {
       (ClassBuilder classBuilder) {
         classBuilder
           ..implements.add(refer('IProvider<$classTypeString>', jugger))
-          ..name = '_$providerName'
+          ..name =
+              '_${_createMultibindingsProviderClassName(group.graphObject)}'
           ..fields.addAll(fields);
         if (hasDependencies) {
           classBuilder
@@ -1781,26 +1743,8 @@ if (_disposed) {
         );
       }
 
-      final StringBuffer fieldNameBuilder = StringBuffer()
-        ..write('_')
-        ..write(
-          _generateFieldName(
-            type: graphObject.type,
-            tag: graphObject.tag?.toAssignTag(),
-          ),
-        );
-
-      if (graphObject.multibindingsInfo != null) {
-        fieldNameBuilder.write(
-          generateMd5(
-            graphObject.multibindingsInfo!.methodPath,
-          ),
-        );
-      }
-
-      fieldNameBuilder.write('Provider.get()');
-
-      final String fieldName = fieldNameBuilder.toString();
+      final String fieldName =
+          _createMultibindingsMemberProviderCall(graphObject);
 
       return MapEntry<Expression, Reference>(keyExpression, refer(fieldName));
     });
@@ -1843,27 +1787,7 @@ if (_disposed) {
   }) {
     final Expression setExpression = literalSet(
       collectedObjects
-          .map((GraphObject graphObject) {
-            final StringBuffer fieldNameBuilder = StringBuffer()
-              ..write('_')
-              ..write(
-                _generateFieldName(
-                  type: graphObject.type,
-                  tag: graphObject.tag?.toAssignTag(),
-                ),
-              );
-
-            if (graphObject.multibindingsInfo != null) {
-              fieldNameBuilder.write(
-                generateMd5(
-                  graphObject.multibindingsInfo!.methodPath,
-                ),
-              );
-            }
-
-            fieldNameBuilder.write('Provider.get()');
-            return fieldNameBuilder.toString();
-          })
+          .map(_createMultibindingsMemberProviderCall)
           .sortedBy((String fieldName) => fieldName)
           .map((String fieldName) => refer(fieldName)),
     );
@@ -1880,6 +1804,69 @@ if (_disposed) {
         ),
       ],
     );
+  }
+
+  String _createMultibindingsMemberProviderCall(GraphObject graphObject) {
+    final StringBuffer fieldNameBuilder = StringBuffer()
+      ..write('_')
+      ..write(
+        _generateFieldName(
+          type: graphObject.type,
+          tag: graphObject.tag?.toAssignTag(),
+        ),
+      );
+
+    if (graphObject.multibindingsInfo != null) {
+      fieldNameBuilder.write(
+        generateMd5(
+          graphObject.multibindingsInfo!.methodPath,
+        ),
+      );
+    }
+
+    fieldNameBuilder.write('Provider.get()');
+    return fieldNameBuilder.toString();
+  }
+
+  String _createMultibindingsProviderClassName(GraphObject graphObject) {
+    final StringBuffer fieldNameBuilder = StringBuffer();
+    fieldNameBuilder.write(
+      _generateFieldName(
+        type: graphObject.type,
+        tag: graphObject.tag?.toAssignTag(),
+      ),
+    );
+    if (graphObject.multibindingsInfo != null) {
+      fieldNameBuilder.write(
+        generateMd5(graphObject.multibindingsInfo!.methodPath),
+      );
+    }
+    fieldNameBuilder.write(
+      generateMd5(
+        _createComponentName(_componentContext.component.element.name),
+      ),
+    );
+    fieldNameBuilder.write('Provider');
+
+    return capitalize(fieldNameBuilder.toString());
+  }
+
+  String _createMultibindingsProviderFieldName(GraphObject graphObject) {
+    final StringBuffer fieldNameBuilder = StringBuffer();
+    fieldNameBuilder.write(
+      _generateFieldName(
+        type: graphObject.type,
+        tag: graphObject.tag?.toAssignTag(),
+      ),
+    );
+    if (graphObject.multibindingsInfo != null) {
+      fieldNameBuilder.write(
+        generateMd5(graphObject.multibindingsInfo!.methodPath),
+      );
+    }
+    fieldNameBuilder.write('Provider');
+
+    return fieldNameBuilder.toString();
   }
 
 // endregion multibindings

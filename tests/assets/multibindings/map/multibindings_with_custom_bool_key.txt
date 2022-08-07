@@ -12,13 +12,14 @@ class JuggerAppComponent implements _i1.AppComponent {
   JuggerAppComponent.create();
 
   late final _i2.IProvider<Map<bool, String>> _map_bool_String_Provider =
-      _Map_bool_String_Provider();
+      _Map_bool_String_cde40349700eb50bb67018e169e4a6a4Provider();
 
   @override
   Map<bool, String> get strings => _map_bool_String_Provider.get();
 }
 
-class _Map_bool_String_Provider implements _i2.IProvider<Map<bool, String>> {
+class _Map_bool_String_cde40349700eb50bb67018e169e4a6a4Provider
+    implements _i2.IProvider<Map<bool, String>> {
   late final _i2.IProvider<String>
       _string1cd1812dfa95f93a293be610f6aa4d36Provider =
       _i2.Provider<String>(() => _i1.Module1.provideString2());
