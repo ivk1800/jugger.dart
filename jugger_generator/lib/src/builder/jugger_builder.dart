@@ -12,20 +12,21 @@ class JuggerBuilder extends Builder {
 
   final BuilderOptions options;
 
+  late final GlobalConfig globalConfig = GlobalConfig(
+    removeInterfacePrefixFromComponentName: options
+            .config['remove_interface_prefix_from_component_name'] as bool? ??
+        true,
+    checkUnusedProviders:
+        options.config['check_unused_providers'] as bool? ?? true,
+    lineLength: options.config['generated_file_line_length'] as int? ?? 80,
+  );
+
   @override
   Future<void> build(BuildStep buildStep) async {
     if (_isTestAsset(buildStep.inputId)) {
       return Future<void>.value();
     }
 
-    final GlobalConfig globalConfig = GlobalConfig(
-      removeInterfacePrefixFromComponentName: options
-              .config['remove_interface_prefix_from_component_name'] as bool? ??
-          true,
-      checkUnusedProviders:
-          options.config['check_unused_providers'] as bool? ?? true,
-      lineLength: options.config['generated_file_line_length'] as int? ?? 80,
-    );
     final ComponentBuilderDelegate delegate = ComponentBuilderDelegate(
       globalConfig: globalConfig,
     );
