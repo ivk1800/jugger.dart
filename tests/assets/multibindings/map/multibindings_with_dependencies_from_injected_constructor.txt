@@ -12,7 +12,7 @@ class JuggerAppComponent implements _i1.AppComponent {
   JuggerAppComponent.create();
 
   late final _i2.IProvider<Map<int, String>> _map_int_String_Provider =
-      _Map_int_String_cde40349700eb50bb67018e169e4a6a4Provider(this);
+      _Map_int_String_AppComponent_0_Provider(this);
 
   late final _i2.IProvider<_i1.MyClass> _myClassProvider =
       _i2.Provider<_i1.MyClass>(() => const _i1.MyClass());
@@ -21,9 +21,9 @@ class JuggerAppComponent implements _i1.AppComponent {
   Map<int, String> get strings => _map_int_String_Provider.get();
 }
 
-class _Map_int_String_cde40349700eb50bb67018e169e4a6a4Provider
+class _Map_int_String_AppComponent_0_Provider
     implements _i2.IProvider<Map<int, String>> {
-  _Map_int_String_cde40349700eb50bb67018e169e4a6a4Provider(this._component);
+  _Map_int_String_AppComponent_0_Provider(this._component);
 
   late final _i2.IProvider<String>
       _string6e8c47e1b62c97a19ee198441b3d8f97Provider = _i2.Provider<String>(

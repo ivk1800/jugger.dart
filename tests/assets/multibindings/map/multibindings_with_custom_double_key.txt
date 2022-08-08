@@ -12,13 +12,13 @@ class JuggerAppComponent implements _i1.AppComponent {
   JuggerAppComponent.create();
 
   late final _i2.IProvider<Map<double, String>> _map_double_String_Provider =
-      _Map_double_String_cde40349700eb50bb67018e169e4a6a4Provider();
+      _Map_double_String_AppComponent_0_Provider();
 
   @override
   Map<double, String> get strings => _map_double_String_Provider.get();
 }
 
-class _Map_double_String_cde40349700eb50bb67018e169e4a6a4Provider
+class _Map_double_String_AppComponent_0_Provider
     implements _i2.IProvider<Map<double, String>> {
   late final _i2.IProvider<String>
       _string1cd1812dfa95f93a293be610f6aa4d36Provider =

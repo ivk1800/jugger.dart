@@ -38,7 +38,7 @@ class JuggerComponent2 implements _i1.Component2 {
   JuggerComponent2._create(this._component1);
 
   late final _i2.IProvider<Map<int, String>> _map_int_String_Provider =
-      _Map_int_String_fa2dd88b9b5c8434e67c0b480d088e59Provider(this);
+      _Map_int_String_Component2_0_Provider(this);
 
   final _i1.Component1 _component1;
 
@@ -46,9 +46,9 @@ class JuggerComponent2 implements _i1.Component2 {
   Map<int, String> get strings => _map_int_String_Provider.get();
 }
 
-class _Map_int_String_fa2dd88b9b5c8434e67c0b480d088e59Provider
+class _Map_int_String_Component2_0_Provider
     implements _i2.IProvider<Map<int, String>> {
-  _Map_int_String_fa2dd88b9b5c8434e67c0b480d088e59Provider(this._component);
+  _Map_int_String_Component2_0_Provider(this._component);
 
   late final _i2.IProvider<String>
       _stringda5b2834f095eea8b570d10ba69b3dd7Provider = _i2.Provider<String>(

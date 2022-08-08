@@ -21,6 +21,7 @@ import 'disposable_manager.dart';
 import 'multibindings/multibindings_group.dart';
 import 'tag.dart';
 import 'type_name_registry.dart';
+import 'unique_name_registry.dart';
 import 'visitors.dart';
 import 'wrappers.dart' as j;
 import 'wrappers.dart';
@@ -38,6 +39,7 @@ class ComponentBuilderDelegate {
   late DartType _componentType;
   final Expression _overrideAnnotationExpression = const Reference('override');
   final TypeNameGenerator _typeNameGenerator = TypeNameGenerator();
+  final UniqueIdGenerator _uniqueIdGenerator = UniqueIdGenerator();
 
   static const List<String> ignores = <String>[
     'ignore_for_file: implementation_imports',
@@ -1818,9 +1820,7 @@ if (_disposed) {
 
     if (graphObject.multibindingsInfo != null) {
       fieldNameBuilder.write(
-        generateMd5(
-          graphObject.multibindingsInfo!.methodPath,
-        ),
+        generateMd5(graphObject.multibindingsInfo!.methodPath),
       );
     }
 
@@ -1838,15 +1838,16 @@ if (_disposed) {
     );
     if (graphObject.multibindingsInfo != null) {
       fieldNameBuilder.write(
-        generateMd5(graphObject.multibindingsInfo!.methodPath),
+        _uniqueIdGenerator.generate(graphObject.multibindingsInfo!.methodPath),
       );
     }
-    fieldNameBuilder.write(
-      generateMd5(
-        _createComponentName(_componentContext.component.element.name),
-      ),
-    );
-    fieldNameBuilder.write('Provider');
+    final String componentName = _componentContext.component.element.name;
+    fieldNameBuilder
+      ..write(componentName)
+      ..write('_')
+      ..write(_uniqueIdGenerator.generate(componentName))
+      ..write('_')
+      ..write('Provider');
 
     return capitalize(fieldNameBuilder.toString());
   }
