@@ -7,22 +7,6 @@
 import 'package:tests/getter/getter_from_another_component.dart' as _i1;
 import 'package:jugger/jugger.dart' as _i2;
 
-class JuggerMyScreenComponentBuilder implements _i1.MyScreenComponentBuilder {
-  _i1.AppComponent? _appComponent;
-
-  @override
-  _i1.MyScreenComponentBuilder appComponent(_i1.AppComponent foldersComponent) {
-    _appComponent = foldersComponent;
-    return this;
-  }
-
-  @override
-  _i1.MyScreenComponent build() {
-    assert(_appComponent != null);
-    return JuggerMyScreenComponent._create(_appComponent!);
-  }
-}
-
 class JuggerAppComponent implements _i1.AppComponent {
   JuggerAppComponent.create();
 
@@ -44,4 +28,20 @@ class JuggerMyScreenComponent implements _i1.MyScreenComponent {
 
   @override
   String get screenName => _stringProvider.get();
+}
+
+class JuggerMyScreenComponentBuilder implements _i1.MyScreenComponentBuilder {
+  _i1.AppComponent? _appComponent;
+
+  @override
+  _i1.MyScreenComponentBuilder appComponent(_i1.AppComponent foldersComponent) {
+    _appComponent = foldersComponent;
+    return this;
+  }
+
+  @override
+  _i1.MyScreenComponent build() {
+    assert(_appComponent != null);
+    return JuggerMyScreenComponent._create(_appComponent!);
+  }
 }

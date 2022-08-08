@@ -265,6 +265,12 @@ void main() {
   });
 
   group('disposable', () {
+    test('multiple components and one disposable', () async {
+      await checkBuilderOfFile(
+        'disposable/multiple_components_and_one_disposable',
+      );
+    });
+
     test('dispose method of disposable object from mixin', () async {
       await checkBuilderOfFile(
         'disposable/dispose_method_of_disposable_object_from_mixin',

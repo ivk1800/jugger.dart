@@ -4,7 +4,7 @@ import 'dart:async';
 
 import 'package:build/build.dart';
 
-import '../generator/component_builder_delegate.dart';
+import '../generator/asset_builder.dart';
 import 'global_config.dart';
 
 class JuggerBuilder extends Builder {
@@ -27,11 +27,11 @@ class JuggerBuilder extends Builder {
       return Future<void>.value();
     }
 
-    final ComponentBuilderDelegate delegate = ComponentBuilderDelegate(
+    final AssetBuilder assetBuilder = AssetBuilder(
       globalConfig: globalConfig,
     );
 
-    final String? outputContents = await delegate.buildOutput(buildStep);
+    final String? outputContents = await assetBuilder.buildOutput(buildStep);
     if (outputContents == null || outputContents.trim().isEmpty) {
       return Future<void>.value();
     }

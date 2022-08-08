@@ -8,6 +8,18 @@ import 'package:tests/multibindings/map/multibindings_with_dependencies_from_arg
     as _i1;
 import 'package:jugger/jugger.dart' as _i2;
 
+class JuggerAppComponent implements _i1.AppComponent {
+  JuggerAppComponent._create(this._int);
+
+  late final _i2.IProvider<Map<int, String>> _map_int_String_Provider =
+      _Map_int_String_AppComponent_0_Provider(this);
+
+  final int _int;
+
+  @override
+  Map<int, String> get strings => _map_int_String_Provider.get();
+}
+
 class JuggerAppComponentBuilder implements _i1.AppComponentBuilder {
   int? _int;
 
@@ -22,18 +34,6 @@ class JuggerAppComponentBuilder implements _i1.AppComponentBuilder {
     assert(_int != null);
     return JuggerAppComponent._create(_int!);
   }
-}
-
-class JuggerAppComponent implements _i1.AppComponent {
-  JuggerAppComponent._create(this._int);
-
-  late final _i2.IProvider<Map<int, String>> _map_int_String_Provider =
-      _Map_int_String_AppComponent_0_Provider(this);
-
-  final int _int;
-
-  @override
-  Map<int, String> get strings => _map_int_String_Provider.get();
 }
 
 class _Map_int_String_AppComponent_0_Provider

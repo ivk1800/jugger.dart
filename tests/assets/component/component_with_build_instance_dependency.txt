@@ -7,6 +7,15 @@
 import 'package:tests/component/component_with_build_instance_dependency.dart'
     as _i1;
 
+class JuggerAppComponent implements _i1.AppComponent {
+  JuggerAppComponent._create(this._string);
+
+  final String _string;
+
+  @override
+  String get string => _string;
+}
+
 class JuggerAppComponentBuilder implements _i1.MyComponentBuilder {
   String? _string;
 
@@ -21,13 +30,4 @@ class JuggerAppComponentBuilder implements _i1.MyComponentBuilder {
     assert(_string != null);
     return JuggerAppComponent._create(_string!);
   }
-}
-
-class JuggerAppComponent implements _i1.AppComponent {
-  JuggerAppComponent._create(this._string);
-
-  final String _string;
-
-  @override
-  String get string => _string;
 }

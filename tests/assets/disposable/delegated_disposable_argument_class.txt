@@ -8,31 +8,6 @@ import 'package:tests/disposable/delegated_disposable_argument_class.dart'
     as _i1;
 import 'dart:async' as _i2;
 
-class JuggerAppComponentBuilder implements _i1.AppComponentBuilder {
-  _i1.MyClass1? _myClass1;
-
-  _i1.MyClass2? _myClass2;
-
-  @override
-  _i1.AppComponentBuilder setMyClass1(_i1.MyClass1 c) {
-    _myClass1 = c;
-    return this;
-  }
-
-  @override
-  _i1.AppComponentBuilder setMyClass2(_i1.MyClass2 c) {
-    _myClass2 = c;
-    return this;
-  }
-
-  @override
-  _i1.AppComponent build() {
-    assert(_myClass1 != null);
-    assert(_myClass2 != null);
-    return JuggerAppComponent._create(_myClass1!, _myClass2!);
-  }
-}
-
 class JuggerAppComponent implements _i1.AppComponent {
   JuggerAppComponent._create(this._myClass1, this._myClass2) {
     _registerDisposableArguments();
@@ -57,11 +32,36 @@ class JuggerAppComponent implements _i1.AppComponent {
     return _myClass2;
   }
 
+  @override
+  Future<void> dispose() => _disposableManager.dispose();
   void _registerDisposableArguments() => _disposableManager
     ..register(() => _i1.Module.disposeMyClass1(_myClass1))
     ..register(() => _i1.Module.disposeMyClass2(_myClass2));
+}
+
+class JuggerAppComponentBuilder implements _i1.AppComponentBuilder {
+  _i1.MyClass1? _myClass1;
+
+  _i1.MyClass2? _myClass2;
+
   @override
-  Future<void> dispose() => _disposableManager.dispose();
+  _i1.AppComponentBuilder setMyClass1(_i1.MyClass1 c) {
+    _myClass1 = c;
+    return this;
+  }
+
+  @override
+  _i1.AppComponentBuilder setMyClass2(_i1.MyClass2 c) {
+    _myClass2 = c;
+    return this;
+  }
+
+  @override
+  _i1.AppComponent build() {
+    assert(_myClass1 != null);
+    assert(_myClass2 != null);
+    return JuggerAppComponent._create(_myClass1!, _myClass2!);
+  }
 }
 
 class _DisposableManager {

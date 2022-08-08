@@ -6,6 +6,15 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:tests/provides/provides_from_component_params.dart' as _i1;
 
+class JuggerAppComponent implements _i1.AppComponent {
+  JuggerAppComponent._create(this._mainRouter);
+
+  final _i1.MainRouter _mainRouter;
+
+  @override
+  _i1.MainRouter getMainRouter() => _mainRouter;
+}
+
 class JuggerAppComponentBuilder implements _i1.AppComponentBuilder {
   _i1.MainRouter? _mainRouter;
 
@@ -20,13 +29,4 @@ class JuggerAppComponentBuilder implements _i1.AppComponentBuilder {
     assert(_mainRouter != null);
     return JuggerAppComponent._create(_mainRouter!);
   }
-}
-
-class JuggerAppComponent implements _i1.AppComponent {
-  JuggerAppComponent._create(this._mainRouter);
-
-  final _i1.MainRouter _mainRouter;
-
-  @override
-  _i1.MainRouter getMainRouter() => _mainRouter;
 }

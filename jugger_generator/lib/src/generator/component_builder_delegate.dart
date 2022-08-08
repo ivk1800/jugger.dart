@@ -1,12 +1,9 @@
-import 'dart:async';
 import 'dart:collection';
 
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
-import 'package:build/build.dart';
 import 'package:code_builder/code_builder.dart';
 import 'package:collection/collection.dart';
-import 'package:dart_style/dart_style.dart';
 
 import '../builder/global_config.dart';
 import '../errors_glossary.dart';
@@ -15,8 +12,9 @@ import '../utils/dart_type_ext.dart';
 import '../utils/element_ext.dart';
 import '../utils/tag_ext.dart';
 import '../utils/utils.dart';
-import 'check_unused_providers.dart';
+import 'asset_context.dart';
 import 'component_context.dart';
+import 'component_result.dart';
 import 'disposable_manager.dart';
 import 'multibindings/multibindings_group.dart';
 import 'tag.dart';
@@ -26,196 +24,136 @@ import 'visitors.dart';
 import 'wrappers.dart' as j;
 import 'wrappers.dart';
 
-/// Delegate to generate the jugger component.
+/// Delegate to generate the jugger components within one asset.
 class ComponentBuilderDelegate {
   ComponentBuilderDelegate({
-    required this.globalConfig,
-  });
+    required AssetContext assetContext,
+  }) : _assetContext = assetContext;
 
-  final GlobalConfig globalConfig;
+  static const String _jugger = 'package:jugger/jugger.dart';
+
+  static const Expression _overrideAnnotationExpression = Reference('override');
+
+  final AssetContext _assetContext;
+
   late ComponentContext _componentContext;
+  late j.ComponentBuilder? _componentBuilder;
   late DisposablesManager _disposablesManager;
-  late final Allocator _allocator = Allocator.simplePrefixing();
   late DartType _componentType;
-  final Expression _overrideAnnotationExpression = const Reference('override');
-  final TypeNameGenerator _typeNameGenerator = TypeNameGenerator();
-  final UniqueIdGenerator _uniqueIdGenerator = UniqueIdGenerator();
 
-  static const List<String> ignores = <String>[
-    'ignore_for_file: implementation_imports',
-    'ignore_for_file: prefer_const_constructors',
-    'ignore_for_file: always_specify_types',
-    'ignore_for_file: directives_ordering',
-    'ignore_for_file: non_constant_identifier_names',
-  ];
+  GlobalConfig get globalConfig => _assetContext.globalConfig;
 
-  static const String jugger = 'package:jugger/jugger.dart';
+  Allocator get _allocator => _assetContext.allocator;
 
-  /// Returns the generated component code, null if there is nothing to generate
-  /// for buildStep.
-  Future<String?> buildOutput(BuildStep buildStep) async {
-    try {
-      return await _buildOutputInternal(buildStep);
-    } catch (e) {
-      if (e is! JuggerError) {
-        throw UnexpectedJuggerError(
-          buildUnexpectedErrorMessage(message: e.toString()),
-        );
-      } else {
-        rethrow;
-      }
-    }
+  TypeNameGenerator get _typeNameGenerator => _assetContext.typeNameGenerator;
+
+  UniqueIdGenerator get _uniqueIdGenerator => _assetContext.uniqueIdGenerator;
+
+  ComponentResult generateComponent({
+    required Component component,
+    required j.ComponentBuilder? componentBuilder,
+  }) {
+    _componentType = component.element.thisType;
+    _componentBuilder = componentBuilder;
+    _componentContext = ComponentContext(
+      component: component,
+      componentBuilder: componentBuilder,
+    );
+    _disposablesManager = DisposablesManager(_componentContext);
+
+    final bool hasDisposables = _disposablesManager.hasDisposables();
+    final Class componentClass = _createComponentClass();
+
+    final List<Class> multibindingsProviderClasses = _componentContext
+        .multibindingsManager
+        .getBindingsInfo()
+        .map(_buildMultibindingsProviderClass)
+        .sortedBy((Class c) => c.name);
+
+    return ComponentResult(
+      componentClass: componentClass,
+      multibindingsProviderClasses: multibindingsProviderClasses,
+      hasDisposables: hasDisposables,
+      componentBuilder: componentBuilder != null
+          ? _buildComponentBuilderClass(componentBuilder)
+          : null,
+    );
   }
 
-  Future<String?> _buildOutputInternal(BuildStep buildStep) async {
-    final Resolver resolver = buildStep.resolver;
-
-    if (await resolver.isLibrary(buildStep.inputId)) {
-      final LibraryElement lib = await buildStep.inputLibrary;
-
-      final List<j.Component> components = lib.getComponents();
-
-      // skip if nothing to generate
-      if (components.isEmpty) {
-        return null;
-      }
-
-      final LibraryBuilder target = LibraryBuilder();
-
-      final List<j.ComponentBuilder> componentBuilders =
-          lib.getComponentBuilders();
-
-      _generateComponentBuilders(target, lib, componentBuilders);
-
-      for (int i = 0; i < components.length; i++) {
-        final j.Component component = components[i];
-        _componentType = component.element.thisType;
-
-        final j.ComponentBuilder? componentBuilder =
-            componentBuilders.firstWhereOrNull((j.ComponentBuilder b) {
-          return b.componentClass.name == component.element.name;
-        });
-
-        _componentContext = ComponentContext(
-          component: component,
-          componentBuilder: componentBuilder,
+  Class _createComponentClass() {
+    final bool hasDisposables = _disposablesManager.hasDisposables();
+    final j.Component component = _componentContext.component;
+    return Class((ClassBuilder classBuilder) {
+      if (hasDisposables) {
+        check(
+          component.disposeMethod != null,
+          () => buildErrorMessage(
+            error: JuggerErrorId.missing_dispose_method,
+            message:
+                'Missing dispose method of component ${component.element.name}.',
+          ),
         );
-        _disposablesManager = DisposablesManager(_componentContext);
-
-        target.body.add(
-          Class((ClassBuilder classBuilder) {
-            if (_disposablesManager.hasDisposables()) {
-              check(
-                component.disposeMethod != null,
-                () => buildErrorMessage(
-                  error: JuggerErrorId.missing_dispose_method,
-                  message:
-                      'Missing dispose method of component ${component.element.name}.',
-                ),
-              );
-            }
-
-            classBuilder.fields.addAll(_buildProvidesFields());
-            classBuilder.fields
-                .addAll(_buildConstructorFields(componentBuilder));
-            classBuilder.methods.addAll(
-              _buildComponentMembers(
-                _componentContext.component.methodsAccessors
-                    .map((j.MethodObjectAccessor e) => e.method),
-              ),
-            );
-            classBuilder.methods.addAll(
-              _buildComponentMembers(
-                _componentContext.component.propertiesAccessors
-                    .map((j.PropertyObjectAccessor e) => e.property),
-              ),
-            );
-
-            if (_hasNonLazyProviders()) {
-              classBuilder.methods.add(_buildInitNonLazyMethod());
-            }
-
-            classBuilder.methods.addAll(
-              _buildMembersInjectorMethods(
-                component.memberInjectors,
-                classBuilder,
-              ),
-            );
-
-            classBuilder.implements
-                .add(Reference(component.element.name, createElementPath(lib)));
-
-            classBuilder.constructors.add(_buildConstructor(componentBuilder));
-
-            classBuilder.name = _createComponentName(component.element.name);
-
-            if (_disposablesManager.hasDisposables()) {
-              classBuilder.fields.add(_buildDisposableManagerField());
-            }
-
-            if (_disposablesManager.disposableArguments.isNotEmpty) {
-              classBuilder.methods
-                  .add(_buildRegisterDisposableArgumentsMethod());
-            }
-
-            if (_disposablesManager.hasDisposables()) {
-              classBuilder.methods.add(_buildDisposeMethod());
-            }
-          }),
-        );
-
-        _componentContext.multibindingsManager
-            .getBindingsInfo()
-            .map(_buildMultibindingsProviderClass)
-            .sortedBy((Class c) => c.name)
-            .forEach(target.body.add);
       }
 
-      if (_disposablesManager.hasDisposables()) {
-        target.body.add(_buildDisposableManagerClass());
+      classBuilder
+        ..fields.addAll(_buildProvidesFields())
+        ..fields.addAll(_buildConstructorFields(_componentBuilder))
+        ..methods.addAll(
+          _buildComponentMembers(
+            _componentContext.component.methodsAccessors
+                .map((j.MethodObjectAccessor e) => e.method),
+          ),
+        )
+        ..methods.addAll(
+          _buildComponentMembers(
+            _componentContext.component.propertiesAccessors
+                .map((j.PropertyObjectAccessor e) => e.property),
+          ),
+        )
+        ..methods.addAll(
+          _buildMembersInjectorMethods(
+            component.memberInjectors,
+            classBuilder,
+          ),
+        )
+        ..implements.add(
+          Reference(
+            component.element.name,
+            createElementPath(_assetContext.lib),
+          ),
+        )
+        ..constructors.add(_buildConstructor(_componentBuilder))
+        ..name = _createComponentName(component.element.name);
+
+      if (hasDisposables) {
+        classBuilder
+          ..fields.add(_buildDisposableManagerField())
+          ..methods.add(_buildDisposeMethod());
       }
 
-      final String fileText =
-          target.build().accept(DartEmitter(allocator: _allocator)).toString();
-
-      if (globalConfig.checkUnusedProviders) {
-        checkUnusedProviders(fileText);
+      if (_disposablesManager.disposableArguments.isNotEmpty) {
+        classBuilder.methods.add(_buildRegisterDisposableArgumentsMethod());
       }
 
-      final String finalFileText = fileText.isEmpty
-          ? ''
-          : '${ignores.map((String line) => '// $line').join('\n')}\n$fileText';
-      return DartFormatter(
-        pageWidth: globalConfig.lineLength,
-      ).format(finalFileText);
-    }
-
-    return '';
-  }
-
-  /// Generating component builders of the given library.
-  void _generateComponentBuilders(
-    LibraryBuilder target,
-    LibraryElement lib,
-    List<j.ComponentBuilder> componentBuilders,
-  ) {
-    for (int i = 0; i < componentBuilders.length; i++) {
-      final j.ComponentBuilder componentBuilder = componentBuilders[i];
-      target.body.add(_buildComponentBuilderClass(componentBuilder, lib));
-    }
+      if (_hasNonLazyProviders()) {
+        classBuilder.methods.add(_buildInitNonLazyMethod());
+      }
+    });
   }
 
   /// Returns a class of component builder.
   Class _buildComponentBuilderClass(
     j.ComponentBuilder componentBuilder,
-    LibraryElement lib,
   ) {
     return Class((ClassBuilder classBuilder) {
       classBuilder.name =
           '${_createComponentName(componentBuilder.componentClass.name)}Builder';
 
       classBuilder.implements.add(
-        refer(componentBuilder.element.name, createElementPath(lib)),
+        refer(
+          componentBuilder.element.name,
+          createElementPath(_assetContext.lib),
+        ),
       );
       classBuilder.methods.addAll(
         componentBuilder.methods.map(
@@ -461,7 +399,7 @@ class ComponentBuilderDelegate {
               );
             }
 
-            b.type = refer('IProvider<$generic>', jugger);
+            b.type = refer('IProvider<$generic>', _jugger);
           }),
         );
       }
@@ -1134,7 +1072,7 @@ class ComponentBuilderDelegate {
   }) {
     return refer(
       singleton ? 'SingletonProvider<$generic>' : 'Provider<$generic>',
-      jugger,
+      _jugger,
     );
   }
 
@@ -1458,9 +1396,9 @@ class ComponentBuilderDelegate {
   /// Builds a disposable manager field that is used in the component
   /// implementation. Need to build only if the graph contains disposable
   /// objects.
-  Class _buildDisposableManagerClass() {
+  static Class buildDisposableManagerClass(Allocator allocator) {
     final String futureOr =
-        _allocator.allocate(const Reference('FutureOr', 'dart:async'));
+        allocator.allocate(const Reference('FutureOr', 'dart:async'));
 
     return Class(
       (ClassBuilder classBuilder) {
@@ -1596,7 +1534,7 @@ if (_disposed) {
             );
 
             fieldBuilder
-              ..type = refer('IProvider<$fieldTypeString>', jugger)
+              ..type = refer('IProvider<$fieldTypeString>', _jugger)
               ..name = '_${_createMultibindingsProviderFieldName(graphObject)}'
               ..late = true
               ..modifier = FieldModifier.final$;
@@ -1631,7 +1569,7 @@ if (_disposed) {
     return Class(
       (ClassBuilder classBuilder) {
         classBuilder
-          ..implements.add(refer('IProvider<$classTypeString>', jugger))
+          ..implements.add(refer('IProvider<$classTypeString>', _jugger))
           ..name =
               '_${_createMultibindingsProviderClassName(group.graphObject)}'
           ..fields.addAll(fields);

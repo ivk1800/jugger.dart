@@ -1,5 +1,3 @@
-import 'package:analyzer/dart/element/type.dart';
-
 import '../component_context.dart';
 import '../tag.dart';
 import '../wrappers.dart';

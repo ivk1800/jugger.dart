@@ -4,46 +4,33 @@
 // ignore_for_file: directives_ordering
 // ignore_for_file: non_constant_identifier_names
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:tests/disposable/dispose_method_of_component_from_ancestor.dart'
+import 'package:tests/disposable/multiple_components_and_one_disposable.dart'
     as _i1;
 import 'dart:async' as _i2;
+import 'package:jugger/jugger.dart' as _i3;
 
 class JuggerAppComponent implements _i1.AppComponent {
-  JuggerAppComponent._create(this._myClass1) {
-    _registerDisposableArguments();
-  }
+  JuggerAppComponent.create();
 
-  final _i1.MyClass1 _myClass1;
+  late final _i3.IProvider<_i1.DisposableClass> _disposableClassProvider =
+      _i3.SingletonProvider<_i1.DisposableClass>(() {
+    _disposableManager.checkDisposed();
+    _i1.DisposableClass disposable = const _i1.DisposableClass();
+    _disposableManager.register(disposable.dispose);
+    return disposable;
+  });
 
   final _DisposableManager _disposableManager =
       _DisposableManager('AppComponent');
 
   @override
-  _i1.MyClass1 getMyClass1() {
+  _i1.DisposableClass getDisposableClass() {
     _disposableManager.checkDisposed();
-    return _myClass1;
+    return _disposableClassProvider.get();
   }
 
   @override
   Future<void> dispose() => _disposableManager.dispose();
-  void _registerDisposableArguments() =>
-      _disposableManager..register(_myClass1.dispose);
-}
-
-class JuggerAppComponentBuilder implements _i1.AppComponentBuilder {
-  _i1.MyClass1? _myClass1;
-
-  @override
-  _i1.AppComponentBuilder setMyClass1(_i1.MyClass1 c) {
-    _myClass1 = c;
-    return this;
-  }
-
-  @override
-  _i1.AppComponent build() {
-    assert(_myClass1 != null);
-    return JuggerAppComponent._create(_myClass1!);
-  }
 }
 
 class _DisposableManager {
@@ -76,4 +63,8 @@ class _DisposableManager {
       await value.call();
     }
   }
+}
+
+class JuggerAppComponent2 implements _i1.AppComponent2 {
+  JuggerAppComponent2.create();
 }

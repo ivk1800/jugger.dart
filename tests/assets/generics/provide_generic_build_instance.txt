@@ -6,6 +6,15 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:tests/generics/provide_generic_build_instance.dart' as _i1;
 
+class JuggerAppComponent implements _i1.AppComponent {
+  JuggerAppComponent._create(this._list_Item_);
+
+  final List<_i1.Item> _list_Item_;
+
+  @override
+  List<_i1.Item> get items => _list_Item_;
+}
+
 class JuggerAppComponentBuilder implements _i1.IAppComponentBuilder {
   List<_i1.Item>? _list_Item_;
 
@@ -20,13 +29,4 @@ class JuggerAppComponentBuilder implements _i1.IAppComponentBuilder {
     assert(_list_Item_ != null);
     return JuggerAppComponent._create(_list_Item_!);
   }
-}
-
-class JuggerAppComponent implements _i1.AppComponent {
-  JuggerAppComponent._create(this._list_Item_);
-
-  final List<_i1.Item> _list_Item_;
-
-  @override
-  List<_i1.Item> get items => _list_Item_;
 }

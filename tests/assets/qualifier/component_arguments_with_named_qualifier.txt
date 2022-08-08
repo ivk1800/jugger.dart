@@ -7,6 +7,26 @@
 import 'package:tests/qualifier/component_arguments_with_named_qualifier.dart'
     as _i1;
 
+class JuggerAppComponent implements _i1.AppComponent {
+  JuggerAppComponent._create(
+      this._named_c4ca4238a0b923820dcc509a6f75849b_MyClass,
+      this._named_c81e728d9d4c2f636f067f89cc14862c_MyClass,
+      this._myClass);
+
+  final _i1.MyClass _named_c4ca4238a0b923820dcc509a6f75849b_MyClass;
+
+  final _i1.MyClass _named_c81e728d9d4c2f636f067f89cc14862c_MyClass;
+
+  final _i1.MyClass _myClass;
+
+  @override
+  _i1.MyClass getMyClass1() => _named_c4ca4238a0b923820dcc509a6f75849b_MyClass;
+  @override
+  _i1.MyClass getMyClass2() => _named_c81e728d9d4c2f636f067f89cc14862c_MyClass;
+  @override
+  _i1.MyClass getMyClass3() => _myClass;
+}
+
 class JuggerAppComponentBuilder implements _i1.AppComponentBuilder {
   _i1.MyClass? _named_c4ca4238a0b923820dcc509a6f75849b_MyClass;
 
@@ -42,24 +62,4 @@ class JuggerAppComponentBuilder implements _i1.AppComponentBuilder {
         _named_c81e728d9d4c2f636f067f89cc14862c_MyClass!,
         _myClass!);
   }
-}
-
-class JuggerAppComponent implements _i1.AppComponent {
-  JuggerAppComponent._create(
-      this._named_c4ca4238a0b923820dcc509a6f75849b_MyClass,
-      this._named_c81e728d9d4c2f636f067f89cc14862c_MyClass,
-      this._myClass);
-
-  final _i1.MyClass _named_c4ca4238a0b923820dcc509a6f75849b_MyClass;
-
-  final _i1.MyClass _named_c81e728d9d4c2f636f067f89cc14862c_MyClass;
-
-  final _i1.MyClass _myClass;
-
-  @override
-  _i1.MyClass getMyClass1() => _named_c4ca4238a0b923820dcc509a6f75849b_MyClass;
-  @override
-  _i1.MyClass getMyClass2() => _named_c81e728d9d4c2f636f067f89cc14862c_MyClass;
-  @override
-  _i1.MyClass getMyClass3() => _myClass;
 }

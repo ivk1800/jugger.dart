@@ -7,6 +7,20 @@
 import 'package:tests/qualifier/component_arguments_with_custom_qualifier.dart'
     as _i1;
 
+class JuggerAppComponent implements _i1.AppComponent {
+  JuggerAppComponent._create(
+      this._myClass, this._named_e4b98b05a8ae01d94a56d28d99d1f63e_MyClass);
+
+  final _i1.MyClass _myClass;
+
+  final _i1.MyClass _named_e4b98b05a8ae01d94a56d28d99d1f63e_MyClass;
+
+  @override
+  _i1.MyClass getMyClass1() => _myClass;
+  @override
+  _i1.MyClass getMyClass2() => _named_e4b98b05a8ae01d94a56d28d99d1f63e_MyClass;
+}
+
 class JuggerAppComponentBuilder implements _i1.AppComponentBuilder {
   _i1.MyClass? _myClass;
 
@@ -31,18 +45,4 @@ class JuggerAppComponentBuilder implements _i1.AppComponentBuilder {
     return JuggerAppComponent._create(
         _myClass!, _named_e4b98b05a8ae01d94a56d28d99d1f63e_MyClass!);
   }
-}
-
-class JuggerAppComponent implements _i1.AppComponent {
-  JuggerAppComponent._create(
-      this._myClass, this._named_e4b98b05a8ae01d94a56d28d99d1f63e_MyClass);
-
-  final _i1.MyClass _myClass;
-
-  final _i1.MyClass _named_e4b98b05a8ae01d94a56d28d99d1f63e_MyClass;
-
-  @override
-  _i1.MyClass getMyClass1() => _myClass;
-  @override
-  _i1.MyClass getMyClass2() => _named_e4b98b05a8ae01d94a56d28d99d1f63e_MyClass;
 }

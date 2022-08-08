@@ -1,6 +1,3 @@
-import 'package:analyzer/dart/element/type.dart';
-
-import '../utils/dart_type_ext.dart';
 import '../utils/utils.dart';
 
 class UniqueIdGenerator {

@@ -7,22 +7,6 @@
 import 'package:tests/subcomponent/simple_subcomponent.dart' as _i1;
 import 'package:jugger/jugger.dart' as _i2;
 
-class JuggerMyComponentBuilder implements _i1.MyComponentBuilder {
-  _i1.AppComponent? _appComponent;
-
-  @override
-  _i1.MyComponentBuilder appComponent(_i1.AppComponent appComponent) {
-    _appComponent = appComponent;
-    return this;
-  }
-
-  @override
-  _i1.MyComponent build() {
-    assert(_appComponent != null);
-    return JuggerMyComponent._create(_appComponent!);
-  }
-}
-
 class JuggerAppComponent implements _i1.AppComponent {
   JuggerAppComponent.create();
 
@@ -44,4 +28,20 @@ class JuggerMyComponent implements _i1.MyComponent {
 
   @override
   String get helloString => _stringProvider.get();
+}
+
+class JuggerMyComponentBuilder implements _i1.MyComponentBuilder {
+  _i1.AppComponent? _appComponent;
+
+  @override
+  _i1.MyComponentBuilder appComponent(_i1.AppComponent appComponent) {
+    _appComponent = appComponent;
+    return this;
+  }
+
+  @override
+  _i1.MyComponent build() {
+    assert(_appComponent != null);
+    return JuggerMyComponent._create(_appComponent!);
+  }
 }
