@@ -1,0 +1,11 @@
+name: sync_generation_result
+publish_to: 'none'
+
+environment:
+  sdk: ">=2.17.0 <3.0.0"
+
+dependencies:
+  path: 1.8.2
+
+dev_dependencies:
+  lint: 1.8.2
