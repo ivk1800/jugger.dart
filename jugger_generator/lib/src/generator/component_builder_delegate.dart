@@ -41,6 +41,9 @@ class ComponentBuilderDelegate {
   late DisposablesManager _disposablesManager;
   late DartType _componentType;
 
+  late final String _thisComponentName =
+      _createComponentName(_componentContext.component.element.name);
+
   GlobalConfig get globalConfig => _assetContext.globalConfig;
 
   Allocator get _allocator => _assetContext.allocator;
@@ -123,7 +126,7 @@ class ComponentBuilderDelegate {
           ),
         )
         ..constructors.add(_buildConstructor(_componentBuilder))
-        ..name = _createComponentName(component.element.name);
+        ..name = _thisComponentName;
 
       if (hasDisposables) {
         classBuilder
@@ -146,8 +149,7 @@ class ComponentBuilderDelegate {
     j.ComponentBuilder componentBuilder,
   ) {
     return Class((ClassBuilder classBuilder) {
-      classBuilder.name =
-          '${_createComponentName(componentBuilder.componentClass.name)}Builder';
+      classBuilder.name = '${_thisComponentName}Builder';
 
       classBuilder.implements.add(
         refer(
@@ -273,8 +275,7 @@ class ComponentBuilderDelegate {
       }
 
       final Expression call =
-          refer('${_createComponentName(componentType.getName())}._create')
-              .call(parameters);
+          refer('$_thisComponentName._create').call(parameters);
 
       builder.addExpression(
         CodeExpression(
@@ -1580,11 +1581,7 @@ if (_disposed) {
                 (FieldBuilder fieldBuilder) {
                   fieldBuilder
                     ..name = '_component'
-                    ..type = refer(
-                      _createComponentName(
-                        _componentContext.component.element.name,
-                      ),
-                    )
+                    ..type = refer(_thisComponentName)
                     ..modifier = FieldModifier.final$;
                 },
               ),
