@@ -37,7 +37,6 @@ class ComponentBuilderDelegate {
   final AssetContext _assetContext;
 
   late ComponentContext _componentContext;
-  late j.ComponentBuilder? _componentBuilder;
   late DisposablesManager _disposablesManager;
   late DartType _componentType;
 
@@ -54,13 +53,13 @@ class ComponentBuilderDelegate {
 
   ComponentResult generateComponent({
     required Component component,
-    required j.ComponentBuilder? componentBuilder,
   }) {
     _componentType = component.element.thisType;
-    _componentBuilder = componentBuilder;
     _componentContext = ComponentContext(
       component: component,
-      componentBuilder: componentBuilder,
+      componentBuilder: _assetContext.getComponentBuilderOf(
+        component.element.thisType,
+      ),
     );
     _disposablesManager = DisposablesManager(_componentContext);
 
@@ -72,6 +71,9 @@ class ComponentBuilderDelegate {
         .getBindingsInfo()
         .map(_buildMultibindingsProviderClass)
         .sortedBy((Class c) => c.name);
+
+    final j.ComponentBuilder? componentBuilder =
+        _componentContext.componentBuilder;
 
     return ComponentResult(
       componentClass: componentClass,
@@ -100,7 +102,9 @@ class ComponentBuilderDelegate {
 
       classBuilder
         ..fields.addAll(_buildProvidesFields())
-        ..fields.addAll(_buildConstructorFields(_componentBuilder))
+        ..fields.addAll(
+          _buildConstructorFields(_componentContext.componentBuilder),
+        )
         ..methods.addAll(
           _buildComponentMembers(
             _componentContext.component.methodsAccessors
@@ -125,7 +129,9 @@ class ComponentBuilderDelegate {
             createElementPath(_assetContext.lib),
           ),
         )
-        ..constructors.add(_buildConstructor(_componentBuilder))
+        ..constructors.add(
+          _buildConstructor(_componentContext.componentBuilder),
+        )
         ..name = _thisComponentName;
 
       if (hasDisposables) {

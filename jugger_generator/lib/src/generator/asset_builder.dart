@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/type.dart';
 import 'package:build/build.dart';
 import 'package:code_builder/code_builder.dart';
 import 'package:collection/collection.dart';
@@ -22,7 +23,8 @@ import 'wrappers.dart' as j;
 class AssetBuilder implements AssetContext {
   AssetBuilder({required this.globalConfig});
 
-  late LibraryElement _lib;
+  late final LibraryElement _lib;
+  late final List<j.ComponentBuilder> _componentBuilders;
   final Allocator _allocator = Allocator.simplePrefixing();
   final TypeNameGenerator _typeNameGenerator = TypeNameGenerator();
   final UniqueIdGenerator _uniqueIdGenerator = UniqueIdGenerator();
@@ -69,19 +71,12 @@ class AssetBuilder implements AssetContext {
 
       final LibraryBuilder target = LibraryBuilder();
 
-      final List<j.ComponentBuilder> componentBuilders =
-          lib.getComponentBuilders();
+      _componentBuilders = lib.getComponentBuilders();
 
       for (int i = 0; i < components.length; i++) {
         final j.Component component = components[i];
 
-        final j.ComponentBuilder? componentBuilder =
-            componentBuilders.firstWhereOrNull((j.ComponentBuilder b) {
-          return b.componentClass.name == component.element.name;
-        });
-
         _handleComponent(
-          componentBuilder: componentBuilder,
           target: target,
           component: component,
         );
@@ -111,7 +106,6 @@ class AssetBuilder implements AssetContext {
 
   void _handleComponent({
     required j.Component component,
-    required j.ComponentBuilder? componentBuilder,
     required LibraryBuilder target,
   }) {
     final ComponentBuilderDelegate componentBuilderDelegate =
@@ -119,7 +113,6 @@ class AssetBuilder implements AssetContext {
 
     final ComponentResult result = componentBuilderDelegate.generateComponent(
       component: component,
-      componentBuilder: componentBuilder,
     );
     target.body.add(result.componentClass);
 
@@ -152,4 +145,11 @@ class AssetBuilder implements AssetContext {
 
   @override
   LibraryElement get lib => _lib;
+
+  @override
+  j.ComponentBuilder? getComponentBuilderOf(DartType type) {
+    return _componentBuilders.firstWhereOrNull((j.ComponentBuilder b) {
+      return b.componentClass.thisType == type;
+    });
+  }
 }
