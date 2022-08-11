@@ -52,6 +52,7 @@ const String invalidInjectedConstructor =
 const String invalidMethodOfComponent =
     '$_glossary#invalid_method_of_component';
 const String missingComponentBuilder = '$_glossary#missing_component_builder';
+const String wrongComponentBuilder = '$_glossary#wrong_component_builder';
 const String circularDependency = '$_glossary#circular_dependency';
 const String providerNotFound = '$_glossary#provider_not_found';
 const String unusedGeneratedProviders = '$_glossary#unused_generated_providers';
@@ -117,6 +118,7 @@ enum JuggerErrorId {
   multiple_providers_for_type,
   invalid_injected_constructor,
   missing_component_builder,
+  wrong_component_builder,
   invalid_method_of_component,
   circular_dependency,
   provider_not_found,
@@ -258,6 +260,8 @@ extension JuggerErrorIdExt on JuggerErrorId {
         return multibindingsInvalidKey;
       case JuggerErrorId.multibindings_unsupported_key_type:
         return multibindingsUnsupportedKeyType;
+      case JuggerErrorId.wrong_component_builder:
+        return wrongComponentBuilder;
     }
   }
 }

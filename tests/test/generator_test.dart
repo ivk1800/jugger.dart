@@ -684,6 +684,34 @@ abstract class AppComponent {
   });
 
   group('component', () {
+    test('component builder from another file', () async {
+      await checkBuilderResult(
+        assets: <String, String>{
+          'component_builder.dart': '''
+import 'package:jugger/jugger.dart';
+
+import 'test.dart';
+
+@componentBuilder
+abstract class MyComponentBuilder {
+  AppComponent build();
+}
+          ''',
+        },
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+
+import 'component_builder.dart';
+
+@Component(builder: MyComponentBuilder)
+abstract class AppComponent {}
+        ''',
+        resultContent: () {
+          return readAssetFile('component/component_builder_from_another_file');
+        },
+      );
+    });
+
     test('component with build instance dependency', () async {
       await checkBuilderOfFile(
         'component/component_with_build_instance_dependency',

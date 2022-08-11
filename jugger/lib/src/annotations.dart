@@ -4,15 +4,20 @@ class Component {
   const factory Component({
     List<Type> modules,
     List<Type> dependencies,
+    Type? builder,
   }) = Component._;
 
   const Component._({
     this.modules = const <Type>[],
     this.dependencies = const <Type>[],
+    this.builder = null,
   });
 
   final List<Type> modules;
   final List<Type> dependencies;
+
+  /// Builder for this component.
+  final Type? builder;
 }
 
 /// Identifies qualifier annotations.

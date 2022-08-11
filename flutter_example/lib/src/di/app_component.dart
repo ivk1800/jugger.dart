@@ -1,4 +1,3 @@
-import 'package:flutter/widgets.dart';
 import 'package:flutter_example/src/app/data/data.dart';
 import 'package:flutter_example/src/common/logger.dart';
 import 'package:flutter_example/src/di/logger_module.dart';
@@ -6,6 +5,7 @@ import 'package:flutter_example/src/screen/packages_list/packages_list_screen_fa
 import 'package:flutter_example/src/screen/packages_list/packages_list_screen_router.dart';
 import 'package:jugger/jugger.dart' as j;
 
+import 'app_component_builder.dart';
 import 'app_module.dart';
 import 'data_module.dart';
 import 'route_module.dart';
@@ -17,6 +17,7 @@ import 'route_module.dart';
     AppModule,
     LoggerModule,
   ],
+  builder: IAppComponentBuilder,
 )
 abstract class IAppComponent {
   // getter example
@@ -28,12 +29,4 @@ abstract class IAppComponent {
   IPackagesRepository getPackagesRepository();
 
   Logger get logger;
-}
-
-// component builder example
-@j.componentBuilder
-abstract class IAppComponentBuilder {
-  IAppComponentBuilder navigationKey(GlobalKey<NavigatorState> value);
-
-  IAppComponent build();
 }

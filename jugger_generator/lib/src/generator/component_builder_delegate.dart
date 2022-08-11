@@ -57,9 +57,11 @@ class ComponentBuilderDelegate {
     _componentType = component.element.thisType;
     _componentContext = ComponentContext(
       component: component,
-      componentBuilder: _assetContext.getComponentBuilderOf(
-        component.element.thisType,
-      ),
+      componentBuilder: component.resolveComponentBuilder() ??
+          // for compatibility, will be removed in future release
+          _assetContext.getComponentBuilderOf(
+            component.element.thisType,
+          ),
     );
     _disposablesManager = DisposablesManager(_componentContext);
 
@@ -160,7 +162,7 @@ class ComponentBuilderDelegate {
       classBuilder.implements.add(
         refer(
           componentBuilder.element.name,
-          createElementPath(_assetContext.lib),
+          createElementPath(componentBuilder.element),
         ),
       );
       classBuilder.methods.addAll(

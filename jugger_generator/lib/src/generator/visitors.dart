@@ -269,6 +269,16 @@ class _InjectedMethodsVisitor extends RecursiveElementVisitor<dynamic> {
   }
 }
 
+ComponentBuilder? getComponentBuilderFromTypeOrNull(DartType type) {
+  final _ComponentBuildersVisitor visitor = _ComponentBuildersVisitor();
+
+  final ClassElement? classElement = type.element as ClassElement?;
+  if (classElement != null) {
+    visitor.visitClassElement(classElement);
+  }
+  return visitor.componentBuilders.firstOrNull;
+}
+
 class _ComponentBuildersVisitor extends RecursiveElementVisitor<dynamic> {
   List<ComponentBuilder> componentBuilders = <ComponentBuilder>[];
 

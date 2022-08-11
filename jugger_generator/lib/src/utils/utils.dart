@@ -11,6 +11,8 @@ import '../errors_glossary.dart';
 import '../generator/tag.dart';
 import '../generator/wrappers.dart';
 import '../jugger_error.dart';
+import 'dart_type_ext.dart';
+import 'element_ext.dart';
 import 'library_ext.dart';
 import 'module_extractor.dart';
 
@@ -236,8 +238,28 @@ List<Annotation> getAnnotations(Element element) {
         }
         // endregion
 
+        final DartType? builderType = annotation
+            .computeConstantValue()
+            ?.getField('builder')
+            ?.toTypeValue();
+
+        if (builderType != null) {
+          final ComponentBuilderAnnotation? componentBuilderAnnotation =
+              builderType.element
+                  ?.getAnnotationOrNull<ComponentBuilderAnnotation>();
+
+          check(
+            componentBuilderAnnotation != null,
+            () => buildErrorMessage(
+              error: JuggerErrorId.wrong_component_builder,
+              message: '${builderType.getName()} is not component builder.',
+            ),
+          );
+        }
+
         annotations.add(
           ComponentAnnotation(
+            builder: builderType,
             modules: allModules.toList(),
             dependencies: dependencies.map((ClassElement c) {
               check(

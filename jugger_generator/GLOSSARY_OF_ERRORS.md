@@ -662,6 +662,47 @@ abstract class MyComponentBuilder {
 }
 ```
 
+### wrongComponentBuilder
+The specified builder is not annotated with @componentBuilder.
+The specified builder is not suitable for the component it is bound to.
+
+`BAD:`
+```dart
+import 'package:jugger/jugger.dart';
+
+@Component(builder: MyComponentBuilder)
+abstract class AppComponent {}
+
+@componentBuilder
+abstract class MyComponentBuilder {
+  MyComponent build();
+}
+
+@Component(builder: MyComponentBuilder)
+abstract class MyComponent {}
+```
+
+`GOOD:`
+```dart
+import 'package:jugger/jugger.dart';
+
+@Component(builder: AppComponentBuilder)
+abstract class AppComponent {}
+
+@componentBuilder
+abstract class AppComponentBuilder {
+  AppComponent build();
+}
+
+@Component(builder: MyComponentBuilder)
+abstract class MyComponent {}
+
+@componentBuilder
+abstract class MyComponentBuilder {
+  MyComponent build();
+}
+```
+
 ### circular_dependency
 Jugger detect circular dependencies. Common error if two classes depend on each other.
 

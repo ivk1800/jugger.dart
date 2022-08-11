@@ -15,7 +15,8 @@ dependencies:
   collection: ^1.15.0
   crypto: ^3.0.0
   dart_style: ^2.0.0
-  jugger: 2.3.0
+  jugger:
+    path: ../jugger
   quiver: ^3.0.0
 
 dev_dependencies:

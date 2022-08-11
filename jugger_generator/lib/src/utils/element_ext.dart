@@ -33,4 +33,18 @@ extension ElementExt on Element {
         .firstWhereOrNull((Annotation a) => a is DisposalHandlerAnnotation);
     return annotation is DisposalHandlerAnnotation ? annotation : null;
   }
+
+  T getAnnotation<T extends Annotation>() {
+    final Annotation? annotation =
+        getAnnotations(this).firstWhereOrNull((Annotation a) => a is T);
+    return annotation is T
+        ? annotation
+        : (throw JuggerError('Annotation $T not found'));
+  }
+
+  T? getAnnotationOrNull<T extends Annotation>() {
+    final Annotation? annotation =
+        getAnnotations(this).firstWhereOrNull((Annotation a) => a is T);
+    return annotation is T ? annotation : null;
+  }
 }

@@ -26,6 +26,7 @@ class Component {
     required this.modulesProvideMethods,
     required this.disposalHandlerMethods,
     required this.componentMembers,
+    required this.componentBuilderType,
   });
 
   factory Component.fromElement(
@@ -34,6 +35,7 @@ class Component {
   ) {
     final List<ModuleAnnotation> modules = component.modules;
     return Component._(
+      componentBuilderType: component.builder,
       element: element,
       annotations: <Annotation>[component],
       modules: modules,
@@ -50,6 +52,33 @@ class Component {
   }
 
   final List<ComponentMethod> componentMembers;
+
+  final DartType? componentBuilderType;
+
+  late final ComponentBuilder? _componentBuilder = () {
+    final DartType? builder = componentBuilderType;
+    if (builder != null) {
+      final ComponentBuilder? componentBuilder =
+          getComponentBuilderFromTypeOrNull(builder);
+
+      if (componentBuilder != null) {
+        check(
+          element.thisType == componentBuilder.componentClass.thisType,
+          () => buildErrorMessage(
+            error: JuggerErrorId.wrong_component_builder,
+            message: 'The ${componentBuilder.element.name} is not suitable for '
+                'the ${element.thisType.getName()} it is bound to.',
+          ),
+        );
+      }
+
+      return componentBuilder;
+    } else {
+      return null;
+    }
+  }();
+
+  ComponentBuilder? resolveComponentBuilder() => _componentBuilder;
 
   /// Element associated with this component.
   final ClassElement element;
@@ -236,6 +265,7 @@ class ComponentAnnotation implements Annotation {
   const ComponentAnnotation({
     required this.modules,
     required this.dependencies,
+    required this.builder,
   });
 
   /// Returns the modules that are included to the component.
@@ -244,6 +274,10 @@ class ComponentAnnotation implements Annotation {
   /// Returns the another components that are included to the component as
   /// dependencies.
   final List<DependencyAnnotation> dependencies;
+
+  /// Component builder type, it is not guaranteed that the type is a valid
+  /// class, you need to make sure before using it.
+  final DartType? builder;
 }
 
 /// Wrapper class for provide annotation.

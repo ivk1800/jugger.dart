@@ -3170,6 +3170,62 @@ abstract class AppModule {
 
   group('component', () {
     test(
+      'The specified builder is not suitable for the component',
+      () async {
+        await checkBuilderResult(
+          mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(builder: MyComponentBuilder)
+abstract class AppComponent {}
+
+@componentBuilder
+abstract class MyComponentBuilder {
+  MyComponent build();
+}
+
+@Component(builder: MyComponentBuilder)
+abstract class MyComponent {}
+        ''',
+          onError: (Object error) {
+            expect(
+              error.toString(),
+              'error: wrong_component_builder:\n'
+              'The MyComponentBuilder is not suitable for the AppComponent it is bound to.\n'
+              'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#wrong_component_builder',
+            );
+          },
+        );
+      },
+    );
+
+    test(
+      'The specified type is not component builder',
+      () async {
+        await checkBuilderResult(
+          mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(builder: MyComponentBuilder)
+abstract class AppComponent {}
+
+abstract class MyComponentBuilder {
+  AppComponent build();
+}
+        ''',
+          onError: (Object error) {
+            expect(
+              error.toString(),
+              'error: wrong_component_builder:\n'
+              'MyComponentBuilder is not component builder.\n'
+              'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#wrong_component_builder',
+            );
+          },
+        );
+      },
+    );
+
+    test(
       'invalid member in component',
       () async {
         await checkBuilderResult(
