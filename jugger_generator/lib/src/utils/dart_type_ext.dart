@@ -42,8 +42,9 @@ extension DartTypeExt on DartType {
       return false;
     }
 
-    return library.location!.components.any((String component) =>
-            component == 'package:jugger/src/lazy.dart') &&
+    return library.location!.components.any(
+          (String component) => component == 'package:jugger/src/lazy.dart',
+        ) &&
         element!.name == 'ILazy';
   }
 

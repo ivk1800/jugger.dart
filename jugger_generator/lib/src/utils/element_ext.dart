@@ -2,7 +2,6 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
 
-import '../errors_glossary.dart';
 import '../generator/wrappers.dart';
 import '../jugger_error.dart';
 import 'utils.dart';
