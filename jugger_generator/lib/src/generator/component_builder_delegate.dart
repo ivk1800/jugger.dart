@@ -9,7 +9,9 @@ import '../builder/global_config.dart';
 import '../errors_glossary.dart';
 import '../jugger_error.dart';
 import '../utils/dart_type_ext.dart';
+import '../utils/element_annotation_ext.dart';
 import '../utils/element_ext.dart';
+import '../utils/list_ext.dart';
 import '../utils/tag_ext.dart';
 import '../utils/utils.dart';
 import 'asset_context.dart';
@@ -727,9 +729,8 @@ class ComponentBuilderDelegate {
           .providerSources
           .whereType<ModuleSource>()
           .where(
-            (ProviderSource source) => source.annotations.any(
-              (j.Annotation annotation) => annotation is j.NonLazyAnnotation,
-            ),
+            (ProviderSource source) =>
+                source.annotations.anyInstance<j.NonLazyAnnotation>(),
           )
           .toList()
           // Sort so that the sequence is preserved with each code generation (for
@@ -753,9 +754,8 @@ class ComponentBuilderDelegate {
   /// source in the module must be annotated with @nonLazy.
   bool _hasNonLazyProviders() {
     return _componentContext.providerSources.any(
-      (ProviderSource source) => source.annotations.any(
-        (j.Annotation annotation) => annotation is j.NonLazyAnnotation,
-      ),
+      (ProviderSource source) =>
+          source.annotations.anyInstance<j.NonLazyAnnotation>(),
     );
   }
 
@@ -848,7 +848,7 @@ class ComponentBuilderDelegate {
       },
     );
 
-    if (getBindAnnotation(method.element) != null) {
+    if (method.element.getBindAnnotationOrNull() != null) {
       final Expression callExpression = _getProviderReferenceOfElement(
         method.element,
       ).call(
@@ -1175,7 +1175,7 @@ class ComponentBuilderDelegate {
         parameter.name,
         _generateAssignExpression(
           type: parameter.type,
-          tag: getQualifierAnnotation(parameter)?.tag,
+          tag: parameter.getQualifierAnnotationOrNull()?.tag,
           prefixScope: prefixScope,
         ),
       );

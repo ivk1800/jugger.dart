@@ -5,6 +5,7 @@ import 'package:jugger/jugger.dart' as j;
 
 import '../errors_glossary.dart';
 import '../utils/dart_type_ext.dart';
+import '../utils/list_ext.dart';
 import '../utils/utils.dart';
 import 'component_context.dart';
 import 'tag.dart';
@@ -162,9 +163,8 @@ class DisposablesManager {
         ),
       );
 
-      final bool isScoped = source.annotations.any((Annotation annotation) {
-        return annotation is SingletonAnnotation;
-      });
+      final bool isScoped =
+          source.annotations.anyInstance<SingletonAnnotation>();
       check(
         isScoped,
         () => buildErrorMessage(

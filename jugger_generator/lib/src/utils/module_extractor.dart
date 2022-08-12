@@ -6,6 +6,7 @@ import 'package:jugger/jugger.dart' as j;
 import '../errors_glossary.dart';
 import '../generator/wrappers.dart';
 import '../jugger_error.dart';
+import 'element_annotation_ext.dart';
 import 'utils.dart';
 
 /// Helper class that detects circular dependencies between modules.

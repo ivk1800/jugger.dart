@@ -9,6 +9,8 @@ import '../errors_glossary.dart';
 import '../jugger_error.dart';
 import '../utils/component_methods_ext.dart';
 import '../utils/dart_type_ext.dart';
+import '../utils/element_annotation_ext.dart';
+import '../utils/element_ext.dart';
 import '../utils/utils.dart';
 import 'entry_points.dart';
 import 'graph_object_place.dart';

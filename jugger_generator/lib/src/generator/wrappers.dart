@@ -9,7 +9,9 @@ import 'package:jugger/jugger.dart';
 import '../errors_glossary.dart';
 import '../utils/component_methods_ext.dart';
 import '../utils/dart_type_ext.dart';
+import '../utils/element_annotation_ext.dart';
 import '../utils/element_ext.dart';
+import '../utils/list_ext.dart';
 import '../utils/utils.dart';
 import 'tag.dart';
 import 'visitors.dart';
@@ -424,17 +426,9 @@ abstract class ProvideMethod extends ModuleMethod {
 }
 
 extension ProvideMethodExt on ProvideMethod {
-  bool get _hasScoped =>
-      annotations.firstWhereOrNull(
-        (Annotation annotation) => annotation is SingletonAnnotation,
-      ) !=
-      null;
+  bool get _hasScoped => annotations.anyInstance<SingletonAnnotation>();
 
-  bool get hasDisposable =>
-      annotations.firstWhereOrNull(
-        (Annotation annotation) => annotation is DisposableAnnotation,
-      ) !=
-      null;
+  bool get hasDisposable => annotations.anyInstance<DisposableAnnotation>();
 
   bool get isDisposable => _hasScoped && hasDisposable;
 }
@@ -458,7 +452,7 @@ class StaticProvideMethod extends ProvideMethod {
     return StaticProvideMethod._(
       element: methodElement,
       annotations: getAnnotations(methodElement),
-      tag: getQualifierAnnotation(methodElement)?.tag,
+      tag: methodElement.getQualifierAnnotationOrNull()?.tag,
     );
   }
 }
@@ -488,7 +482,7 @@ class DisposalHandlerMethod extends ModuleMethod {
     return DisposalHandlerMethod._(
       element: element,
       annotations: getAnnotations(element),
-      tag: getQualifierAnnotation(element)?.tag,
+      tag: element.getQualifierAnnotationOrNull()?.tag,
       disposableType: parameterType,
     );
   }
@@ -548,7 +542,7 @@ class AbstractProvideMethod extends ProvideMethod {
       assignableType: rawParameter.castToOrThrow<ClassElement>().thisType,
       element: element,
       annotations: getAnnotations(element),
-      tag: getQualifierAnnotation(element)?.tag,
+      tag: element.getQualifierAnnotationOrNull()?.tag,
       type: element.returnType,
     );
   }

@@ -7,6 +7,7 @@ import 'package:quiver/core.dart';
 import '../../errors_glossary.dart';
 import '../../jugger_error.dart';
 import '../../utils/dart_type_ext.dart';
+import '../../utils/element_annotation_ext.dart';
 import '../../utils/utils.dart';
 import '../component_context.dart';
 import '../tag.dart';

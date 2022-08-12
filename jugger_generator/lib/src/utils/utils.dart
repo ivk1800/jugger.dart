@@ -13,55 +13,9 @@ import '../generator/tag.dart';
 import '../generator/wrappers.dart';
 import '../jugger_error.dart';
 import 'dart_type_ext.dart';
-import 'element_ext.dart';
+import 'element_annotation_ext.dart';
 import 'library_ext.dart';
 import 'module_extractor.dart';
-
-ComponentAnnotation? getComponentAnnotation(Element element) {
-  final Annotation? annotation = getAnnotations(element)
-      .firstWhereOrNull((Annotation a) => a is ComponentAnnotation);
-  return annotation is ComponentAnnotation ? annotation : null;
-}
-
-ComponentBuilderAnnotation? getComponentBuilderAnnotation(Element element) {
-  final Annotation? annotation = getAnnotations(element)
-      .firstWhereOrNull((Annotation a) => a is ComponentBuilderAnnotation);
-  return annotation is ComponentBuilderAnnotation ? annotation : null;
-}
-
-BindAnnotation? getBindAnnotation(Element element) {
-  final Annotation? annotation = getAnnotations(element)
-      .firstWhereOrNull((Annotation a) => a is BindAnnotation);
-  return annotation is BindAnnotation ? annotation : null;
-}
-
-NonLazyAnnotation? getNonLazyAnnotation(Element element) {
-  final Annotation? annotation = getAnnotations(element)
-      .firstWhereOrNull((Annotation a) => a is NonLazyAnnotation);
-  return annotation is NonLazyAnnotation ? annotation : null;
-}
-
-ProvideAnnotation? getProvideAnnotation(Element element) {
-  final Annotation? annotation = getAnnotations(element)
-      .firstWhereOrNull((Annotation a) => a is ProvideAnnotation);
-  return annotation is ProvideAnnotation ? annotation : null;
-}
-
-QualifierAnnotation? getQualifierAnnotation(Element element) {
-  final List<QualifierAnnotation> qualifierAnnotation =
-      getAnnotations(element).whereType<QualifierAnnotation>().toList();
-  check(
-    qualifierAnnotation.length <= 1,
-    () => buildErrorMessage(
-      error: JuggerErrorId.multiple_qualifiers,
-      message:
-          'Multiple qualifiers of ${element.enclosingElement?.name}.${element.name} not allowed.',
-    ),
-  );
-
-  return qualifierAnnotation
-      .firstWhereOrNull((Annotation a) => a is QualifierAnnotation);
-}
 
 String generateMd5(String input) => md5.convert(utf8.encode(input)).toString();
 
@@ -268,7 +222,7 @@ List<Annotation> _getAnnotations(Element element) {
             modules: allModules.toList(),
             dependencies: dependencies.map((ClassElement c) {
               check(
-                getComponentAnnotation(c) != null,
+                c.getComponentAnnotationOrNull() != null,
                 () => buildErrorMessage(
                   error: JuggerErrorId.invalid_component_dependency,
                   message:
@@ -409,115 +363,4 @@ void checkUnexpected(bool condition, String Function() message) {
   if (!condition) {
     throw UnexpectedJuggerError(message.call());
   }
-}
-
-extension ElementExt on Element {
-  ModuleAnnotation? getModuleAnnotation() {
-    final Annotation? annotation = getAnnotations(this)
-        .firstWhereOrNull((Annotation a) => a is ModuleAnnotation);
-    return annotation is ModuleAnnotation ? annotation : null;
-  }
-
-  bool hasAnnotatedAsModule() {
-    final Element element = this;
-    if (element is ClassElement) {
-      final List<ElementAnnotation> resolvedMetadata = element.metadata;
-      final ElementAnnotation? moduleAnnotation = resolvedMetadata.firstOrNull;
-      final Element? valueElement =
-          moduleAnnotation?.computeConstantValue()?.type?.element;
-
-      return valueElement?.name == module.runtimeType.toString();
-    }
-    return false;
-  }
-
-  bool hasAnnotatedAsInject() =>
-      getAnnotations(this).any((Annotation a) => a is InjectAnnotation);
-
-  bool hasAnnotatedAsSingleton() =>
-      getAnnotations(this).any((Annotation a) => a is SingletonAnnotation);
-
-  Tag? getQualifierTag() => getQualifierAnnotation(this)?.tag;
-
-  String toNameWithPath() => '$name ${library?.identifier}';
-
-  List<MultibindingsGroupAnnotation> getMultibindingsAnnotations() {
-    return getAnnotations(this)
-        .whereType<MultibindingsGroupAnnotation>()
-        .toList(growable: false);
-  }
-
-  List<MultibindingsKeyAnnotation<Object?>> getMultibindsKeyAnnotations() {
-    return getAnnotations(this)
-        .whereType<MultibindingsKeyAnnotation<Object?>>()
-        .toList(growable: false);
-  }
-
-  MultibindingsKeyAnnotation<Object?> getSingleMultibindsKeyAnnotation() {
-    check(
-      this is MethodElement,
-      () => buildUnexpectedErrorMessage(
-        message: 'Expected MethodElement, but was $this',
-      ),
-    );
-
-    final List<MultibindingsKeyAnnotation<Object?>> keys =
-        getMultibindsKeyAnnotations();
-
-    check(
-      keys.isNotEmpty,
-      () => buildErrorMessage(
-        error: JuggerErrorId.multibindings_missing_key,
-        message: 'Methods of type map must declare a map key:\n'
-            '${(enclosingElement as ClassElement).name}.$name',
-      ),
-    );
-
-    check(
-      keys.length == 1,
-      () => buildErrorMessage(
-        error: JuggerErrorId.multibindings_multiple_keys,
-        message: 'Methods may not have more than one map key:\n'
-            '${(enclosingElement as ClassElement).name}.$name\n'
-            'keys: ${keys.map((MultibindingsKeyAnnotation<Object?> annotation) => annotation.key).join(', ')}',
-      ),
-    );
-
-    return keys.first;
-  }
-}
-
-extension MethodElementExt on MethodElement {
-  MultibindingsGroupAnnotation? getMultibindingsGroupAnnotationOrNull() {
-    final List<MultibindingsGroupAnnotation> multibindingsAnnotations =
-        getMultibindingsAnnotations();
-
-    if (multibindingsAnnotations.isEmpty) {
-      return null;
-    }
-
-    check(
-      multibindingsAnnotations.length == 1,
-      () => buildErrorMessage(
-        error: JuggerErrorId.multiple_multibinding_annotation,
-        message: 'Methods cannot have more than one multibinding annotation:\n'
-            '${enclosingElement.name}.$name',
-      ),
-    );
-
-    return multibindingsAnnotations.first;
-  }
-}
-
-extension ElementAnnotationExt on List<ElementAnnotation> {
-  bool isQualifier() => any(
-        (ElementAnnotation a) =>
-            a.element!.library!.isJuggerLibrary &&
-            a.element!.name == 'qualifier',
-      );
-
-  bool isMapKey() => any(
-        (ElementAnnotation a) =>
-            a.element!.library!.isJuggerLibrary && a.element!.name == 'mapKey',
-      );
 }

@@ -7,7 +7,7 @@ import 'package:jugger/jugger.dart' as j;
 import '../errors_glossary.dart';
 import '../jugger_error.dart';
 import '../utils/dart_type_ext.dart';
-import '../utils/element_ext.dart';
+import '../utils/element_annotation_ext.dart';
 import '../utils/utils.dart';
 import 'wrappers.dart';
 
@@ -83,10 +83,11 @@ class _ModuleMethodsVisitor extends RecursiveElementVisitor<dynamic>
       ),
     );
 
-    final ProvideAnnotation? provideAnnotation = getProvideAnnotation(element);
-    final BindAnnotation? bindAnnotation = getBindAnnotation(element);
+    final ProvideAnnotation? provideAnnotation =
+        element.getProvideAnnotationOrNull();
+    final BindAnnotation? bindAnnotation = element.getBindAnnotationOrNull();
     final DisposalHandlerAnnotation? disposalHandlerAnnotation =
-        element.getDisposalHandlerAnnotation();
+        element.getDisposalHandlerAnnotationOrNull();
 
     check(
       !(bindAnnotation != null && provideAnnotation != null),
@@ -160,7 +161,8 @@ class _ComponentsVisitor extends RecursiveElementVisitor<dynamic> {
 
   @override
   dynamic visitClassElement(ClassElement element) {
-    final ComponentAnnotation? component = getComponentAnnotation(element);
+    final ComponentAnnotation? component =
+        element.getComponentAnnotationOrNull();
 
     if (component != null) {
       for (final InterfaceType type in element.allSupertypes) {
@@ -285,7 +287,7 @@ class _ComponentBuildersVisitor extends RecursiveElementVisitor<dynamic> {
   @override
   dynamic visitClassElement(ClassElement element) {
     final ComponentBuilderAnnotation? annotation =
-        getComponentBuilderAnnotation(element);
+        element.getComponentBuilderAnnotationOrNull();
 
     if (annotation != null) {
       check(
@@ -351,7 +353,7 @@ class _ComponentBuildersVisitor extends RecursiveElementVisitor<dynamic> {
       buildMethod = buildMethodNullable!;
 
       final ComponentAnnotation? componentAnnotation =
-          getComponentAnnotation(buildMethod.returnType.element!);
+          buildMethod.returnType.element?.getComponentAnnotationOrNull();
 
       final Iterable<MethodElement> externalDependenciesMethods =
           methods.where((MethodElement me) => me.name != buildMethodName);
@@ -402,7 +404,7 @@ class _ComponentBuilderMethodsVisitor extends RecursiveElementVisitor<dynamic>
   dynamic visitMethodElement(MethodElement element) {
     if (element.name == 'build') {
       final ComponentAnnotation? componentAnnotation =
-          getComponentAnnotation(element.returnType.element!);
+          element.returnType.element?.getComponentAnnotationOrNull();
       check(
         componentAnnotation != null,
         () => buildErrorMessage(

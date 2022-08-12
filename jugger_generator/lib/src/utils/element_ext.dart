@@ -1,10 +1,9 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
-import 'package:collection/collection.dart';
 
-import '../generator/wrappers.dart';
+import '../generator/tag.dart';
 import '../jugger_error.dart';
-import 'utils.dart';
+import 'element_annotation_ext.dart';
 
 extension ElementExt on Element {
   /// The method tries to get the type from the supported element type,
@@ -28,23 +27,7 @@ extension ElementExt on Element {
     throw UnexpectedJuggerError('Expected type $T, but was $element');
   }
 
-  DisposalHandlerAnnotation? getDisposalHandlerAnnotation() {
-    final Annotation? annotation = getAnnotations(this)
-        .firstWhereOrNull((Annotation a) => a is DisposalHandlerAnnotation);
-    return annotation is DisposalHandlerAnnotation ? annotation : null;
-  }
+  Tag? getQualifierTag() => getQualifierAnnotationOrNull()?.tag;
 
-  T getAnnotation<T extends Annotation>() {
-    final Annotation? annotation =
-        getAnnotations(this).firstWhereOrNull((Annotation a) => a is T);
-    return annotation is T
-        ? annotation
-        : (throw JuggerError('Annotation $T not found'));
-  }
-
-  T? getAnnotationOrNull<T extends Annotation>() {
-    final Annotation? annotation =
-        getAnnotations(this).firstWhereOrNull((Annotation a) => a is T);
-    return annotation is T ? annotation : null;
-  }
+  String toNameWithPath() => '$name ${library?.identifier}';
 }
