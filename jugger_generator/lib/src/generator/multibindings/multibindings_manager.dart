@@ -143,7 +143,6 @@ class MultibindingsManager {
     return MultibindingsGroup(
       providers: providers,
       graphObject: graphObject!,
-      tag: tag,
       annotations: <Annotation>[if (tag != null) QualifierAnnotation(tag: tag)],
     );
   }
@@ -173,7 +172,6 @@ class MultibindingsManager {
     return MultibindingsGroup(
       providers: providers,
       graphObject: graphObject!,
-      tag: tag,
       annotations: <Annotation>[if (tag != null) QualifierAnnotation(tag: tag)],
     );
   }
