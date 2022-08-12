@@ -7,6 +7,7 @@ import 'package:collection/collection.dart';
 import 'package:crypto/crypto.dart';
 import 'package:jugger/jugger.dart';
 
+import '../builder/session_cache.dart';
 import '../errors_glossary.dart';
 import '../generator/tag.dart';
 import '../generator/wrappers.dart';
@@ -65,6 +66,10 @@ QualifierAnnotation? getQualifierAnnotation(Element element) {
 String generateMd5(String input) => md5.convert(utf8.encode(input)).toString();
 
 List<Annotation> getAnnotations(Element element) {
+  return sessionCache.getAnnotations(element, () => _getAnnotations(element));
+}
+
+List<Annotation> _getAnnotations(Element element) {
   final List<Annotation> annotations = <Annotation>[];
 
   for (int i = 0; i < element.metadata.length; i++) {
