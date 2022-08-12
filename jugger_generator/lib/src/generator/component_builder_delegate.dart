@@ -19,6 +19,7 @@ import 'component_context.dart';
 import 'component_result.dart';
 import 'disposable_manager.dart';
 import 'multibindings/multibindings_group.dart';
+import 'multibindings/multibindings_info.dart';
 import 'tag.dart';
 import 'type_name_registry.dart';
 import 'unique_name_registry.dart';
@@ -362,7 +363,11 @@ class ComponentBuilderDelegate {
           Field((FieldBuilder b) {
             final Tag? tag = graphObject.tag;
 
-            b.name = '_${_createMultibindingsProviderFieldName(graphObject)}';
+            b.name = '_${_createMultibindingsProviderFieldName(
+              type: graphObject.type,
+              tag: graphObject.tag,
+              multibindingsInfo: graphObject.multibindingsInfo,
+            )}';
 
             final String generic = _allocator.allocate(
               refer(_allocateDependencyTypeName(graphObject)),
@@ -392,7 +397,11 @@ class ComponentBuilderDelegate {
               final Code assignment = Block.of(
                 <Code>[
                   Code(
-                    '_${_createMultibindingsProviderClassName(graphObject)}',
+                    '_${_createMultibindingsProviderClassName(
+                      type: graphObject.type,
+                      tag: graphObject.tag,
+                      multibindingsInfo: graphObject.multibindingsInfo,
+                    )}',
                   ),
                   if (hasDependencies)
                     const Code('(this)')
@@ -1544,7 +1553,11 @@ if (_disposed) {
 
             fieldBuilder
               ..type = refer('IProvider<$fieldTypeString>', _jugger)
-              ..name = '_${_createMultibindingsProviderFieldName(graphObject)}'
+              ..name = '_${_createMultibindingsProviderFieldName(
+                type: graphObject.type,
+                tag: graphObject.tag,
+                multibindingsInfo: graphObject.multibindingsInfo,
+              )}'
               ..late = true
               ..modifier = FieldModifier.final$;
 
@@ -1577,10 +1590,14 @@ if (_disposed) {
 
     return Class(
       (ClassBuilder classBuilder) {
+        final GraphObject groupGraphObject = group.graphObject;
         classBuilder
           ..implements.add(refer('IProvider<$classTypeString>', _jugger))
-          ..name =
-              '_${_createMultibindingsProviderClassName(group.graphObject)}'
+          ..name = '_${_createMultibindingsProviderClassName(
+            type: groupGraphObject.type,
+            tag: groupGraphObject.tag,
+            multibindingsInfo: groupGraphObject.multibindingsInfo,
+          )}'
           ..fields.addAll(fields);
         if (hasDependencies) {
           classBuilder
@@ -1688,8 +1705,11 @@ if (_disposed) {
         );
       }
 
-      final String fieldName =
-          _createMultibindingsMemberProviderCall(graphObject);
+      final String fieldName = _createMultibindingsMemberProviderCall(
+        type: graphObject.type,
+        tag: graphObject.tag,
+        multibindingsInfo: graphObject.multibindingsInfo,
+      );
 
       return MapEntry<Expression, Reference>(keyExpression, refer(fieldName));
     });
@@ -1732,7 +1752,13 @@ if (_disposed) {
   }) {
     final Expression setExpression = literalSet(
       collectedObjects
-          .map(_createMultibindingsMemberProviderCall)
+          .map(
+            (GraphObject o) => _createMultibindingsMemberProviderCall(
+              type: o.type,
+              tag: o.tag,
+              multibindingsInfo: o.multibindingsInfo,
+            ),
+          )
           .sortedBy((String fieldName) => fieldName)
           .map((String fieldName) => refer(fieldName)),
     );
@@ -1751,19 +1777,23 @@ if (_disposed) {
     );
   }
 
-  String _createMultibindingsMemberProviderCall(GraphObject graphObject) {
+  String _createMultibindingsMemberProviderCall({
+    required DartType type,
+    required Tag? tag,
+    required MultibindingsInfo? multibindingsInfo,
+  }) {
     final StringBuffer fieldNameBuilder = StringBuffer()
       ..write('_')
       ..write(
         _generateFieldName(
-          type: graphObject.type,
-          tag: graphObject.tag?.toAssignTag(),
+          type: type,
+          tag: tag?.toAssignTag(),
         ),
       );
 
-    if (graphObject.multibindingsInfo != null) {
+    if (multibindingsInfo != null) {
       fieldNameBuilder.write(
-        generateMd5(graphObject.multibindingsInfo!.methodPath),
+        generateMd5(multibindingsInfo.methodPath),
       );
     }
 
@@ -1771,17 +1801,21 @@ if (_disposed) {
     return fieldNameBuilder.toString();
   }
 
-  String _createMultibindingsProviderClassName(GraphObject graphObject) {
+  String _createMultibindingsProviderClassName({
+    required DartType type,
+    required Tag? tag,
+    required MultibindingsInfo? multibindingsInfo,
+  }) {
     final StringBuffer fieldNameBuilder = StringBuffer();
     fieldNameBuilder.write(
       _generateFieldName(
-        type: graphObject.type,
-        tag: graphObject.tag?.toAssignTag(),
+        type: type,
+        tag: tag?.toAssignTag(),
       ),
     );
-    if (graphObject.multibindingsInfo != null) {
+    if (multibindingsInfo != null) {
       fieldNameBuilder.write(
-        _uniqueIdGenerator.generate(graphObject.multibindingsInfo!.methodPath),
+        _uniqueIdGenerator.generate(multibindingsInfo.methodPath),
       );
     }
     final String componentName = _componentContext.component.element.name;
@@ -1795,17 +1829,21 @@ if (_disposed) {
     return capitalize(fieldNameBuilder.toString());
   }
 
-  String _createMultibindingsProviderFieldName(GraphObject graphObject) {
+  String _createMultibindingsProviderFieldName({
+    required DartType type,
+    required Tag? tag,
+    required MultibindingsInfo? multibindingsInfo,
+  }) {
     final StringBuffer fieldNameBuilder = StringBuffer();
     fieldNameBuilder.write(
       _generateFieldName(
-        type: graphObject.type,
-        tag: graphObject.tag?.toAssignTag(),
+        type: type,
+        tag: tag?.toAssignTag(),
       ),
     );
-    if (graphObject.multibindingsInfo != null) {
+    if (multibindingsInfo != null) {
       fieldNameBuilder.write(
-        generateMd5(graphObject.multibindingsInfo!.methodPath),
+        generateMd5(multibindingsInfo.methodPath),
       );
     }
     fieldNameBuilder.write('Provider');
