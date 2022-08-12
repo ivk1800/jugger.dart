@@ -664,7 +664,11 @@ class GraphObject implements Comparable<GraphObject> {
 
 /// Base type of graph object source.
 abstract class ProviderSource {
-  ProviderSource(this.type, this.annotations, [this.multibindingsInfo]);
+  ProviderSource({
+    required this.type,
+    required this.annotations,
+    this.multibindingsInfo,
+  });
 
   /// The type that the source provides.
   final DartType type;
@@ -715,7 +719,11 @@ class ModuleSource extends ProviderSource
     required List<j.Annotation> annotations,
     required this.method,
     required MultibindingsInfo? multibindingsInfo,
-  }) : super(type, annotations, multibindingsInfo);
+  }) : super(
+          type: type,
+          annotations: annotations,
+          multibindingsInfo: multibindingsInfo,
+        );
 
   /// The module in which the method is located.
   final ClassElement moduleClass;
@@ -756,7 +764,10 @@ class ArgumentSource extends ProviderSource {
     required j.ComponentBuilder componentBuilder,
     required List<j.Annotation> annotations,
   })  : _componentBuilder = componentBuilder,
-        super(type, annotations);
+        super(
+          type: type,
+          annotations: annotations,
+        );
 
   /// Parameter of the method of component builder.
   /// ```
@@ -789,7 +800,10 @@ class AnotherComponentSource extends ProviderSource {
     required List<j.Annotation> annotations,
   })  : _dependencyClass = dependencyClass,
         assert(element is MethodElement || element is PropertyAccessorElement),
-        super(type, annotations);
+        super(
+          type: type,
+          annotations: annotations,
+        );
 
   /// The component class that is used as a dependency.
   final ClassElement _dependencyClass;
@@ -825,7 +839,10 @@ class InjectedConstructorSource extends ProviderSource {
     required DartType type,
     required this.element,
     required List<j.Annotation> annotations,
-  }) : super(type, annotations);
+  }) : super(
+          type: type,
+          annotations: annotations,
+        );
 
   final ConstructorElement element;
 
@@ -844,7 +861,10 @@ class ThisComponentSource extends ProviderSource {
   ThisComponentSource({
     required DartType type,
     required List<j.Annotation> annotations,
-  }) : super(type, annotations);
+  }) : super(
+          type: type,
+          annotations: annotations,
+        );
 
   @override
   String get sourceString => 'this';
@@ -855,7 +875,10 @@ class MultibindingsSource extends ProviderSource {
     required DartType type,
     required this.multibindingsGroup,
     required List<j.Annotation> annotations,
-  }) : super(type, annotations);
+  }) : super(
+          type: type,
+          annotations: annotations,
+        );
 
   final MultibindingsGroup multibindingsGroup;
 
