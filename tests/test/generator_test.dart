@@ -494,10 +494,6 @@ abstract class AppComponent {
     test('simple', () async {
       await checkBuilderOfFile('non_lazy/non_lazy_simple');
     });
-
-    test('without non lazy', () async {
-      await checkBuilderOfFile('non_lazy/non_lazy_without_non_lazy');
-    });
   });
 
   group('provider', () {

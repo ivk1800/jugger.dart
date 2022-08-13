@@ -11,6 +11,7 @@ import '../utils/component_methods_ext.dart';
 import '../utils/dart_type_ext.dart';
 import '../utils/element_annotation_ext.dart';
 import '../utils/element_ext.dart';
+import '../utils/source_ext.dart';
 import '../utils/utils.dart';
 import 'entry_points.dart';
 import 'graph_object_place.dart';
@@ -424,7 +425,7 @@ class ComponentContext {
   /// Register the source, but if a source with this type is already registered,
   /// throws an error.
   void _registerSource(ProviderSource source) {
-    if (source.isMultibindings()) {
+    if (source.isMultibindings) {
       multibindingsManager.handleSource(source);
     }
     _registerSourceOf(providerSources, source);
@@ -887,16 +888,6 @@ class MultibindingsSource extends ProviderSource {
   @override
   String get sourceString =>
       'Multibinding of: ${multibindingsGroup.graphObject.type.getName()}';
-}
-
-extension _ProviderSourceExt on ProviderSource {
-  bool isMultibindings() {
-    return annotations.any(
-      (j.Annotation annotation) =>
-          annotation is j.IntoSetAnnotation ||
-          annotation is j.IntoMapAnnotation,
-    );
-  }
 }
 
 extension _ElementExt on Element {

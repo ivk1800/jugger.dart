@@ -12,6 +12,7 @@ import '../utils/dart_type_ext.dart';
 import '../utils/element_annotation_ext.dart';
 import '../utils/element_ext.dart';
 import '../utils/list_ext.dart';
+import '../utils/source_ext.dart';
 import '../utils/tag_ext.dart';
 import '../utils/utils.dart';
 import 'asset_context.dart';
@@ -747,6 +748,15 @@ class ComponentBuilderDelegate {
           .sortedBy((ModuleSource source) => source.type.getName());
 
       for (final ProviderSource source in nonLazyProviders) {
+        check(
+          source.isScoped,
+          () => buildErrorMessage(
+            error: JuggerErrorId.unscoped_non_lazy,
+            message: 'It makes no sense to initialize a non-scoped object:\n'
+                '${source.sourceString}',
+          ),
+        );
+
         builder.statements.add(
           _generateAssignExpression(
             type: source.type,

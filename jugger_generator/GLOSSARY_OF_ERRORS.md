@@ -99,6 +99,25 @@ abstract class AppComponent extends Ancestor1 {
 }
 ```
 
+### unscoped_non_lazy
+It makes no sense to initialize a non-scoped object.
+
+`BAD:`
+```dart
+@provides
+@nonLazy
+static NonLazyRepository provideNonLazyRepository() => NonLazyRepository();
+```
+
+`GOOD:`
+```dart
+@singleton
+@provides
+@nonLazy
+static NonLazyRepository provideNonLazyRepository() => NonLazyRepository();
+```
+
+
 ### public_component_builder
 Component builder must be public because it is an interface and it is implemented in another file.
 

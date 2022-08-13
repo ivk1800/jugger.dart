@@ -24,6 +24,7 @@ const String componentBuilderPrivateMethod =
 const String invalidComponent = '$_glossary#invalid_component';
 const String publicComponent = '$_glossary#public_component';
 const String abstractComponent = '$_glossary#abstract_component';
+const String unscoped_non_lazy = '$_glossary#unscoped_non_lazy';
 const String invalidComponentDependency =
     '$_glossary#invalid_component_dependency';
 const String componentDependHimself = '$_glossary#component_depend_himself';
@@ -105,6 +106,7 @@ enum JuggerErrorId {
   abstract_module,
   module_annotation_required,
   repeated_modules,
+  unscoped_non_lazy,
   missing_provides_annotation,
   missing_bind_annotation,
   unsupported_method_type,
@@ -262,6 +264,8 @@ extension JuggerErrorIdExt on JuggerErrorId {
         return multibindingsUnsupportedKeyType;
       case JuggerErrorId.wrong_component_builder:
         return wrongComponentBuilder;
+      case JuggerErrorId.unscoped_non_lazy:
+        return unscoped_non_lazy;
     }
   }
 }

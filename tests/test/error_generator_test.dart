@@ -1215,6 +1215,37 @@ abstract class AppComponent { }
     });
   });
 
+  group('non lazy', () {
+    test('unscoped non lazy', () async {
+      await checkBuilderResult(
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[MyModule])
+abstract class MyComponent {
+  String getString();
+}
+
+@module
+abstract class MyModule {
+  @provides
+  @nonLazy
+  static String provideString() => "";
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: unscoped_non_lazy:\n'
+            'It makes no sense to initialize a non-scoped object:\n'
+            'MyModule.provideString\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#unscoped_non_lazy',
+          );
+        },
+      );
+    });
+  });
+
   group('module', () {
     test('Multiple annotations on module', () async {
       await checkBuilderResult(
