@@ -67,6 +67,7 @@ const String multipleModuleAnnotations =
     '$_glossary#multiple_module_annotations';
 const String invalidMember = '$_glossary#invalid_member';
 const String missingDisposeMethod = '$_glossary#missing_dispose_method';
+const String missingDisposables = '$_glossary#missing_disposables';
 const String invalidHandlerMethod = '$_glossary#invalid_handler_method';
 const String unusedDisposalHandler = '$_glossary#unused_disposal_handler';
 const String redundantDisposalHandler = '$_glossary#redundant_disposal_handler';
@@ -133,6 +134,7 @@ enum JuggerErrorId {
   multiple_module_annotations,
   invalid_member,
   missing_dispose_method,
+  missing_disposables,
   invalid_handler_method,
   unused_disposal_handler,
   redundant_disposal_handler,
@@ -232,6 +234,8 @@ extension JuggerErrorIdExt on JuggerErrorId {
         return invalidMember;
       case JuggerErrorId.missing_dispose_method:
         return missingDisposeMethod;
+      case JuggerErrorId.missing_disposables:
+        return missingDisposables;
       case JuggerErrorId.invalid_handler_method:
         return invalidHandlerMethod;
       case JuggerErrorId.unused_disposal_handler:

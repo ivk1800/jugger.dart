@@ -104,6 +104,17 @@ class ComponentBuilderDelegate {
                 'Missing dispose method of component ${component.element.name}.',
           ),
         );
+      } else {
+        check(
+          component.disposeMethod == null,
+          () => buildErrorMessage(
+            error: JuggerErrorId.missing_disposables,
+            message: 'The component ${component.element.name} does not contain '
+                'disposable objects, but the dispose method '
+                '${component.disposeMethod?.element.enclosingElement.name}.'
+                '${component.disposeMethod?.element.name} is declared.',
+          ),
+        );
       }
 
       classBuilder

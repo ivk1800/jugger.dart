@@ -520,7 +520,10 @@ class _ComponentMembersVisitor extends GeneralizingElementVisitor<dynamic>
         ),
       );
 
-      _members.putIfAbsent(method.name, () => const DisposeMethod());
+      _members.putIfAbsent(
+        method.name,
+        () => DisposeMethod(element: method),
+      );
       return null;
     }
 

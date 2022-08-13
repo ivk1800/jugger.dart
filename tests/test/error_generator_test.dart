@@ -327,7 +327,39 @@ class MyKey {
     });
   });
 
-  group('dispose', () {
+  group('disposable component', () {
+    test(
+        'The component does not contain disposable objects, but the dispose method is declared.',
+        () async {
+      await checkBuilderResult(
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component()
+abstract class MyComponent {
+  MyClass getMyClass();
+
+  Future<void> dispose();
+}
+
+class MyClass {
+  @inject
+  const MyClass();
+
+  void dispose() {}
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: missing_disposables:\n'
+            'The component MyComponent does not contain disposable objects, but the dispose method MyComponent.dispose is declared.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#missing_disposables',
+          );
+        },
+      );
+    });
+
     test('disposable type not supported with binds', () async {
       await checkBuilderResult(
         mainContent: '''

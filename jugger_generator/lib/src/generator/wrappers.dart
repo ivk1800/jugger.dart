@@ -605,7 +605,11 @@ class MemberInjectorMethod extends ComponentMethod {
 /// }
 /// ```
 class DisposeMethod extends ComponentMethod {
-  const DisposeMethod();
+  const DisposeMethod({
+    required this.element,
+  });
+
+  final MethodElement element;
 }
 
 // endregion component

@@ -905,6 +905,24 @@ abstract class AppComponent {
 }
 ```
 
+### missing_disposables
+
+The component does not contain disposable objects, but the dispose method is declared.
+
+`BAD:`
+```dart
+@Component()
+abstract class AppComponent {
+  Future<void> dispose();
+}
+```
+
+`GOOD:`
+```dart
+@Component()
+abstract class AppComponent { }
+```
+
 ### invalid_handler_method
 Disposal handler contract not respected, check error message for more information.
 
