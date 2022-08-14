@@ -412,15 +412,10 @@ class ComponentContext {
 
   /// Helper function for equals sources. Equals and hash code is not overridden
   /// in the source, so you need to use this function.
-  bool _providesSourceEquals(ProviderSource p1, ProviderSource p2) {
-    if (p1 is MultibindingsSource && p2 is MultibindingsSource) {
-      return p1.type == p2.type &&
-          p1.key == p2.key &&
-          p1.multibindingsInfo == p2.multibindingsInfo;
-    }
-
-    return p1.type == p2.type && p1.key == p2.key;
-  }
+  bool _providesSourceEquals(ProviderSource p1, ProviderSource p2) =>
+      p1.type == p2.type &&
+      p1.key == p2.key &&
+      p1.multibindingsInfo == p2.multibindingsInfo;
 
   /// Register the source, but if a source with this type is already registered,
   /// throws an error.
