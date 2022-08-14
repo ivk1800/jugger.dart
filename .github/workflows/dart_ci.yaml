@@ -2,24 +2,44 @@ name: Dart CI
 
 on:
   push:
-    branches:
-      - 'master'
+    paths:
+      - "jugger/**"
+      - "jugger_generator/**"
+      - "tests/**"
+      - ".github/workflows/dart_ci.yaml"
+
   pull_request:
-    branches:
-      - '**'
+    paths:
+      - "jugger/**"
+      - "jugger_generator/**"
+      - "tests/**"
+      - ".github/workflows/dart_ci.yaml"
 
 jobs:
-  test:
+  dart:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
         sdk: [ 2.17.0 ]
+        dir: ['jugger', 'jugger_generator', 'tests']
     steps:
       - uses: actions/checkout@v2
       - uses: dart-lang/setup-dart@v1
         with:
           sdk: ${{ matrix.sdk }}
+
+      - name: Install Dependencies
+        working-directory: ${{ matrix.dir }}
+        run: dart pub get
+
+      - name: Format
+        working-directory: ${{ matrix.dir }}
+        run: dart format --set-exit-if-changed .
+
       - name: Run tests
-        run: |
-          cd tests
-          dart test
+        working-directory: tests
+        run: dart test
+
+      - name: Run generation for tests
+        working-directory: tests
+        run: dart run build_runner build
