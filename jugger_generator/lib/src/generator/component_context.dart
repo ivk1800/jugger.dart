@@ -907,12 +907,8 @@ extension _MethodElementExt on MethodElement {
     final String methodPath = '${(enclosingElement as ClassElement).name}.'
         '$name';
 
-    if (annotation is j.IntoSetAnnotation) {
-      return MultibindingsInfo(
-        tag: getQualifierTag(),
-        methodPath: methodPath,
-      );
-    } else if (annotation is j.IntoMapAnnotation) {
+    if (annotation is j.IntoSetAnnotation ||
+        annotation is j.IntoMapAnnotation) {
       return MultibindingsInfo(
         tag: getQualifierTag(),
         methodPath: methodPath,
