@@ -1,3 +1,4 @@
+// ignore_for_file: deprecated_member_use
 import 'dart:collection';
 
 import 'package:analyzer/dart/element/element.dart';
