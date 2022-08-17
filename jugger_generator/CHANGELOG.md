@@ -1,3 +1,11 @@
+## 2.5.1
+
+* Add check: The component does not contain disposable objects, but the dispose method is declared.
+* Do not allow non-scoped objects to be initialized as non lazy;
+* Allow declare component builder in separated file;
+* Fix disposable manager generation error if multiple components declared in single file;
+* Fix multibindings generation error if multiple components declared in single file;
+
 ## 2.5.0
 
 * Feature: multibindings.

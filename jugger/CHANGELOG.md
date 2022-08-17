@@ -1,3 +1,7 @@
+## 2.3.1
+
+* Add builder parameter for @Component annotation;
+
 ## 2.3.0
 
 * Added annotations: intoSet, intoMap, mapKey, StringKey, IntKey, TypeKey;
