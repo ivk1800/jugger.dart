@@ -3840,9 +3840,9 @@ abstract class MyComponentBuilder {
           onError: (Object error) {
             expect(
               error.toString(),
-              'error: invalid_subcomponent_factory:\n'
+              'error: wrong_component_builder:\n'
               'MyComponentBuilder is not component builder.\n'
-              'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_subcomponent_factory',
+              'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#wrong_component_builder',
             );
           },
         );

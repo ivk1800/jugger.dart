@@ -228,7 +228,7 @@ List<Annotation> _getAnnotations(Element element) {
           check(
             componentBuilderAnnotation != null,
             () => buildErrorMessage(
-              error: JuggerErrorId.invalid_subcomponent_factory,
+              error: JuggerErrorId.wrong_component_builder,
               message: '${builderType.getName()} is not component builder.',
             ),
           );

@@ -34,6 +34,7 @@ class Module {
   final List<Type> includes;
 }
 
+// TODO docs
 class Scope {
   const Scope._();
 }

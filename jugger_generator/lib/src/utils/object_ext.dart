@@ -5,6 +5,6 @@ extension ObjectExt on Object? {
     if (this is T) {
       return this as T;
     }
-    throw UnexpectedJuggerError('Expected type $T, but was $this');
+    throw JuggerError('Expected type $T, but was $this');
   }
 }

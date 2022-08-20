@@ -61,7 +61,7 @@ extension ElementAnnotationExt on Element {
   }
 
   bool hasAnnotatedAsInject() =>
-      getAnnotations(this).any((Annotation a) => a is InjectAnnotation);
+      getAnnotations(this).anyInstance<InjectAnnotation>();
 
   bool hasScoped() => getAnnotationOrNull<ScopeAnnotation>() != null;
 

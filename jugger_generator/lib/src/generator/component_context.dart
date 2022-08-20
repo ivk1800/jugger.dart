@@ -560,11 +560,7 @@ class ComponentContext {
 
   void _validateSource(ProviderSource source) {
     final j.ScopeAnnotation? componentScope = component.scope;
-    if (source.scope == null) {
-      return;
-    }
-
-    if (source is ParentMultibindingsItemSource) {
+    if (source.scope == null || source is ParentMultibindingsItemSource) {
       return;
     }
 

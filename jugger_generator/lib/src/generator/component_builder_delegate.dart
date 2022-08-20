@@ -513,15 +513,6 @@ class ComponentBuilderDelegate {
               );
 
               b.assignment = assignment;
-            } else if (provider is ParentComponentSource) {
-              // todo it code is called?
-              if (provider.originalSource is ArgumentSource) {
-                throw UnexpectedJuggerError(
-                  '$ArgumentSource not allowed here.',
-                );
-              } else {
-                b.assignment = Code('$_parent.${b.name}');
-              }
             } else {
               throw JuggerError(
                 buildUnexpectedErrorMessage(
@@ -2120,9 +2111,7 @@ if (_disposed) {
         if (builderType != null) {
           checkUnexpected(
             builderType == method.resolveBuilderParameterClass().thisType,
-            () {
-              return 'Builder type not matched with method return type.';
-            },
+            () => 'Builder type not matched with method return type.',
           );
         }
 

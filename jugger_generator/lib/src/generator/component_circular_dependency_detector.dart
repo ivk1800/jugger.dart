@@ -33,9 +33,7 @@ class ComponentCircularDependencyDetector {
     final ClassElement? first = _queue.firstOrNull;
     checkUnexpected(
       first == componentClass,
-      () {
-        return 'Expected $componentClass, but was $first';
-      },
+      () => 'Expected $componentClass, but was $first',
     );
     _queue.removeFirst();
   }
