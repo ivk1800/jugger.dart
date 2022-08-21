@@ -310,8 +310,7 @@ class InjectAnnotation implements Annotation {
   const InjectAnnotation();
 }
 
-// TODO docs
-/// Wrapper class for singleton annotation.
+/// Wrapper class for scope annotation.
 class ScopeAnnotation implements Annotation {
   const ScopeAnnotation({
     required this.type,

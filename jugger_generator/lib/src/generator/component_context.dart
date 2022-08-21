@@ -200,7 +200,7 @@ class ComponentContext {
     }).toList(growable: false),
     componentName: component.element.name,
     // TODO: filter objets from parents
-    graphObjects: _graphObjects,
+    graphObjects: Map<_Key, GraphObject>.from(_graphObjects),
     depth: _parentInfo.length,
     scope: component.scope,
   );
@@ -275,8 +275,11 @@ class ComponentContext {
             return '${p.componentName}: ${p.scope ?? 'unscoped'}';
           }).join('\n')}';
 
-          // todo
-          return "scope must be different:\n$info";
+          return buildErrorMessage(
+            error: JuggerErrorId.invalid_scope,
+            message: 'The scope of the component must be different from the '
+                'scope of the parent or should there be no scope.\n$info',
+          );
         },
       );
     }
@@ -579,11 +582,13 @@ class ComponentContext {
         }
         messageBuilder
           ..write(' ')
-          ..write('may not reference scoped bindings: ')
+          ..write('may not use scoped bindings: ')
           ..write('${source.scope}(${source.sourceString})');
 
-        // TODO
-        return messageBuilder.toString();
+        return buildErrorMessage(
+          error: JuggerErrorId.invalid_scope,
+          message: messageBuilder.toString(),
+        );
       },
     );
   }

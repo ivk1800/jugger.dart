@@ -1195,3 +1195,7 @@ abstract class MyComponentBuilder {
   MyComponent build();
 }
 ```
+
+### invalid_scope
+
+The scope of the component must be different from the scope of the parent or should there be no scope.

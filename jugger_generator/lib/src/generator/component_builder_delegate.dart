@@ -2188,6 +2188,13 @@ if (_disposed) {
       return Component.fromElement(classElement, subcomponentAnnotation);
     });
 
+    check(
+      subcomponents.map((j.Component c) => c.element.name).toSet().length ==
+          subcomponents.length,
+      () => 'Subcomponents with the same name are not supported in the parent '
+          'component.',
+    );
+
     return subcomponents;
   }
 

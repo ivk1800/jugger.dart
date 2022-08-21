@@ -3,7 +3,6 @@
 class Component {
   const factory Component({
     List<Type> modules,
-    @Deprecated('Use subcomponent') List<Type> dependencies,
     Type? builder,
   }) = Component._;
 
@@ -34,7 +33,10 @@ class Module {
   final List<Type> includes;
 }
 
-// TODO docs
+/// Identifies scope annotations. By default, if no scope annotation is present,
+/// the injector creates an instance, uses the instance for one injection, and
+/// then forgets it. If a scope annotation is present, the injector retain the
+/// instance for reuse in a later injection.
 class Scope {
   const Scope._();
 }

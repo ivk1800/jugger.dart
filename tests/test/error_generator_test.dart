@@ -1816,6 +1816,45 @@ const Inject inject = Inject._();
   });
 
   group('subcomponent', () {
+    test('should failed if subcomponents with same name', () async {
+      await checkBuilderResult(
+        assets: <String, String>{
+          'subcomponent1.dart': '''
+import 'package:jugger/jugger.dart';
+
+@Subcomponent()
+abstract class MySubcomponent {}
+          ''',
+          'subcomponent2.dart': '''
+import 'package:jugger/jugger.dart';
+
+@Subcomponent()
+abstract class MySubcomponent {}
+          ''',
+        },
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+import 'subcomponent1.dart' as s1;
+import 'subcomponent1.dart' as s2;
+
+@Component()
+abstract class AppComponent {
+  @subcomponentFactory
+  s1.MySubcomponent createMyComponent1();
+
+  @subcomponentFactory
+  s2.MySubcomponent createMyComponent2();
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: Subcomponents with the same name are not supported in the parent component.',
+          );
+        },
+      );
+    });
+
     test('should failed if circular dependencies of subcomponents', () async {
       await checkBuilderResult(
         mainContent: '''
@@ -1898,9 +1937,11 @@ abstract class MySubcomponent {}
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: scope must be different:\n'
+            'error: invalid_scope:\n'
+            'The scope of the component must be different from the scope of the parent or should there be no scope.\n'
             'MySubcomponent: Scope1\n'
-            'MyComponent: Scope1',
+            'MyComponent: Scope1\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_scope',
           );
         },
       );
@@ -2220,7 +2261,9 @@ const MyScope myScope = MyScope._();
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: AppComponent (unscoped) may not reference scoped bindings: MyScope(AppModule.provideString)',
+            'error: invalid_scope:\n'
+            'AppComponent (unscoped) may not use scoped bindings: MyScope(AppModule.provideString)\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_scope',
           );
         },
       );
@@ -2256,7 +2299,9 @@ const MyScope myScope = MyScope._();
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: AppComponent (scoped Singleton) may not reference scoped bindings: MyScope(AppModule.provideString)',
+            'error: invalid_scope:\n'
+            'AppComponent (scoped Singleton) may not use scoped bindings: MyScope(AppModule.provideString)\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_scope',
           );
         },
       );
@@ -2296,7 +2341,9 @@ const MyScope myScope = MyScope._();
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: AppComponent (unscoped) may not reference scoped bindings: MyScope(AppModule.provideString)',
+            'error: invalid_scope:\n'
+            'AppComponent (unscoped) may not use scoped bindings: MyScope(AppModule.provideString)\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_scope',
           );
         },
       );
@@ -2337,7 +2384,9 @@ const MyScope myScope = MyScope._();
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: AppComponent (scoped MyScope) may not reference scoped bindings: Singleton(AppModule.provideInt)',
+            'error: invalid_scope:\n'
+            'AppComponent (scoped MyScope) may not use scoped bindings: Singleton(AppModule.provideInt)\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_scope',
           );
         },
       );

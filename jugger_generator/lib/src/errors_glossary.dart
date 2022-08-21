@@ -89,6 +89,7 @@ const String multibindingsInvalidKey = '$_glossary#multibindings_invalid_key';
 const String multibindingsUnsupportedKeyType =
     '$_glossary#multibindings_unsupported_key_type';
 const String wrongSubcomponentFactory = '$_glossary#wrong_subcomponent_factory';
+const String invalidScope = '$_glossary#invalid_scope';
 
 // endregion errors
 
@@ -153,6 +154,7 @@ enum JuggerErrorId {
   multibindings_multiple_keys,
   multibindings_invalid_key,
   multibindings_unsupported_key_type,
+  invalid_scope,
 }
 
 // TODO: support Enhanced enums with members in dart 2.17.0
@@ -279,6 +281,8 @@ extension JuggerErrorIdExt on JuggerErrorId {
         return unscoped_non_lazy;
       case JuggerErrorId.wrong_subcomponent_factory:
         return wrongSubcomponentFactory;
+      case JuggerErrorId.invalid_scope:
+        return invalidScope;
     }
   }
 }

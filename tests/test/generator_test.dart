@@ -821,6 +821,12 @@ abstract class AppComponent {}
       );
     });
 
+    test('subcomponent dependency from parent module with qualifier', () async {
+      await checkBuilderOfFile(
+        'subcomponent/subcomponent_dependency_from_parent_module_with_qualifier',
+      );
+    });
+
     test(
         'subcomponent dependency from parent module as dependency in injected constructor',
         () async {
