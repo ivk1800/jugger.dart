@@ -562,7 +562,7 @@ To dispose of component objects, simply call dispose. After that, the component 
 
 ### Multibindings
 
-Jugger allows you to bind several objects into a collection even when the objects are bound in different modules using multibindings. Dagger assembles the collection so that application code can inject it without depending directly on the individual bindings.
+Jugger allows you to bind several objects into a collection even when the objects are bound in different modules using multibindings. Jugger assembles the collection so that application code can inject it without depending directly on the individual bindings.
 
 #### Set multibindings
 
