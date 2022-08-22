@@ -62,7 +62,7 @@ List<Annotation> _getAnnotations(Element element) {
         annotation.computeConstantValue()?.type?.element;
 
     if (valueElement == null) {
-      throw UnexpectedJuggerError('Unable resolve valueElement.');
+      throw UnexpectedJuggerError('Unable resolve valueElement of $annotation');
     } else {
       if (valueElement.metadata.isMapKey()) {
         final DartObject? field =
