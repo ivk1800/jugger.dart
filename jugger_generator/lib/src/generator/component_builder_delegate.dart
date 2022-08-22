@@ -227,12 +227,7 @@ class ComponentBuilderDelegate {
     return Class((ClassBuilder classBuilder) {
       classBuilder.name = '${_thisComponentName}Builder';
 
-      classBuilder.implements.add(
-        refer(
-          componentBuilder.element.name,
-          createElementPath(componentBuilder.element),
-        ),
-      );
+      classBuilder.implements.add(componentBuilder.element.asReference());
 
       final ParentComponentProvider? parent =
           _componentContext.parentComponentProvider;
@@ -280,10 +275,7 @@ class ComponentBuilderDelegate {
     return Method((MethodBuilder builder) {
       builder.annotations.add(_overrideAnnotationExpression);
       builder.name = method.name;
-      builder.returns = refer(
-        method.returnType.getName(),
-        createElementPath(method.returnType.element!),
-      );
+      builder.returns = method.returnType.asReference();
       builder.requiredParameters.addAll(
         method.parameters.map(
           (ParameterElement pe) {
@@ -654,10 +646,7 @@ class ComponentBuilderDelegate {
       builder.requiredParameters.add(
         Parameter((ParameterBuilder b) {
           b.name = uncapitalize(parameterElement.name);
-          b.type = Reference(
-            parameterElement.type.getName(),
-            createElementPath(parameterElement.type.element!),
-          );
+          b.type = parameterElement.type.asReference();
         }),
       );
 
@@ -1072,7 +1061,7 @@ class ComponentBuilderDelegate {
         method: method,
         returnBlock: Block.of(
           <Code>[
-            refer(moduleClass.name!, createElementPath(moduleClass)).code,
+            moduleClass.asReference().code,
             const Code('.'),
             _buildCallMethod(method.element, prefixScope).code,
           ],
@@ -1091,8 +1080,7 @@ class ComponentBuilderDelegate {
   /// ```
   Code _buildCallConstructor(ConstructorElement constructor) {
     final ClassElement classElement = constructor.enclosingElement;
-    final Reference reference =
-        refer(classElement.name, createElementPath(classElement));
+    final Reference reference = classElement.asReference();
 
     if (constructor.parameters.isEmpty) {
       late final Expression instanceExpression;
@@ -1410,10 +1398,10 @@ class ComponentBuilderDelegate {
         tag: disposableInfo.tag,
       ).property('dispose');
     } else if (disposeHandler is DelegateDisposeHandler) {
-      final Expression body = refer(
-        disposeHandler.method.enclosingElement.name!,
-        createElementPath(disposeHandler.method.enclosingElement),
-      ).property(disposeHandler.method.name).call(
+      final Expression body = disposeHandler.method.enclosingElement
+          .asReference()
+          .property(disposeHandler.method.name)
+          .call(
         <Expression>[
           refer(
             '_${_generateFieldName(
@@ -1536,7 +1524,8 @@ class ComponentBuilderDelegate {
           .property('register')
           .call(<Expression>[
         Method((MethodBuilder b) {
-          b.body = refer(moduleClass.name!, createElementPath(moduleClass))
+          b.body = moduleClass
+              .asReference()
               .property(disposeHandler.method.name)
               .call(
             <Expression>[const CodeExpression(Code('disposable'))],
@@ -2093,10 +2082,7 @@ if (_disposed) {
     return methods.map((j.SubcomponentFactoryMethod method) {
       return Method((MethodBuilder builder) {
         builder.name = method.element.name;
-        builder.returns = refer(
-          method.element.returnType.getName(),
-          createElementPath(method.element.returnType.element!),
-        );
+        builder.returns = method.element.returnType.asReference();
 
         final j.BaseComponentAnnotation? baseComponentAnnotation = method
             .element.returnType.element
@@ -2121,10 +2107,7 @@ if (_disposed) {
               final ParameterElement builderParameter =
                   method.resolveBuilderParameter();
               parameterBuilder.name = builderParameter.name;
-              parameterBuilder.type = refer(
-                builderParameter.type.getName(),
-                createElementPath(method.resolveBuilderParameterClass()),
-              );
+              parameterBuilder.type = builderParameter.type.asReference();
             }),
           );
         }
@@ -2213,10 +2196,7 @@ if (_disposed) {
   }) {
     return Method((MethodBuilder builder) {
       builder.name = '_setParent';
-      builder.returns = refer(
-        componentBuilder.element.thisType.getName(),
-        createElementPath(componentBuilder.element),
-      );
+      builder.returns = componentBuilder.element.asReference();
       builder.requiredParameters.add(
         Parameter((ParameterBuilder parameterBuilder) {
           parameterBuilder.name = 'parent';

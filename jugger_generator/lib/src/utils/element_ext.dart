@@ -1,9 +1,12 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
+import 'package:analyzer/src/generated/source.dart';
+import 'package:code_builder/code_builder.dart';
 
 import '../generator/tag.dart';
 import '../jugger_error.dart';
 import 'element_annotation_ext.dart';
+import 'utils.dart';
 
 extension ElementExt on Element {
   /// The method tries to get the type from the supported element type,
@@ -30,4 +33,15 @@ extension ElementExt on Element {
   Tag? getQualifierTag() => getQualifierAnnotationOrNull()?.tag;
 
   String toNameWithPath() => '$name ${library?.identifier}';
+
+  Reference asReference() {
+    final String? n = name;
+    check(n != null, () => 'Unable create Reference, name is null');
+    final Source? library = librarySource;
+    check(
+      library != null,
+      () => 'Unable create Reference, librarySource is null',
+    );
+    return refer(n!, library!.uri.toString());
+  }
 }
