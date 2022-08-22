@@ -761,6 +761,57 @@ abstract class AppComponent {
       });
     });
 
+    test('subcomponent from another file', () async {
+      await checkBuilderResult(
+        assets: <String, String>{
+          'my_subcomponent.dart': '''
+import 'package:jugger/jugger.dart';
+
+@Subcomponent()
+abstract class IMySubcomponent {}
+          ''',
+        },
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+
+import 'my_subcomponent.dart';
+
+@Component()
+abstract class IMyComponent {
+  @subcomponentFactory
+  IMySubcomponent createMySubcomponent();
+}
+        ''',
+        resultContent: () {
+          return r'''
+// ignore_for_file: implementation_imports
+// ignore_for_file: prefer_const_constructors
+// ignore_for_file: always_specify_types
+// ignore_for_file: directives_ordering
+// ignore_for_file: non_constant_identifier_names
+// ignore_for_file: no_leading_underscores_for_library_prefixes
+import 'package:tests/test.dart' as _i1;
+import 'package:tests/my_subcomponent.dart' as _i2;
+
+class JuggerMyComponent implements _i1.IMyComponent {
+  JuggerMyComponent.create();
+
+  _i2.IMySubcomponent createMySubcomponent() {
+    return JuggerSubcomponent$MySubcomponent.create(this);
+  }
+}
+
+class JuggerSubcomponent$MySubcomponent implements _i2.IMySubcomponent {
+  JuggerSubcomponent$MySubcomponent.create(this._parent);
+
+  // ignore: unused_field
+  final JuggerMyComponent _parent;
+}
+''';
+        },
+      );
+    });
+
     test('subcomponent builder from another file', () async {
       await checkBuilderResult(
         assets: <String, String>{

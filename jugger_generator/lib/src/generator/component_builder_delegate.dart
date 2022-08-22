@@ -193,12 +193,7 @@ class ComponentBuilderDelegate {
             _componentContext.component.subcomponentFactoryMethods,
           ),
         )
-        ..implements.add(
-          Reference(
-            component.element.name,
-            createElementPath(_assetContext.lib),
-          ),
-        )
+        ..implements.add(component.element.asReference())
         ..constructors.add(
           _buildConstructor(_componentContext.componentBuilder),
         )
