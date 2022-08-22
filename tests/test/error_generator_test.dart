@@ -1249,7 +1249,7 @@ abstract class AppComponent { }
         onError: (Object error) {
           expect(
             error.toString(),
-            'Unable resolve valueElement.\n'
+            'Unable resolve valueElement. Annotated element: abstract class AppComponent\n'
             'Unexpected error, please report the issue: https://github.com/ivk1800/jugger.dart/issues/new?assignees=&labels=&template=code-generation-error.md&title=',
           );
         },
