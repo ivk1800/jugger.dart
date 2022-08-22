@@ -2,17 +2,20 @@
 import 'dart:collection';
 
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
 import 'package:jugger/jugger.dart' as j;
 import 'package:jugger/jugger.dart';
 
 import '../errors_glossary.dart';
+import '../utils/annotation_ext.dart';
 import '../utils/component_methods_ext.dart';
 import '../utils/dart_type_ext.dart';
 import '../utils/element_annotation_ext.dart';
 import '../utils/element_ext.dart';
 import '../utils/list_ext.dart';
+import '../utils/object_ext.dart';
 import '../utils/utils.dart';
 import 'tag.dart';
 import 'visitors.dart';
@@ -34,13 +37,13 @@ class Component {
 
   factory Component.fromElement(
     ClassElement element,
-    ComponentAnnotation component,
+    BaseComponentAnnotation component,
   ) {
     final List<ModuleAnnotation> modules = component.modules;
     return Component._(
       componentBuilderType: component.builder,
       element: element,
-      annotations: <Annotation>[component],
+      annotations: getAnnotations(element),
       modules: modules,
       dependencies: component.dependencies,
       modulesProvideMethods: modules
@@ -58,27 +61,10 @@ class Component {
 
   final DartType? componentBuilderType;
 
+  late final ScopeAnnotation? scope = annotations.getAnnotationOrNull();
+
   late final ComponentBuilder? _componentBuilder = () {
-    final DartType? builder = componentBuilderType;
-    if (builder != null) {
-      final ComponentBuilder? componentBuilder =
-          getComponentBuilderFromTypeOrNull(builder);
-
-      if (componentBuilder != null) {
-        check(
-          element.thisType == componentBuilder.componentClass.thisType,
-          () => buildErrorMessage(
-            error: JuggerErrorId.wrong_component_builder,
-            message: 'The ${componentBuilder.element.name} is not suitable for '
-                'the ${element.thisType.getName()} it is bound to.',
-          ),
-        );
-      }
-
-      return componentBuilder;
-    } else {
-      return null;
-    }
+    return componentBuilderType?.resolveComponentBuilder(element.thisType);
   }();
 
   ComponentBuilder? resolveComponentBuilder() => _componentBuilder;
@@ -115,6 +101,9 @@ class Component {
   final List<ProvideMethod> modulesProvideMethods;
 
   final List<DisposalHandlerMethod> disposalHandlerMethods;
+
+  late final List<SubcomponentFactoryMethod> subcomponentFactoryMethods =
+      componentMembers.getSubcomponentFactoryMethods();
 
   /// Returns methods of the component that return some type, do not include
   /// methods with the void type.
@@ -263,8 +252,16 @@ class ComponentBuilderParameter {
 
 abstract class Annotation {}
 
+abstract class BaseComponentAnnotation implements Annotation {
+  List<DependencyAnnotation> get dependencies;
+
+  List<ModuleAnnotation> get modules;
+
+  DartType? get builder;
+}
+
 /// Wrapper class for component annotation.
-class ComponentAnnotation implements Annotation {
+class ComponentAnnotation implements BaseComponentAnnotation {
   const ComponentAnnotation({
     required this.modules,
     required this.dependencies,
@@ -272,14 +269,34 @@ class ComponentAnnotation implements Annotation {
   });
 
   /// Returns the modules that are included to the component.
+  @override
   final List<ModuleAnnotation> modules;
 
   /// Returns the another components that are included to the component as
   /// dependencies.
+  @override
   final List<DependencyAnnotation> dependencies;
 
   /// Component builder type, it is not guaranteed that the type is a valid
   /// class, you need to make sure before using it.
+  @override
+  final DartType? builder;
+}
+
+class SubcomponentAnnotation implements BaseComponentAnnotation {
+  SubcomponentAnnotation({
+    required this.modules,
+    required this.builder,
+  });
+
+  @override
+  final List<DependencyAnnotation> dependencies =
+      const <DependencyAnnotation>[];
+
+  @override
+  final List<ModuleAnnotation> modules;
+
+  @override
   final DartType? builder;
 }
 
@@ -293,9 +310,22 @@ class InjectAnnotation implements Annotation {
   const InjectAnnotation();
 }
 
-/// Wrapper class for singleton annotation.
-class SingletonAnnotation implements Annotation {
-  const SingletonAnnotation();
+/// Wrapper class for scope annotation.
+class ScopeAnnotation implements Annotation {
+  const ScopeAnnotation({
+    required this.type,
+  });
+
+  final DartType type;
+
+  @override
+  bool operator ==(Object o) => o is ScopeAnnotation && type == o.type;
+
+  @override
+  int get hashCode => type.hashCode;
+
+  @override
+  String toString() => type.getName();
 }
 
 /// Wrapper class for bind annotation.
@@ -313,6 +343,10 @@ class IntoSetAnnotation implements MultibindingsGroupAnnotation {
 
 class IntoMapAnnotation implements MultibindingsGroupAnnotation {
   const IntoMapAnnotation();
+}
+
+class SubcomponentFactoryAnnotation implements Annotation {
+  const SubcomponentFactoryAnnotation();
 }
 
 class MultibindingsKeyAnnotation<K> implements Annotation {
@@ -350,9 +384,7 @@ class DisposalHandlerAnnotation implements Annotation {
 
 /// Wrapper class for componentBuilder annotation.
 class ComponentBuilderAnnotation implements Annotation {
-  const ComponentBuilderAnnotation(this.element);
-
-  final ClassElement element;
+  const ComponentBuilderAnnotation();
 }
 
 /// Wrapper class for module annotation.
@@ -427,7 +459,7 @@ abstract class ProvideMethod extends ModuleMethod {
 }
 
 extension ProvideMethodExt on ProvideMethod {
-  bool get _hasScoped => annotations.anyInstance<SingletonAnnotation>();
+  bool get _hasScoped => annotations.anyInstance<ScopeAnnotation>();
 
   bool get hasDisposable => annotations.anyInstance<DisposableAnnotation>();
 
@@ -611,6 +643,90 @@ class DisposeMethod extends ComponentMethod {
   });
 
   final MethodElement element;
+}
+
+class SubcomponentFactoryMethod extends ComponentMethod {
+  SubcomponentFactoryMethod(this.element);
+
+  final MethodElement element;
+
+  late final ParameterElement _builderParameter = () {
+    check(
+      element.parameters.length == 1,
+      () => buildErrorMessage(
+        error: JuggerErrorId.invalid_subcomponent_factory,
+        message: 'Subcomponent factory method must have 1 parameter. And it '
+            'should be a subcomponent builder',
+      ),
+    );
+    final ParameterElement parameter = element.parameters.first;
+
+    String baseMessage(String reason) {
+      final StringBuffer messageBuilder = StringBuffer()
+        ..write('Method ')
+        ..write(parameter.enclosingElement?.enclosingElement?.name)
+        ..write('.')
+        ..write(parameter.enclosingElement?.name)
+        ..write(' is invalid. ')
+        ..write(reason);
+
+      return messageBuilder.toString();
+    }
+
+    check(
+      !parameter.isNamed,
+      () => buildErrorMessage(
+        error: JuggerErrorId.wrong_subcomponent_factory,
+        message: baseMessage('Named parameter not allowed.'),
+      ),
+    );
+    check(
+      !parameter.isOptional,
+      () => buildErrorMessage(
+        error: JuggerErrorId.wrong_subcomponent_factory,
+        message: baseMessage('Optional parameter not allowed.'),
+      ),
+    );
+    check(
+      parameter.type.nullabilitySuffix == NullabilitySuffix.none,
+      () => buildErrorMessage(
+        error: JuggerErrorId.wrong_subcomponent_factory,
+        message: baseMessage('Nullable parameter not allowed.'),
+      ),
+    );
+    return parameter;
+  }();
+
+  late final ClassElement _builderClass = () {
+    final Element? builderElement = _builderParameter.type.element;
+    check(
+      builderElement?.getAnnotationOrNull<ComponentBuilderAnnotation>() != null,
+      () => buildErrorMessage(
+        error: JuggerErrorId.invalid_subcomponent_factory,
+        message: "Class ${builderElement?.name} must be annotated with "
+            "@componentBuilder annotation.",
+      ),
+    );
+    final ClassElement classElement = builderElement.requiredType();
+    final MethodElement? buildMethod = classElement.methods
+        .firstWhereOrNull((MethodElement element) => element.name == 'build');
+    checkUnexpected(buildMethod != null, () => 'build method not found.');
+
+    check(
+      element.returnType == buildMethod!.returnType,
+      () => buildErrorMessage(
+        error: JuggerErrorId.wrong_subcomponent_factory,
+        message: 'Subcomponent builder must return the same type as the method.'
+            '\nMethod return: ${element.returnType},\n'
+            'Builder return: ${buildMethod.returnType}.',
+      ),
+    );
+    return classElement;
+  }();
+
+  ParameterElement resolveBuilderParameter() => _builderParameter;
+
+  ClassElement resolveBuilderParameterClass() => _builderClass;
 }
 
 // endregion component

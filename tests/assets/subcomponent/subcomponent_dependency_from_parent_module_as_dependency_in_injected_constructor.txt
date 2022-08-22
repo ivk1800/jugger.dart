@@ -1,0 +1,38 @@
+// ignore_for_file: implementation_imports
+// ignore_for_file: prefer_const_constructors
+// ignore_for_file: always_specify_types
+// ignore_for_file: directives_ordering
+// ignore_for_file: non_constant_identifier_names
+// ignore_for_file: no_leading_underscores_for_library_prefixes
+import 'package:tests/subcomponent/subcomponent_dependency_from_parent_module_as_dependency_in_injected_constructor.dart'
+    as _i1;
+import 'package:jugger/jugger.dart' as _i2;
+
+class JuggerMyComponent implements _i1.MyComponent {
+  JuggerMyComponent.create();
+
+  late final _i2.IProvider<String> _stringProvider =
+      _i2.Provider<String>(() => _i1.MyComponentModule.provideString());
+
+  @override
+  String getString() => _stringProvider.get();
+  _i1.MySubcomponent createMySubcomponent() {
+    return JuggerSubcomponent$MySubcomponent.create(this);
+  }
+}
+
+class JuggerSubcomponent$MySubcomponent implements _i1.MySubcomponent {
+  JuggerSubcomponent$MySubcomponent.create(this._parent);
+
+  // ignore: unused_field
+  final JuggerMyComponent _parent;
+
+  late final _i2.IProvider<_i1.MyClass> _myClassProvider =
+      _i2.Provider<_i1.MyClass>(
+          () => _i1.MyClass(_parent._stringProvider.get()));
+
+  @override
+  _i1.MyClass getMyClass() => _myClassProvider.get();
+  @override
+  _i1.MyClass get myClass => _myClassProvider.get();
+}

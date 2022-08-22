@@ -4,6 +4,7 @@ import 'package:jugger/jugger.dart';
 
 @Component(
   modules: <Type>[Module1],
+  builder: AppComponentBuilder,
 )
 abstract class AppComponent {
   Set<String> get strings;

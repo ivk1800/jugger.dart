@@ -7,6 +7,7 @@ class MainRouter {}
 ////////////////////////////////////////////////////////////////////////////////
 
 @Component(modules: <Type>[AppModule])
+@singleton
 abstract class AppComponent {
   MainRouter get mainRouter;
 }

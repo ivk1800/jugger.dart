@@ -1,3 +1,7 @@
+## 3.0.0-dev.1
+
+* Feature: subcomponents.
+
 ## 2.5.1
 
 * Add check: The component does not contain disposable objects, but the dispose method is declared.

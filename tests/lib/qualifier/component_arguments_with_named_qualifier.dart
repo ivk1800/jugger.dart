@@ -2,7 +2,9 @@
 
 import 'package:jugger/jugger.dart';
 
-@Component()
+@Component(
+  builder: AppComponentBuilder,
+)
 abstract class AppComponent {
   @Named('1')
   MyClass getMyClass1();

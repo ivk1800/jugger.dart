@@ -168,8 +168,7 @@ extension DartTypeExt on DartType {
   bool isDisposable() =>
       getAnnotations(element!).anyInstance<DisposableAnnotation>();
 
-  bool isScoped() =>
-      getAnnotations(element!).anyInstance<SingletonAnnotation>();
+  bool isScoped() => getAnnotations(element!).anyInstance<ScopeAnnotation>();
 
   void checkUnsupportedType() {
     check(
@@ -187,5 +186,22 @@ extension DartTypeExt on DartType {
         message: 'Type $this not supported.',
       ),
     );
+  }
+
+  ComponentBuilder? resolveComponentBuilder(DartType expectedComponentType) {
+    final ComponentBuilder? componentBuilder =
+        element?.getComponentBuilderOrNull();
+
+    if (componentBuilder != null) {
+      check(
+        expectedComponentType == componentBuilder.componentClass.thisType,
+        () => buildErrorMessage(
+          error: JuggerErrorId.invalid_subcomponent_factory,
+          message: 'The ${componentBuilder.element.name} is not suitable for '
+              'the ${expectedComponentType.getName()} it is bound to.',
+        ),
+      );
+    }
+    return componentBuilder;
   }
 }

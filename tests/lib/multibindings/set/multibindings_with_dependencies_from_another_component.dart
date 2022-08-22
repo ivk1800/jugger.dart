@@ -15,7 +15,12 @@ abstract class Module1 {
   static int provideInt() => 0;
 }
 
-@Component(modules: <Type>[Module2], dependencies: <Type>[Component1])
+@Component(
+  modules: <Type>[Module2],
+  // ignore: deprecated_member_use
+  dependencies: <Type>[Component1],
+  builder: Component2Builder,
+)
 abstract class Component2 {
   Set<String> get strings;
 }

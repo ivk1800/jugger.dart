@@ -29,7 +29,7 @@ class MultibindingsManager {
 
       if (source == null) {
         throw UnexpectedJuggerError(
-          'Expected MultibindingsElementProvider, but was ${p.runtimeType}',
+          'Expected $MultibindingsElementProvider, but was ${p.runtimeType}',
         );
       }
       return source.element.hashCode;
@@ -39,7 +39,8 @@ class MultibindingsManager {
   void handleSource(ProviderSource source) {
     checkUnexpected(
       source is MultibindingsElementProvider,
-      () => 'Expected SourceElementProvider, but was ${source.runtimeType}',
+      () =>
+          'Expected $MultibindingsElementProvider, but was ${source.runtimeType}',
     );
 
     check(_multibindingsSources.add(source), () {

@@ -5,6 +5,7 @@ import 'package:jugger/jugger.dart';
 @Component(
   modules: <Type>[AppModule],
 )
+@singleton
 abstract class AppComponent {
   MyClass getMyClass();
 

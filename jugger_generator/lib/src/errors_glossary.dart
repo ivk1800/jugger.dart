@@ -54,6 +54,8 @@ const String invalidMethodOfComponent =
     '$_glossary#invalid_method_of_component';
 const String missingComponentBuilder = '$_glossary#missing_component_builder';
 const String wrongComponentBuilder = '$_glossary#wrong_component_builder';
+const String invalidSubcomponentFactory =
+    '$_glossary#invalid_subcomponent_factory';
 const String circularDependency = '$_glossary#circular_dependency';
 const String providerNotFound = '$_glossary#provider_not_found';
 const String unusedGeneratedProviders = '$_glossary#unused_generated_providers';
@@ -86,6 +88,8 @@ const String multibindingsMultipleKeys =
 const String multibindingsInvalidKey = '$_glossary#multibindings_invalid_key';
 const String multibindingsUnsupportedKeyType =
     '$_glossary#multibindings_unsupported_key_type';
+const String wrongSubcomponentFactory = '$_glossary#wrong_subcomponent_factory';
+const String invalidScope = '$_glossary#invalid_scope';
 
 // endregion errors
 
@@ -97,6 +101,7 @@ enum JuggerErrorId {
   component_builder_invalid_method_parameters,
   component_builder_invalid_method_type,
   wrong_arguments_of_build_method,
+  wrong_subcomponent_factory,
   component_builder_private_method,
   invalid_component,
   public_component,
@@ -122,6 +127,7 @@ enum JuggerErrorId {
   invalid_injected_constructor,
   missing_component_builder,
   wrong_component_builder,
+  invalid_subcomponent_factory,
   invalid_method_of_component,
   circular_dependency,
   provider_not_found,
@@ -148,6 +154,7 @@ enum JuggerErrorId {
   multibindings_multiple_keys,
   multibindings_invalid_key,
   multibindings_unsupported_key_type,
+  invalid_scope,
 }
 
 // TODO: support Enhanced enums with members in dart 2.17.0
@@ -268,8 +275,14 @@ extension JuggerErrorIdExt on JuggerErrorId {
         return multibindingsUnsupportedKeyType;
       case JuggerErrorId.wrong_component_builder:
         return wrongComponentBuilder;
+      case JuggerErrorId.invalid_subcomponent_factory:
+        return invalidSubcomponentFactory;
       case JuggerErrorId.unscoped_non_lazy:
         return unscoped_non_lazy;
+      case JuggerErrorId.wrong_subcomponent_factory:
+        return wrongSubcomponentFactory;
+      case JuggerErrorId.invalid_scope:
+        return invalidScope;
     }
   }
 }

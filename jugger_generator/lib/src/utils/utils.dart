@@ -13,6 +13,7 @@ import '../errors_glossary.dart';
 import '../generator/tag.dart';
 import '../generator/wrappers.dart';
 import '../jugger_error.dart';
+import '../utils/element_ext.dart';
 import 'dart_type_ext.dart';
 import 'element_annotation_ext.dart';
 import 'library_ext.dart';
@@ -126,30 +127,46 @@ List<Annotation> _getAnnotations(Element element) {
           );
         }
         continue;
+      } else if (valueElement.metadata.isScope()) {
+        annotations.add(ScopeAnnotation(type: valueElement.tryGetType()));
+        continue;
       }
 
       if (!annotation.element!.library!.isJuggerLibrary) {
         continue;
       }
 
-      if (valueElement.name == 'Component') {
+      if (valueElement.name == 'Component' ||
+          valueElement.name == 'Subcomponent') {
         final List<ClassElement> modules = getClassListFromField(
           annotation,
           'modules',
         );
 
-        final List<ClassElement> dependencies = getClassListFromField(
-          annotation,
-          'dependencies',
-        );
-
-        check(
-          !dependencies.contains(element),
-          () => buildErrorMessage(
-            error: JuggerErrorId.component_depend_himself,
-            message: 'A component ${element.name} cannot depend on himself.',
-          ),
-        );
+        late final List<DependencyAnnotation> dependencies = () {
+          final List<ClassElement> dependencies = getClassListFromField(
+            annotation,
+            'dependencies',
+          );
+          check(
+            !dependencies.contains(element),
+            () => buildErrorMessage(
+              error: JuggerErrorId.component_depend_himself,
+              message: 'A component ${element.name} cannot depend on himself.',
+            ),
+          );
+          return dependencies.map((ClassElement c) {
+            check(
+              c.getComponentAnnotationOrNull() != null,
+              () => buildErrorMessage(
+                error: JuggerErrorId.invalid_component_dependency,
+                message:
+                    'Dependency ${c.name} is not allowed, only other components are allowed.',
+              ),
+            );
+            return DependencyAnnotation(element: c);
+          }).toList();
+        }();
 
         final List<ModuleAnnotation> modulesAnnotations =
             modules.map((ClassElement moduleDep) {
@@ -217,23 +234,38 @@ List<Annotation> _getAnnotations(Element element) {
           );
         }
 
-        annotations.add(
-          ComponentAnnotation(
-            builder: builderType,
-            modules: allModules.toList(),
-            dependencies: dependencies.map((ClassElement c) {
-              check(
-                c.getComponentAnnotationOrNull() != null,
-                () => buildErrorMessage(
-                  error: JuggerErrorId.invalid_component_dependency,
-                  message:
-                      'Dependency ${c.name} is not allowed, only other components are allowed.',
+        final DartType? notNullableBuilderType =
+            builderType?.element?.tryGetType();
+
+        switch (valueElement.name) {
+          case 'Component':
+            {
+              annotations.add(
+                ComponentAnnotation(
+                  builder: notNullableBuilderType,
+                  modules: allModules.toList(),
+                  dependencies: dependencies,
                 ),
               );
-              return DependencyAnnotation(element: c);
-            }).toList(),
-          ),
-        );
+              break;
+            }
+          case 'Subcomponent':
+            {
+              annotations.add(
+                SubcomponentAnnotation(
+                  builder: notNullableBuilderType,
+                  modules: allModules.toList(),
+                ),
+              );
+              break;
+            }
+          default:
+            {
+              throw UnexpectedJuggerError(
+                'Unexpected annotation ${valueElement.name}',
+              );
+            }
+        }
       } else if (valueElement.name == provides.runtimeType.toString()) {
         annotations.add(const ProvideAnnotation());
       } else if (valueElement.name == inject.runtimeType.toString()) {
@@ -242,17 +274,13 @@ List<Annotation> _getAnnotations(Element element) {
         annotations.add(
           ModuleExtractor().getModuleAnnotationOfModuleClass(element),
         );
-      } else if (valueElement.name == singleton.runtimeType.toString()) {
-        annotations.add(const SingletonAnnotation());
       } else if (valueElement.name == binds.runtimeType.toString()) {
         annotations.add(const BindAnnotation());
       } else if (valueElement.name == componentBuilder.runtimeType.toString()) {
-        if (valueElement is! ClassElement) {
-          throw UnexpectedJuggerError(
-            'element [$valueElement] is not ClassElement',
-          );
-        }
-        annotations.add(ComponentBuilderAnnotation(valueElement));
+        annotations.add(const ComponentBuilderAnnotation());
+      } else if (valueElement.name ==
+          subcomponentFactory.runtimeType.toString()) {
+        annotations.add(const SubcomponentFactoryAnnotation());
       } else if (valueElement.name == nonLazy.runtimeType.toString()) {
         annotations.add(const NonLazyAnnotation());
       } else if (valueElement.name == disposable.runtimeType.toString()) {

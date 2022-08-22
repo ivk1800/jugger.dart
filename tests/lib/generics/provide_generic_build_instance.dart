@@ -1,7 +1,10 @@
 // ignore_for_file: avoid_classes_with_only_static_members
 import 'package:jugger/jugger.dart';
 
-@Component(modules: <Type>[AppModule])
+@Component(
+  modules: <Type>[AppModule],
+  builder: IAppComponentBuilder,
+)
 abstract class AppComponent {
   List<Item> get items;
 }

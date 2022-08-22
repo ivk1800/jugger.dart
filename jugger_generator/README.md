@@ -21,6 +21,11 @@ jugger_generator:
     - [The syntax](#the-syntax)
         - [Basics](#basics)
         - [Component](#component)
+        - [Subcomponents](#subcomponents)
+            - [Declaring a subcomponent](#declaring-a-subcomponent)
+            - [Adding a subcomponent to a parent component](#adding-a-subcomponent-to-a-parent-component)
+            - [Subcomponents and scope](#subcomponents-and-scope)
+            - [Subcomponent with builder](#subcomponent-with-builder)
         - [Component builder](#component-builder)
         - [Component as dependency](#component-as-dependency)
         - [Module](#module)
@@ -40,6 +45,10 @@ jugger_generator:
     - [build.yaml](#buildyaml)
     - [remove_interface_prefix_from_component_name](#remove_interface_prefix_from_component_name)
     - [check_unused_providers](#check_unused_providers)
+- [Migration](#migration)
+    - [From 2.* to 3.*](#from-2-to-3)
+        - [Scope related changes](#scope-related-changes)
+        - [Component builder related changes](#component-builder-related-changes)
 - [Links](#links)
 
 
@@ -74,8 +83,6 @@ To run the code generator you have two possibilities:
 The following example shows how to use jugger:
 
 ```dart
-// ignore_for_file: avoid_classes_with_only_static_members
-
 import 'package:example/main.jugger.dart';
 import 'package:jugger/jugger.dart';
 
@@ -110,13 +117,131 @@ A component can have `modules` and `other components` that it requests dependenc
 )
 ```
 
+### Subcomponents
+
+Subcomponents are components that inherit and extend the object graph of a parent component. You can use them to partition your application’s object graph into subgraphs either to encapsulate different parts of your application from each other.
+
+#### Declaring a subcomponent
+
+Just like for top-level components, you create a subcomponent by writing a class that declares abstract methods that return the types your application cares about. Instead of annotating a subcomponent with @Component, you annotate it with @Subcomponent and install @Modules.
+
+```dart
+@Subcomponent(
+  modules: <Type>[MySubcomponentModule],
+)
+abstract class MySubcomponent {
+  String getString();
+}
+
+@module
+abstract class MySubcomponentModule {
+  @provides
+  static String provideString() => '';
+}
+```
+
+#### Adding a subcomponent to a parent component
+
+To add a subcomponent to a parent component, add a method that returns the type of the subcomponent. Don't forget to annotate method by @subcomponentFactory.
+
+```dart
+import 'package:jugger/jugger.dart';
+
+@Component()
+abstract class MyComponent {
+  @subcomponentFactory
+  MySubcomponent createMySubcomponent();
+}
+```
+
+#### Subcomponents and scope
+
+One reason to break your application's component up into subcomponents is to use scopes. With normal, unscoped bindings, each user of an injected type may get a new, separate instance. But if the binding is scoped, then all users of that binding within the scope's lifetime get the same instance of the bound type.
+
+The standard scope is @singleton. Users of singleton-scoped bindings all get the same instance.
+
+A Component can be associated with a scope by annotating it with a @scope annotation. In that case, the component implementation holds references to all scoped objects, so they can be reused. Modules with @provides methods annotated with a scope may only be installed into a component annotated with the same scope.
+
+No subcomponent may be associated with the same scope as any ancestor component, although two subcomponents that are not mutually reachable can be associated with the same scope because there is no ambiguity about where to store the scoped objects. (The two subcomponents effectively have different scope instances even if they use the same scope annotation.)
+
+```dart
+import 'package:jugger/jugger.dart';
+
+@Component()
+@singleton
+abstract class MyComponent {
+  @subcomponentFactory
+  MySubcomponent createMySubcomponent();
+
+  @subcomponentFactory
+  MySubcomponent2 createMySubcomponent2();
+}
+
+@Subcomponent()
+@MyScope()
+abstract class MySubcomponent {}
+
+@Subcomponent()
+@MyScope()
+abstract class MySubcomponent2 {}
+```
+
+#### Subcomponent with builder
+
+A subcomponent as a component can have a builder. It is also specified in the @Subcomponent annotation. In the method of the parent component, you need to specify it as the only parameter.
+
+```dart
+import 'package:jugger/jugger.dart';
+
+@Component()
+abstract class MyComponent {
+  @subcomponentFactory
+  MySubcomponent createMySubcomponent(MySubcomponentBuilder builder);
+}
+
+@Subcomponent(
+  builder: MySubcomponentBuilder,
+)
+abstract class MySubcomponent {
+  String getString();
+}
+
+@componentBuilder
+abstract class MySubcomponentBuilder {
+  MySubcomponentBuilder setString(String s);
+
+  MySubcomponent build();
+}
+```
+
+Create a component instance like so:
+
+```dart
+  final MyComponent myComponent = JuggerMyComponent.create();
+  MySubcomponent mySubcomponent = myComponent.createMySubcomponent(
+    JuggerSubcomponent$MySubcomponentBuilder().setString("Hello"),
+  );
+  print(mySubcomponent.getString());
+```
+
+### Scope
+
+You can define your own scope. Their goal is to reuse instances of object instances within a single component.
+
+```dart
+@scope
+class MyScope {
+  const MyScope._();
+}
+
+const MyScope myScope = MyScope._();
+```
+
 ### Component builder
 
 The component may need external objects to use for the dependency graph. To do this, you need to use a `component builder`. Declare an abstract class annotated with the `@componentBuilder` annotation. It must contain a requered `build()` method with a return type of the component. For each external dependency, you need to declare a method with a builder return type and which contains a single parameter.
 
 ```dart
-// ignore_for_file: avoid_classes_with_only_static_members
-
 import 'package:example/main.jugger.dart';
 import 'package:jugger/jugger.dart';
 
@@ -127,7 +252,9 @@ void main() {
   print(myComponent.getString());
 }
 
-@Component()
+@Component(
+  builder: MyComponentBuilder,
+)
 abstract class MyComponent {
   String getString();
 }
@@ -169,8 +296,6 @@ abstract class MyModule {
 A component can depend on other components in order to use its returned objects as dependencies.
 
 ```dart
-// ignore_for_file: avoid_classes_with_only_static_members
-
 import 'package:example/main.jugger.dart';
 import 'package:jugger/jugger.dart';
 
@@ -189,6 +314,7 @@ void main() {
 @Component(
   modules: <Type>[FirstModule],
 )
+@singleton
 abstract class FirstComponent {
   // important! in order for the second component to use it to build objects,
   // you need to add a method that returns it.
@@ -206,7 +332,9 @@ abstract class FirstModule {
   // specify that use the first component as a dependency
   dependencies: <Type>[FirstComponent],
   modules: <Type>[SecondModule],
+  builder: SecondComponentBuilder,
 )
+@singleton
 abstract class SecondComponent {
   String getString();
 }
@@ -336,8 +464,6 @@ class MyClass {
 For such a class, you can not declare a provider method in the module, the jugger will understand this and generate it himself.
 
 ```dart 
-// ignore_for_file: avoid_classes_with_only_static_members
-
 import 'package:example/main.jugger.dart';
 import 'package:jugger/jugger.dart';
 
@@ -380,8 +506,6 @@ class StringProvider {
 The method can also be injected. it will be called when the jugger creates an instance of the class.
 
 ```dart
-// ignore_for_file: avoid_classes_with_only_static_members
-
 import 'package:example/main.jugger.dart';
 import 'package:jugger/jugger.dart';
 
@@ -701,6 +825,55 @@ If there are classes in the graph that are not used, the generation will fall. B
 ### generated_file_line_length:
 
 The number of characters allowed in a single line of generated file. Default value is 80.
+
+# Migration
+
+## From 2.* to 3.*
+
+Version 3 contains breaking changes, to upgrade to this version you need to do the following:
+
+### Scope related changes
+
+When using the singleton scope annotation, you also need to annotate the component with the same annotation.
+
+```dart
+import 'package:jugger/jugger.dart';
+
+@Component(modules: <Type>[MyComponentModule])
+@singleton // <----
+abstract class MyComponent {
+  String getString();
+}
+
+@module
+abstract class MyComponentModule {
+  @provides
+  @singleton // <----
+  static String provideString() => '';
+}
+```
+
+### Component builder related changes
+
+If the component has a builder, it must be explicitly specified in the annotation @Component.
+
+```dart
+import 'package:jugger/jugger.dart';
+
+@Component(
+  builder: MyComponentBuilder, // <----
+)
+abstract class MyComponent {
+  String getString();
+}
+
+@componentBuilder
+abstract class MyComponentBuilder {
+  MyComponentBuilder setString(String s);
+
+  MyComponent build();
+}
+```
 
 # Links
 

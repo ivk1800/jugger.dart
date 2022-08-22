@@ -8,6 +8,7 @@ class AppConfig {
 }
 
 @Component(modules: <Type>[AppModule])
+@singleton
 abstract class AppComponent {
   AppConfig getConfig();
 }

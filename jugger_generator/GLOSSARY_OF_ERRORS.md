@@ -1131,3 +1131,71 @@ Supported types:
 - Type
 - Enum
 
+### invalid_subcomponent_factory
+
+The annotated **@subcomponentFactory** method must return a subcomponent.
+
+`BAD:`
+```dart
+import 'package:jugger/jugger.dart';
+
+@Component()
+abstract class AppComponent {
+  @subcomponentFactory
+  MyComponent createMyComponent();
+}
+
+abstract class MyComponent {}
+```
+
+`GOOD:`
+```dart
+import 'package:jugger/jugger.dart';
+
+@Component()
+abstract class AppComponent {
+  @subcomponentFactory
+  MyComponent createMyComponent();
+}
+
+@Subcomponent()
+abstract class MyComponent {}
+```
+
+Subcomponent builder must return the same type as the factory method.
+
+`BAD:`
+```dart
+import 'package:jugger/jugger.dart';
+
+@Component()
+abstract class AppComponent {
+  @subcomponentFactory
+  MyComponent createMyComponent(MyComponentBuilder builder);
+}
+
+@componentBuilder
+abstract class MyComponentBuilder {
+  AppComponent build();
+}
+```
+
+`GOOD:`
+```dart
+import 'package:jugger/jugger.dart';
+
+@Component()
+abstract class AppComponent {
+  @subcomponentFactory
+  MyComponent createMyComponent(MyComponentBuilder builder);
+}
+
+@componentBuilder
+abstract class MyComponentBuilder {
+  MyComponent build();
+}
+```
+
+### invalid_scope
+
+The scope of the component must be different from the scope of the parent or should there be no scope.

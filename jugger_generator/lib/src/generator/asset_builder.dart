@@ -1,10 +1,8 @@
 import 'dart:async';
 
 import 'package:analyzer/dart/element/element.dart';
-import 'package:analyzer/dart/element/type.dart';
 import 'package:build/build.dart';
 import 'package:code_builder/code_builder.dart';
-import 'package:collection/collection.dart';
 import 'package:dart_style/dart_style.dart';
 
 import '../builder/global_config.dart';
@@ -13,6 +11,7 @@ import '../jugger_error.dart';
 import 'asset_context.dart';
 import 'check_unused_providers.dart';
 import 'component_builder_delegate.dart';
+import 'component_circular_dependency_detector.dart';
 import 'component_result.dart';
 import 'type_name_registry.dart';
 import 'unique_name_registry.dart';
@@ -24,10 +23,12 @@ class AssetBuilder implements AssetContext {
   AssetBuilder({required this.globalConfig});
 
   late final LibraryElement _lib;
-  late final List<j.ComponentBuilder> _componentBuilders;
   final Allocator _allocator = Allocator.simplePrefixing();
   final TypeNameGenerator _typeNameGenerator = TypeNameGenerator();
   final UniqueIdGenerator _uniqueIdGenerator = UniqueIdGenerator();
+  final ComponentCircularDependencyDetector
+      _componentCircularDependencyDetector =
+      ComponentCircularDependencyDetector();
 
   bool _isDisposableManagerClassAdded = false;
 
@@ -71,8 +72,6 @@ class AssetBuilder implements AssetContext {
 
       final LibraryBuilder target = LibraryBuilder();
 
-      _componentBuilders = lib.getComponentBuilders();
-
       for (int i = 0; i < components.length; i++) {
         final j.Component component = components[i];
 
@@ -114,12 +113,8 @@ class AssetBuilder implements AssetContext {
     final ComponentResult result = componentBuilderDelegate.generateComponent(
       component: component,
     );
-    target.body.add(result.componentClass);
-
-    final Class? componentBuilderClass = result.componentBuilder;
-    if (componentBuilderClass != null) {
-      target.body.add(componentBuilderClass);
-    }
+    result.componentClasses.forEach(target.body.add);
+    result.componentBuilders.forEach(target.body.add);
 
     result.multibindingsProviderClasses.forEach(target.body.add);
 
@@ -147,9 +142,6 @@ class AssetBuilder implements AssetContext {
   LibraryElement get lib => _lib;
 
   @override
-  j.ComponentBuilder? getComponentBuilderOf(DartType type) {
-    return _componentBuilders.firstWhereOrNull((j.ComponentBuilder b) {
-      return b.componentClass.thisType == type;
-    });
-  }
+  ComponentCircularDependencyDetector get componentCircularDependencyDetector =>
+      _componentCircularDependencyDetector;
 }

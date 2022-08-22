@@ -11,14 +11,15 @@ import 'package:jugger/jugger.dart' as _i2;
 class JuggerAppComponent implements _i1.AppComponent {
   JuggerAppComponent.create();
 
-  late final _i2.IProvider<Map<int, String>> _map_int_String_Provider =
-      _Map_int_String_AppComponent_0_Provider();
+  late final _Map_int_String_AppComponent_AppComponent_Provider
+      _map_int_String_Provider =
+      _Map_int_String_AppComponent_AppComponent_Provider();
 
   @override
   Map<int, String> get strings => _map_int_String_Provider.get();
 }
 
-class _Map_int_String_AppComponent_0_Provider
+class _Map_int_String_AppComponent_AppComponent_Provider
     implements _i2.IProvider<Map<int, String>> {
   late final _i2.IProvider<String>
       _string1cd1812dfa95f93a293be610f6aa4d36Provider =

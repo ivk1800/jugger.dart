@@ -11,13 +11,13 @@ import 'package:jugger/jugger.dart' as _i2;
 class JuggerAppComponent implements _i1.AppComponent {
   JuggerAppComponent.create();
 
-  late final _i2.IProvider<Map<int, String>>
+  late final _Named_098f6bcd4621d373cade4e832627b4f6_Map_int_String_AppComponent_AppComponent_Provider
       _named_098f6bcd4621d373cade4e832627b4f6_Map_int_String_Provider =
-      _Named_098f6bcd4621d373cade4e832627b4f6_Map_int_String_AppComponent_0_Provider();
+      _Named_098f6bcd4621d373cade4e832627b4f6_Map_int_String_AppComponent_AppComponent_Provider();
 
-  late final _i2.IProvider<Map<int, String>>
+  late final _Named_ed86cd1f5710cca4a7f75ebf32e1b9fc_Map_int_String_AppComponent_AppComponent_Provider
       _named_ed86cd1f5710cca4a7f75ebf32e1b9fc_Map_int_String_Provider =
-      _Named_ed86cd1f5710cca4a7f75ebf32e1b9fc_Map_int_String_AppComponent_0_Provider();
+      _Named_ed86cd1f5710cca4a7f75ebf32e1b9fc_Map_int_String_AppComponent_AppComponent_Provider();
 
   @override
   Map<int, String> get strings1 =>
@@ -27,7 +27,7 @@ class JuggerAppComponent implements _i1.AppComponent {
       _named_098f6bcd4621d373cade4e832627b4f6_Map_int_String_Provider.get();
 }
 
-class _Named_098f6bcd4621d373cade4e832627b4f6_Map_int_String_AppComponent_0_Provider
+class _Named_098f6bcd4621d373cade4e832627b4f6_Map_int_String_AppComponent_AppComponent_Provider
     implements _i2.IProvider<Map<int, String>> {
   late final _i2.IProvider<String>
       _named_098f6bcd4621d373cade4e832627b4f6_String217de402cb4e2234ba01b4c209a13373Provider =
@@ -46,7 +46,7 @@ class _Named_098f6bcd4621d373cade4e832627b4f6_Map_int_String_AppComponent_0_Prov
       });
 }
 
-class _Named_ed86cd1f5710cca4a7f75ebf32e1b9fc_Map_int_String_AppComponent_0_Provider
+class _Named_ed86cd1f5710cca4a7f75ebf32e1b9fc_Map_int_String_AppComponent_AppComponent_Provider
     implements _i2.IProvider<Map<int, String>> {
   late final _i2.IProvider<String>
       _named_ed86cd1f5710cca4a7f75ebf32e1b9fc_String1cd1812dfa95f93a293be610f6aa4d36Provider =

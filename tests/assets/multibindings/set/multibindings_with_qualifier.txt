@@ -11,16 +11,16 @@ import 'package:jugger/jugger.dart' as _i2;
 class JuggerAppComponent implements _i1.AppComponent {
   JuggerAppComponent.create();
 
-  late final _i2.IProvider<Set<String>>
+  late final _Named_3364029304b2717304e2855490532d1c_Set_String_AppComponent_AppComponent_Provider
       _named_3364029304b2717304e2855490532d1c_Set_String_Provider =
-      _Named_3364029304b2717304e2855490532d1c_Set_String_AppComponent_0_Provider();
+      _Named_3364029304b2717304e2855490532d1c_Set_String_AppComponent_AppComponent_Provider();
 
   @override
   Set<String> get strings =>
       _named_3364029304b2717304e2855490532d1c_Set_String_Provider.get();
 }
 
-class _Named_3364029304b2717304e2855490532d1c_Set_String_AppComponent_0_Provider
+class _Named_3364029304b2717304e2855490532d1c_Set_String_AppComponent_AppComponent_Provider
     implements _i2.IProvider<Set<String>> {
   late final _i2.IProvider<String>
       _named_3364029304b2717304e2855490532d1c_String1cd1812dfa95f93a293be610f6aa4d36Provider =

@@ -7,6 +7,7 @@ class NonLazyRepository {}
 class LazyRepository {}
 
 @Component(modules: <Type>[AppModule])
+@singleton
 abstract class AppComponent {
   NonLazyRepository getNonLazyRepository();
 

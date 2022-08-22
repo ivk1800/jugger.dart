@@ -10,6 +10,7 @@ class InjectableClass {
 ////////////////////////////////////////////////////////////////////////////////
 
 @Component(modules: <Type>[AppModule])
+@singleton
 abstract class AppComponent {
   void inject(InjectableClass c);
 }

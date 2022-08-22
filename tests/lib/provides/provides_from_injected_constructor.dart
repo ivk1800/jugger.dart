@@ -16,6 +16,7 @@ class MainViewModel {
 ////////////////////////////////////////////////////////////////////////////////
 
 @Component(modules: <Type>[AppModule])
+@singleton
 abstract class AppComponent {
   MainViewModel getMainViewModel();
 }

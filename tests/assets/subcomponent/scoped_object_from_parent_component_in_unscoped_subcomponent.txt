@@ -1,0 +1,33 @@
+// ignore_for_file: implementation_imports
+// ignore_for_file: prefer_const_constructors
+// ignore_for_file: always_specify_types
+// ignore_for_file: directives_ordering
+// ignore_for_file: non_constant_identifier_names
+// ignore_for_file: no_leading_underscores_for_library_prefixes
+import 'package:tests/subcomponent/scoped_object_from_parent_component_in_unscoped_subcomponent.dart'
+    as _i1;
+import 'package:jugger/jugger.dart' as _i2;
+
+class JuggerMyComponent implements _i1.MyComponent {
+  JuggerMyComponent.create();
+
+  late final _i2.IProvider<String> _stringProvider =
+      _i2.SingletonProvider<String>(
+          () => _i1.MyComponentModule.provideString());
+
+  @override
+  String getString() => _stringProvider.get();
+  _i1.MySubcomponent createMySubcomponent() {
+    return JuggerSubcomponent$MySubcomponent.create(this);
+  }
+}
+
+class JuggerSubcomponent$MySubcomponent implements _i1.MySubcomponent {
+  JuggerSubcomponent$MySubcomponent.create(this._parent);
+
+  // ignore: unused_field
+  final JuggerMyComponent _parent;
+
+  @override
+  String getString() => _parent._stringProvider.get();
+}

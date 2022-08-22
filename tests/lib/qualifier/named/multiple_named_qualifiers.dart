@@ -7,6 +7,7 @@ class AppConfig {}
 ////////////////////////////////////////////////////////////////////////////////
 
 @Component(modules: <Type>[AppModule])
+@singleton
 abstract class AppComponent {
   @Named('prod')
   AppConfig get prodAppConfig;

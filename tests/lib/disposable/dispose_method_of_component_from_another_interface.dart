@@ -9,6 +9,7 @@ abstract class Disposer {
 @Component(
   modules: <Type>[AppModule],
 )
+@singleton
 abstract class AppComponent extends Disposer {
   MyClass getMyClass();
 }

@@ -4,7 +4,10 @@ import 'dart:async';
 
 import 'package:jugger/jugger.dart';
 
-@Component(modules: <Type>[Module])
+@Component(
+  modules: <Type>[Module],
+  builder: AppComponentBuilder,
+)
 abstract class AppComponent {
   MyClass1 getMyClass1();
 

@@ -3,7 +3,6 @@
 class Component {
   const factory Component({
     List<Type> modules,
-    List<Type> dependencies,
     Type? builder,
   }) = Component._;
 
@@ -34,7 +33,18 @@ class Module {
   final List<Type> includes;
 }
 
+/// Identifies scope annotations. By default, if no scope annotation is present,
+/// the injector creates an instance, uses the instance for one injection, and
+/// then forgets it. If a scope annotation is present, the injector retain the
+/// instance for reuse in a later injection.
+class Scope {
+  const Scope._();
+}
+
+const Scope scope = Scope._();
+
 /// Identifies a type that the injector only instantiates once.
+@scope
 class Singleton {
   const Singleton._();
 }
@@ -197,3 +207,39 @@ class TypeKey {
 }
 
 // endregion multibindings
+
+/// A subcomponent that inherits the bindings from a parent [Component] or
+/// [Subcomponent].
+/// ```
+/// @Subcomponent()
+/// abstract class MySubcomponent {}
+/// ```
+class Subcomponent {
+  const factory Subcomponent({
+    List<Type> modules,
+    Type? builder,
+  }) = Subcomponent._;
+
+  const Subcomponent._({
+    this.modules = const <Type>[],
+    this.builder = null,
+  });
+
+  final List<Type> modules;
+
+  /// Builder for this component.
+  final Type? builder;
+}
+
+class SubcomponentFactory {
+  const SubcomponentFactory._();
+}
+
+/// Marks a method on a [Component] or [Subcomponent] as a subcomponent factory.
+/// ```
+/// abstract class MyComponent {
+///   @subcomponentFactory
+///   MySubcomponent createMySubcomponent();
+/// }
+/// ```
+const SubcomponentFactory subcomponentFactory = SubcomponentFactory._();

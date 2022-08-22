@@ -1,0 +1,36 @@
+// ignore_for_file: implementation_imports
+// ignore_for_file: prefer_const_constructors
+// ignore_for_file: always_specify_types
+// ignore_for_file: directives_ordering
+// ignore_for_file: non_constant_identifier_names
+// ignore_for_file: no_leading_underscores_for_library_prefixes
+import 'package:tests/subcomponent/subcomponent_dependency_from_parent_module_with_qualifier.dart'
+    as _i1;
+import 'package:jugger/jugger.dart' as _i2;
+
+class JuggerAppComponent implements _i1.AppComponent {
+  JuggerAppComponent.create();
+
+  late final _i2.IProvider<String>
+      _named_694aa0e233ff01596dd5e8e3954ddd75_StringProvider =
+      _i2.SingletonProvider<String>(() => _i1.AppModule.provideString());
+
+  _i1.MyComponent createMyComponent() {
+    return JuggerSubcomponent$MyComponent.create(this);
+  }
+}
+
+class JuggerSubcomponent$MyComponent implements _i1.MyComponent {
+  JuggerSubcomponent$MyComponent.create(this._parent);
+
+  // ignore: unused_field
+  final JuggerAppComponent _parent;
+
+  late final _i2.IProvider<int> _intProvider = _i2.Provider<int>(() =>
+      _i1.MyModule.provideCount(_parent
+          ._named_694aa0e233ff01596dd5e8e3954ddd75_StringProvider
+          .get()));
+
+  @override
+  int get count => _intProvider.get();
+}

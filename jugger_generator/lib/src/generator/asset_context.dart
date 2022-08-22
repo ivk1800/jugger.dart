@@ -1,11 +1,10 @@
 import 'package:analyzer/dart/element/element.dart';
-import 'package:analyzer/dart/element/type.dart';
 import 'package:code_builder/code_builder.dart';
 
 import '../builder/global_config.dart';
+import 'component_circular_dependency_detector.dart';
 import 'type_name_registry.dart';
 import 'unique_name_registry.dart';
-import 'wrappers.dart';
 
 abstract class AssetContext {
   GlobalConfig get globalConfig;
@@ -18,5 +17,5 @@ abstract class AssetContext {
 
   LibraryElement get lib;
 
-  ComponentBuilder? getComponentBuilderOf(DartType type);
+  ComponentCircularDependencyDetector get componentCircularDependencyDetector;
 }

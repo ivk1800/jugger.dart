@@ -8,6 +8,7 @@ import 'package:quiver/core.dart';
 
 import '../errors_glossary.dart';
 import '../jugger_error.dart';
+import '../utils/annotation_ext.dart';
 import '../utils/component_methods_ext.dart';
 import '../utils/dart_type_ext.dart';
 import '../utils/element_annotation_ext.dart';
@@ -19,6 +20,7 @@ import 'graph_object_place.dart';
 import 'multibindings/multibindings_group.dart';
 import 'multibindings/multibindings_info.dart';
 import 'multibindings/multibindings_manager.dart';
+import 'subcomponent/parent_component_provider.dart';
 import 'tag.dart';
 import 'visitors.dart';
 import 'wrappers.dart' as j;
@@ -29,7 +31,14 @@ class ComponentContext {
   ComponentContext({
     required this.component,
     required this.componentBuilder,
+    required this.parentComponentProvider,
   }) {
+    _validateParentScopes();
+    final ParentComponentProvider? parent = parentComponentProvider;
+    if (parent != null) {
+      _registerParentGraph(parent.fullInfo);
+    }
+
     for (final j.DependencyAnnotation dep in component.dependencies) {
       final List<j.ComponentMethod> componentMembers =
           dep.element.getComponentMembers();
@@ -146,8 +155,10 @@ class ComponentContext {
 
   /// All objects of the component graph.
   final Map<_Key, GraphObject> _graphObjects = HashMap<_Key, GraphObject>();
+
   final j.Component component;
   final j.ComponentBuilder? componentBuilder;
+  final ParentComponentProvider? parentComponentProvider;
 
   /// All object sources of component. Does not contain duplicates.
   late final Set<ProviderSource> providerSources = HashSet<ProviderSource>(
@@ -173,6 +184,106 @@ class ComponentContext {
 
   /// Queue to detect circular dependencies.
   final Queue<_Key> _graphObjectsQueue = Queue<_Key>();
+
+  late final List<ParentComponentInfo> _parentInfo = () {
+    final ParentComponentProvider? parent = parentComponentProvider;
+    return parent?.fullInfo ?? <ParentComponentInfo>[];
+  }();
+
+  late final ParentComponentInfo _selfAsParentInfo = ParentComponentInfo(
+    sources: providerSources.where((ProviderSource source) {
+      return source is! MultibindingsSource &&
+          // It makes no sense to pass this type, since the original object is
+          // in the parent
+          source is! ParentComponentSource &&
+          source is! ParentMultibindingsItemSource;
+    }).toList(growable: false),
+    componentName: component.element.name,
+    // TODO: filter objets from parents
+    graphObjects: Map<_Key, GraphObject>.from(_graphObjects),
+    depth: _parentInfo.length,
+    scope: component.scope,
+  );
+
+  late final List<ParentComponentInfo> fullParentInfoWithSelf = () {
+    return <ParentComponentInfo>[..._parentInfo, _selfAsParentInfo];
+  }();
+
+  void _registerParentGraph(List<ParentComponentInfo> fullInfo) {
+    for (final ParentComponentInfo parentInfo in fullInfo) {
+      _registerParentSources(
+        sources: parentInfo.sources,
+        componentName: parentInfo.componentName,
+        // yeah depth is an id, it is unique for each parent
+        parentId: parentInfo.depth,
+      );
+      _graphObjects.addAll(parentInfo.graphObjects);
+    }
+  }
+
+  int getDepthOfParent({required int parentId}) {
+    // yeah id is an depth, just match reversed index for calculating depth
+    return _parentInfo.length - parentId;
+  }
+
+  void _registerParentSources({
+    required List<ProviderSource> sources,
+    required String componentName,
+    required int parentId,
+  }) {
+    for (final ProviderSource parentSource in sources) {
+      checkUnexpected(
+        parentSource is! MultibindingsSource,
+        () =>
+            "$MultibindingsSource can not be return from $ParentComponentProvider",
+      );
+      if (parentSource.isMultibindings) {
+        _registerSource(
+          ParentMultibindingsItemSource(
+            originalSource: parentSource,
+            componentName: componentName,
+          ),
+        );
+      } else {
+        _registerSource(
+          ParentComponentSource(
+            originalSource: parentSource,
+            componentName: componentName,
+            id: parentId,
+          ),
+        );
+      }
+    }
+  }
+
+  void _validateParentScopes() {
+    if (parentComponentProvider == null) {
+      return;
+    }
+
+    final List<ParentComponentInfo> parentInfo = _parentInfo;
+    final Object? selfScope = component.scope;
+
+    if (selfScope != null) {
+      final Iterable<ParentComponentInfo> scopedParents =
+          parentInfo.where((ParentComponentInfo p) => p.scope != null);
+      check(
+        scopedParents.every((ParentComponentInfo p) => p.scope != selfScope),
+        () {
+          final String info = '${component.element.name}: $selfScope\n'
+              '${scopedParents.map((ParentComponentInfo p) {
+            return '${p.componentName}: ${p.scope ?? 'unscoped'}';
+          }).join('\n')}';
+
+          return buildErrorMessage(
+            error: JuggerErrorId.invalid_scope,
+            message: 'The scope of the component must be different from the '
+                'scope of the parent or should there be no scope.\n$info',
+          );
+        },
+      );
+    }
+  }
 
   /// Registers a graph object with validation. Detects circular dependency.
   /// [element] an element that is a graph object. The element must be of a
@@ -431,6 +542,7 @@ class ComponentContext {
     Set<ProviderSource> providerSources,
     ProviderSource source,
   ) {
+    _validateSource(source);
     check(providerSources.add(source), () {
       final List<ProviderSource> sources = <ProviderSource>[
         providerSources
@@ -447,6 +559,38 @@ class ComponentContext {
         message: message,
       );
     });
+  }
+
+  void _validateSource(ProviderSource source) {
+    final j.ScopeAnnotation? componentScope = component.scope;
+    if (source.scope == null || source is ParentMultibindingsItemSource) {
+      return;
+    }
+
+    check(
+      componentScope == source.scope ||
+          (source is ParentComponentSource && componentScope != source.scope),
+      () {
+        final StringBuffer messageBuilder = StringBuffer()
+          ..write(component.element.name)
+          ..write(' ');
+
+        if (componentScope != null) {
+          messageBuilder.write('(scoped $componentScope)');
+        } else {
+          messageBuilder.write('(unscoped)');
+        }
+        messageBuilder
+          ..write(' ')
+          ..write('may not use scoped bindings: ')
+          ..write('${source.scope}(${source.sourceString})');
+
+        return buildErrorMessage(
+          error: JuggerErrorId.invalid_scope,
+          message: messageBuilder.toString(),
+        );
+      },
+    );
   }
 
   /// Iterates over all graph objects and registers sources for types with
@@ -677,6 +821,8 @@ abstract class ProviderSource {
 
   final MultibindingsInfo? multibindingsInfo;
 
+  late final j.ScopeAnnotation? scope = annotations.getAnnotationOrNull();
+
   /// A unique key of source. Qualifier and type will be combined.
   /// Should be used to identify the source.
   Object get key {
@@ -833,6 +979,50 @@ class AnotherComponentSource extends ProviderSource {
   String get sourceString => '${_dependencyClass.name}.${element.name}';
 }
 
+class ParentMultibindingsItemSource extends ProviderSource
+    implements MultibindingsElementProvider {
+  ParentMultibindingsItemSource({
+    required this.originalSource,
+    required this.componentName,
+  })  : assert(originalSource is MultibindingsElementProvider),
+        _originalMultibindingsElementProvider =
+            originalSource as MultibindingsElementProvider,
+        super(
+          type: originalSource.type,
+          annotations: originalSource.annotations,
+          multibindingsInfo: originalSource.multibindingsInfo,
+        );
+
+  final ProviderSource originalSource;
+  final String componentName;
+  final MultibindingsElementProvider _originalMultibindingsElementProvider;
+
+  @override
+  String get sourceString => '${originalSource.sourceString}($componentName)';
+
+  @override
+  MethodElement get element => _originalMultibindingsElementProvider.element;
+}
+
+class ParentComponentSource extends ProviderSource {
+  ParentComponentSource({
+    required this.originalSource,
+    required this.componentName,
+    required this.id,
+  }) : super(
+          type: originalSource.type,
+          annotations: originalSource.annotations,
+          multibindingsInfo: originalSource.multibindingsInfo,
+        );
+
+  final ProviderSource originalSource;
+  final String componentName;
+  final int id;
+
+  @override
+  String get sourceString => '${originalSource.sourceString}($componentName)';
+}
+
 class InjectedConstructorSource extends ProviderSource {
   InjectedConstructorSource({
     required DartType type,
@@ -884,6 +1074,22 @@ class MultibindingsSource extends ProviderSource {
   @override
   String get sourceString =>
       'Multibinding of: ${multibindingsGroup.graphObject.type.getName()}';
+}
+
+class ParentComponentInfo {
+  ParentComponentInfo({
+    required this.graphObjects,
+    required this.componentName,
+    required this.sources,
+    required this.depth,
+    required this.scope,
+  });
+
+  final Map<_Key, GraphObject> graphObjects;
+  final List<ProviderSource> sources;
+  final String componentName;
+  final Object? scope;
+  final int depth;
 }
 
 extension _ElementExt on Element {

@@ -1,3 +1,7 @@
+## 2.4.0-dev.1
+
+* Add annotations: SubcomponentFactory, Subcomponent, Scope;
+
 ## 2.3.1
 
 * Add builder parameter for @Component annotation;

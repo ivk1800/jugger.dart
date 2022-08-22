@@ -5,6 +5,7 @@ import 'package:jugger/jugger.dart';
 @Component(
   modules: <Type>[AppComponentModule],
 )
+@singleton
 abstract class AppComponent {
   VoidClass getMyClass();
 

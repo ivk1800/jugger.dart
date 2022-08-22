@@ -14,16 +14,17 @@ class JuggerAppComponent implements _i1.AppComponent {
   late final _i2.IProvider<int> _intProvider =
       _i2.SingletonProvider<int>(() => _i1.Module1.provideInt());
 
-  late final _i2.IProvider<Set<String>> _set_String_Provider =
-      _Set_String_AppComponent_0_Provider(this);
+  late final _Set_String_AppComponent_AppComponent_Provider
+      _set_String_Provider =
+      _Set_String_AppComponent_AppComponent_Provider(this);
 
   @override
   Set<String> get strings => _set_String_Provider.get();
 }
 
-class _Set_String_AppComponent_0_Provider
+class _Set_String_AppComponent_AppComponent_Provider
     implements _i2.IProvider<Set<String>> {
-  _Set_String_AppComponent_0_Provider(this._component);
+  _Set_String_AppComponent_AppComponent_Provider(this._component);
 
   late final _i2.IProvider<String>
       _string1cd1812dfa95f93a293be610f6aa4d36Provider = _i2.Provider<String>(
