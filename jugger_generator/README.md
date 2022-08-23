@@ -875,6 +875,16 @@ abstract class MyComponentBuilder {
 }
 ```
 
+### Lazy provider related changes
+
+The ILazy contract has changed, now you need to use **value** instead of the **get()** method.
+
+```dart
+abstract class ILazy<T> {
+  T get value;
+}
+```
+
 # Links
 
 Telegram chat: https://t.me/jugger_chat

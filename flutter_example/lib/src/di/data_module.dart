@@ -14,9 +14,9 @@ abstract class DataModule {
   ) {
     switch (config.packagesRepositoryType) {
       case PackagesRepositoryType.$default:
-        return defaultRepository.get();
+        return defaultRepository.value;
       case PackagesRepositoryType.broken:
-        return brokenRepository.get();
+        return brokenRepository.value;
     }
   }
 }
