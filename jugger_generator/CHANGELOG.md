@@ -1,3 +1,7 @@
+## 3.0.0-dev.3
+
+* Improvements.
+
 ## 3.0.0-dev.2
 
 * Improvements.

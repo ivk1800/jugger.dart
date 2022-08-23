@@ -11,7 +11,7 @@ abstract class AppComponent {
 abstract class AppModule {
   @provides
   static String provideName(ILazy<Config> myClass) =>
-      'version: ${myClass.get().name}';
+      'version: ${myClass.value.name}';
 }
 
 class Config {

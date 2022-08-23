@@ -14,11 +14,11 @@ abstract class AppComponent {
 abstract class AppModule {
   @provides
   @myQualifier
-  static Config provideConfig1(ILazy<Config> config) => config.get();
+  static Config provideConfig1(ILazy<Config> config) => config.value;
 
   @provides
   static Config provideConfig2(@myQualifier ILazy<Config> config) =>
-      config.get();
+      config.value;
 }
 
 class Config {

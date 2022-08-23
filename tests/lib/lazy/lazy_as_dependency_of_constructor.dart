@@ -16,7 +16,7 @@ abstract class AppModule {
 
   @provides
   static String provideName(Config myClass) =>
-      'version:${myClass.version.get()}';
+      'version:${myClass.version.value}';
 }
 
 class Config {

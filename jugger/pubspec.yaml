@@ -2,7 +2,7 @@ name: jugger
 description: >
   Annotations for the jugger_generator.
   This package does nothing without jugger_generator too.
-version: 2.4.0-dev.2
+version: 2.4.0-dev.3
 homepage: https://github.com/ivk1800/jugger.dart
 
 environment:

@@ -1,4 +1,8 @@
-## 2.4.0-dev.2
+## 2.4.0-dev.3
+
+* Missing dependencies;
+
+## 2.4.0-dev.3
 
 * Change ILazy contract;
 

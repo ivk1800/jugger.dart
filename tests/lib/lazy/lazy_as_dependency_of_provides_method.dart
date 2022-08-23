@@ -15,5 +15,5 @@ abstract class AppModule {
   static int provideVersion() => 1;
 
   @provides
-  static String provideName(ILazy<int> version) => 'version:${version.get()}';
+  static String provideName(ILazy<int> version) => 'version:${version.value}';
 }
