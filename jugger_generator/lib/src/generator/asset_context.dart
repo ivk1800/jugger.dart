@@ -1,4 +1,3 @@
-import 'package:analyzer/dart/element/element.dart';
 import 'package:code_builder/code_builder.dart';
 
 import '../builder/global_config.dart';
@@ -14,8 +13,6 @@ abstract class AssetContext {
   TypeNameGenerator get typeNameGenerator;
 
   UniqueIdGenerator get uniqueIdGenerator;
-
-  LibraryElement get lib;
 
   ComponentCircularDependencyDetector get componentCircularDependencyDetector;
 }

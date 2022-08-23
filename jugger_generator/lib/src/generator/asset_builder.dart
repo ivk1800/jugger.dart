@@ -22,7 +22,6 @@ import 'wrappers.dart' as j;
 class AssetBuilder implements AssetContext {
   AssetBuilder({required this.globalConfig});
 
-  late final LibraryElement _lib;
   final Allocator _allocator = Allocator.simplePrefixing();
   final TypeNameGenerator _typeNameGenerator = TypeNameGenerator();
   final UniqueIdGenerator _uniqueIdGenerator = UniqueIdGenerator();
@@ -61,7 +60,6 @@ class AssetBuilder implements AssetContext {
 
     if (await resolver.isLibrary(buildStep.inputId)) {
       final LibraryElement lib = await buildStep.inputLibrary;
-      _lib = lib;
 
       final List<j.Component> components = lib.getComponents();
 
@@ -137,9 +135,6 @@ class AssetBuilder implements AssetContext {
 
   @override
   UniqueIdGenerator get uniqueIdGenerator => _uniqueIdGenerator;
-
-  @override
-  LibraryElement get lib => _lib;
 
   @override
   ComponentCircularDependencyDetector get componentCircularDependencyDetector =>

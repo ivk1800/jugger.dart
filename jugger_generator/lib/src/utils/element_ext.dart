@@ -1,6 +1,5 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
-import 'package:analyzer/src/generated/source.dart';
 import 'package:code_builder/code_builder.dart';
 
 import '../generator/tag.dart';
@@ -37,11 +36,11 @@ extension ElementExt on Element {
   Reference asReference() {
     final String? n = name;
     check(n != null, () => 'Unable create Reference, name is null');
-    final Source? library = librarySource;
+    final LibraryElement? l = library;
     check(
-      library != null,
-      () => 'Unable create Reference, librarySource is null',
+      l != null,
+      () => 'Unable create Reference, library is null',
     );
-    return refer(n!, library!.uri.toString());
+    return refer(n!, l!.source.uri.toString());
   }
 }
