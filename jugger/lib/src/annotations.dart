@@ -3,6 +3,7 @@
 class Component {
   const factory Component({
     List<Type> modules,
+    List<Type> dependencies,
     Type? builder,
   }) = Component._;
 
