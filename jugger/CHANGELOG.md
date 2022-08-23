@@ -1,3 +1,7 @@
+## 2.4.0-dev.2
+
+* Change ILazy contract;
+
 ## 2.4.0-dev.1
 
 * Add annotations: SubcomponentFactory, Subcomponent, Scope;
