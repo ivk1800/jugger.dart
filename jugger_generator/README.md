@@ -49,6 +49,7 @@ jugger_generator:
     - [From 2.* to 3.*](#from-2-to-3)
         - [Scope related changes](#scope-related-changes)
         - [Component builder related changes](#component-builder-related-changes)
+        - [Lazy provider related changes](#lazy-provider-related-changes)
 - [Links](#links)
 
 
@@ -629,7 +630,7 @@ The objects themselves must be a scoped(singleton):
 @disposable
 class MySingleton {
   @inject
-  constMySingleton();
+  const MySingleton();
 }
 ```
 Or in a module:

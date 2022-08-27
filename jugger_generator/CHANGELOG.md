@@ -1,14 +1,8 @@
-## 3.0.0-dev.3
+## 3.0.0
 
-* Improvements.
-
-## 3.0.0-dev.2
-
-* Improvements.
-
-## 3.0.0-dev.1
-
+* **Breaking**: Check [migration guide](https://github.com/ivk1800/jugger.dart#from-2-to-3) from version 2 to 3.
 * Feature: subcomponents.
+* Feature: custom scopes.
 
 ## 2.5.1
 

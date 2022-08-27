@@ -1,14 +1,8 @@
-## 2.4.0-dev.3
+## 3.0.0
 
-* Missing dependencies;
-
-## 2.4.0-dev.3
-
-* Change ILazy contract;
-
-## 2.4.0-dev.1
-
-* Add annotations: SubcomponentFactory, Subcomponent, Scope;
+* **Breaking**: Check [migration guide](https://github.com/ivk1800/jugger.dart#from-2-to-3) from version 2 to 3.
+* Change ILazy contract.
+* Add annotations: SubcomponentFactory, Subcomponent, Scope.
 
 ## 2.3.1
 
@@ -29,7 +23,7 @@
 ```dart
 @Module(includes: <Type>[Module2, Module3])
 abstract class Module1 {
-...
+  ...
 ```
 
 ## 2.0.0
