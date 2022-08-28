@@ -19,7 +19,7 @@ abstract class AppModule {
   @provides
   @singleton
   @disposable
-  static MyClass provideMyClass() => MyClass();
+  static MyClass provideMyClass() => const MyClass();
 }
 
 class MyClass {

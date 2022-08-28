@@ -7,11 +7,13 @@ abstract class Ancestor1 {
 }
 
 abstract class Ancestor2 extends Ancestor1 {
+  @override
   void inject(InjectedClass c);
 }
 
 @Component(modules: <Type>[Module1])
 abstract class AppComponent extends Ancestor2 {
+  @override
   void inject(InjectedClass c);
 }
 

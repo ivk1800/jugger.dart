@@ -24,11 +24,11 @@ abstract class Module1 {
 
   @provides
   @intoMap
-  @StringKey("1")
+  @StringKey('1')
   static int provideInt1() => 1;
 
   @provides
   @intoMap
-  @StringKey("2")
+  @StringKey('2')
   static int provideInt2() => 2;
 }

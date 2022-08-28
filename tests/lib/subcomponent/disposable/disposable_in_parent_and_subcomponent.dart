@@ -18,7 +18,7 @@ abstract class AppModule {
   @disposable
   @scope1
   static DisposableClassFromParent provideDisposableClassFromParent() =>
-      DisposableClassFromParent();
+      const DisposableClassFromParent();
 }
 
 @Subcomponent(
@@ -40,7 +40,7 @@ abstract class MySubcomponentModule {
   @scope2
   static DisposableClassFromSubComponent
       provideDisposableClassFromSubComponent() =>
-          DisposableClassFromSubComponent();
+          const DisposableClassFromSubComponent();
 }
 
 class DisposableClassFromParent {

@@ -25,7 +25,7 @@ abstract class MySubcomponentModule {
   @scope2
   static DisposableClassFromSubComponent
       provideDisposableClassFromSubComponent() =>
-          DisposableClassFromSubComponent();
+          const DisposableClassFromSubComponent();
 }
 
 class DisposableClassFromSubComponent {

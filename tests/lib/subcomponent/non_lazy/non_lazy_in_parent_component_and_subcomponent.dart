@@ -20,7 +20,7 @@ abstract class MyComponentModule {
   static String provideString() => '';
 }
 
-@Subcomponent(modules: [MySubcomponentModule])
+@Subcomponent(modules: <Type>[MySubcomponentModule])
 @scope2
 abstract class MySubcomponent {
   int getInt();

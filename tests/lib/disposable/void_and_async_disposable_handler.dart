@@ -17,7 +17,7 @@ abstract class AppComponent {
 @module
 abstract class AppComponentModule {
   @disposalHandler
-  static void disposeVoidClass(VoidClass myClass) async {
+  static Future<void> disposeVoidClass(VoidClass myClass) async {
     myClass.dispose();
   }
 
