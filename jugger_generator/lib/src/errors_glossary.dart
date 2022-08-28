@@ -43,6 +43,7 @@ const String ambiguityOfProvideMethod =
 const String typeNotSupported = '$_glossary#type_not_supported';
 const String missingInjectedConstructor =
     '$_glossary#missing_injected_constructor';
+const String missingProvider = '$_glossary#missing_provider';
 const String multipleInjectedConstructors =
     '$_glossary#multiple_injected_constructors';
 const String invalidParametersTypes = '$_glossary#invalid_parameters_types';
@@ -121,6 +122,7 @@ enum JuggerErrorId {
   ambiguity_of_provide_method,
   type_not_supported,
   missing_injected_constructor,
+  missing_provider,
   multiple_injected_constructors,
   invalid_parameters_types,
   multiple_providers_for_type,
@@ -257,6 +259,8 @@ extension JuggerErrorIdExt on JuggerErrorId {
         return disposableNotSupported;
       case JuggerErrorId.missing_injected_constructor:
         return missingInjectedConstructor;
+      case JuggerErrorId.missing_provider:
+        return missingProvider;
       case JuggerErrorId.multiple_injected_constructors:
         return multipleInjectedConstructors;
       case JuggerErrorId.multiple_multibinding_annotation:

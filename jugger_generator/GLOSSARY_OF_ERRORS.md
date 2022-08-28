@@ -516,6 +516,9 @@ class MyClass {
 }
 ```
 
+### missing_provider
+There is no provider for the abstract class.
+
 ### multiple_injected_constructors
 
 `BAD:`

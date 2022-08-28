@@ -1417,6 +1417,29 @@ class MyClass {
       );
     });
 
+    test('should failed if missing provider for abstract class', () async {
+      await checkBuilderResult(
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component()
+abstract class AppComponent {
+  MyClass get myClass;
+}
+
+abstract class MyClass {}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: missing_provider:\n'
+            'Provider for MyClass not found.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#missing_provider',
+          );
+        },
+      );
+    });
+
     test('should failed if not injected constructor', () async {
       await checkBuilderResult(
         mainContent: '''

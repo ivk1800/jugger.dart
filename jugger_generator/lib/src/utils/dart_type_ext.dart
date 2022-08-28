@@ -10,6 +10,7 @@ import '../generator/wrappers.dart';
 import '../jugger_error.dart';
 import 'element_ext.dart';
 import 'list_ext.dart';
+import 'object_ext.dart';
 import 'utils.dart';
 
 extension DartTypeExt on DartType {
@@ -100,10 +101,16 @@ extension DartTypeExt on DartType {
     List<ConstructorElement> injectedConstructors,
   ) {
     if (injectedConstructors.length != 1) {
+      final ClassElement classElement = element.requiredType<ClassElement>();
       final String message;
       if (injectedConstructors.isEmpty) {
-        message =
-            'Class ${element?.name} cannot be provided without an @inject constructor.';
+        if (classElement.isAbstract) {
+          message = 'Provider for ${element?.name} not found.';
+        } else {
+          message =
+              'Class ${element?.name} cannot be provided without an @inject '
+              'constructor.';
+        }
       } else {
         message =
             'Class ${element?.name} may only contain one injected constructor.';
@@ -112,7 +119,11 @@ extension DartTypeExt on DartType {
       final JuggerErrorId error;
 
       if (injectedConstructors.isEmpty) {
-        error = JuggerErrorId.missing_injected_constructor;
+        if (classElement.isAbstract) {
+          error = JuggerErrorId.missing_provider;
+        } else {
+          error = JuggerErrorId.missing_injected_constructor;
+        }
       } else {
         error = JuggerErrorId.multiple_injected_constructors;
       }
