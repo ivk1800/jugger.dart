@@ -3,6 +3,8 @@
 // ignore_for_file: always_specify_types
 // ignore_for_file: directives_ordering
 // ignore_for_file: non_constant_identifier_names
+// ignore_for_file: type=lint
+// ignore_for_file: unused_field
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:tests/subcomponent/non_lazy/non_lazy_in_parent_component_and_subcomponent.dart'
     as _i1;
@@ -33,7 +35,6 @@ class JuggerSubcomponent$MySubcomponent implements _i1.MySubcomponent {
     _initNonLazy();
   }
 
-  // ignore: unused_field
   final JuggerMyComponent _parent;
 
   late final _i2.IProvider<int> _intProvider =

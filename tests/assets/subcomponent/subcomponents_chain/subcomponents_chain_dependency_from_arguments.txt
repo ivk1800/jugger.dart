@@ -3,6 +3,8 @@
 // ignore_for_file: always_specify_types
 // ignore_for_file: directives_ordering
 // ignore_for_file: non_constant_identifier_names
+// ignore_for_file: type=lint
+// ignore_for_file: unused_field
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:tests/subcomponent/subcomponents_chain/subcomponents_chain_dependency_from_arguments.dart'
     as _i1;
@@ -24,7 +26,6 @@ class JuggerComponent1 implements _i1.Component1 {
 class JuggerSubcomponent$Component2 implements _i1.Component2 {
   JuggerSubcomponent$Component2._create(this._parent, this._fromComponent2);
 
-  // ignore: unused_field
   final JuggerComponent1 _parent;
 
   final _i1.FromComponent2 _fromComponent2;
@@ -37,7 +38,6 @@ class JuggerSubcomponent$Component2 implements _i1.Component2 {
 class JuggerSubcomponent$Component3 implements _i1.Component3 {
   JuggerSubcomponent$Component3.create(this._parent);
 
-  // ignore: unused_field
   final JuggerSubcomponent$Component2 _parent;
 
   late final _i2.IProvider<_i1.FromComponent3> _fromComponent3Provider =

@@ -3,6 +3,8 @@
 // ignore_for_file: always_specify_types
 // ignore_for_file: directives_ordering
 // ignore_for_file: non_constant_identifier_names
+// ignore_for_file: type=lint
+// ignore_for_file: unused_field
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:tests/subcomponent/multibindings/set/multibindings_set_from_parent_component_and_subcomponent.dart'
     as _i1;
@@ -24,7 +26,6 @@ class JuggerMyComponent implements _i1.MyComponent {
 class JuggerSubcomponent$MySubcomponent implements _i1.MySubcomponent {
   JuggerSubcomponent$MySubcomponent.create(this._parent);
 
-  // ignore: unused_field
   final JuggerMyComponent _parent;
 
   late final _Set_String_MySubcomponent_MySubcomponent_Provider

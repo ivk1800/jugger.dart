@@ -789,6 +789,8 @@ abstract class IMyComponent {
 // ignore_for_file: always_specify_types
 // ignore_for_file: directives_ordering
 // ignore_for_file: non_constant_identifier_names
+// ignore_for_file: type=lint
+// ignore_for_file: unused_field
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:tests/test.dart' as _i1;
 import 'package:tests/my_subcomponent.dart' as _i2;
@@ -804,7 +806,6 @@ class JuggerMyComponent implements _i1.IMyComponent {
 class JuggerSubcomponent$MySubcomponent implements _i2.IMySubcomponent {
   JuggerSubcomponent$MySubcomponent.create(this._parent);
 
-  // ignore: unused_field
   final JuggerMyComponent _parent;
 }
 ''';

@@ -4,7 +4,6 @@ analyzer:
   exclude:
     - "build/**"
     - "**/*.freezed.dart"
-    - "**/*.jugger.dart"
 
   strong-mode:
     implicit-casts: false

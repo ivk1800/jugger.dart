@@ -37,6 +37,8 @@ class AssetBuilder implements AssetContext {
     'ignore_for_file: always_specify_types',
     'ignore_for_file: directives_ordering',
     'ignore_for_file: non_constant_identifier_names',
+    'ignore_for_file: type=lint',
+    'ignore_for_file: unused_field',
   ];
 
   /// Returns the generated component code, null if there is nothing to generate

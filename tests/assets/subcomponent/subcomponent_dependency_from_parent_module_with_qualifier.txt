@@ -3,6 +3,8 @@
 // ignore_for_file: always_specify_types
 // ignore_for_file: directives_ordering
 // ignore_for_file: non_constant_identifier_names
+// ignore_for_file: type=lint
+// ignore_for_file: unused_field
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:tests/subcomponent/subcomponent_dependency_from_parent_module_with_qualifier.dart'
     as _i1;
@@ -23,7 +25,6 @@ class JuggerAppComponent implements _i1.AppComponent {
 class JuggerSubcomponent$MyComponent implements _i1.MyComponent {
   JuggerSubcomponent$MyComponent.create(this._parent);
 
-  // ignore: unused_field
   final JuggerAppComponent _parent;
 
   late final _i2.IProvider<int> _intProvider = _i2.Provider<int>(() =>

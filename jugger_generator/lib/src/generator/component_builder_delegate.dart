@@ -2062,7 +2062,6 @@ if (_disposed) {
       return Field((FieldBuilder builder) {
         builder
           ..name = _parent
-          ..docs.add("  // ignore: unused_field")
           ..modifier = FieldModifier.final$
           ..type = refer(parent.componentName);
       });
