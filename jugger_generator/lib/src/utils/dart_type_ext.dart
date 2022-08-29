@@ -75,7 +75,7 @@ extension DartTypeExt on DartType {
   /// only single and should be validated.
   ConstructorElement getRequiredInjectedConstructor() {
     final List<ConstructorElement> injectedConstructors =
-        element!.getInjectedConstructors();
+        _getInjectedConstructorsOfClass(element!);
 
     return _getSingleInjectedConstructor(injectedConstructors);
   }
@@ -86,13 +86,22 @@ extension DartTypeExt on DartType {
     checkUnsupportedType();
 
     final List<ConstructorElement> injectedConstructors =
-        element!.getInjectedConstructors();
+        _getInjectedConstructorsOfClass(element!);
 
     if (injectedConstructors.isEmpty) {
       return null;
     }
 
     return _getSingleInjectedConstructor(injectedConstructors);
+  }
+
+  List<ConstructorElement> _getInjectedConstructorsOfClass(Element element) {
+    final ClassElement classElement = element.requiredType<ClassElement>();
+    if (classElement.isAbstract) {
+      return const <ConstructorElement>[];
+    }
+
+    return classElement.getInjectedConstructors();
   }
 
   /// Returns the injected constructor and validates it. If more than one
