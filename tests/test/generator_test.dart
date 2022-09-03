@@ -614,6 +614,48 @@ abstract class AppComponent {
   });
 
   group('inject', () {
+    test('const named constructor', () async {
+      await checkBuilderOfFile(
+        'inject/constructor/const_named_constructor',
+      );
+    });
+
+    test('const named constructor with required arguments', () async {
+      await checkBuilderOfFile(
+        'inject/constructor/const_named_constructor_with_required_arguments',
+      );
+    });
+
+    test('empty const named constructor', () async {
+      await checkBuilderOfFile(
+        'inject/constructor/empty_const_named_constructor',
+      );
+    });
+
+    test('empty factory constructor', () async {
+      await checkBuilderOfFile(
+        'inject/constructor/empty_factory_constructor',
+      );
+    });
+
+    test('empty factory constructor', () async {
+      await checkBuilderOfFile(
+        'inject/constructor/empty_factory_constructor',
+      );
+    });
+
+    test('factory constructor', () async {
+      await checkBuilderOfFile(
+        'inject/constructor/factory_constructor',
+      );
+    });
+
+    test('factory constructor with required arguments', () async {
+      await checkBuilderOfFile(
+        'inject/constructor/factory_constructor_with_required_arguments',
+      );
+    });
+
     test('empty injected constructor', () async {
       await checkBuilderOfFile('inject/constructor/empty_injected_constructor');
     });

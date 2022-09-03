@@ -155,20 +155,6 @@ extension DartTypeExt on DartType {
         message: 'Constructor $constructorLogName can not be private.',
       ),
     );
-    check(
-      !constructorElement.isFactory,
-      () => buildErrorMessage(
-        error: JuggerErrorId.invalid_injected_constructor,
-        message: 'Factory constructor $constructorLogName not supported.',
-      ),
-    );
-    check(
-      constructorElement.name.isEmpty,
-      () => buildErrorMessage(
-        error: JuggerErrorId.invalid_injected_constructor,
-        message: 'Named constructor $constructorLogName not supported.',
-      ),
-    );
 
     return constructorElement;
   }

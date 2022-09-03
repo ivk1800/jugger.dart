@@ -1,0 +1,25 @@
+// ignore_for_file: implementation_imports
+// ignore_for_file: prefer_const_constructors
+// ignore_for_file: always_specify_types
+// ignore_for_file: directives_ordering
+// ignore_for_file: non_constant_identifier_names
+// ignore_for_file: type=lint
+// ignore_for_file: unused_field
+// ignore_for_file: no_leading_underscores_for_library_prefixes
+import 'package:tests/inject/constructor/const_named_constructor_with_required_arguments.dart'
+    as _i1;
+import 'package:jugger/jugger.dart' as _i2;
+
+class JuggerAppComponent implements _i1.AppComponent {
+  JuggerAppComponent.create();
+
+  late final _i2.IProvider<_i1.MyClass1> _myClass1Provider =
+      _i2.Provider<_i1.MyClass1>(() => const _i1.MyClass1());
+
+  late final _i2.IProvider<_i1.MyClass> _myClassProvider =
+      _i2.Provider<_i1.MyClass>(
+          () => _i1.MyClass.test(myClass1: _myClass1Provider.get()));
+
+  @override
+  _i1.MyClass get myClass => _myClassProvider.get();
+}

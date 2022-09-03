@@ -1076,22 +1076,32 @@ class ComponentBuilderDelegate {
   Code _buildCallConstructor(ConstructorElement constructor) {
     final ClassElement classElement = constructor.enclosingElement;
     final Reference reference = classElement.asReference();
+    final String name = constructor.name;
 
     if (constructor.parameters.isEmpty) {
       late final Expression instanceExpression;
       if (constructor.isConst && constructor.parameters.isEmpty) {
-        instanceExpression = reference.constInstance(<Expression>[]);
+        if (name.isNotEmpty) {
+          instanceExpression =
+              reference.constInstanceNamed(name, <Expression>[]);
+        } else {
+          instanceExpression = reference.constInstance(<Expression>[]);
+        }
       } else {
-        instanceExpression = reference.newInstance(<Expression>[]);
+        if (name.isNotEmpty) {
+          instanceExpression = reference.newInstanceNamed(name, <Expression>[]);
+        } else {
+          instanceExpression = reference.newInstance(<Expression>[]);
+        }
       }
       return _callInjectedMethodsIfNeeded(instanceExpression, classElement)
           .code;
     }
 
     final Expression newInstanceExpression = _buildCallArgumentsExpression(
-      constructor.parameters,
-      reference,
-      null,
+      parameters: constructor.parameters,
+      reference: reference,
+      name: name.isNotEmpty ? name : null,
     );
     return _callInjectedMethodsIfNeeded(
       newInstanceExpression,
@@ -1115,9 +1125,9 @@ class ComponentBuilderDelegate {
     }
 
     return _buildCallArgumentsExpression(
-      method.parameters,
-      reference,
-      prefixScope,
+      parameters: method.parameters,
+      reference: reference,
+      prefixScope: prefixScope,
     );
   }
 
@@ -1130,11 +1140,12 @@ class ComponentBuilderDelegate {
   /// provideMyClass(arg1, args2); // for method
   /// MyClass(arg1, args2); // for constructor
   /// ```
-  Expression _buildCallArgumentsExpression(
-    List<ParameterElement> parameters,
-    Reference reference,
+  Expression _buildCallArgumentsExpression({
+    required List<ParameterElement> parameters,
+    required Reference reference,
     String? prefixScope,
-  ) {
+    String? name,
+  }) {
     final bool isPositional =
         parameters.any((ParameterElement p) => p.isPositional);
     final bool isNamed = parameters.any((ParameterElement p) => p.isNamed);
@@ -1148,18 +1159,30 @@ class ComponentBuilderDelegate {
       ),
     );
 
+    final Map<String, Expression> arguments =
+        _buildArgumentsExpressions(parameters, prefixScope);
     if (isPositional) {
-      return reference.newInstance(
-        _buildArgumentsExpressions(parameters, prefixScope).values.toList(),
-      );
+      final List<Expression> argumentsExpressions = arguments.values.toList();
+      if (name != null) {
+        return reference.newInstanceNamed(name, argumentsExpressions);
+      } else {
+        return reference.newInstance(argumentsExpressions);
+      }
     }
 
     if (isNamed) {
-      final Expression newInstance = reference.newInstance(
-        <Expression>[],
-        _buildArgumentsExpressions(parameters, prefixScope),
-      );
-      return newInstance;
+      if (name != null) {
+        return reference.newInstanceNamed(
+          name,
+          <Expression>[],
+          arguments,
+        );
+      } else {
+        return reference.newInstance(
+          <Expression>[],
+          arguments,
+        );
+      }
     }
 
     throw JuggerError('Unable to call constructor or method.');
