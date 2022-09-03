@@ -614,6 +614,31 @@ abstract class AppComponent {
   });
 
   group('inject', () {
+    test('const constructor with positioned and named arguments', () async {
+      await checkBuilderOfFile(
+        'inject/constructor/const_constructor_with_positioned_and_named_arguments',
+      );
+    });
+
+    test('const named constructor with positioned and named arguments',
+        () async {
+      await checkBuilderOfFile(
+        'inject/constructor/const_named_constructor_with_positioned_and_named_arguments',
+      );
+    });
+
+    test('constructor with positioned and named arguments', () async {
+      await checkBuilderOfFile(
+        'inject/constructor/constructor_with_positioned_and_named_arguments',
+      );
+    });
+
+    test('factory constructor with positioned and named arguments', () async {
+      await checkBuilderOfFile(
+        'inject/constructor/factory_constructor_with_positioned_and_named_arguments',
+      );
+    });
+
     test('const named constructor', () async {
       await checkBuilderOfFile(
         'inject/constructor/const_named_constructor',

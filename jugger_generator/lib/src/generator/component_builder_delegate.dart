@@ -1120,19 +1120,34 @@ class ComponentBuilderDelegate {
     String? prefixScope,
   ) {
     final Reference reference = refer(method.name);
-    if (method.parameters.isEmpty) {
+    final List<ParameterElement> parameters = method.parameters;
+    if (parameters.isEmpty) {
       return reference.call(<Expression>[]);
     }
 
+    final bool isPositional =
+        parameters.any((ParameterElement p) => p.isPositional);
+    final bool isNamed = parameters.any((ParameterElement p) => p.isNamed);
+
+    check(
+      !(isPositional && isNamed),
+      () => buildErrorMessage(
+        error: JuggerErrorId.invalid_parameters_types,
+        message:
+            '${reference.symbol} can have only positional parameters or only '
+            'named parameters.',
+      ),
+    );
+
     return _buildCallArgumentsExpression(
-      parameters: method.parameters,
+      parameters: parameters,
       reference: reference,
       prefixScope: prefixScope,
     );
   }
 
-  /// Returns a call to the arguments usually of a method or constructor. Only
-  /// named or only positional arguments are supported.
+  /// Returns a call to the arguments usually of a method or constructor. Named
+  /// and positional arguments can be mixed.
   /// [parameters] to be called.
   /// [reference] reference to a method or constructor.
   /// Example of result:
@@ -1146,46 +1161,29 @@ class ComponentBuilderDelegate {
     String? prefixScope,
     String? name,
   }) {
-    final bool isPositional =
-        parameters.any((ParameterElement p) => p.isPositional);
-    final bool isNamed = parameters.any((ParameterElement p) => p.isNamed);
-
-    check(
-      !(isPositional && isNamed),
-      () => buildErrorMessage(
-        error: JuggerErrorId.invalid_parameters_types,
-        message:
-            '${reference.symbol} can have only positional parameters or only named parameters.',
-      ),
+    final Map<String, Expression> positionalArguments =
+        _buildArgumentsExpressions(
+      parameters.where((ParameterElement p) => p.isPositional).toList(),
+      prefixScope,
     );
-
-    final Map<String, Expression> arguments =
-        _buildArgumentsExpressions(parameters, prefixScope);
-    if (isPositional) {
-      final List<Expression> argumentsExpressions = arguments.values.toList();
-      if (name != null) {
-        return reference.newInstanceNamed(name, argumentsExpressions);
-      } else {
-        return reference.newInstance(argumentsExpressions);
-      }
+    final Map<String, Expression> namedArguments = _buildArgumentsExpressions(
+      parameters.where((ParameterElement p) => p.isNamed).toList(),
+      prefixScope,
+    );
+    final List<Expression> positionalArgumentsExpressions =
+        positionalArguments.values.toList();
+    if (name != null) {
+      return reference.newInstanceNamed(
+        name,
+        positionalArgumentsExpressions,
+        namedArguments,
+      );
+    } else {
+      return reference.newInstance(
+        positionalArgumentsExpressions,
+        namedArguments,
+      );
     }
-
-    if (isNamed) {
-      if (name != null) {
-        return reference.newInstanceNamed(
-          name,
-          <Expression>[],
-          arguments,
-        );
-      } else {
-        return reference.newInstance(
-          <Expression>[],
-          arguments,
-        );
-      }
-    }
-
-    throw JuggerError('Unable to call constructor or method.');
   }
 
   /// Returns a call of injected methods sequentially, starting with the base

@@ -1533,50 +1533,6 @@ class MyClass {
         },
       );
     });
-
-    test('should failed if injected constructor with named param', () async {
-      await checkBuilderResult(
-        mainContent: '''
-import 'package:jugger/jugger.dart';
-
-@Component(modules: <Type>[AppModule])
-abstract class AppComponent {
-  String get hello;
-}
-
-@module
-abstract class AppModule {
-  @provides
-  static String provideHello(MyClass myClass) => myClass.toString();
-
-  @provides
-  static int provideNumberInt() => 1;
-
-  @provides
-  static double provideNumberDouble() => 1;
-}
-
-class MyClass {
-  @inject
-  const MyClass(
-    this.numberInt, {
-    required this.numberDouble,
-  });
-
-  final int numberInt;
-  final double numberDouble;
-}
-        ''',
-        onError: (Object error) {
-          expect(
-            error.toString(),
-            'error: invalid_parameters_types:\n'
-            'MyClass can have only positional parameters or only named parameters.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_parameters_types',
-          );
-        },
-      );
-    });
   });
 
   group('inject', () {
