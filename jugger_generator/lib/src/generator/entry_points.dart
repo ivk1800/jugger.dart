@@ -1,4 +1,3 @@
-// ignore_for_file: deprecated_member_use
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
@@ -49,7 +48,7 @@ String? findEntryPointsOf(
       final ParameterElement? parameter = source.element.parameters
           .firstWhereOrNull((ParameterElement element) => element.type == type);
       final StringBuffer messageBuilder = StringBuffer();
-      messageBuilder.write(source.element.enclosingElement.name);
+      messageBuilder.write(source.element.enclosingElement3.name);
       messageBuilder.write('(');
       if (tag != null) {
         messageBuilder.write('@${tag.originalId}');

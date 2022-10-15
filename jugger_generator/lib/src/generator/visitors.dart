@@ -1,4 +1,3 @@
-// ignore_for_file: deprecated_member_use
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:analyzer/dart/element/visitor.dart';
@@ -33,10 +32,10 @@ class _InjectedMembersVisitor extends RecursiveElementVisitor<dynamic> {
   @override
   dynamic visitConstructorElement(ConstructorElement element) {
     final List<InterfaceType> allSupertypes =
-        element.enclosingElement.allSupertypes;
+        element.enclosingElement3.allSupertypes;
 
     for (final InterfaceType interfaceType in allSupertypes) {
-      final Element element = interfaceType.element;
+      final Element element = interfaceType.element2;
       if (isCore(element)) {
         continue;
       }
@@ -64,7 +63,7 @@ class _ModuleMethodsVisitor extends RecursiveElementVisitor<dynamic>
 
   @override
   dynamic visitMethodElement(MethodElement element) {
-    final Element moduleElement = element.enclosingElement;
+    final Element moduleElement = element.enclosingElement3;
 
     check(
       element.isAbstract || element.isStatic,
@@ -133,7 +132,7 @@ class _ModuleMethodsVisitor extends RecursiveElementVisitor<dynamic>
         () => buildErrorMessage(
           error: JuggerErrorId.invalid_handler_method,
           message:
-              'Method ${element.enclosingElement.name}.${element.name} marked with @${j.disposalHandler.runtimeType} must be static.',
+              'Method ${element.enclosingElement3.name}.${element.name} marked with @${j.disposalHandler.runtimeType} must be static.',
         ),
       );
 
@@ -170,8 +169,9 @@ class _ComponentsVisitor extends RecursiveElementVisitor<dynamic> {
         if (type.isDartCoreObject) {
           continue;
         }
+        final InterfaceElement interfaceElement = type.element2;
         check(
-          type.element.isAbstract,
+          interfaceElement is ClassElement && interfaceElement.isAbstract,
           () => buildErrorMessage(
             error: JuggerErrorId.invalid_component,
             message:
@@ -258,10 +258,10 @@ class _InjectedMethodsVisitor extends RecursiveElementVisitor<dynamic> {
   @override
   dynamic visitConstructorElement(ConstructorElement element) {
     final List<InterfaceType> allSupertypes =
-        element.enclosingElement.allSupertypes;
+        element.enclosingElement3.allSupertypes;
 
     for (final InterfaceType interfaceType in allSupertypes) {
-      final Element element = interfaceType.element;
+      final Element element = interfaceType.element2;
       if (isCore(element)) {
         continue;
       }
@@ -344,14 +344,14 @@ class _ComponentBuildersVisitor extends RecursiveElementVisitor<dynamic> {
       buildMethod = buildMethodNullable!;
 
       final BaseComponentAnnotation componentAnnotation =
-          buildMethod.returnType.element!.getAnnotation();
+          buildMethod.returnType.element2!.getAnnotation();
 
       final Iterable<MethodElement> externalDependenciesMethods =
           methods.where((MethodElement me) => me.name != buildMethodName);
       for (final DependencyAnnotation dep in componentAnnotation.dependencies) {
         final bool dependencyProvided =
             externalDependenciesMethods.any((MethodElement me) {
-          return me.parameters[0].type.element == dep.element;
+          return me.parameters[0].type.element2 == dep.element;
         });
 
         check(
@@ -372,7 +372,7 @@ class _ComponentBuildersVisitor extends RecursiveElementVisitor<dynamic> {
           element: element,
           methods: methods,
           // ignore: avoid_as
-          componentClass: buildMethod.returnType.element! as ClassElement,
+          componentClass: buildMethod.returnType.element2! as ClassElement,
         ),
       );
     }
@@ -394,13 +394,13 @@ class _ComponentBuilderMethodsVisitor extends RecursiveElementVisitor<dynamic>
   dynamic visitMethodElement(MethodElement element) {
     if (element.name == 'build') {
       final BaseComponentAnnotation? componentAnnotation =
-          element.returnType.element!.getAnnotationOrNull();
+          element.returnType.element2!.getAnnotationOrNull();
       check(
         componentAnnotation != null,
         () => buildErrorMessage(
           error: JuggerErrorId.wrong_type_of_build_method,
           message:
-              'build method of ${element.enclosingElement.name} return wrong type.',
+              'build method of ${element.enclosingElement3.name} return wrong type.',
         ),
       );
     }
@@ -419,10 +419,10 @@ class _MethodsVisitor extends GeneralizingElementVisitor<dynamic> {
   dynamic visitElement(Element element) {
     if (element is ConstructorElement) {
       final List<InterfaceType> allSupertypes =
-          element.enclosingElement.allSupertypes;
+          element.enclosingElement3.allSupertypes;
 
       for (final InterfaceType interfaceType in allSupertypes) {
-        final Element interfaceElement = interfaceType.element;
+        final Element interfaceElement = interfaceType.element2;
         if (isFlutterCore(interfaceElement) || isCore(interfaceElement)) {
           continue;
         }
@@ -451,10 +451,10 @@ class _ComponentMembersVisitor extends GeneralizingElementVisitor<dynamic>
   dynamic visitElement(Element element) {
     if (element is ConstructorElement) {
       final List<InterfaceType> allSupertypes =
-          element.enclosingElement.allSupertypes;
+          element.enclosingElement3.allSupertypes;
 
       for (final InterfaceType interfaceType in allSupertypes) {
-        final Element interfaceElement = interfaceType.element;
+        final Element interfaceElement = interfaceType.element2;
         if (isCore(interfaceElement)) {
           continue;
         }
@@ -497,13 +497,13 @@ class _ComponentMembersVisitor extends GeneralizingElementVisitor<dynamic>
       (Annotation a) => a is SubcomponentFactoryAnnotation,
     )) {
       final SubcomponentAnnotation? subcomponentAnnotation = method
-          .returnType.element
+          .returnType.element2
           ?.getAnnotationOrNull<SubcomponentAnnotation>();
       check(subcomponentAnnotation != null, () {
         return buildErrorMessage(
           error: JuggerErrorId.wrong_subcomponent_factory,
           message:
-              "Factory method ${method.enclosingElement.name}.${method.name} "
+              "Factory method ${method.enclosingElement3.name}.${method.name} "
               "must return subcomponent type.",
         );
       });
@@ -619,9 +619,6 @@ mixin CheckSupportedMemberMixin<R> on ElementVisitor<R> {
       _throw(element);
 
   @override
-  R? visitExportElement(ExportElement element) => _throw(element);
-
-  @override
   R? visitExtensionElement(ExtensionElement element) => _throw(element);
 
   @override
@@ -637,9 +634,6 @@ mixin CheckSupportedMemberMixin<R> on ElementVisitor<R> {
   @override
   R? visitGenericFunctionTypeElement(GenericFunctionTypeElement element) =>
       _throw(element);
-
-  @override
-  R? visitImportElement(ImportElement element) => _throw(element);
 
   @override
   R? visitLabelElement(LabelElement element) => _throw(element);

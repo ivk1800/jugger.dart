@@ -1,4 +1,3 @@
-// ignore_for_file: deprecated_member_use
 import 'dart:collection';
 
 import 'package:analyzer/dart/element/element.dart';
@@ -153,7 +152,7 @@ class ComponentBuilderDelegate {
             error: JuggerErrorId.missing_disposables,
             message: 'The component ${component.element.name} does not contain '
                 'disposable objects, but the dispose method '
-                '${component.disposeMethod?.element.enclosingElement.name}.'
+                '${component.disposeMethod?.element.enclosingElement3.name}.'
                 '${component.disposeMethod?.element.name} is declared.',
           ),
         );
@@ -254,7 +253,7 @@ class ComponentBuilderDelegate {
   Field _buildComponentParameter(j.ComponentBuilderParameter parameter) {
     return Field((FieldBuilder b) {
       b.type = refer('${_allocateTypeName(parameter.parameter.type)}?');
-      final Tag? tag = parameter.parameter.enclosingElement?.getQualifierTag();
+      final Tag? tag = parameter.parameter.enclosingElement3?.getQualifierTag();
       b.name = '_${_generateFieldName(
         type: parameter.parameter.type,
         tag: tag?.toAssignTag(),
@@ -299,7 +298,7 @@ class ComponentBuilderDelegate {
     return Block((BlockBuilder builder) {
       final j.ComponentBuilderParameter p =
           j.ComponentBuilderParameter(parameter: method.parameters[0]);
-      final Tag? tag = p.parameter.enclosingElement!.getQualifierTag();
+      final Tag? tag = p.parameter.enclosingElement3!.getQualifierTag();
       builder.addExpression(
         refer(
           '_${_generateFieldName(
@@ -321,7 +320,7 @@ class ComponentBuilderDelegate {
       final Iterable<Expression> builderParameters = componentBuilder.parameters
           .map((j.ComponentBuilderParameter parameter) {
         final Tag? tag =
-            parameter.parameter.enclosingElement!.getQualifierTag();
+            parameter.parameter.enclosingElement3!.getQualifierTag();
         return refer(
           '_${_generateFieldName(
             type: parameter.parameter.tryGetType(),
@@ -338,7 +337,7 @@ class ComponentBuilderDelegate {
       final List<Code> assertCodes = componentBuilder.parameters
           .map((j.ComponentBuilderParameter parameter) {
         final Tag? tag =
-            parameter.parameter.enclosingElement!.getQualifierTag();
+            parameter.parameter.enclosingElement3!.getQualifierTag();
         final StringBuffer code = StringBuffer()
           ..write('assert(_')
           ..write(
@@ -548,8 +547,8 @@ class ComponentBuilderDelegate {
 
     final String name = _allocator.allocate(
       Reference(
-        type.element.name,
-        type.element.librarySource.uri.toString(),
+        type.element2.name,
+        type.element2.librarySource.uri.toString(),
       ),
     );
 
@@ -637,7 +636,7 @@ class ComponentBuilderDelegate {
       final ParameterElement parameterElement = method.element.parameters[0];
 
       final ClassElement memberElement =
-          parameterElement.type.element! as ClassElement;
+          parameterElement.type.element2! as ClassElement;
       builder.requiredParameters.add(
         Parameter((ParameterBuilder b) {
           b.name = uncapitalize(parameterElement.name);
@@ -924,7 +923,7 @@ class ComponentBuilderDelegate {
         _getProviderReferenceOfElement(constructor).newInstance(
       <Expression>[
         _buildBodyWithRegisterDisposableOfType(
-          type: constructor.enclosingElement.thisType,
+          type: constructor.enclosingElement3.thisType,
           returnBlock: _buildCallConstructor(constructor),
         )
       ],
@@ -948,7 +947,7 @@ class ComponentBuilderDelegate {
       return _buildProviderFromAbstractMethod(method, prefixScope);
     } else {
       throw UnexpectedJuggerError(
-        'Unsupported method [${method.element.enclosingElement.name}.'
+        'Unsupported method [${method.element.enclosingElement3.name}.'
         '${method.element.name}]',
       );
     }
@@ -1049,7 +1048,7 @@ class ComponentBuilderDelegate {
     j.StaticProvideMethod method,
     String? prefixScope,
   ) {
-    final Element moduleClass = method.element.enclosingElement;
+    final Element moduleClass = method.element.enclosingElement3;
     final Expression callExpression =
         _getProviderReferenceOfElement(method.element).newInstance(<Expression>[
       _buildBodyWithRegisterDisposable(
@@ -1074,8 +1073,8 @@ class ComponentBuilderDelegate {
   /// MyClass();
   /// ```
   Code _buildCallConstructor(ConstructorElement constructor) {
-    final ClassElement classElement = constructor.enclosingElement;
-    final Reference reference = classElement.asReference();
+    final InterfaceElement interface = constructor.enclosingElement3;
+    final Reference reference = interface.asReference();
     final String name = constructor.name;
 
     if (constructor.parameters.isEmpty) {
@@ -1094,8 +1093,7 @@ class ComponentBuilderDelegate {
           instanceExpression = reference.newInstance(<Expression>[]);
         }
       }
-      return _callInjectedMethodsIfNeeded(instanceExpression, classElement)
-          .code;
+      return _callInjectedMethodsIfNeeded(instanceExpression, interface).code;
     }
 
     final Expression newInstanceExpression = _buildCallArgumentsExpression(
@@ -1105,7 +1103,7 @@ class ComponentBuilderDelegate {
     );
     return _callInjectedMethodsIfNeeded(
       newInstanceExpression,
-      classElement,
+      interface,
     ).code;
   }
 
@@ -1235,7 +1233,7 @@ class ComponentBuilderDelegate {
     if (element is ConstructorElement) {
       return _getProviderReference(
         generic: generic,
-        isScoped: element.enclosingElement.hasScoped(),
+        isScoped: element.enclosingElement3.hasScoped(),
       );
     }
 
@@ -1264,9 +1262,12 @@ class ComponentBuilderDelegate {
   /// Only certain element types are supported, otherwise throws an error.
   String _getClassTypeAsString(Element element) {
     if (element is ConstructorElement) {
-      final ClassElement c = element.enclosingElement;
+      final InterfaceElement interface = element.enclosingElement3;
       return _allocator.allocate(
-        Reference(c.thisType.getName(), c.librarySource.uri.toString()),
+        Reference(
+          interface.thisType.getName(),
+          interface.librarySource.uri.toString(),
+        ),
       );
     } else if (element is MethodElement) {
       return _allocator.allocate(refer(_allocateTypeName(element.returnType)));
@@ -1304,7 +1305,7 @@ class ComponentBuilderDelegate {
             return Parameter((ParameterBuilder b) {
               b.toThis = true;
               final Tag? tag =
-                  parameter.parameter.enclosingElement!.getQualifierTag();
+                  parameter.parameter.enclosingElement3!.getQualifierTag();
               b.name = '_${_generateFieldName(
                 type: parameter.parameter.type,
                 tag: tag?.toAssignTag(),
@@ -1332,7 +1333,7 @@ class ComponentBuilderDelegate {
       // ignore: unnecessary_parenthesis
       return (Field((FieldBuilder b) {
         final Tag? tag =
-            parameter.parameter.enclosingElement!.getQualifierTag();
+            parameter.parameter.enclosingElement3!.getQualifierTag();
         b.name = '_${_generateFieldName(
           type: parameter.parameter.type,
           tag: tag?.toAssignTag(),
@@ -1414,7 +1415,7 @@ class ComponentBuilderDelegate {
         tag: disposableInfo.tag,
       ).property('dispose');
     } else if (disposeHandler is DelegateDisposeHandler) {
-      final Expression body = disposeHandler.method.enclosingElement
+      final Expression body = disposeHandler.method.enclosingElement3
           .asReference()
           .property(disposeHandler.method.name)
           .call(
@@ -1535,7 +1536,7 @@ class ComponentBuilderDelegate {
     if (disposeHandler is SelfDisposeHandler) {
       return const Code('_disposableManager.register(disposable.dispose);');
     } else if (disposeHandler is DelegateDisposeHandler) {
-      final Element moduleClass = disposeHandler.method.enclosingElement;
+      final Element moduleClass = disposeHandler.method.enclosingElement3;
       return const Reference('_disposableManager')
           .property('register')
           .call(<Expression>[
@@ -1915,7 +1916,7 @@ if (_disposed) {
       } else if (keyAnnotation is MultibindingsKeyAnnotation<DartType>) {
         keyExpression = refer(
           _allocateTypeName(
-            (keyAnnotation.key.element! as ClassElement).thisType,
+            (keyAnnotation.key.element2! as ClassElement).thisType,
           ),
         );
       } else {
@@ -2100,7 +2101,7 @@ if (_disposed) {
         builder.returns = method.element.returnType.asReference();
 
         final j.BaseComponentAnnotation? baseComponentAnnotation = method
-            .element.returnType.element
+            .element.returnType.element2
             ?.getAnnotation<BaseComponentAnnotation>();
 
         checkUnexpected(
@@ -2153,7 +2154,7 @@ if (_disposed) {
           .statement;
     } else {
       final String builderClassName = '${_createComponentName(
-        method.element.returnType.element!.name!,
+        method.element.returnType.element2!.name!,
         _thisComponentName,
       )}Builder';
       final Code code2 =
@@ -2179,7 +2180,7 @@ if (_disposed) {
         .subcomponentFactoryMethods
         .map((j.SubcomponentFactoryMethod m) {
       final ClassElement classElement =
-          m.element.returnType.element.requiredType();
+          m.element.returnType.element2.requiredType();
       final j.BaseComponentAnnotation subcomponentAnnotation =
           classElement.getAnnotation();
 

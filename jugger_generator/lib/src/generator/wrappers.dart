@@ -1,4 +1,3 @@
-// ignore_for_file: deprecated_member_use
 import 'dart:collection';
 
 import 'package:analyzer/dart/element/element.dart';
@@ -180,7 +179,7 @@ List<DisposalHandlerMethod> _getDisposalHandlerMethodsFromModules(
       final String places = registeredHandlers
           .map(
             (DisposalHandlerMethod handler) =>
-                '${handler.element.enclosingElement.name}.${handler.element.name}',
+                '${handler.element.enclosingElement3.name}.${handler.element.name}',
           )
           .join(', ');
       return buildErrorMessage(
@@ -477,9 +476,9 @@ class StaticProvideMethod extends ProvideMethod {
   /// Create method from element and validate.
   factory StaticProvideMethod.fromMethodElement(MethodElement methodElement) {
     checkUnexpected(
-      methodElement.returnType.element is ClassElement,
+      methodElement.returnType.element2 is ClassElement,
       () => buildUnexpectedErrorMessage(
-        message: '${methodElement.returnType.element} not supported.',
+        message: '${methodElement.returnType.element2} not supported.',
       ),
     );
     return StaticProvideMethod._(
@@ -506,7 +505,7 @@ class DisposalHandlerMethod extends ModuleMethod {
       () => buildErrorMessage(
         error: JuggerErrorId.invalid_handler_method,
         message:
-            'Method ${element.enclosingElement.name}.${element.name} annotated with ${j.disposalHandler.runtimeType} must have one parameter.',
+            'Method ${element.enclosingElement3.name}.${element.name} annotated with ${j.disposalHandler.runtimeType} must have one parameter.',
       ),
     );
 
@@ -536,7 +535,7 @@ class AbstractProvideMethod extends ProvideMethod {
 
   /// Create method from element and validate.
   factory AbstractProvideMethod.fromMethodElement(MethodElement element) {
-    final Element moduleElement = element.enclosingElement;
+    final Element moduleElement = element.enclosingElement3;
     check(
       element.parameters.length == 1,
       () => buildErrorMessage(
@@ -549,7 +548,7 @@ class AbstractProvideMethod extends ProvideMethod {
     final DartType parameterType = element.parameters.first.type;
     parameterType.checkUnsupportedType();
     final ClassElement? typeElement =
-        parameterType.element?.castToOrThrow<ClassElement>();
+        parameterType.element2?.castToOrThrow<ClassElement>();
 
     final bool isSupertype = typeElement!.allSupertypes.any(
       (InterfaceType interfaceType) => interfaceType == element.returnType,
@@ -564,11 +563,11 @@ class AbstractProvideMethod extends ProvideMethod {
       ),
     );
 
-    final Element rawParameter = element.parameters[0].type.element!;
+    final Element rawParameter = element.parameters[0].type.element2!;
     checkUnexpected(
-      element.returnType.element is ClassElement,
+      element.returnType.element2 is ClassElement,
       () => buildUnexpectedErrorMessage(
-        message: '${element.returnType.element} not supported.',
+        message: '${element.returnType.element2} not supported.',
       ),
     );
     return AbstractProvideMethod._(
@@ -664,9 +663,9 @@ class SubcomponentFactoryMethod extends ComponentMethod {
     String baseMessage(String reason) {
       final StringBuffer messageBuilder = StringBuffer()
         ..write('Method ')
-        ..write(parameter.enclosingElement?.enclosingElement?.name)
+        ..write(parameter.enclosingElement3?.enclosingElement3?.name)
         ..write('.')
-        ..write(parameter.enclosingElement?.name)
+        ..write(parameter.enclosingElement3?.name)
         ..write(' is invalid. ')
         ..write(reason);
 
@@ -698,7 +697,7 @@ class SubcomponentFactoryMethod extends ComponentMethod {
   }();
 
   late final ClassElement _builderClass = () {
-    final Element? builderElement = _builderParameter.type.element;
+    final Element? builderElement = _builderParameter.type.element2;
     check(
       builderElement?.getAnnotationOrNull<ComponentBuilderAnnotation>() != null,
       () => buildErrorMessage(

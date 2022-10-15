@@ -35,10 +35,10 @@ class _Visitor extends RecursiveAstVisitor<void> {
   @override
   void visitVariableDeclaration(VariableDeclaration node) {
     super.visitVariableDeclaration(node);
-    final RegExp regExp = RegExp(node.name.name);
+    final RegExp regExp = RegExp(node.name2.lexeme);
     final Iterable<RegExpMatch> allMatches = regExp.allMatches(_rawContent);
     if (allMatches.length == 1) {
-      _variables.add(node.name.name);
+      _variables.add(node.name2.lexeme);
     }
   }
 }

@@ -8,7 +8,7 @@ dependencies:
 
 dev_dependencies:
   build: ^2.2.1
-  build_runner: ^2.1.7
+  build_runner: ^2.2.0
   build_runner_core: ^7.2.3
   build_test: ^2.1.5
   jugger_generator:

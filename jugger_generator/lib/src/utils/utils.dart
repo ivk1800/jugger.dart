@@ -1,4 +1,3 @@
-// ignore_for_file: deprecated_member_use
 import 'dart:convert';
 
 import 'package:analyzer/dart/constant/value.dart';
@@ -35,7 +34,7 @@ List<Annotation> _getAnnotations(Element element) {
 
     if (annotationElement is PropertyAccessorElement) {
       final ClassElement annotationClassElement =
-          annotationElement.variable.type.element! as ClassElement;
+          annotationElement.variable.type.element2! as ClassElement;
       final bool isQualifier = annotationClassElement.metadata.isQualifier();
 
       if (isQualifier) {
@@ -44,12 +43,11 @@ List<Annotation> _getAnnotations(Element element) {
         );
       }
     } else if (annotationElement is ConstructorElement) {
-      final ClassElement annotationClassElement =
-          annotationElement.enclosingElement;
-      final bool isQualifier = annotationClassElement.metadata.isQualifier();
+      final InterfaceElement interface = annotationElement.enclosingElement3;
+      final bool isQualifier = interface.metadata.isQualifier();
       if (isQualifier) {
         annotations.add(
-          QualifierAnnotation(tag: _getTag(annotation, annotationClassElement)),
+          QualifierAnnotation(tag: _getTag(annotation, interface)),
         );
       }
     }
@@ -60,7 +58,7 @@ List<Annotation> _getAnnotations(Element element) {
   for (int i = 0; i < resolvedMetadata.length; i++) {
     final ElementAnnotation annotation = resolvedMetadata[i];
     final Element? valueElement =
-        annotation.computeConstantValue()?.type?.element;
+        annotation.computeConstantValue()?.type?.element2;
 
     if (valueElement == null) {
       throw UnexpectedJuggerError(
@@ -86,8 +84,7 @@ List<Annotation> _getAnnotations(Element element) {
         late final double? doubleValue = field.toDoubleValue();
         late final bool? boolValue = field.toBoolValue();
         late final DartType? typeValue = field.toTypeValue();
-        late final ClassElement? enumClass =
-            field.type?.element as ClassElement?;
+        final Element? enumElement = field.type?.element2;
 
         if (stringValue != null) {
           annotations.add(
@@ -107,7 +104,14 @@ List<Annotation> _getAnnotations(Element element) {
           annotations.add(
             MultibindingsKeyAnnotation<DartType>(typeValue, field.type!),
           );
-        } else if (enumClass?.isEnum == true) {
+        } else if (enumElement != null) {
+          check(
+            enumElement is EnumElement,
+            () => buildErrorMessage(
+              error: JuggerErrorId.multibindings_unsupported_key_type,
+              message: 'Type $field unsupported.',
+            ),
+          );
           final String enumValue = annotation
                   .computeConstantValue()
                   ?.getField('value')
@@ -224,7 +228,7 @@ List<Annotation> _getAnnotations(Element element) {
 
         if (builderType != null) {
           final ComponentBuilderAnnotation? componentBuilderAnnotation =
-              builderType.element
+              builderType.element2
                   ?.getAnnotationOrNull<ComponentBuilderAnnotation>();
 
           check(
@@ -237,7 +241,7 @@ List<Annotation> _getAnnotations(Element element) {
         }
 
         final DartType? notNullableBuilderType =
-            builderType?.element?.tryGetType();
+            builderType?.element2?.tryGetType();
 
         switch (valueElement.name) {
           case 'Component':
@@ -305,7 +309,10 @@ List<Annotation> _getAnnotations(Element element) {
   return annotations;
 }
 
-Tag _getTag(ElementAnnotation annotation, ClassElement annotationClassElement) {
+Tag _getTag(
+  ElementAnnotation annotation,
+  InterfaceElement annotationClassElement,
+) {
   if (annotationClassElement.name == 'Named') {
     final String? stringName =
         annotation.computeConstantValue()!.getField('name')!.toStringValue();
@@ -349,7 +356,7 @@ List<ClassElement> getClassListFromField(
       ?.toListValue()
       ?.cast<DartObject>()
       // ignore: avoid_as
-      .map((DartObject o) => o.toTypeValue()!.element! as ClassElement)
+      .map((DartObject o) => o.toTypeValue()!.element2! as ClassElement)
       .toList();
   checkUnexpected(
     result != null,
