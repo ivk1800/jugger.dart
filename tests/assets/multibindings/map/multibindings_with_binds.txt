@@ -52,6 +52,6 @@ class _Map_int_MyClass_AppComponent_AppComponent_Provider
   Map<int, _i1.MyClass> get() => Map.unmodifiable(<int, _i1.MyClass>{
         1: _myClass4d432aa8b085fa0be1ad8b0c8ce464ccProvider.get(),
         2: _myClass7125adde72c403cbc51d5190613e851dProvider.get(),
-        3: _myClass87c8a1903875e10ae3385fafb7018187Provider.get()
+        3: _myClass87c8a1903875e10ae3385fafb7018187Provider.get(),
       });
 }

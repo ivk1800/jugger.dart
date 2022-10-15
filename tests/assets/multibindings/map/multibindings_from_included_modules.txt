@@ -39,6 +39,6 @@ class _Map_int_String_AppComponent_AppComponent_Provider
   Map<int, String> get() => Map.unmodifiable(<int, String>{
         3: _string0e594248949d49e5e93ff0da69640e23Provider.get(),
         1: _string48a569ddbe9f8a6980714b62e9ba79f6Provider.get(),
-        2: _string9e07833db8de032a7b65c3634145980eProvider.get()
+        2: _string9e07833db8de032a7b65c3634145980eProvider.get(),
       });
 }

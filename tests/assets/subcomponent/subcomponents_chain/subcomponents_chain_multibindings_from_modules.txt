@@ -86,7 +86,7 @@ class _Set_FromComponent_Component2_Component2_Provider
   @override
   Set<_i1.FromComponent> get() => Set.unmodifiable(<_i1.FromComponent>{
         _fromComponent9b50cada45011c4a375051f6757f93adProvider.get(),
-        _fromComponentffe3a427a9d95817130f2741c49bb424Provider.get()
+        _fromComponentffe3a427a9d95817130f2741c49bb424Provider.get(),
       });
 }
 
@@ -117,6 +117,6 @@ class _Set_FromComponent_Component3_Component3_Provider
   Set<_i1.FromComponent> get() => Set.unmodifiable(<_i1.FromComponent>{
         _fromComponent1cd37655385ba38080028436bbb5dee8Provider.get(),
         _fromComponent9b50cada45011c4a375051f6757f93adProvider.get(),
-        _fromComponentffe3a427a9d95817130f2741c49bb424Provider.get()
+        _fromComponentffe3a427a9d95817130f2741c49bb424Provider.get(),
       });
 }

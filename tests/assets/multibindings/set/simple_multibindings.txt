@@ -32,6 +32,6 @@ class _Set_String_AppComponent_AppComponent_Provider
   @override
   Set<String> get() => Set.unmodifiable(<String>{
         _string1cd1812dfa95f93a293be610f6aa4d36Provider.get(),
-        _string6e8c47e1b62c97a19ee198441b3d8f97Provider.get()
+        _string6e8c47e1b62c97a19ee198441b3d8f97Provider.get(),
       });
 }

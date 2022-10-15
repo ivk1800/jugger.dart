@@ -38,6 +38,6 @@ class _Set_String_AppComponent_AppComponent_Provider
   Set<String> get() => Set.unmodifiable(<String>{
         _string0e594248949d49e5e93ff0da69640e23Provider.get(),
         _string48a569ddbe9f8a6980714b62e9ba79f6Provider.get(),
-        _string9e07833db8de032a7b65c3634145980eProvider.get()
+        _string9e07833db8de032a7b65c3634145980eProvider.get(),
       });
 }

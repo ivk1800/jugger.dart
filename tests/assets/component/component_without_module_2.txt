@@ -20,7 +20,9 @@ class JuggerAppComponent implements _i1.AppComponent {
 
   late final _i2.IProvider<_i1.Tracker> _trackerProvider =
       _i2.Provider<_i1.Tracker>(() => _i1.Tracker(
-          firebase: _firebaseProvider.get(), flurry: _flurryProvider.get()));
+            firebase: _firebaseProvider.get(),
+            flurry: _flurryProvider.get(),
+          ));
 
   @override
   _i1.Tracker getTracker() => _trackerProvider.get();

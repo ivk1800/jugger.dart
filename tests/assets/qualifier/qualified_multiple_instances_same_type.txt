@@ -15,8 +15,9 @@ class JuggerAppComponent implements _i1.AppComponent {
 
   late final _i2.IProvider<_i1.AppConfig> _appConfigProvider =
       _i2.SingletonProvider<_i1.AppConfig>(() => _i1.AppModule.provideAppConfig(
-          _named_e77989ed21758e78331b20e477fc5582_AppConfigProvider.get(),
-          _named_123fead50246387983ee340507115ef4_AppConfigProvider.get()));
+            _named_e77989ed21758e78331b20e477fc5582_AppConfigProvider.get(),
+            _named_123fead50246387983ee340507115ef4_AppConfigProvider.get(),
+          ));
 
   late final _i2.IProvider<_i1.AppConfig>
       _named_123fead50246387983ee340507115ef4_AppConfigProvider =

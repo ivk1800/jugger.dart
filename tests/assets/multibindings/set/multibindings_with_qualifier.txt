@@ -37,6 +37,6 @@ class _Named_3364029304b2717304e2855490532d1c_Set_String_AppComponent_AppCompone
         _named_3364029304b2717304e2855490532d1c_String1cd1812dfa95f93a293be610f6aa4d36Provider
             .get(),
         _named_3364029304b2717304e2855490532d1c_String6e8c47e1b62c97a19ee198441b3d8f97Provider
-            .get()
+            .get(),
       });
 }

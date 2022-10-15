@@ -38,7 +38,7 @@ class _Set_String_AppComponent1_AppComponent1_Provider
   @override
   Set<String> get() => Set.unmodifiable(<String>{
         _string1cd1812dfa95f93a293be610f6aa4d36Provider.get(),
-        _string6e8c47e1b62c97a19ee198441b3d8f97Provider.get()
+        _string6e8c47e1b62c97a19ee198441b3d8f97Provider.get(),
       });
 }
 
@@ -53,6 +53,6 @@ class _Set_int_AppComponent1_AppComponent1_Provider
   @override
   Set<int> get() => Set.unmodifiable(<int>{
         _int069e794bd481b8f3cc0d6e8b423f4b10Provider.get(),
-        _intf90d14319571372a713f7519a85f7a4aProvider.get()
+        _intf90d14319571372a713f7519a85f7a4aProvider.get(),
       });
 }

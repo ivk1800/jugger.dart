@@ -16,8 +16,11 @@ class JuggerAppComponent implements _i1.AppComponent {
   late final _i2.IProvider<_i1.Config> _configProvider =
       _i2.Provider<_i1.Config>(() => _i1.Config());
 
-  late final _i2.IProvider<String> _stringProvider = _i2.Provider<String>(
-      () => _i1.AppModule.provideName(_configProvider.get(), _configProvider));
+  late final _i2.IProvider<String> _stringProvider =
+      _i2.Provider<String>(() => _i1.AppModule.provideName(
+            _configProvider.get(),
+            _configProvider,
+          ));
 
   @override
   String getName() => _stringProvider.get();

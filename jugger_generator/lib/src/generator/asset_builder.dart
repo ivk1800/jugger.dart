@@ -88,8 +88,15 @@ class AssetBuilder implements AssetContext {
   }
 
   String _createTargetContext(LibraryBuilder target) {
-    final String fileText =
-        target.build().accept(DartEmitter(allocator: _allocator)).toString();
+    final String fileText = target
+        .build()
+        .accept(
+          DartEmitter(
+            allocator: _allocator,
+            useNullSafetySyntax: true,
+          ),
+        )
+        .toString();
 
     if (globalConfig.checkUnusedProviders) {
       checkUnusedProviders(fileText);

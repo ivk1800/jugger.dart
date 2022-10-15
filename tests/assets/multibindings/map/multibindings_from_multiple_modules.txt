@@ -34,6 +34,6 @@ class _Map_int_String_AppComponent_AppComponent_Provider
   @override
   Map<int, String> get() => Map.unmodifiable(<int, String>{
         1: _string6e8c47e1b62c97a19ee198441b3d8f97Provider.get(),
-        2: _stringd1392bfb910c11a847a9315fb7a35e3bProvider.get()
+        2: _stringd1392bfb910c11a847a9315fb7a35e3bProvider.get(),
       });
 }

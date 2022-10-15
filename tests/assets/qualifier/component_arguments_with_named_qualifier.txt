@@ -11,9 +11,10 @@ import 'package:tests/qualifier/component_arguments_with_named_qualifier.dart'
 
 class JuggerAppComponent implements _i1.AppComponent {
   JuggerAppComponent._create(
-      this._named_c4ca4238a0b923820dcc509a6f75849b_MyClass,
-      this._named_c81e728d9d4c2f636f067f89cc14862c_MyClass,
-      this._myClass);
+    this._named_c4ca4238a0b923820dcc509a6f75849b_MyClass,
+    this._named_c81e728d9d4c2f636f067f89cc14862c_MyClass,
+    this._myClass,
+  );
 
   final _i1.MyClass _named_c4ca4238a0b923820dcc509a6f75849b_MyClass;
 
@@ -60,8 +61,9 @@ class JuggerAppComponentBuilder implements _i1.AppComponentBuilder {
     assert(_named_c81e728d9d4c2f636f067f89cc14862c_MyClass != null);
     assert(_myClass != null);
     return JuggerAppComponent._create(
-        _named_c4ca4238a0b923820dcc509a6f75849b_MyClass!,
-        _named_c81e728d9d4c2f636f067f89cc14862c_MyClass!,
-        _myClass!);
+      _named_c4ca4238a0b923820dcc509a6f75849b_MyClass!,
+      _named_c81e728d9d4c2f636f067f89cc14862c_MyClass!,
+      _myClass!,
+    );
   }
 }

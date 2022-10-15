@@ -28,9 +28,11 @@ class JuggerSubcomponent$MyComponent implements _i1.MyComponent {
 
   final JuggerAppComponent _parent;
 
-  late final _i2.IProvider<int> _intProvider = _i2.Provider<int>(() =>
-      _i1.MyModule.provideCount(
-          _parent._stringProvider.get(), _parent._double));
+  late final _i2.IProvider<int> _intProvider =
+      _i2.Provider<int>(() => _i1.MyModule.provideCount(
+            _parent._stringProvider.get(),
+            _parent._double,
+          ));
 
   @override
   int get count => _intProvider.get();

@@ -20,8 +20,10 @@ class JuggerAppComponent implements _i1.AppComponent {
       _i2.Provider<int>(() => _i1.AppModule.provideNumberInt());
 
   late final _i2.IProvider<_i1.MyClass> _myClassProvider =
-      _i2.Provider<_i1.MyClass>(
-          () => _i1.MyClass(_intProvider.get(), _doubleProvider.get()));
+      _i2.Provider<_i1.MyClass>(() => _i1.MyClass(
+            _intProvider.get(),
+            _doubleProvider.get(),
+          ));
 
   late final _i2.IProvider<String> _stringProvider = _i2.Provider<String>(
       () => _i1.AppModule.provideHello(_myClassProvider.get()));

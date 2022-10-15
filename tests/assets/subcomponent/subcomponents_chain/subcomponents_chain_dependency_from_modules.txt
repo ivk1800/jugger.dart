@@ -43,8 +43,9 @@ class JuggerSubcomponent$Component3 implements _i1.Component3 {
 
   late final _i2.IProvider<_i1.FromComponent3> _fromComponent3Provider =
       _i2.Provider<_i1.FromComponent3>(() => _i1.Component3Module.provideClass(
-          _parent._parent._fromComponent1Provider.get(),
-          _parent._fromComponent2Provider.get()));
+            _parent._parent._fromComponent1Provider.get(),
+            _parent._fromComponent2Provider.get(),
+          ));
 
   @override
   _i1.FromComponent3 getFromComponent3() => _fromComponent3Provider.get();

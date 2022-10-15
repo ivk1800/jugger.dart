@@ -11,7 +11,9 @@ import 'package:tests/qualifier/component_arguments_with_custom_qualifier.dart'
 
 class JuggerAppComponent implements _i1.AppComponent {
   JuggerAppComponent._create(
-      this._myClass, this._named_e4b98b05a8ae01d94a56d28d99d1f63e_MyClass);
+    this._myClass,
+    this._named_e4b98b05a8ae01d94a56d28d99d1f63e_MyClass,
+  );
 
   final _i1.MyClass _myClass;
 
@@ -45,6 +47,8 @@ class JuggerAppComponentBuilder implements _i1.AppComponentBuilder {
     assert(_myClass != null);
     assert(_named_e4b98b05a8ae01d94a56d28d99d1f63e_MyClass != null);
     return JuggerAppComponent._create(
-        _myClass!, _named_e4b98b05a8ae01d94a56d28d99d1f63e_MyClass!);
+      _myClass!,
+      _named_e4b98b05a8ae01d94a56d28d99d1f63e_MyClass!,
+    );
   }
 }

@@ -49,7 +49,7 @@ class _Set_String_MyComponent_MyComponent_Provider
   @override
   Set<String> get() => Set.unmodifiable(<String>{
         _string18a037af09801ad0cfddf18dad7e20c3Provider.get(),
-        _string42808242486f6a83ba6ac60e68113a27Provider.get()
+        _string42808242486f6a83ba6ac60e68113a27Provider.get(),
       });
 }
 
@@ -70,6 +70,6 @@ class _Set_String_MySubcomponent_MySubcomponent_Provider
   @override
   Set<String> get() => Set.unmodifiable(<String>{
         _string18a037af09801ad0cfddf18dad7e20c3Provider.get(),
-        _string42808242486f6a83ba6ac60e68113a27Provider.get()
+        _string42808242486f6a83ba6ac60e68113a27Provider.get(),
       });
 }

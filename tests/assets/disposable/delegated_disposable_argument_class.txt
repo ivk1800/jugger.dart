@@ -11,7 +11,10 @@ import 'package:tests/disposable/delegated_disposable_argument_class.dart'
 import 'dart:async' as _i2;
 
 class JuggerAppComponent implements _i1.AppComponent {
-  JuggerAppComponent._create(this._myClass1, this._myClass2) {
+  JuggerAppComponent._create(
+    this._myClass1,
+    this._myClass2,
+  ) {
     _registerDisposableArguments();
   }
 
@@ -62,7 +65,10 @@ class JuggerAppComponentBuilder implements _i1.AppComponentBuilder {
   _i1.AppComponent build() {
     assert(_myClass1 != null);
     assert(_myClass2 != null);
-    return JuggerAppComponent._create(_myClass1!, _myClass2!);
+    return JuggerAppComponent._create(
+      _myClass1!,
+      _myClass2!,
+    );
   }
 }
 

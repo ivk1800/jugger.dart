@@ -24,12 +24,18 @@ class JuggerAppComponent implements _i1.AppComponent {
 }
 
 class JuggerSubcomponent$MyComponent implements _i1.MyComponent {
-  JuggerSubcomponent$MyComponent._create(this._parent, this._double);
+  JuggerSubcomponent$MyComponent._create(
+    this._parent,
+    this._double,
+  );
 
   final JuggerAppComponent _parent;
 
-  late final _i2.IProvider<int> _intProvider = _i2.Provider<int>(
-      () => _i1.MyModule.provideCount(_parent._stringProvider.get(), _double));
+  late final _i2.IProvider<int> _intProvider =
+      _i2.Provider<int>(() => _i1.MyModule.provideCount(
+            _parent._stringProvider.get(),
+            _double,
+          ));
 
   final double _double;
 
@@ -57,6 +63,9 @@ class JuggerSubcomponent$MyComponentBuilder implements _i1.MyComponentBuilder {
   _i1.MyComponent build() {
     assert(_double != null);
     assert(_parent != null);
-    return JuggerSubcomponent$MyComponent._create(_parent!, _double!);
+    return JuggerSubcomponent$MyComponent._create(
+      _parent!,
+      _double!,
+    );
   }
 }
