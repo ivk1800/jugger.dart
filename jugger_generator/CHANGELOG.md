@@ -1,3 +1,12 @@
+## 3.1.0
+
+* Restrict analyzer version to >=4.7.0 <6.0.0.
+* Dart 2.15: ignore all lint rules for file.
+* Improving the error when no provider is found for an abstract class.
+* Ignoring injected constructors in an abstract class instead of generating code with a syntax error.
+* Support factory and named constructors for inject.
+* Support positioned and named arguments together in injected constructor.
+
 ## 3.0.0
 
 * **Breaking**: Check [migration guide](https://github.com/ivk1800/jugger.dart#from-2-to-3) from version 2 to 3.
