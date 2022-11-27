@@ -1,3 +1,7 @@
+## 3.1.1
+
+* Upgrade analyzer.
+
 ## 3.1.0
 
 * Restrict analyzer version to >=4.7.0 <6.0.0.
