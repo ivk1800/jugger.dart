@@ -15,11 +15,11 @@ import 'utils.dart';
 extension DartTypeExt on DartType {
   /// Whether this type is a [IProvider] or [ILazy].
   bool get isValueProvider {
-    if (element2 == null) {
+    if (element == null) {
       return false;
     }
 
-    final LibraryElement? library = element2!.library;
+    final LibraryElement? library = element!.library;
 
     if (library == null) {
       return false;
@@ -30,16 +30,16 @@ extension DartTypeExt on DartType {
               component == 'package:jugger/src/provider.dart' ||
               component == 'package:jugger/src/lazy.dart',
         ) &&
-        (element2!.name == 'IProvider' || element2!.name == 'ILazy');
+        (element!.name == 'IProvider' || element!.name == 'ILazy');
   }
 
   /// Whether this type is a [ILazy].
   bool get isLazyType {
-    if (element2 == null) {
+    if (element == null) {
       return false;
     }
 
-    final LibraryElement? library = element2!.library;
+    final LibraryElement? library = element!.library;
 
     if (library == null) {
       return false;
@@ -48,7 +48,7 @@ extension DartTypeExt on DartType {
     return library.location!.components.any(
           (String component) => component == 'package:jugger/src/lazy.dart',
         ) &&
-        element2!.name == 'ILazy';
+        element!.name == 'ILazy';
   }
 
   /// Returns the only generic type, if not one throws an error.
@@ -74,7 +74,7 @@ extension DartTypeExt on DartType {
   /// only single and should be validated.
   ConstructorElement getRequiredInjectedConstructor() {
     final List<ConstructorElement> injectedConstructors =
-        _getInjectedConstructorsOfClass(element2!);
+        _getInjectedConstructorsOfClass(element!);
 
     return _getSingleInjectedConstructor(injectedConstructors);
   }
@@ -85,7 +85,7 @@ extension DartTypeExt on DartType {
     checkUnsupportedType();
 
     final List<ConstructorElement> injectedConstructors =
-        _getInjectedConstructorsOfClass(element2!);
+        _getInjectedConstructorsOfClass(element!);
 
     if (injectedConstructors.isEmpty) {
       return null;
@@ -109,19 +109,19 @@ extension DartTypeExt on DartType {
     List<ConstructorElement> injectedConstructors,
   ) {
     if (injectedConstructors.length != 1) {
-      final ClassElement classElement = element2.requiredType<ClassElement>();
+      final ClassElement classElement = element.requiredType<ClassElement>();
       final String message;
       if (injectedConstructors.isEmpty) {
         if (classElement.isAbstract) {
-          message = 'Provider for ${element2?.name} not found.';
+          message = 'Provider for ${element?.name} not found.';
         } else {
           message =
-              'Class ${element2?.name} cannot be provided without an @inject '
+              'Class ${element?.name} cannot be provided without an @inject '
               'constructor.';
         }
       } else {
         message =
-            'Class ${element2?.name} may only contain one injected constructor.';
+            'Class ${element?.name} may only contain one injected constructor.';
       }
 
       final JuggerErrorId error;
@@ -145,7 +145,7 @@ extension DartTypeExt on DartType {
     final ConstructorElement constructorElement = injectedConstructors.first;
 
     late final String constructorLogName =
-        '${constructorElement.enclosingElement3.name}.${constructorElement.name}';
+        '${constructorElement.enclosingElement.name}.${constructorElement.name}';
 
     check(
       !constructorElement.isPrivate,
@@ -170,12 +170,12 @@ extension DartTypeExt on DartType {
   }
 
   DisposableAnnotation? getDisposableAnnotation() =>
-      getAnnotations(element2!).firstInstanceOrNull<DisposableAnnotation>();
+      getAnnotations(element!).firstInstanceOrNull<DisposableAnnotation>();
 
   bool isDisposable() =>
-      getAnnotations(element2!).anyInstance<DisposableAnnotation>();
+      getAnnotations(element!).anyInstance<DisposableAnnotation>();
 
-  bool isScoped() => getAnnotations(element2!).anyInstance<ScopeAnnotation>();
+  bool isScoped() => getAnnotations(element!).anyInstance<ScopeAnnotation>();
 
   void checkUnsupportedType() {
     check(
@@ -197,7 +197,7 @@ extension DartTypeExt on DartType {
 
   ComponentBuilder? resolveComponentBuilder(DartType expectedComponentType) {
     final ComponentBuilder? componentBuilder =
-        element2?.getComponentBuilderOrNull();
+        element?.getComponentBuilderOrNull();
 
     if (componentBuilder != null) {
       check(
@@ -213,7 +213,7 @@ extension DartTypeExt on DartType {
   }
 
   Reference asReference() {
-    final Element? e = element2;
+    final Element? e = element;
     checkUnexpected(
       e != null,
       () => 'Unable create Reference, element is null.',

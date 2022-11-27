@@ -27,7 +27,7 @@ extension ElementAnnotationExt on Element {
       () => buildErrorMessage(
         error: JuggerErrorId.multiple_qualifiers,
         message:
-            'Multiple qualifiers of ${enclosingElement3?.name}.$name not allowed.',
+            'Multiple qualifiers of ${enclosingElement?.name}.$name not allowed.',
       ),
     );
 
@@ -52,7 +52,7 @@ extension ElementAnnotationExt on Element {
       final List<ElementAnnotation> resolvedMetadata = element.metadata;
       final ElementAnnotation? moduleAnnotation = resolvedMetadata.firstOrNull;
       final Element? valueElement =
-          moduleAnnotation?.computeConstantValue()?.type?.element2;
+          moduleAnnotation?.computeConstantValue()?.type?.element;
 
       return valueElement?.name == module.runtimeType.toString();
     }
@@ -92,7 +92,7 @@ extension ElementAnnotationExt on Element {
       () => buildErrorMessage(
         error: JuggerErrorId.multibindings_missing_key,
         message: 'Methods of type map must declare a map key:\n'
-            '${(enclosingElement3 as ClassElement).name}.$name',
+            '${(enclosingElement as ClassElement).name}.$name',
       ),
     );
 
@@ -101,7 +101,7 @@ extension ElementAnnotationExt on Element {
       () => buildErrorMessage(
         error: JuggerErrorId.multibindings_multiple_keys,
         message: 'Methods may not have more than one map key:\n'
-            '${(enclosingElement3 as ClassElement).name}.$name\n'
+            '${(enclosingElement as ClassElement).name}.$name\n'
             'keys: ${keys.map((MultibindingsKeyAnnotation<Object?> annotation) => annotation.key).join(', ')}',
       ),
     );
@@ -138,7 +138,7 @@ extension MethodElementExt on MethodElement {
       () => buildErrorMessage(
         error: JuggerErrorId.multiple_multibinding_annotation,
         message: 'Methods cannot have more than one multibinding annotation:\n'
-            '${enclosingElement3.name}.$name',
+            '${enclosingElement.name}.$name',
       ),
     );
 

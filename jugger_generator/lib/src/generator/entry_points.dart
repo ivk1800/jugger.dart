@@ -48,7 +48,7 @@ String? findEntryPointsOf(
       final ParameterElement? parameter = source.element.parameters
           .firstWhereOrNull((ParameterElement element) => element.type == type);
       final StringBuffer messageBuilder = StringBuffer();
-      messageBuilder.write(source.element.enclosingElement3.name);
+      messageBuilder.write(source.element.enclosingElement.name);
       messageBuilder.write('(');
       if (tag != null) {
         messageBuilder.write('@${tag.originalId}');

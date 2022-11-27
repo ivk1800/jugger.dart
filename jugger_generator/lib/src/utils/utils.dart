@@ -34,7 +34,7 @@ List<Annotation> _getAnnotations(Element element) {
 
     if (annotationElement is PropertyAccessorElement) {
       final ClassElement annotationClassElement =
-          annotationElement.variable.type.element2! as ClassElement;
+          annotationElement.variable.type.element! as ClassElement;
       final bool isQualifier = annotationClassElement.metadata.isQualifier();
 
       if (isQualifier) {
@@ -43,7 +43,7 @@ List<Annotation> _getAnnotations(Element element) {
         );
       }
     } else if (annotationElement is ConstructorElement) {
-      final InterfaceElement interface = annotationElement.enclosingElement3;
+      final InterfaceElement interface = annotationElement.enclosingElement;
       final bool isQualifier = interface.metadata.isQualifier();
       if (isQualifier) {
         annotations.add(
@@ -58,7 +58,7 @@ List<Annotation> _getAnnotations(Element element) {
   for (int i = 0; i < resolvedMetadata.length; i++) {
     final ElementAnnotation annotation = resolvedMetadata[i];
     final Element? valueElement =
-        annotation.computeConstantValue()?.type?.element2;
+        annotation.computeConstantValue()?.type?.element;
 
     if (valueElement == null) {
       throw UnexpectedJuggerError(
@@ -84,7 +84,7 @@ List<Annotation> _getAnnotations(Element element) {
         late final double? doubleValue = field.toDoubleValue();
         late final bool? boolValue = field.toBoolValue();
         late final DartType? typeValue = field.toTypeValue();
-        final Element? enumElement = field.type?.element2;
+        final Element? enumElement = field.type?.element;
 
         if (stringValue != null) {
           annotations.add(
@@ -228,7 +228,7 @@ List<Annotation> _getAnnotations(Element element) {
 
         if (builderType != null) {
           final ComponentBuilderAnnotation? componentBuilderAnnotation =
-              builderType.element2
+              builderType.element
                   ?.getAnnotationOrNull<ComponentBuilderAnnotation>();
 
           check(
@@ -241,7 +241,7 @@ List<Annotation> _getAnnotations(Element element) {
         }
 
         final DartType? notNullableBuilderType =
-            builderType?.element2?.tryGetType();
+            builderType?.element?.tryGetType();
 
         switch (valueElement.name) {
           case 'Component':
@@ -356,7 +356,7 @@ List<ClassElement> getClassListFromField(
       ?.toListValue()
       ?.cast<DartObject>()
       // ignore: avoid_as
-      .map((DartObject o) => o.toTypeValue()!.element2! as ClassElement)
+      .map((DartObject o) => o.toTypeValue()!.element! as ClassElement)
       .toList();
   checkUnexpected(
     result != null,

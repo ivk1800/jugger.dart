@@ -179,7 +179,7 @@ List<DisposalHandlerMethod> _getDisposalHandlerMethodsFromModules(
       final String places = registeredHandlers
           .map(
             (DisposalHandlerMethod handler) =>
-                '${handler.element.enclosingElement3.name}.${handler.element.name}',
+                '${handler.element.enclosingElement.name}.${handler.element.name}',
           )
           .join(', ');
       return buildErrorMessage(
@@ -476,9 +476,9 @@ class StaticProvideMethod extends ProvideMethod {
   /// Create method from element and validate.
   factory StaticProvideMethod.fromMethodElement(MethodElement methodElement) {
     checkUnexpected(
-      methodElement.returnType.element2 is ClassElement,
+      methodElement.returnType.element is ClassElement,
       () => buildUnexpectedErrorMessage(
-        message: '${methodElement.returnType.element2} not supported.',
+        message: '${methodElement.returnType.element} not supported.',
       ),
     );
     return StaticProvideMethod._(
@@ -505,7 +505,7 @@ class DisposalHandlerMethod extends ModuleMethod {
       () => buildErrorMessage(
         error: JuggerErrorId.invalid_handler_method,
         message:
-            'Method ${element.enclosingElement3.name}.${element.name} annotated with ${j.disposalHandler.runtimeType} must have one parameter.',
+            'Method ${element.enclosingElement.name}.${element.name} annotated with ${j.disposalHandler.runtimeType} must have one parameter.',
       ),
     );
 
@@ -535,7 +535,7 @@ class AbstractProvideMethod extends ProvideMethod {
 
   /// Create method from element and validate.
   factory AbstractProvideMethod.fromMethodElement(MethodElement element) {
-    final Element moduleElement = element.enclosingElement3;
+    final Element moduleElement = element.enclosingElement;
     check(
       element.parameters.length == 1,
       () => buildErrorMessage(
@@ -548,7 +548,7 @@ class AbstractProvideMethod extends ProvideMethod {
     final DartType parameterType = element.parameters.first.type;
     parameterType.checkUnsupportedType();
     final ClassElement? typeElement =
-        parameterType.element2?.castToOrThrow<ClassElement>();
+        parameterType.element?.castToOrThrow<ClassElement>();
 
     final bool isSupertype = typeElement!.allSupertypes.any(
       (InterfaceType interfaceType) => interfaceType == element.returnType,
@@ -563,11 +563,11 @@ class AbstractProvideMethod extends ProvideMethod {
       ),
     );
 
-    final Element rawParameter = element.parameters[0].type.element2!;
+    final Element rawParameter = element.parameters[0].type.element!;
     checkUnexpected(
-      element.returnType.element2 is ClassElement,
+      element.returnType.element is ClassElement,
       () => buildUnexpectedErrorMessage(
-        message: '${element.returnType.element2} not supported.',
+        message: '${element.returnType.element} not supported.',
       ),
     );
     return AbstractProvideMethod._(
@@ -663,9 +663,9 @@ class SubcomponentFactoryMethod extends ComponentMethod {
     String baseMessage(String reason) {
       final StringBuffer messageBuilder = StringBuffer()
         ..write('Method ')
-        ..write(parameter.enclosingElement3?.enclosingElement3?.name)
+        ..write(parameter.enclosingElement?.enclosingElement?.name)
         ..write('.')
-        ..write(parameter.enclosingElement3?.name)
+        ..write(parameter.enclosingElement?.name)
         ..write(' is invalid. ')
         ..write(reason);
 
@@ -697,7 +697,7 @@ class SubcomponentFactoryMethod extends ComponentMethod {
   }();
 
   late final ClassElement _builderClass = () {
-    final Element? builderElement = _builderParameter.type.element2;
+    final Element? builderElement = _builderParameter.type.element;
     check(
       builderElement?.getAnnotationOrNull<ComponentBuilderAnnotation>() != null,
       () => buildErrorMessage(

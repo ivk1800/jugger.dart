@@ -88,7 +88,7 @@ class ComponentContext {
 
       _registerSource(
         ModuleSource(
-          moduleClass: element.enclosingElement3 as ClassElement,
+          moduleClass: element.enclosingElement as ClassElement,
           type: element.returnType,
           method: method,
           annotations: getAnnotations(element),
@@ -106,7 +106,7 @@ class ComponentContext {
           parameter: parameter,
           type: parameter.type,
           componentBuilder: componentBuilder!,
-          annotations: getAnnotations(parameter.enclosingElement3!),
+          annotations: getAnnotations(parameter.enclosingElement!),
         ),
       );
     }
@@ -127,7 +127,7 @@ class ComponentContext {
 
       for (final ParameterElement parameter in element.parameters) {
         final List<j.InjectedMember> members =
-            parameter.type.element2!.getInjectedMembers();
+            parameter.type.element!.getInjectedMembers();
 
         for (final j.InjectedMember member in members) {
           _registerGraphObject(member.element);
@@ -606,7 +606,7 @@ class ComponentContext {
         _registerSource(
           ThisComponentSource(
             type: type,
-            annotations: getAnnotations(type.element2!),
+            annotations: getAnnotations(type.element!),
           ),
         );
         continue;
@@ -628,7 +628,7 @@ class ComponentContext {
           ),
         );
         continue;
-      } else if (source != null || isCore(type.element2!)) {
+      } else if (source != null || isCore(type.element!)) {
         continue;
       }
       try {
@@ -638,7 +638,7 @@ class ComponentContext {
           InjectedConstructorSource(
             type: type,
             element: injectedConstructor,
-            annotations: getAnnotations(type.element2!),
+            annotations: getAnnotations(type.element!),
           ),
         );
       }
@@ -827,7 +827,7 @@ abstract class ProviderSource {
   Object get key {
     final j.QualifierAnnotation? qualifier = qualifierAnnotation;
     if (qualifier != null) {
-      return '${qualifier.tag}_${createElementPath(type.element2!)}/${type.getName()}';
+      return '${qualifier.tag}_${createElementPath(type.element!)}/${type.getName()}';
     }
 
     return type;
@@ -931,7 +931,7 @@ class ArgumentSource extends ProviderSource {
 
   @override
   String get sourceString {
-    return '${_componentBuilder.element.name}.${parameter.enclosingElement3?.name}';
+    return '${_componentBuilder.element.name}.${parameter.enclosingElement?.name}';
   }
 }
 
@@ -1035,7 +1035,7 @@ class InjectedConstructorSource extends ProviderSource {
   final ConstructorElement element;
 
   @override
-  String get sourceString => 'constructor of ${element.enclosingElement3.name}';
+  String get sourceString => 'constructor of ${element.enclosingElement.name}';
 }
 
 /// The source of the current component. It means if the current component
@@ -1110,7 +1110,7 @@ extension _MethodElementExt on MethodElement {
       return null;
     }
 
-    final String methodPath = '${(enclosingElement3 as ClassElement).name}.'
+    final String methodPath = '${(enclosingElement as ClassElement).name}.'
         '$name';
 
     if (annotation is j.IntoSetAnnotation ||

@@ -26,7 +26,7 @@ class DisposablesManager {
         () => buildErrorMessage(
           error: JuggerErrorId.unused_disposal_handler,
           message:
-              'Found unused disposal handler ${handler.element.enclosingElement3.name}.${handler.element.name}.',
+              'Found unused disposal handler ${handler.element.enclosingElement.name}.${handler.element.name}.',
         ),
       );
       check(
@@ -34,7 +34,7 @@ class DisposablesManager {
         () => buildErrorMessage(
           error: JuggerErrorId.redundant_disposal_handler,
           message:
-              '${disposable.type.getName()} marked as auto disposable, but declared handler ${handler.element.enclosingElement3.name}.${handler.element.name}.',
+              '${disposable.type.getName()} marked as auto disposable, but declared handler ${handler.element.enclosingElement.name}.${handler.element.name}.',
         ),
       );
     }
@@ -210,9 +210,9 @@ class DisposablesManager {
     switch (disposableAnnotation.strategy) {
       case j.DisposalStrategy.auto:
         check(
-          type.element2!.getMethods().any((MethodElement mrthod) {
-            final String type = mrthod.returnType.getName();
-            return mrthod.name == 'dispose' &&
+          type.element!.getMethods().any((MethodElement method) {
+            final String type = method.returnType.getName();
+            return method.name == 'dispose' &&
                 (type == 'Future<void>' || type == 'void');
           }),
           () => buildErrorMessage(
