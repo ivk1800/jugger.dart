@@ -1,5 +1,3 @@
-library jugger_generator;
-
 import 'package:build/build.dart';
 
 import 'src/builder/jugger_builder.dart';

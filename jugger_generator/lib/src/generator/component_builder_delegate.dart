@@ -2229,7 +2229,6 @@ if (_disposed) {
   }
 
 // endregion subcomponents
-
 }
 
 class _ParentComponentProvider implements ParentComponentProvider {
