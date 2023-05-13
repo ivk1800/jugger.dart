@@ -4144,6 +4144,135 @@ abstract class SecondModule {
       );
     });
 
+    test('final component', () async {
+      await checkBuilderResult(
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component()
+abstract final class MyComponent { }
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: final_component:\n'
+            'Component MyComponent cannot be final.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#final_component',
+          );
+        },
+      );
+    });
+
+    test('base component', () async {
+      await checkBuilderResult(
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component()
+abstract base class MyComponent { }
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: base_component:\n'
+            'Component MyComponent cannot be base.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#base_component',
+          );
+        },
+      );
+    });
+
+    test('sealed component', () async {
+      await checkBuilderResult(
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component()
+sealed class MyComponent { }
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: base_component:\n'
+            'Component MyComponent cannot be sealed.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#base_component',
+          );
+        },
+      );
+    });
+
+    test('final component builder', () async {
+      await checkBuilderResult(
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(builder: MyComponentBuilder)
+abstract class MyComponent {}
+
+@componentBuilder
+abstract final class MyComponentBuilder {
+  MyComponent build();
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: final_component_builder:\n'
+            'Component builder MyComponentBuilder cannot be final.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#final_component_builder',
+          );
+        },
+      );
+    });
+
+    test('base component builder', () async {
+      await checkBuilderResult(
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(builder: MyComponentBuilder)
+abstract class MyComponent {}
+
+@componentBuilder
+abstract base class MyComponentBuilder {
+  MyComponent build();
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: base_component_builder:\n'
+            'Component builder MyComponentBuilder cannot be base.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#base_component_builder',
+          );
+        },
+      );
+    });
+
+    test('sealed component builder', () async {
+      await checkBuilderResult(
+        mainContent: '''
+import 'package:jugger/jugger.dart';
+
+@Component(builder: MyComponentBuilder)
+abstract class MyComponent {}
+
+@componentBuilder
+sealed class MyComponentBuilder {
+  MyComponent build();
+}
+        ''',
+        onError: (Object error) {
+          expect(
+            error.toString(),
+            'error: sealed_component_builder:\n'
+            'Component builder MyComponentBuilder cannot be sealed.\n'
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#sealed_component_builder',
+          );
+        },
+      );
+    });
+
     test('public component', () async {
       await checkBuilderResult(
         mainContent: '''

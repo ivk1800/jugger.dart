@@ -137,6 +137,64 @@ abstract class AppComponentBuilder {
 }
 ```
 
+### base_component_builder
+Component builder cannot be base.
+
+`BAD:`
+```dart
+@componentBuilder
+abstract base class _AppComponentBuilder {
+  AppComponent build();
+}
+```
+
+`GOOD:`
+```dart
+@componentBuilder
+abstract class AppComponentBuilder {
+  AppComponent build();
+}
+```
+
+
+### sealed_component_builder
+Component builder cannot be sealed.
+
+`BAD:`
+```dart
+@componentBuilder
+sealed class _AppComponentBuilder {
+  AppComponent build();
+}
+```
+
+`GOOD:`
+```dart
+@componentBuilder
+abstract class AppComponentBuilder {
+  AppComponent build();
+}
+```
+
+### final_component_builder
+Component builder cannot be final.
+
+`BAD:`
+```dart
+@componentBuilder
+abstract final class _AppComponentBuilder {
+  AppComponent build();
+}
+```
+
+`GOOD:`
+```dart
+@componentBuilder
+abstract class AppComponentBuilder {
+  AppComponent build();
+}
+```
+
 ### component_builder_invalid_method_parameters
 A component builder method should have only one parameter. If you need to pass multiple arguments, you need to pass them in separate methods.
 
@@ -249,6 +307,51 @@ Component must be abstract.
 ```dart
 @Component()
 class AppComponent {}
+```
+
+`GOOD:`
+```dart
+@Component()
+abstract class AppComponent {}
+```
+
+### final_component
+Component cannot be final.
+
+`BAD:`
+```dart
+@Component()
+abstract final class IAppComponent {}
+```
+
+`GOOD:`
+```dart
+@Component()
+abstract class AppComponent {}
+```
+
+### base_component
+Component cannot be base.
+
+`BAD:`
+```dart
+@Component()
+abstract base class IAppComponent {}
+```
+
+`GOOD:`
+```dart
+@Component()
+abstract class AppComponent {}
+```
+
+### sealed_component
+Component cannot be sealed.
+
+`BAD:`
+```dart
+@Component()
+sealed class IAppComponent {}
 ```
 
 `GOOD:`

@@ -188,6 +188,27 @@ class _ComponentsVisitor extends RecursiveElementVisitor<dynamic> {
         ),
       );
       check(
+        !element.isSealed,
+        () => buildErrorMessage(
+          error: JuggerErrorId.base_component,
+          message: 'Component ${element.name} cannot be sealed.',
+        ),
+      );
+      check(
+        !element.isBase,
+        () => buildErrorMessage(
+          error: JuggerErrorId.base_component,
+          message: 'Component ${element.name} cannot be base.',
+        ),
+      );
+      check(
+        !element.isFinal,
+        () => buildErrorMessage(
+          error: JuggerErrorId.final_component,
+          message: 'Component ${element.name} cannot be final.',
+        ),
+      );
+      check(
         element.isAbstract,
         () => buildErrorMessage(
           error: JuggerErrorId.abstract_component,
@@ -281,6 +302,27 @@ class _ComponentBuildersVisitor extends RecursiveElementVisitor<dynamic> {
         element.getComponentBuilderAnnotationOrNull();
 
     if (annotation != null) {
+      check(
+        !element.isSealed,
+        () => buildErrorMessage(
+          error: JuggerErrorId.sealed_component_builder,
+          message: 'Component builder ${element.name} cannot be sealed.',
+        ),
+      );
+      check(
+        !element.isBase,
+        () => buildErrorMessage(
+          error: JuggerErrorId.base_component_builder,
+          message: 'Component builder ${element.name} cannot be base.',
+        ),
+      );
+      check(
+        !element.isFinal,
+        () => buildErrorMessage(
+          error: JuggerErrorId.final_component_builder,
+          message: 'Component builder ${element.name} cannot be final.',
+        ),
+      );
       check(
         element.isPublic,
         () => buildErrorMessage(

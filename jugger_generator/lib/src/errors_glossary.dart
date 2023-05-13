@@ -13,6 +13,9 @@ const String wrongTypeOfBuildMethod = '$_glossary#wrong_type_of_build_method';
 const String missingComponentDependency =
     '$_glossary#missing_component_dependency';
 const String publicComponentBuilder = '$_glossary#public_component_builder';
+const String baseComponentBuilder = '$_glossary#base_component_builder';
+const String finalComponentBuilder = '$_glossary#final_component_builder';
+const String sealedComponentBuilder = '$_glossary#sealed_component_builder';
 const String componentBuilderInvalidMethodParameters =
     '$_glossary#component_builder_invalid_method_parameters';
 const String componentBuilderInvalidMethodType =
@@ -24,6 +27,9 @@ const String componentBuilderPrivateMethod =
 const String invalidComponent = '$_glossary#invalid_component';
 const String publicComponent = '$_glossary#public_component';
 const String abstractComponent = '$_glossary#abstract_component';
+const String finalComponent = '$_glossary#final_component';
+const String baseComponent = '$_glossary#base_component';
+const String sealedComponent = '$_glossary#sealed_component';
 const String unscoped_non_lazy = '$_glossary#unscoped_non_lazy';
 const String invalidComponentDependency =
     '$_glossary#invalid_component_dependency';
@@ -99,6 +105,9 @@ enum JuggerErrorId {
   wrong_type_of_build_method,
   missing_component_dependency,
   public_component_builder,
+  final_component_builder,
+  base_component_builder,
+  sealed_component_builder,
   component_builder_invalid_method_parameters,
   component_builder_invalid_method_type,
   wrong_arguments_of_build_method,
@@ -107,6 +116,9 @@ enum JuggerErrorId {
   invalid_component,
   public_component,
   abstract_component,
+  final_component,
+  base_component,
+  sealed_component,
   invalid_component_dependency,
   component_depend_himself,
   public_module,
@@ -171,6 +183,12 @@ extension JuggerErrorIdExt on JuggerErrorId {
         return missingComponentDependency;
       case JuggerErrorId.public_component_builder:
         return publicComponentBuilder;
+      case JuggerErrorId.base_component_builder:
+        return baseComponentBuilder;
+      case JuggerErrorId.final_component_builder:
+        return finalComponentBuilder;
+      case JuggerErrorId.sealed_component_builder:
+        return sealedComponentBuilder;
       case JuggerErrorId.component_builder_invalid_method_parameters:
         return componentBuilderInvalidMethodParameters;
       case JuggerErrorId.component_builder_invalid_method_type:
@@ -181,6 +199,12 @@ extension JuggerErrorIdExt on JuggerErrorId {
         return componentBuilderPrivateMethod;
       case JuggerErrorId.public_component:
         return publicComponent;
+      case JuggerErrorId.final_component:
+        return finalComponent;
+      case JuggerErrorId.base_component:
+        return baseComponent;
+      case JuggerErrorId.sealed_component:
+        return sealedComponent;
       case JuggerErrorId.abstract_component:
         return abstractComponent;
       case JuggerErrorId.invalid_component_dependency:
