@@ -602,6 +602,11 @@ class ComponentContext {
 
     for (final GraphObject graphObject in graphObjects.values) {
       final DartType type = graphObject.type;
+
+      if (type.element is EnumElement) {
+        continue;
+      }
+
       if (type == component.element.thisType) {
         _registerSource(
           ThisComponentSource(

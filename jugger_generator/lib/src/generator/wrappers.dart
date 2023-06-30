@@ -542,8 +542,8 @@ class AbstractProvideMethod extends ProvideMethod {
 
     final DartType parameterType = element.parameters.first.type;
     parameterType.checkUnsupportedType();
-    final ClassElement? typeElement =
-        parameterType.element?.castToOrThrow<ClassElement>();
+    final InterfaceElement? typeElement =
+        parameterType.element?.castToOrThrow<InterfaceElement>();
 
     final bool isSupertype = typeElement!.allSupertypes.any(
       (InterfaceType interfaceType) => interfaceType == element.returnType,
@@ -561,7 +561,7 @@ class AbstractProvideMethod extends ProvideMethod {
     final Element rawParameter = element.parameters[0].type.element!;
     element.returnType.checkUnsupportedType();
     return AbstractProvideMethod._(
-      assignableType: rawParameter.castToOrThrow<ClassElement>().thisType,
+      assignableType: rawParameter.castToOrThrow<InterfaceElement>().thisType,
       element: element,
       annotations: getAnnotations(element),
       tag: element.getQualifierAnnotationOrNull()?.tag,

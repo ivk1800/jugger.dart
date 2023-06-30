@@ -95,6 +95,10 @@ extension DartTypeExt on DartType {
   }
 
   List<ConstructorElement> _getInjectedConstructorsOfClass(Element element) {
+    if (element is EnumElement) {
+      return const <ConstructorElement>[];
+    }
+
     final ClassElement classElement = element.requiredType<ClassElement>();
     if (classElement.isAbstract) {
       return const <ConstructorElement>[];
