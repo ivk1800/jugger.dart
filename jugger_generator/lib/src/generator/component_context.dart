@@ -366,6 +366,10 @@ class ComponentContext {
     required DartType type,
     required List<GraphObject> or,
   }) {
+    if (type.element is EnumElement) {
+      return or;
+    }
+
     final ConstructorElement? injectedConstructor =
         type.getInjectedConstructorOrNull();
 
