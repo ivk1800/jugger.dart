@@ -539,6 +539,10 @@ class ComponentBuilderDelegate {
   /// _i1.Item
   /// ```
   String _allocateTypeName(DartType t) {
+    if (t is RecordType) {
+      return _allocateRecordTypeName(t);
+    }
+
     checkUnexpected(
       t is InterfaceType,
       () => buildUnexpectedErrorMessage(message: 'type [$t] not supported'),
@@ -562,10 +566,29 @@ class ComponentBuilderDelegate {
       ..write(
         type.typeArguments.map((DartType type) {
           type.checkUnsupportedType();
-          return _allocateTypeName(type as InterfaceType);
+          if (type is RecordType) {
+            return _allocateRecordTypeName(type);
+          } else if (type is InterfaceType) {
+            return _allocateTypeName(type);
+          } else {
+            throw StateError('Type $type not supported.');
+          }
         }).join(','),
       )
       ..write('>');
+    return typeNameBuilder.toString();
+  }
+
+  String _allocateRecordTypeName(RecordType type) {
+    final StringBuffer typeNameBuilder = StringBuffer()
+      ..write('(')
+      ..write(
+        type.positionalFields.map((RecordTypePositionalField field) {
+          field.type.checkUnsupportedType();
+          return _allocateTypeName(field.type);
+        }).join(','),
+      )
+      ..write(')');
     return typeNameBuilder.toString();
   }
 
@@ -839,7 +862,20 @@ class ComponentBuilderDelegate {
   String _generateFieldName({
     required DartType type,
     required Tag? tag,
+    MultibindingsInfo? multibindingsInfo,
   }) {
+    if (type is RecordType) {
+      final ProviderSource provider =
+          _componentContext.findProvider(type, tag, multibindingsInfo);
+
+      final int typeId = _componentContext.getIdOf(
+        type: type,
+        tag: tag,
+        multibindingsInfo: provider.multibindingsInfo,
+      );
+      return 'record$typeId';
+    }
+
     final String typeName = _typeNameGenerator.generate(type);
     if (tag != null) {
       return 'named_${tag.toAssignTag()}_$typeName';
@@ -1996,10 +2032,11 @@ if (_disposed) {
         _generateFieldName(
           type: type,
           tag: tag,
+          multibindingsInfo: multibindingsInfo,
         ),
       );
 
-    if (multibindingsInfo != null) {
+    if (multibindingsInfo != null && type is! RecordType) {
       fieldNameBuilder.write(
         generateMd5(multibindingsInfo.methodPath),
       );
@@ -2047,9 +2084,10 @@ if (_disposed) {
       _generateFieldName(
         type: type,
         tag: tag,
+        multibindingsInfo: multibindingsInfo,
       ),
     );
-    if (multibindingsInfo != null) {
+    if (multibindingsInfo != null && type is! RecordType) {
       fieldNameBuilder.write(
         generateMd5(multibindingsInfo.methodPath),
       );

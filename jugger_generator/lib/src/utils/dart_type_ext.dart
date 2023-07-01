@@ -179,7 +179,7 @@ extension DartTypeExt on DartType {
 
   void checkUnsupportedType() {
     check(
-      this is InterfaceType,
+      this is InterfaceType || this is RecordType,
       () => buildErrorMessage(
         error: JuggerErrorId.type_not_supported,
         message: 'Type $this not supported.',

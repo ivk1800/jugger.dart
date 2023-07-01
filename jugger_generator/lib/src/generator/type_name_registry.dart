@@ -17,6 +17,8 @@ class TypeNameGenerator {
         .getName()
         .replaceAll('<', '_')
         .replaceAll('>', '_')
+        .replaceAll('(', '')
+        .replaceAll(')', '')
         .replaceAll(' ', '')
         .replaceAll(',', '_');
 

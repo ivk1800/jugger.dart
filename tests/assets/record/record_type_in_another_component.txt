@@ -1,0 +1,45 @@
+// ignore_for_file: implementation_imports
+// ignore_for_file: prefer_const_constructors
+// ignore_for_file: always_specify_types
+// ignore_for_file: directives_ordering
+// ignore_for_file: non_constant_identifier_names
+// ignore_for_file: type=lint
+// ignore_for_file: unused_field
+// ignore_for_file: no_leading_underscores_for_library_prefixes
+import 'package:tests/record/record_type_in_another_component.dart' as _i1;
+import 'package:jugger/jugger.dart' as _i2;
+
+class JuggerMyComponent1 implements _i1.MyComponent1 {
+  JuggerMyComponent1.create();
+
+  late final _i2.IProvider<(String, int)> _record0Provider =
+      _i2.Provider<(String, int)>(() => _i1.MyModule1.provideMyRecord());
+
+  @override
+  (String, int) get myRecord => _record0Provider.get();
+}
+
+class JuggerMyComponent2 implements _i1.MyComponent2 {
+  JuggerMyComponent2._create(this._myComponent1);
+
+  final _i1.MyComponent1 _myComponent1;
+
+  @override
+  (String, int) get myRecord => _myComponent1.myRecord;
+}
+
+class JuggerMyComponent2Builder implements _i1.Component2Builder {
+  _i1.MyComponent1? _myComponent1;
+
+  @override
+  _i1.Component2Builder setMyComponent1(_i1.MyComponent1 component1) {
+    _myComponent1 = component1;
+    return this;
+  }
+
+  @override
+  _i1.MyComponent2 build() {
+    assert(_myComponent1 != null);
+    return JuggerMyComponent2._create(_myComponent1!);
+  }
+}
