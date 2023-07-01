@@ -256,7 +256,7 @@ class ComponentBuilderDelegate {
       final Tag? tag = parameter.parameter.enclosingElement?.getQualifierTag();
       b.name = '_${_generateFieldName(
         type: parameter.parameter.type,
-        tag: tag?.toAssignTag(),
+        tag: tag,
       )}';
     });
   }
@@ -303,7 +303,7 @@ class ComponentBuilderDelegate {
         refer(
           '_${_generateFieldName(
             type: p.parameter.type,
-            tag: tag?.toAssignTag(),
+            tag: tag,
           )}',
         ).assign(refer(p.parameter.name)),
       );
@@ -324,7 +324,7 @@ class ComponentBuilderDelegate {
         return refer(
           '_${_generateFieldName(
             type: parameter.parameter.tryGetType(),
-            tag: tag?.toAssignTag(),
+            tag: tag,
           )}',
         ).nullChecked;
       });
@@ -343,7 +343,7 @@ class ComponentBuilderDelegate {
           ..write(
             _generateFieldName(
               type: parameter.parameter.type,
-              tag: tag?.toAssignTag(),
+              tag: tag,
             ),
           )
           ..write(' != null) ');
@@ -793,12 +793,6 @@ class ComponentBuilderDelegate {
   }) {
     final Tag? tag = source.tag;
 
-    String? finalSting;
-
-    if (tag != null) {
-      finalSting = generateMd5(tag.uniqueId);
-    }
-
     final StringBuffer assignExpressionBuilder = StringBuffer();
     if (prefixScope != null) {
       assignExpressionBuilder
@@ -807,7 +801,7 @@ class ComponentBuilderDelegate {
     }
     assignExpressionBuilder
       ..write('_')
-      ..write(_generateFieldName(type: source.type, tag: finalSting));
+      ..write(_generateFieldName(type: source.type, tag: tag));
 
     return refer(assignExpressionBuilder.toString());
   }
@@ -822,21 +816,13 @@ class ComponentBuilderDelegate {
     required bool callGet,
     required String? prefixScope,
   }) {
-    final String? finalTag;
-
-    if (tag == null) {
-      finalTag = null;
-    } else {
-      finalTag = generateMd5(tag.uniqueId);
-    }
-
     final StringBuffer finalExpressionBuilder = StringBuffer();
     if (prefixScope != null) {
       finalExpressionBuilder.write('$prefixScope.');
     }
     finalExpressionBuilder
       ..write('_')
-      ..write(_generateFieldName(type: type, tag: finalTag))
+      ..write(_generateFieldName(type: type, tag: tag))
       ..write('Provider');
 
     Expression finalExpression = refer(finalExpressionBuilder.toString());
@@ -852,11 +838,11 @@ class ComponentBuilderDelegate {
   /// stripped.
   String _generateFieldName({
     required DartType type,
-    required String? tag,
+    required Tag? tag,
   }) {
     final String typeName = _typeNameGenerator.generate(type);
     if (tag != null) {
-      return 'named_${tag}_$typeName';
+      return 'named_${tag.toAssignTag()}_$typeName';
     }
 
     return uncapitalize(typeName);
@@ -1308,7 +1294,7 @@ class ComponentBuilderDelegate {
                   parameter.parameter.enclosingElement!.getQualifierTag();
               b.name = '_${_generateFieldName(
                 type: parameter.parameter.type,
-                tag: tag?.toAssignTag(),
+                tag: tag,
               )}';
             });
           }),
@@ -1336,7 +1322,7 @@ class ComponentBuilderDelegate {
             parameter.parameter.enclosingElement!.getQualifierTag();
         b.name = '_${_generateFieldName(
           type: parameter.parameter.type,
-          tag: tag?.toAssignTag(),
+          tag: tag,
         )}';
         b.modifier = FieldModifier.final$;
         b.type = refer(_allocateTypeName(parameter.parameter.type));
@@ -1423,7 +1409,7 @@ class ComponentBuilderDelegate {
           refer(
             '_${_generateFieldName(
               type: disposableInfo.type,
-              tag: disposableInfo.tag?.toAssignTag(),
+              tag: disposableInfo.tag,
             )}',
           )
         ],
@@ -2009,7 +1995,7 @@ if (_disposed) {
       ..write(
         _generateFieldName(
           type: type,
-          tag: tag?.toAssignTag(),
+          tag: tag,
         ),
       );
 
@@ -2032,7 +2018,7 @@ if (_disposed) {
     fieldNameBuilder.write(
       _generateFieldName(
         type: type,
-        tag: tag?.toAssignTag(),
+        tag: tag,
       ),
     );
     if (multibindingsInfo != null) {
@@ -2060,7 +2046,7 @@ if (_disposed) {
     fieldNameBuilder.write(
       _generateFieldName(
         type: type,
-        tag: tag?.toAssignTag(),
+        tag: tag,
       ),
     );
     if (multibindingsInfo != null) {
