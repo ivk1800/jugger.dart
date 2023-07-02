@@ -8,6 +8,7 @@ import 'package:quiver/core.dart';
 import '../errors_glossary.dart';
 import '../jugger_error.dart';
 import '../utils/annotation_ext.dart';
+import '../utils/comparable_ext.dart';
 import '../utils/component_methods_ext.dart';
 import '../utils/dart_type_ext.dart';
 import '../utils/element_annotation_ext.dart';
@@ -808,8 +809,13 @@ class GraphObject implements Comparable<GraphObject> {
 
   @override
   int compareTo(GraphObject other) {
-    return '${tag ?? ''}_${type.getName()}'
-        .compareTo('${other.tag ?? ''}_${other.type.getName()}');
+    return (GraphObject a1, GraphObject b1) {
+      return a1.type.getName().compareTo(b1.type.getName());
+    }.then((GraphObject a2, GraphObject b2) {
+      return compareNullable(a2.tag, b2.tag);
+    }).then((GraphObject a3, GraphObject b3) {
+      return compareNullable(a3.multibindingsInfo, b3.multibindingsInfo);
+    }).call(this, other);
   }
 }
 

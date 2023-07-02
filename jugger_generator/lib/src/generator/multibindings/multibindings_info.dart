@@ -1,9 +1,11 @@
+import 'package:collection/collection.dart';
 import 'package:quiver/core.dart';
 
+import '../../utils/comparable_ext.dart';
 import '../tag.dart';
 
 /// Information about multibindings.
-class MultibindingsInfo {
+class MultibindingsInfo implements Comparable<MultibindingsInfo> {
   MultibindingsInfo({
     required this.tag,
     required this.methodPath,
@@ -22,4 +24,16 @@ class MultibindingsInfo {
 
   @override
   int get hashCode => hash2(tag.hashCode, methodPath);
+
+  @override
+  int compareTo(MultibindingsInfo other) {
+    return (MultibindingsInfo a, MultibindingsInfo b) {
+      return compareNullable<Tag>(a.tag, b.tag);
+    }
+        .then(
+          (MultibindingsInfo a, MultibindingsInfo b) =>
+              a.methodPath.compareTo(b.methodPath),
+        )
+        .call(this, other);
+  }
 }
