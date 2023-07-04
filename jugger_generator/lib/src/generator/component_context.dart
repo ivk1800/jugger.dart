@@ -153,6 +153,24 @@ class ComponentContext {
     _checkMissingProviders();
   }
 
+  /// Get a unique type identifier within one BuildStep.
+  int getIdOf({
+    required DartType type,
+    Tag? tag,
+    MultibindingsInfo? multibindingsInfo,
+  }) {
+    final int index = graphObjects.indexWhere(
+      (GraphObject element) =>
+          element.type == type &&
+          element.tag == tag &&
+          element.multibindingsInfo == multibindingsInfo,
+    );
+    if (index == -1) {
+      throw StateError('Id for type $type not found');
+    }
+    return index;
+  }
+
   /// All objects of the component graph.
   final Map<_Key, GraphObject> _graphObjects = HashMap<_Key, GraphObject>();
 
