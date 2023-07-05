@@ -580,15 +580,39 @@ class ComponentBuilderDelegate {
   }
 
   String _allocateRecordTypeName(RecordType type) {
+    final List<RecordTypePositionalField> positionalFields =
+        type.positionalFields;
+    final List<RecordTypeNamedField> namedFields = type.namedFields;
+
     final StringBuffer typeNameBuilder = StringBuffer()
       ..write('(')
       ..write(
-        type.positionalFields.map((RecordTypePositionalField field) {
+        positionalFields.map((RecordTypePositionalField field) {
           field.type.checkUnsupportedType();
           return _allocateTypeName(field.type);
         }).join(','),
-      )
-      ..write(')');
+      );
+
+    if (positionalFields.length == 1 && namedFields.isEmpty) {
+      typeNameBuilder.write(',');
+    }
+
+    if (namedFields.isNotEmpty) {
+      if (positionalFields.isNotEmpty) {
+        typeNameBuilder.write(',');
+      }
+      typeNameBuilder
+        ..write('{')
+        ..write(
+          namedFields.map((RecordTypeNamedField field) {
+            field.type.checkUnsupportedType();
+            return '${_allocateTypeName(field.type)} ${field.name}';
+          }).join(','),
+        );
+
+      typeNameBuilder.write('}');
+    }
+    typeNameBuilder.write(')');
     return typeNameBuilder.toString();
   }
 

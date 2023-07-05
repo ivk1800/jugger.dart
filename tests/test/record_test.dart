@@ -74,4 +74,49 @@ void main() {
       );
     },
   );
+
+  test(
+    'empty record type',
+    () async {
+      await checkBuilderOfFile(
+        'record/empty_record_type',
+      );
+    },
+  );
+
+  test(
+    'record type with both positional and named fields',
+    () async {
+      await checkBuilderOfFile(
+        'record/record_type_with_both_positional_and_named_fields',
+      );
+    },
+  );
+
+  test(
+    'record type with named fields',
+    () async {
+      await checkBuilderOfFile(
+        'record/record_type_with_named_fields',
+      );
+    },
+  );
+
+  test(
+    'record type with one positional field',
+    () async {
+      await checkBuilderOfFile(
+        'record/record_type_with_one_positional_field',
+      );
+    },
+  );
+
+  test(
+    'nested record type',
+    () async {
+      await checkBuilderOfFile(
+        'record/nested_record_type',
+      );
+    },
+  );
 }
