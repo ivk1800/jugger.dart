@@ -896,15 +896,11 @@ class ModuleSource extends ProviderSource
     implements MultibindingsElementProvider {
   ModuleSource({
     required this.moduleClass,
-    required DartType type,
-    required List<j.Annotation> annotations,
+    required super.type,
+    required super.annotations,
     required this.method,
-    required MultibindingsInfo? multibindingsInfo,
-  }) : super(
-          type: type,
-          annotations: annotations,
-          multibindingsInfo: multibindingsInfo,
-        );
+    required super.multibindingsInfo,
+  });
 
   /// The module in which the method is located.
   final ClassElement moduleClass;
@@ -940,15 +936,11 @@ class ModuleSource extends ProviderSource
 /// Type source is argument of component builder.
 class ArgumentSource extends ProviderSource {
   ArgumentSource({
-    required DartType type,
+    required super.type,
     required this.parameter,
     required j.ComponentBuilder componentBuilder,
-    required List<j.Annotation> annotations,
-  })  : _componentBuilder = componentBuilder,
-        super(
-          type: type,
-          annotations: annotations,
-        );
+    required super.annotations,
+  }) : _componentBuilder = componentBuilder;
 
   /// Parameter of the method of component builder.
   /// ```
@@ -975,16 +967,12 @@ class ArgumentSource extends ProviderSource {
 /// Type source is a component.
 class AnotherComponentSource extends ProviderSource {
   AnotherComponentSource({
-    required DartType type,
+    required super.type,
     required this.element,
     required ClassElement dependencyClass,
-    required List<j.Annotation> annotations,
+    required super.annotations,
   })  : _dependencyClass = dependencyClass,
-        assert(element is MethodElement || element is PropertyAccessorElement),
-        super(
-          type: type,
-          annotations: annotations,
-        );
+        assert(element is MethodElement || element is PropertyAccessorElement);
 
   /// The component class that is used as a dependency.
   final ClassElement _dependencyClass;
@@ -1061,13 +1049,10 @@ class ParentComponentSource extends ProviderSource {
 
 class InjectedConstructorSource extends ProviderSource {
   InjectedConstructorSource({
-    required DartType type,
+    required super.type,
     required this.element,
-    required List<j.Annotation> annotations,
-  }) : super(
-          type: type,
-          annotations: annotations,
-        );
+    required super.annotations,
+  });
 
   final ConstructorElement element;
 
@@ -1084,12 +1069,9 @@ class InjectedConstructorSource extends ProviderSource {
 /// ```
 class ThisComponentSource extends ProviderSource {
   ThisComponentSource({
-    required DartType type,
-    required List<j.Annotation> annotations,
-  }) : super(
-          type: type,
-          annotations: annotations,
-        );
+    required super.type,
+    required super.annotations,
+  });
 
   @override
   String get sourceString => 'this';
@@ -1097,13 +1079,10 @@ class ThisComponentSource extends ProviderSource {
 
 class MultibindingsSource extends ProviderSource {
   MultibindingsSource({
-    required DartType type,
+    required super.type,
     required this.multibindingsGroup,
-    required List<j.Annotation> annotations,
-  }) : super(
-          type: type,
-          annotations: annotations,
-        );
+    required super.annotations,
+  });
 
   final MultibindingsGroup multibindingsGroup;
 

@@ -449,10 +449,10 @@ abstract class ModuleMethod {
 /// Wrapper class for provide method of module.
 abstract class ProvideMethod extends ModuleMethod {
   ProvideMethod({
-    required MethodElement element,
-    required List<Annotation> annotations,
+    required super.element,
+    required super.annotations,
     required this.tag,
-  }) : super(element: element, annotations: annotations);
+  });
 
   final Tag? tag;
 }
@@ -468,10 +468,10 @@ extension ProvideMethodExt on ProvideMethod {
 /// Static provide method.
 class StaticProvideMethod extends ProvideMethod {
   StaticProvideMethod._({
-    required MethodElement element,
-    required List<Annotation> annotations,
-    required Tag? tag,
-  }) : super(element: element, annotations: annotations, tag: tag);
+    required super.element,
+    required super.annotations,
+    required super.tag,
+  });
 
   /// Create method from element and validate.
   factory StaticProvideMethod.fromMethodElement(MethodElement methodElement) {
@@ -487,11 +487,11 @@ class StaticProvideMethod extends ProvideMethod {
 /// Static method of dispose graph object.
 class DisposalHandlerMethod extends ModuleMethod {
   DisposalHandlerMethod._({
-    required MethodElement element,
-    required List<Annotation> annotations,
+    required super.element,
+    required super.annotations,
     required this.tag,
     required this.disposableType,
-  }) : super(element: element, annotations: annotations);
+  });
 
   /// Create method from element and validate.
   factory DisposalHandlerMethod.fromMethodElement(MethodElement element) {
@@ -521,12 +521,12 @@ class DisposalHandlerMethod extends ModuleMethod {
 /// Bind provide method.
 class AbstractProvideMethod extends ProvideMethod {
   AbstractProvideMethod._({
-    required MethodElement element,
-    required List<Annotation> annotations,
-    required Tag? tag,
+    required super.element,
+    required super.annotations,
+    required super.tag,
     required this.assignableType,
     required this.type,
-  }) : super(element: element, annotations: annotations, tag: tag);
+  });
 
   /// Create method from element and validate.
   factory AbstractProvideMethod.fromMethodElement(MethodElement element) {
