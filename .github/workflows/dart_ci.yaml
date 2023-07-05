@@ -1,13 +1,6 @@
 name: Dart CI
 
 on:
-  push:
-    paths:
-      - "jugger/**"
-      - "jugger_generator/**"
-      - "tests/**"
-      - ".github/workflows/dart_ci.yaml"
-
   pull_request:
     paths:
       - "jugger/**"
@@ -20,7 +13,7 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        sdk: [ 2.17.0 ]
+        sdk: [ 3.0.0 ]
         dir: ['jugger', 'jugger_generator', 'tests']
     steps:
       - uses: actions/checkout@v2
