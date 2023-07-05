@@ -23,6 +23,10 @@ class AssetBuilder implements AssetContext {
   AssetBuilder({required this.globalConfig});
 
   final Allocator _allocator = Allocator.simplePrefixing();
+  late final DartEmitter _emitter = DartEmitter(
+    allocator: _allocator,
+    useNullSafetySyntax: true,
+  );
   final TypeNameGenerator _typeNameGenerator = TypeNameGenerator();
   final UniqueIdGenerator _uniqueIdGenerator = UniqueIdGenerator();
   final ComponentCircularDependencyDetector
@@ -47,6 +51,9 @@ class AssetBuilder implements AssetContext {
     try {
       return await _buildOutputInternal(buildStep);
     } catch (e) {
+      if (e is Error) {
+        print(e.stackTrace);
+      }
       if (e is! JuggerError) {
         throw UnexpectedJuggerError(
           buildUnexpectedErrorMessage(message: e.toString()),
@@ -88,15 +95,7 @@ class AssetBuilder implements AssetContext {
   }
 
   String _createTargetContext(LibraryBuilder target) {
-    final String fileText = target
-        .build()
-        .accept(
-          DartEmitter(
-            allocator: _allocator,
-            useNullSafetySyntax: true,
-          ),
-        )
-        .toString();
+    final String fileText = target.build().accept(_emitter).toString();
 
     if (globalConfig.checkUnusedProviders) {
       checkUnusedProviders(fileText);
@@ -138,6 +137,9 @@ class AssetBuilder implements AssetContext {
 
   @override
   Allocator get allocator => _allocator;
+
+  @override
+  DartEmitter get emitter => _emitter;
 
   @override
   TypeNameGenerator get typeNameGenerator => _typeNameGenerator;

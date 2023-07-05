@@ -10,6 +10,8 @@ abstract class AssetContext {
 
   Allocator get allocator;
 
+  DartEmitter get emitter;
+
   TypeNameGenerator get typeNameGenerator;
 
   UniqueIdGenerator get uniqueIdGenerator;

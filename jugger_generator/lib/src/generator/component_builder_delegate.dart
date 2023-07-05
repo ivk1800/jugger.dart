@@ -3,6 +3,7 @@ import 'dart:collection';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:code_builder/code_builder.dart' hide RecordType;
+import 'package:code_builder/code_builder.dart' as cb;
 import 'package:collection/collection.dart';
 
 import '../builder/global_config.dart';
@@ -538,83 +539,52 @@ class ComponentBuilderDelegate {
   /// List<_i1.Item>
   /// _i1.Item
   /// ```
-  String _allocateTypeName(DartType t) {
-    if (t is RecordType) {
-      return _allocateRecordTypeName(t);
-    }
+  String _allocateTypeName(DartType t) =>
+      _allocateTypeReference(t).accept(_assetContext.emitter).toString();
 
-    checkUnexpected(
-      t is InterfaceType,
-      () => buildUnexpectedErrorMessage(message: 'type [$t] not supported'),
-    );
-    final InterfaceType type = t as InterfaceType;
-
-    final String name = _allocator.allocate(
-      Reference(
-        type.element.name,
-        type.element.librarySource.uri.toString(),
-      ),
-    );
-
-    if (type.typeArguments.isEmpty) {
-      return name;
-    }
-
-    final StringBuffer typeNameBuilder = StringBuffer()
-      ..write(name)
-      ..write('<')
-      ..write(
-        type.typeArguments.map((DartType type) {
-          type.checkUnsupportedType();
-          if (type is RecordType) {
-            return _allocateRecordTypeName(type);
-          } else if (type is InterfaceType) {
-            return _allocateTypeName(type);
-          } else {
-            throw StateError('Type $type not supported.');
-          }
-        }).join(','),
-      )
-      ..write('>');
-    return typeNameBuilder.toString();
-  }
-
-  String _allocateRecordTypeName(RecordType type) {
-    final List<RecordTypePositionalField> positionalFields =
-        type.positionalFields;
-    final List<RecordTypeNamedField> namedFields = type.namedFields;
-
-    final StringBuffer typeNameBuilder = StringBuffer()
-      ..write('(')
-      ..write(
-        positionalFields.map((RecordTypePositionalField field) {
-          field.type.checkUnsupportedType();
-          return _allocateTypeName(field.type);
-        }).join(','),
+  Reference _allocateTypeReference(DartType type) {
+    if (type is InterfaceType) {
+      return _allocateInterfaceTypeReference(type);
+    } else if (type is RecordType) {
+      return _allocateRecordTypeReference(type);
+    } else {
+      throw JuggerError(
+        buildErrorMessage(
+          error: JuggerErrorId.type_not_supported,
+          message: 'Type $type not supported.',
+        ),
       );
-
-    if (positionalFields.length == 1 && namedFields.isEmpty) {
-      typeNameBuilder.write(',');
     }
-
-    if (namedFields.isNotEmpty) {
-      if (positionalFields.isNotEmpty) {
-        typeNameBuilder.write(',');
-      }
-      typeNameBuilder
-        ..write('{')
-        ..write(
-          namedFields.map((RecordTypeNamedField field) {
-            field.type.checkUnsupportedType();
-            return '${_allocateTypeName(field.type)} ${field.name}';
-          }).join(','),
-        );
-
-      typeNameBuilder.write('}');
-    }
-    typeNameBuilder.write(')');
-    return typeNameBuilder.toString();
   }
+
+  Reference _allocateRecordTypeReference(RecordType type) =>
+      cb.RecordType((RecordTypeBuilder builder) {
+        builder
+          ..namedFieldTypes.addAll(
+            Map<String, Reference>.fromEntries(
+              type.namedFields.map(
+                (RecordTypeNamedField e) => MapEntry<String, Reference>(
+                  e.name,
+                  _allocateTypeReference(e.type),
+                ),
+              ),
+            ),
+          )
+          ..positionalFieldTypes.addAll(
+            type.positionalFields.map(
+              (RecordTypePositionalField field) =>
+                  _allocateTypeReference(field.type),
+            ),
+          );
+      });
+
+  Reference _allocateInterfaceTypeReference(InterfaceType type) =>
+      cb.TypeReference((TypeReferenceBuilder builder) {
+        builder
+          ..symbol = type.element.name
+          ..url = type.element.librarySource.uri.toString()
+          ..types.addAll(type.typeArguments.map(_allocateTypeReference));
+      });
 
   /// Returns a list of component members or properties, their implementation,
   /// each member calls the corresponding type provider.
