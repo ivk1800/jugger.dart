@@ -1,6 +1,7 @@
 import 'dart:collection';
 
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:code_builder/code_builder.dart' hide RecordType;
 import 'package:code_builder/code_builder.dart' as cb;
@@ -583,6 +584,7 @@ class ComponentBuilderDelegate {
   Reference _allocateInterfaceTypeReference(InterfaceType type) =>
       cb.TypeReference((TypeReferenceBuilder builder) {
         builder
+          ..isNullable = type.nullabilitySuffix == NullabilitySuffix.question
           ..symbol = type.element.name
           ..url = type.element.librarySource.uri.toString()
           ..types.addAll(type.typeArguments.map(_allocateTypeReference));

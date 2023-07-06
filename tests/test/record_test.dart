@@ -119,4 +119,13 @@ void main() {
       );
     },
   );
+
+  test(
+    'record type with nullable field',
+    () async {
+      await checkBuilderOfFile(
+        'record/record_type_with_nullable_field',
+      );
+    },
+  );
 }
