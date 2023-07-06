@@ -3471,22 +3471,22 @@ abstract class AppModule {
         mainContent: '''
 import 'package:jugger/jugger.dart';
 
-@Component(modules: <Type>[Module1])
-abstract class AppComponent {
-  Future<void> get future;
+@Component(modules: <Type>[MyModule])
+abstract class MyComponent {
+  dynamic get myDynamic;
 }
 
 @module
-abstract class Module1 {
+abstract class MyModule {
   @provides
-  static Future<void> provideString() async => 's';
+  static dynamic provideMyDynamic() async => '';
 }
         ''',
         onError: (Object error) {
           expect(
             error.toString(),
             'error: type_not_supported:\n'
-            'Type void not supported.\n'
+            'Type dynamic not supported.\n'
             'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#type_not_supported',
           );
         },

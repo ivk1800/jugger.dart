@@ -385,7 +385,7 @@ class ComponentContext {
     required DartType type,
     required List<GraphObject> or,
   }) {
-    if (type.element is EnumElement || type is RecordType) {
+    if (type.element is EnumElement || type is RecordType || type is VoidType) {
       return or;
     }
 
@@ -626,7 +626,9 @@ class ComponentContext {
     for (final GraphObject graphObject in graphObjects.values) {
       final DartType type = graphObject.type;
 
-      if (type.element is EnumElement || type is RecordType) {
+      if (type.element is EnumElement ||
+          type is RecordType ||
+          type is VoidType) {
         continue;
       }
 
@@ -861,6 +863,8 @@ abstract class ProviderSource {
     final j.QualifierAnnotation? qualifier = qualifierAnnotation;
     if (qualifier != null) {
       if (type is RecordType) {
+        return '${qualifier.tag}_${type.getName()}';
+      } else if (type is VoidType) {
         return '${qualifier.tag}_${type.getName()}';
       } else {
         return '${qualifier.tag}_${createElementPath(type.element!)}/${type.getName()}';

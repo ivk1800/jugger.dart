@@ -51,9 +51,6 @@ class AssetBuilder implements AssetContext {
     try {
       return await _buildOutputInternal(buildStep);
     } catch (e) {
-      if (e is Error) {
-        print(e.stackTrace);
-      }
       if (e is! JuggerError) {
         throw UnexpectedJuggerError(
           buildUnexpectedErrorMessage(message: e.toString()),

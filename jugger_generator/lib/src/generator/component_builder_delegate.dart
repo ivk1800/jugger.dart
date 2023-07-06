@@ -547,6 +547,8 @@ class ComponentBuilderDelegate {
       return _allocateInterfaceTypeReference(type);
     } else if (type is RecordType) {
       return _allocateRecordTypeReference(type);
+    } else if (type is VoidType) {
+      return const Reference('void');
     } else {
       throw JuggerError(
         buildErrorMessage(

@@ -1,0 +1,20 @@
+// ignore_for_file: implementation_imports
+// ignore_for_file: prefer_const_constructors
+// ignore_for_file: always_specify_types
+// ignore_for_file: directives_ordering
+// ignore_for_file: non_constant_identifier_names
+// ignore_for_file: type=lint
+// ignore_for_file: unused_field
+// ignore_for_file: no_leading_underscores_for_library_prefixes
+import 'package:tests/void/void_type_in_provide_method.dart' as _i1;
+import 'package:jugger/jugger.dart' as _i2;
+
+class JuggerMyComponent implements _i1.MyComponent {
+  JuggerMyComponent.create();
+
+  late final _i2.IProvider<void> _voidProvider =
+      _i2.Provider<void>(() => _i1.MyModule.provideMyVoid());
+
+  @override
+  void get myVoid => _voidProvider.get();
+}
