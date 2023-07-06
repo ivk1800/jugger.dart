@@ -14,9 +14,9 @@ class JuggerMyComponent implements _i1.MyComponent {
   JuggerMyComponent.create();
 
   late final _i2.IProvider<String> _stringProvider = _i2.Provider<String>(
-      () => _i1.MyModule.provideMyString(_voidProvider.get()));
+      () => _i1.MyModule.provideMyString(_void1Provider.get()));
 
-  late final _i2.IProvider<void> _voidProvider =
+  late final _i2.IProvider<void> _void1Provider =
       _i2.Provider<void>(() => _i1.MyModule.provideMyVoid());
 
   @override

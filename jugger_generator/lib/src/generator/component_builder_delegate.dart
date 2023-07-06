@@ -862,16 +862,21 @@ class ComponentBuilderDelegate {
     required Tag? tag,
     MultibindingsInfo? multibindingsInfo,
   }) {
-    if (type is RecordType) {
+    int getId() {
       final ProviderSource provider =
           _componentContext.findProvider(type, tag, multibindingsInfo);
 
-      final int typeId = _componentContext.getIdOf(
+      return _componentContext.getIdOf(
         type: type,
         tag: tag,
         multibindingsInfo: provider.multibindingsInfo,
       );
-      return 'record$typeId';
+    }
+
+    if (type is RecordType) {
+      return 'record${getId()}';
+    } else if (type is VoidType) {
+      return 'void${getId()}';
     }
 
     final String typeName = _typeNameGenerator.generate(type);

@@ -12,10 +12,9 @@ import 'package:jugger/jugger.dart' as _i2;
 class JuggerMyComponent implements _i1.MyComponent {
   JuggerMyComponent.create();
 
-  late final _i2.IProvider<void>
-      _named_ef7c7d9eed94b46522af8e985ab6f233_voidProvider =
+  late final _i2.IProvider<void> _void0Provider =
       _i2.Provider<void>(() => _i1.MyModule.provideMyVoid());
 
   @override
-  void get myVoid => _named_ef7c7d9eed94b46522af8e985ab6f233_voidProvider.get();
+  void get myVoid => _void0Provider.get();
 }
