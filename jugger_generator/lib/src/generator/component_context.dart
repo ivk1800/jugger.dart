@@ -857,22 +857,14 @@ abstract class ProviderSource {
 
   late final j.ScopeAnnotation? scope = annotations.getAnnotationOrNull();
 
+  late final Object _key = _SourceKey(
+    type: type,
+    tag: qualifierAnnotation?.tag,
+  );
+
   /// A unique key of source. Qualifier and type will be combined.
   /// Should be used to identify the source.
-  Object get key {
-    final j.QualifierAnnotation? qualifier = qualifierAnnotation;
-    if (qualifier != null) {
-      if (type is RecordType) {
-        return '${qualifier.tag}_${type.getName()}';
-      } else if (type is VoidType) {
-        return '${qualifier.tag}_${type.getName()}';
-      } else {
-        return '${qualifier.tag}_${createElementPath(type.element!)}/${type.getName()}';
-      }
-    }
-
-    return type;
-  }
+  Object get key => _key;
 
   /// Source qualifier. This is a custom qualifier or a named annotation.
   j.QualifierAnnotation? get qualifierAnnotation {
@@ -889,6 +881,25 @@ abstract class ProviderSource {
   /// A string indicating the location of the source. Should be used when a code
   /// generation error occurs.
   String get sourceString;
+}
+
+/// A unique key of source. Qualifier and type will be combined.
+/// Should be used to identify the source.
+class _SourceKey {
+  final DartType type;
+  final Tag? tag;
+
+  _SourceKey({required this.type, required this.tag});
+
+  @override
+  bool operator ==(Object other) =>
+      other is _SourceKey &&
+      other.runtimeType == runtimeType &&
+      other.type == type &&
+      other.tag == tag;
+
+  @override
+  int get hashCode => hash2(type, tag);
 }
 
 abstract class MultibindingsElementProvider {
