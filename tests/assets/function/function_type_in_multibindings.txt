@@ -1,0 +1,40 @@
+// ignore_for_file: implementation_imports
+// ignore_for_file: prefer_const_constructors
+// ignore_for_file: always_specify_types
+// ignore_for_file: directives_ordering
+// ignore_for_file: non_constant_identifier_names
+// ignore_for_file: type=lint
+// ignore_for_file: unused_field
+// ignore_for_file: no_leading_underscores_for_library_prefixes
+import 'package:tests/function/function_type_in_multibindings.dart' as _i1;
+import 'package:jugger/jugger.dart' as _i2;
+
+class JuggerMyComponent implements _i1.MyComponent {
+  JuggerMyComponent.create();
+
+  late final _Map_String_voidFunction_MyComponent_MyComponent_Provider
+      _map_String_voidFunction_Provider =
+      _Map_String_voidFunction_MyComponent_MyComponent_Provider();
+
+  @override
+  Map<String, void Function()> get myFunctions =>
+      _map_String_voidFunction_Provider.get();
+}
+
+class _Map_String_voidFunction_MyComponent_MyComponent_Provider
+    implements _i2.IProvider<Map<String, void Function()>> {
+  late final _i2.IProvider<void Function()>
+      _function11ed7063c5c18e408e52f1ada15ab5c20Provider =
+      _i2.Provider<void Function()>(() => _i1.MyModule.provideMyFunction1());
+
+  late final _i2.IProvider<void Function()>
+      _function2de69c94435b19e02cb250a6560ffa644Provider =
+      _i2.Provider<void Function()>(() => _i1.MyModule.provideMyFunction2());
+
+  @override
+  Map<String, void Function()> get() =>
+      Map.unmodifiable(<String, void Function()>{
+        '1': _function11ed7063c5c18e408e52f1ada15ab5c20Provider.get(),
+        '2': _function2de69c94435b19e02cb250a6560ffa644Provider.get(),
+      });
+}

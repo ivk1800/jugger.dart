@@ -3,7 +3,7 @@ import 'dart:collection';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
-import 'package:code_builder/code_builder.dart' hide RecordType;
+import 'package:code_builder/code_builder.dart' hide FunctionType, RecordType;
 import 'package:code_builder/code_builder.dart' as cb;
 import 'package:collection/collection.dart';
 
@@ -550,11 +550,13 @@ class ComponentBuilderDelegate {
       return _allocateRecordTypeReference(type);
     } else if (type is VoidType) {
       return const Reference('void');
+    } else if (type is FunctionType) {
+      return _allocateFunctionTypeReference(type);
     } else {
       throw JuggerError(
         buildErrorMessage(
           error: JuggerErrorId.type_not_supported,
-          message: 'Type $type not supported.',
+          message: 'Type ${type.runtimeType} not supported.',
         ),
       );
     }
@@ -589,6 +591,67 @@ class ComponentBuilderDelegate {
           ..url = type.element.librarySource.uri.toString()
           ..types.addAll(type.typeArguments.map(_allocateTypeReference));
       });
+
+  Reference _allocateFunctionTypeReference(FunctionType type) {
+    final Map<String, DartType> requiredNamedParameters =
+        Map<String, DartType>.fromEntries(
+      type.namedParameterTypes.keys.where((String key) {
+        return type.namedParameterTypes[key]!.nullabilitySuffix ==
+            NullabilitySuffix.none;
+      }).map(
+        (String key) =>
+            MapEntry<String, DartType>(key, type.namedParameterTypes[key]!),
+      ),
+    );
+
+    final Map<String, DartType> optionalNamedParameters =
+        Map<String, DartType>.fromEntries(
+      type.namedParameterTypes.keys.where((String key) {
+        return type.namedParameterTypes[key]!.nullabilitySuffix ==
+            NullabilitySuffix.question;
+      }).map(
+        (String key) =>
+            MapEntry<String, DartType>(key, type.namedParameterTypes[key]!),
+      ),
+    );
+
+    return cb.FunctionType((FunctionTypeBuilder builder) {
+      Reference allocateTypeReference(DartType type) {
+        if (type is TypeParameterType) {
+          return refer(type.getDisplayString(withNullability: true));
+        } else {
+          return _allocateTypeReference(type);
+        }
+      }
+
+      builder.returnType = _allocateTypeReference(type.returnType);
+      builder.namedRequiredParameters.addAll(
+        requiredNamedParameters.map(
+          (String key, DartType value) => MapEntry<String, Reference>(
+            key,
+            allocateTypeReference(value),
+          ),
+        ),
+      );
+      builder.requiredParameters.addAll(
+        type.normalParameterTypes.map(allocateTypeReference),
+      );
+      builder.optionalParameters
+          .addAll(type.optionalParameterTypes.map(allocateTypeReference));
+      builder.namedParameters.addAll(
+        optionalNamedParameters.map(
+          (String key, DartType value) => MapEntry<String, Reference>(
+            key,
+            allocateTypeReference(value),
+          ),
+        ),
+      );
+      builder.types.addAll(
+        type.typeFormals
+            .map((TypeParameterElement parameter) => cb.refer(parameter.name)),
+      );
+    });
+  }
 
   /// Returns a list of component members or properties, their implementation,
   /// each member calls the corresponding type provider.
@@ -888,6 +951,8 @@ class ComponentBuilderDelegate {
       return 'record${getId()}';
     } else if (type is VoidType) {
       return 'void${getId()}';
+    } else if (type is FunctionType) {
+      return 'function${getId()}';
     }
 
     final String typeName = _typeNameGenerator.generate(type);

@@ -393,7 +393,10 @@ class ComponentContext implements TypeIdProvider {
     required DartType type,
     required List<GraphObject> or,
   }) {
-    if (type.element is EnumElement || type is RecordType || type is VoidType) {
+    if (type.element is EnumElement ||
+        type is RecordType ||
+        type is VoidType ||
+        type is FunctionType) {
       return or;
     }
 
@@ -636,7 +639,8 @@ class ComponentContext implements TypeIdProvider {
 
       if (type.element is EnumElement ||
           type is RecordType ||
-          type is VoidType) {
+          type is VoidType ||
+          type is FunctionType) {
         continue;
       }
 

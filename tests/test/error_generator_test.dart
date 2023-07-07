@@ -3123,32 +3123,6 @@ abstract class AppComponent {
       );
     });
 
-    test('nullable component getter with Function type', () async {
-      await checkBuilderResult(
-        mainContent: '''
-import 'package:jugger/jugger.dart';
-
-@Component()
-abstract class AppComponent {
-  void Function() get name;
-}
-        ''',
-        onError: (Object error) {
-          expect(
-            error.toString(),
-            'error: type_not_supported:\n'
-            'Type void Function() not supported.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#type_not_supported',
-          );
-        },
-        options: const BuilderOptions(
-          <String, dynamic>{
-            'check_unused_providers': true,
-          },
-        ),
-      );
-    });
-
     test('nullable parameter in injected constructor', () async {
       await checkBuilderResult(
         mainContent: '''
@@ -3171,39 +3145,6 @@ class Config {
             error.toString(),
             'error: type_not_supported:\n'
             'Type String? not supported.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#type_not_supported',
-          );
-        },
-        options: const BuilderOptions(
-          <String, dynamic>{
-            'check_unused_providers': true,
-          },
-        ),
-      );
-    });
-
-    test('function parameter in injected constructor', () async {
-      await checkBuilderResult(
-        mainContent: '''
-import 'package:jugger/jugger.dart';
-
-@Component()
-abstract class AppComponent {
-  Config get config;
-}
-
-class Config {
-  @inject
-  const Config(this.nameProvider);
-
-  final String Function() nameProvider;
-}        
-        ''',
-        onError: (Object error) {
-          expect(
-            error.toString(),
-            'error: type_not_supported:\n'
-            'Type String Function() not supported.\n'
             'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#type_not_supported',
           );
         },
@@ -3246,36 +3187,6 @@ abstract class AppModule {
       );
     });
 
-    test('provider method return function type', () async {
-      await checkBuilderResult(
-        mainContent: '''
-import 'package:jugger/jugger.dart';
-
-@Component(modules: <Type>[AppModule])
-abstract class AppComponent {}
-
-@module
-abstract class AppModule {
-  @provides
-  static int Function() provideInt() => () => 0;
-}
-        ''',
-        onError: (Object error) {
-          expect(
-            error.toString(),
-            'error: type_not_supported:\n'
-            'Type int Function() not supported.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#type_not_supported',
-          );
-        },
-        options: const BuilderOptions(
-          <String, dynamic>{
-            'check_unused_providers': true,
-          },
-        ),
-      );
-    });
-
     test('nullable parameter in provide method', () async {
       await checkBuilderResult(
         mainContent: '''
@@ -3295,36 +3206,6 @@ abstract class AppModule {
             error.toString(),
             'error: type_not_supported:\n'
             'Type String? not supported.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#type_not_supported',
-          );
-        },
-        options: const BuilderOptions(
-          <String, dynamic>{
-            'check_unused_providers': true,
-          },
-        ),
-      );
-    });
-
-    test('function parameter in provide method', () async {
-      await checkBuilderResult(
-        mainContent: '''
-import 'package:jugger/jugger.dart';
-
-@Component(modules: <Type>[AppModule])
-abstract class AppComponent {}
-
-@module
-abstract class AppModule {
-  @provides
-  static int provideInt(int Function() version) => 0;
-}
-        ''',
-        onError: (Object error) {
-          expect(
-            error.toString(),
-            'error: type_not_supported:\n'
-            'Type int Function() not supported.\n'
             'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#type_not_supported',
           );
         },
@@ -3360,41 +3241,6 @@ abstract class MyComponentBuilder {
             error.toString(),
             'error: type_not_supported:\n'
             'Type String? not supported.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#type_not_supported',
-          );
-        },
-        options: const BuilderOptions(
-          <String, dynamic>{
-            'check_unused_providers': true,
-          },
-        ),
-      );
-    });
-
-    test('build instance function type', () async {
-      await checkBuilderResult(
-        mainContent: '''
-import 'package:jugger/jugger.dart';
-
-@Component(
-  builder: MyComponentBuilder,
-)
-abstract class AppComponent {
-  String get string;
-}
-
-@componentBuilder
-abstract class MyComponentBuilder {
-  MyComponentBuilder appComponent(int Function() s);
-
-  AppComponent build();
-}
-        ''',
-        onError: (Object error) {
-          expect(
-            error.toString(),
-            'error: type_not_supported:\n'
-            'Type int Function() not supported.\n'
             'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#type_not_supported',
           );
         },

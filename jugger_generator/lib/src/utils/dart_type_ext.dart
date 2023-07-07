@@ -1,7 +1,7 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
-import 'package:code_builder/code_builder.dart' hide RecordType;
+import 'package:code_builder/code_builder.dart' hide FunctionType, RecordType;
 
 import '../errors_glossary.dart';
 import '../generator/visitors.dart';
@@ -179,7 +179,10 @@ extension DartTypeExt on DartType {
 
   void checkUnsupportedType() {
     check(
-      this is InterfaceType || this is RecordType || this is VoidType,
+      this is InterfaceType ||
+          this is RecordType ||
+          this is VoidType ||
+          this is FunctionType,
       () => buildErrorMessage(
         error: JuggerErrorId.type_not_supported,
         message: 'Type $this not supported.',
