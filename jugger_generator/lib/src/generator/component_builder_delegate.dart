@@ -866,6 +866,17 @@ class ComponentBuilderDelegate {
       final ProviderSource provider =
           _componentContext.findProvider(type, tag, multibindingsInfo);
 
+      if (provider is ParentComponentSource) {
+        return _componentContext
+            .getParentInfo(provider.id)
+            .typeIdProvider
+            .getIdOf(
+              type: type,
+              tag: tag,
+              multibindingsInfo: provider.multibindingsInfo,
+            );
+      }
+
       return _componentContext.getIdOf(
         type: type,
         tag: tag,

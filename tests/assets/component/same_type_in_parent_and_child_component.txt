@@ -1,0 +1,36 @@
+// ignore_for_file: implementation_imports
+// ignore_for_file: prefer_const_constructors
+// ignore_for_file: always_specify_types
+// ignore_for_file: directives_ordering
+// ignore_for_file: non_constant_identifier_names
+// ignore_for_file: type=lint
+// ignore_for_file: unused_field
+// ignore_for_file: no_leading_underscores_for_library_prefixes
+import 'package:tests/component/same_type_in_parent_and_child_component.dart'
+    as _i1;
+import 'package:jugger/jugger.dart' as _i2;
+
+class JuggerParentComponent implements _i1.ParentComponent {
+  JuggerParentComponent.create();
+
+  late final _i2.IProvider<(String, int)> _record0Provider =
+      _i2.Provider<(String, int)>(() => _i1.ParentModule.provideMyRecord());
+
+  _i1.ChildComponent createChildComponent() {
+    return JuggerSubcomponent$ChildComponent.create(this);
+  }
+}
+
+class JuggerSubcomponent$ChildComponent implements _i1.ChildComponent {
+  JuggerSubcomponent$ChildComponent.create(this._parent);
+
+  final JuggerParentComponent _parent;
+
+  late final _i2.IProvider<(String, String)> _record0Provider =
+      _i2.Provider<(String, String)>(() => _i1.ChildModule.provideMyRecord());
+
+  @override
+  (String, int) get myRecord => _parent._record0Provider.get();
+  @override
+  (String, String) get myRecord2 => _record0Provider.get();
+}

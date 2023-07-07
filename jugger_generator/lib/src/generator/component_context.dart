@@ -22,12 +22,13 @@ import 'multibindings/multibindings_info.dart';
 import 'multibindings/multibindings_manager.dart';
 import 'subcomponent/parent_component_provider.dart';
 import 'tag.dart';
+import 'type_id_provider.dart';
 import 'visitors.dart';
 import 'wrappers.dart' as j;
 
 /// Class containing all information about the component, including the object
 /// graph.
-class ComponentContext {
+class ComponentContext implements TypeIdProvider {
   ComponentContext({
     required this.component,
     required this.componentBuilder,
@@ -153,7 +154,13 @@ class ComponentContext {
     _checkMissingProviders();
   }
 
-  /// Get a unique type identifier within one BuildStep.
+  ParentComponentInfo getParentInfo(int parentId) {
+    // id is index
+    return _parentInfo[parentId];
+  }
+
+  /// Get a unique type identifier within this component.
+  @override
   int getIdOf({
     required DartType type,
     Tag? tag,
@@ -209,6 +216,7 @@ class ComponentContext {
   }();
 
   late final ParentComponentInfo _selfAsParentInfo = ParentComponentInfo(
+    typeIdProvider: this,
     sources: providerSources.where((ProviderSource source) {
       return source is! MultibindingsSource &&
           // It makes no sense to pass this type, since the original object is
@@ -1108,6 +1116,7 @@ class MultibindingsSource extends ProviderSource {
 
 class ParentComponentInfo {
   ParentComponentInfo({
+    required this.typeIdProvider,
     required this.graphObjects,
     required this.componentName,
     required this.sources,
@@ -1115,6 +1124,7 @@ class ParentComponentInfo {
     required this.scope,
   });
 
+  final TypeIdProvider typeIdProvider;
   final Map<_Key, GraphObject> graphObjects;
   final List<ProviderSource> sources;
   final String componentName;
