@@ -13,15 +13,14 @@ import 'package:jugger/jugger.dart' as _i2;
 class JuggerAppComponent implements _i1.AppComponent {
   JuggerAppComponent.create();
 
-  late final _Map_double_String_AppComponent_AppComponent_Provider
-      _map_double_String_Provider =
-      _Map_double_String_AppComponent_AppComponent_Provider();
+  late final _Map_double_String_AppComponent$Provider
+      _map_double_String_Provider = _Map_double_String_AppComponent$Provider();
 
   @override
   Map<double, String> get strings => _map_double_String_Provider.get();
 }
 
-class _Map_double_String_AppComponent_AppComponent_Provider
+class _Map_double_String_AppComponent$Provider
     implements _i2.IProvider<Map<double, String>> {
   late final _i2.IProvider<String>
       _string1cd1812dfa95f93a293be610f6aa4d36Provider =

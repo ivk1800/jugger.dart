@@ -13,8 +13,8 @@ import 'package:jugger/jugger.dart' as _i2;
 class JuggerMyComponent implements _i1.MyComponent {
   JuggerMyComponent.create();
 
-  late final _Set_String_MyComponent_MyComponent_Provider _set_String_Provider =
-      _Set_String_MyComponent_MyComponent_Provider();
+  late final _Set_String_MyComponent$Provider _set_String_Provider =
+      _Set_String_MyComponent$Provider();
 
   @override
   Set<String> get strings => _set_String_Provider.get();
@@ -28,16 +28,14 @@ class JuggerSubcomponent$MySubcomponent implements _i1.MySubcomponent {
 
   final JuggerMyComponent _parent;
 
-  late final _Set_String_MySubcomponent_MySubcomponent_Provider
-      _set_String_Provider =
-      _Set_String_MySubcomponent_MySubcomponent_Provider(this);
+  late final _Set_String_MySubcomponent$Provider _set_String_Provider =
+      _Set_String_MySubcomponent$Provider(this);
 
   @override
   Set<String> get strings => _set_String_Provider.get();
 }
 
-class _Set_String_MyComponent_MyComponent_Provider
-    implements _i2.IProvider<Set<String>> {
+class _Set_String_MyComponent$Provider implements _i2.IProvider<Set<String>> {
   late final _i2.IProvider<String>
       _string18a037af09801ad0cfddf18dad7e20c3Provider =
       _i2.SingletonProvider<String>(
@@ -48,9 +46,9 @@ class _Set_String_MyComponent_MyComponent_Provider
       <String>{_string18a037af09801ad0cfddf18dad7e20c3Provider.get()});
 }
 
-class _Set_String_MySubcomponent_MySubcomponent_Provider
+class _Set_String_MySubcomponent$Provider
     implements _i2.IProvider<Set<String>> {
-  _Set_String_MySubcomponent_MySubcomponent_Provider(this._component);
+  _Set_String_MySubcomponent$Provider(this._component);
 
   late final _i2.IProvider<String>
       _string18a037af09801ad0cfddf18dad7e20c3Provider = _component._parent

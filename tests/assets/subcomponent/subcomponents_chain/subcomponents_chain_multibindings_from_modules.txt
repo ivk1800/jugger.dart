@@ -13,9 +13,8 @@ import 'package:jugger/jugger.dart' as _i2;
 class JuggerComponent1 implements _i1.Component1 {
   JuggerComponent1.create();
 
-  late final _Set_FromComponent_Component1_Component1_Provider
-      _set_FromComponent_Provider =
-      _Set_FromComponent_Component1_Component1_Provider();
+  late final _Set_FromComponent_Component1$Provider
+      _set_FromComponent_Provider = _Set_FromComponent_Component1$Provider();
 
   @override
   Set<_i1.FromComponent> get classes => _set_FromComponent_Provider.get();
@@ -29,9 +28,9 @@ class JuggerSubcomponent$Component2 implements _i1.Component2 {
 
   final JuggerComponent1 _parent;
 
-  late final _Set_FromComponent_Component2_Component2_Provider
+  late final _Set_FromComponent_Component2$Provider
       _set_FromComponent_Provider =
-      _Set_FromComponent_Component2_Component2_Provider(this);
+      _Set_FromComponent_Component2$Provider(this);
 
   @override
   Set<_i1.FromComponent> get classes => _set_FromComponent_Provider.get();
@@ -45,15 +44,15 @@ class JuggerSubcomponent$Component3 implements _i1.Component3 {
 
   final JuggerSubcomponent$Component2 _parent;
 
-  late final _Set_FromComponent_Component3_Component3_Provider
+  late final _Set_FromComponent_Component3$Provider
       _set_FromComponent_Provider =
-      _Set_FromComponent_Component3_Component3_Provider(this);
+      _Set_FromComponent_Component3$Provider(this);
 
   @override
   Set<_i1.FromComponent> get classes => _set_FromComponent_Provider.get();
 }
 
-class _Set_FromComponent_Component1_Component1_Provider
+class _Set_FromComponent_Component1$Provider
     implements _i2.IProvider<Set<_i1.FromComponent>> {
   late final _i2.IProvider<_i1.FromComponent>
       _fromComponentffe3a427a9d95817130f2741c49bb424Provider =
@@ -66,9 +65,9 @@ class _Set_FromComponent_Component1_Component1_Provider
       });
 }
 
-class _Set_FromComponent_Component2_Component2_Provider
+class _Set_FromComponent_Component2$Provider
     implements _i2.IProvider<Set<_i1.FromComponent>> {
-  _Set_FromComponent_Component2_Component2_Provider(this._component);
+  _Set_FromComponent_Component2$Provider(this._component);
 
   late final _i2.IProvider<_i1.FromComponent>
       _fromComponent9b50cada45011c4a375051f6757f93adProvider =
@@ -90,9 +89,9 @@ class _Set_FromComponent_Component2_Component2_Provider
       });
 }
 
-class _Set_FromComponent_Component3_Component3_Provider
+class _Set_FromComponent_Component3$Provider
     implements _i2.IProvider<Set<_i1.FromComponent>> {
-  _Set_FromComponent_Component3_Component3_Provider(this._component);
+  _Set_FromComponent_Component3$Provider(this._component);
 
   late final _i2.IProvider<_i1.FromComponent>
       _fromComponent1cd37655385ba38080028436bbb5dee8Provider =

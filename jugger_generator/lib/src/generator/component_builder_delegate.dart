@@ -2145,9 +2145,7 @@ if (_disposed) {
     final String componentName = _componentContext.component.element.name;
     fieldNameBuilder
       ..write(componentName)
-      ..write('_')
-      ..write(componentName)
-      ..write('_')
+      ..write('\$')
       ..write('Provider');
 
     return capitalize(fieldNameBuilder.toString());

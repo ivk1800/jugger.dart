@@ -13,11 +13,11 @@ import 'package:jugger/jugger.dart' as _i2;
 class JuggerAppComponent1 implements _i1.AppComponent1 {
   JuggerAppComponent1.create();
 
-  late final _Set_String_AppComponent1_AppComponent1_Provider
-      _set_String_Provider = _Set_String_AppComponent1_AppComponent1_Provider();
+  late final _Set_String_AppComponent1$Provider _set_String_Provider =
+      _Set_String_AppComponent1$Provider();
 
-  late final _Set_int_AppComponent1_AppComponent1_Provider _set_int_Provider =
-      _Set_int_AppComponent1_AppComponent1_Provider();
+  late final _Set_int_AppComponent1$Provider _set_int_Provider =
+      _Set_int_AppComponent1$Provider();
 
   @override
   Set<int> get ints => _set_int_Provider.get();
@@ -25,8 +25,7 @@ class JuggerAppComponent1 implements _i1.AppComponent1 {
   Set<String> get strings => _set_String_Provider.get();
 }
 
-class _Set_String_AppComponent1_AppComponent1_Provider
-    implements _i2.IProvider<Set<String>> {
+class _Set_String_AppComponent1$Provider implements _i2.IProvider<Set<String>> {
   late final _i2.IProvider<String>
       _string1cd1812dfa95f93a293be610f6aa4d36Provider =
       _i2.Provider<String>(() => _i1.Module1.provideString2());
@@ -42,8 +41,7 @@ class _Set_String_AppComponent1_AppComponent1_Provider
       });
 }
 
-class _Set_int_AppComponent1_AppComponent1_Provider
-    implements _i2.IProvider<Set<int>> {
+class _Set_int_AppComponent1$Provider implements _i2.IProvider<Set<int>> {
   late final _i2.IProvider<int> _int069e794bd481b8f3cc0d6e8b423f4b10Provider =
       _i2.Provider<int>(() => _i1.Module1.provideInt1());
 

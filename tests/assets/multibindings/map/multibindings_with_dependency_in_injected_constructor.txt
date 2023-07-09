@@ -13,9 +13,8 @@ import 'package:jugger/jugger.dart' as _i2;
 class JuggerAppComponent implements _i1.AppComponent {
   JuggerAppComponent.create();
 
-  late final _Map_int_String_AppComponent_AppComponent_Provider
-      _map_int_String_Provider =
-      _Map_int_String_AppComponent_AppComponent_Provider();
+  late final _Map_int_String_AppComponent$Provider _map_int_String_Provider =
+      _Map_int_String_AppComponent$Provider();
 
   late final _i2.IProvider<_i1.MyClass> _myClassProvider =
       _i2.Provider<_i1.MyClass>(
@@ -25,7 +24,7 @@ class JuggerAppComponent implements _i1.AppComponent {
   _i1.MyClass get myClass => _myClassProvider.get();
 }
 
-class _Map_int_String_AppComponent_AppComponent_Provider
+class _Map_int_String_AppComponent$Provider
     implements _i2.IProvider<Map<int, String>> {
   late final _i2.IProvider<String>
       _string1cd1812dfa95f93a293be610f6aa4d36Provider =
