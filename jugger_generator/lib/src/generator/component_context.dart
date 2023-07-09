@@ -111,6 +111,7 @@ class ComponentContext implements TypeIdProvider {
           annotations: getAnnotations(parameter.enclosingElement!),
         ),
       );
+      _registerGraphObject(parameter);
     }
 
     for (final j.ProvideMethod method in component.modulesProvideMethods) {
