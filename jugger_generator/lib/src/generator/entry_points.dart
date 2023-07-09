@@ -9,7 +9,7 @@ import 'tag.dart';
 String? findEntryPointsOf(
   DartType type,
   Tag? tag,
-  List<GraphObject> graphObjects,
+  Iterable<GraphObject> graphObjects,
   ProviderSource Function(DartType type, Tag? tag) findProvider,
 ) {
   final Iterable<GraphObject> dependOn =

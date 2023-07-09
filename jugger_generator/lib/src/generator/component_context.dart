@@ -13,6 +13,7 @@ import '../utils/component_methods_ext.dart';
 import '../utils/dart_type_ext.dart';
 import '../utils/element_annotation_ext.dart';
 import '../utils/element_ext.dart';
+import '../utils/iterable_ext.dart';
 import '../utils/source_ext.dart';
 import '../utils/utils.dart';
 import 'entry_points.dart';
@@ -167,7 +168,7 @@ class ComponentContext implements TypeIdProvider {
     Tag? tag,
     MultibindingsInfo? multibindingsInfo,
   }) {
-    final int index = graphObjects.indexWhere(
+    final int index = graphObjects.firstIndexWhere(
       (GraphObject element) =>
           element.type == type &&
           element.tag == tag &&
@@ -180,7 +181,11 @@ class ComponentContext implements TypeIdProvider {
   }
 
   /// All objects of the component graph.
-  final Map<_Key, GraphObject> _graphObjects = HashMap<_Key, GraphObject>();
+  final Map<_Key, GraphObject> _graphObjects = SplayTreeMap<_Key, GraphObject>(
+    // Sort so that the sequence is preserved with each code generation (for
+    // test stability)
+    Comparable.compare,
+  );
 
   final j.Component component;
   final j.ComponentBuilder? componentBuilder;
@@ -202,11 +207,7 @@ class ComponentContext implements TypeIdProvider {
       MultibindingsManager(this);
 
   /// All graph objects of the component.
-  List<GraphObject> get graphObjects => _graphObjects.values
-      .toList()
-      // Sort so that the sequence is preserved with each code generation (for
-      // test stability)
-      .sorted((GraphObject a, GraphObject b) => a.compareTo(b));
+  Iterable<GraphObject> get graphObjects => _graphObjects.values;
 
   /// Queue to detect circular dependencies.
   final Queue<_Key> _graphObjectsQueue = Queue<_Key>();
@@ -743,7 +744,7 @@ class ComponentContext implements TypeIdProvider {
 }
 
 /// Identifier of type source. Serves to build a dependency graph.
-class _Key {
+class _Key implements Comparable<_Key> {
   _Key({
     required this.tag,
     required this.type,
@@ -809,10 +810,21 @@ class _Key {
 
   @override
   String toString() => '${_element.name}';
+
+  @override
+  int compareTo(_Key other) {
+    return (_Key a1, _Key b1) {
+      return a1.type.getName().compareTo(b1.type.getName());
+    }.then((_Key a2, _Key b2) {
+      return compareNullable(a2.tag, b2.tag);
+    }).then((_Key a3, _Key b3) {
+      return compareNullable(a3.multibindingsInfo, b3.multibindingsInfo);
+    }).call(this, other);
+  }
 }
 
 /// Object of graph.
-class GraphObject implements Comparable<GraphObject> {
+class GraphObject {
   const GraphObject({
     required this.tag,
     required this.type,
@@ -838,17 +850,6 @@ class GraphObject implements Comparable<GraphObject> {
   @override
   String toString() {
     return type.getName();
-  }
-
-  @override
-  int compareTo(GraphObject other) {
-    return (GraphObject a1, GraphObject b1) {
-      return a1.type.getName().compareTo(b1.type.getName());
-    }.then((GraphObject a2, GraphObject b2) {
-      return compareNullable(a2.tag, b2.tag);
-    }).then((GraphObject a3, GraphObject b3) {
-      return compareNullable(a3.multibindingsInfo, b3.multibindingsInfo);
-    }).call(this, other);
   }
 }
 

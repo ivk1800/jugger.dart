@@ -85,7 +85,7 @@ class DisposablesManager {
 
   /// Find all objects for disposing. Filters objects from parent.
   List<DisposableInfo> _findDisposableGraphObjects(ComponentContext context) {
-    final List<GraphObject> graphObjects = context.graphObjects;
+    final Iterable<GraphObject> graphObjects = context.graphObjects;
 
     final List<DisposableInfo> sources = <DisposableInfo>[];
 
