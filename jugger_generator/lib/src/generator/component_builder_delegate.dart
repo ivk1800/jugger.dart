@@ -16,7 +16,6 @@ import '../utils/element_ext.dart';
 import '../utils/list_ext.dart';
 import '../utils/object_ext.dart';
 import '../utils/source_ext.dart';
-import '../utils/tag_ext.dart';
 import '../utils/utils.dart';
 import 'asset_context.dart';
 import 'component_context.dart';
@@ -26,7 +25,6 @@ import 'multibindings/multibindings_group.dart';
 import 'multibindings/multibindings_info.dart';
 import 'subcomponent/parent_component_provider.dart';
 import 'tag.dart';
-import 'type_name_registry.dart';
 import 'unique_name_registry.dart';
 import 'visitors.dart';
 import 'wrappers.dart' as j;
@@ -60,8 +58,6 @@ class ComponentBuilderDelegate {
   GlobalConfig get globalConfig => _assetContext.globalConfig;
 
   Allocator get _allocator => _assetContext.allocator;
-
-  TypeNameGenerator get _typeNameGenerator => _assetContext.typeNameGenerator;
 
   UniqueIdGenerator get _uniqueIdGenerator => _assetContext.uniqueIdGenerator;
 
