@@ -13,7 +13,7 @@ import 'package:jugger/jugger.dart' as _i2;
 class JuggerAppComponent implements _i1.AppComponent {
   JuggerAppComponent.create();
 
-  late final _i2.IProvider<String> _stringProvider =
+  late final _i2.IProvider<String> _string0Provider =
       _i2.SingletonProvider<String>(() => _i1.AppModule.provideString());
 
   _i1.MyComponent createMyComponent() {
@@ -26,9 +26,9 @@ class JuggerSubcomponent$MyComponent implements _i1.MyComponent {
 
   final JuggerAppComponent _parent;
 
-  late final _i2.IProvider<int> _intProvider = _i2.Provider<int>(
-      () => _i1.MyModule.provideCount(_parent._stringProvider.get()));
+  late final _i2.IProvider<int> _int1Provider = _i2.Provider<int>(
+      () => _i1.MyModule.provideCount(_parent._string0Provider.get()));
 
   @override
-  int get count => _intProvider.get();
+  int get count => _int1Provider.get();
 }

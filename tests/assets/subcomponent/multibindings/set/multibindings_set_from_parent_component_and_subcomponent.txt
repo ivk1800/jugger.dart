@@ -13,11 +13,11 @@ import 'package:jugger/jugger.dart' as _i2;
 class JuggerMyComponent implements _i1.MyComponent {
   JuggerMyComponent.create();
 
-  late final _Set_String_MyComponent$Provider _set_String_Provider =
-      _Set_String_MyComponent$Provider();
+  late final _Set0MyComponent$Provider _set0Provider =
+      _Set0MyComponent$Provider();
 
   @override
-  Set<String> get strings => _set_String_Provider.get();
+  Set<String> get strings => _set0Provider.get();
   _i1.MySubcomponent createMySubcomponent() {
     return JuggerSubcomponent$MySubcomponent.create(this);
   }
@@ -28,51 +28,50 @@ class JuggerSubcomponent$MySubcomponent implements _i1.MySubcomponent {
 
   final JuggerMyComponent _parent;
 
-  late final _Set_String_MySubcomponent$Provider _set_String_Provider =
-      _Set_String_MySubcomponent$Provider(this);
+  late final _Set0MySubcomponent$Provider _set0Provider =
+      _Set0MySubcomponent$Provider(this);
 
   @override
-  Set<String> get strings => _set_String_Provider.get();
+  Set<String> get strings => _set0Provider.get();
 }
 
-class _Set_String_MyComponent$Provider implements _i2.IProvider<Set<String>> {
+class _Set0MyComponent$Provider implements _i2.IProvider<Set<String>> {
   late final _i2.IProvider<String>
-      _string18a037af09801ad0cfddf18dad7e20c3Provider =
+      _string118a037af09801ad0cfddf18dad7e20c3Provider =
       _i2.Provider<String>(() => _i1.MyComponentModule.provideString1());
 
   late final _i2.IProvider<String>
-      _string42808242486f6a83ba6ac60e68113a27Provider =
+      _string242808242486f6a83ba6ac60e68113a27Provider =
       _i2.Provider<String>(() => _i1.MyComponentModule.provideString2());
 
   @override
   Set<String> get() => Set.unmodifiable(<String>{
-        _string18a037af09801ad0cfddf18dad7e20c3Provider.get(),
-        _string42808242486f6a83ba6ac60e68113a27Provider.get(),
+        _string118a037af09801ad0cfddf18dad7e20c3Provider.get(),
+        _string242808242486f6a83ba6ac60e68113a27Provider.get(),
       });
 }
 
-class _Set_String_MySubcomponent$Provider
-    implements _i2.IProvider<Set<String>> {
-  _Set_String_MySubcomponent$Provider(this._component);
+class _Set0MySubcomponent$Provider implements _i2.IProvider<Set<String>> {
+  _Set0MySubcomponent$Provider(this._component);
 
   late final _i2.IProvider<String>
-      _string18a037af09801ad0cfddf18dad7e20c3Provider = _component._parent
-          ._set_String_Provider._string18a037af09801ad0cfddf18dad7e20c3Provider;
+      _string118a037af09801ad0cfddf18dad7e20c3Provider = _component._parent
+          ._set0Provider._string118a037af09801ad0cfddf18dad7e20c3Provider;
 
   late final _i2.IProvider<String>
-      _string3c3a731159d9ebc35a0a605f540bec98Provider =
+      _string242808242486f6a83ba6ac60e68113a27Provider = _component._parent
+          ._set0Provider._string242808242486f6a83ba6ac60e68113a27Provider;
+
+  late final _i2.IProvider<String>
+      _string33c3a731159d9ebc35a0a605f540bec98Provider =
       _i2.Provider<String>(() => _i1.MySubcomponentModule.provideString3());
-
-  late final _i2.IProvider<String>
-      _string42808242486f6a83ba6ac60e68113a27Provider = _component._parent
-          ._set_String_Provider._string42808242486f6a83ba6ac60e68113a27Provider;
 
   final JuggerSubcomponent$MySubcomponent _component;
 
   @override
   Set<String> get() => Set.unmodifiable(<String>{
-        _string18a037af09801ad0cfddf18dad7e20c3Provider.get(),
-        _string3c3a731159d9ebc35a0a605f540bec98Provider.get(),
-        _string42808242486f6a83ba6ac60e68113a27Provider.get(),
+        _string118a037af09801ad0cfddf18dad7e20c3Provider.get(),
+        _string242808242486f6a83ba6ac60e68113a27Provider.get(),
+        _string33c3a731159d9ebc35a0a605f540bec98Provider.get(),
       });
 }

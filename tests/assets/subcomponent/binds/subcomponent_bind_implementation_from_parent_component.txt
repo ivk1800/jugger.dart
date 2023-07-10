@@ -13,7 +13,7 @@ import 'package:jugger/jugger.dart' as _i2;
 class JuggerMyComponent implements _i1.MyComponent {
   JuggerMyComponent.create();
 
-  late final _i2.IProvider<_i1.MyImplementation> _myImplementationProvider =
+  late final _i2.IProvider<_i1.MyImplementation> _myImplementation0Provider =
       _i2.Provider<_i1.MyImplementation>(
           () => _i1.MyComponentModule.provideMyImplementation());
 
@@ -27,10 +27,10 @@ class JuggerSubcomponent$MySubcomponent implements _i1.MySubcomponent {
 
   final JuggerMyComponent _parent;
 
-  late final _i2.IProvider<_i1.IMyInterface> _iMyInterfaceProvider =
+  late final _i2.IProvider<_i1.IMyInterface> _iMyInterface0Provider =
       _i2.Provider<_i1.IMyInterface>(
-          () => _parent._myImplementationProvider.get());
+          () => _parent._myImplementation0Provider.get());
 
   @override
-  _i1.IMyInterface get myInterface => _iMyInterfaceProvider.get();
+  _i1.IMyInterface get myInterface => _iMyInterface0Provider.get();
 }

@@ -16,9 +16,9 @@ class JuggerMyComponent implements _i1.MyComponent {
   late final _i2.IProvider<void Function()> _function1Provider =
       _i2.Provider<void Function()>(() => _i1.MyModule.provideMyFunction());
 
-  late final _i2.IProvider<_i1.MyClass> _myClassProvider =
+  late final _i2.IProvider<_i1.MyClass> _myClass0Provider =
       _i2.Provider<_i1.MyClass>(() => _i1.MyClass(_function1Provider.get()));
 
   @override
-  _i1.MyClass get myClass => _myClassProvider.get();
+  _i1.MyClass get myClass => _myClass0Provider.get();
 }

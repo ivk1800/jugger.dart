@@ -13,11 +13,11 @@ import 'package:jugger/jugger.dart' as _i2;
 class JuggerComponent1 implements _i1.Component1 {
   JuggerComponent1.create();
 
-  late final _Set_FromComponent_Component1$Provider
-      _set_FromComponent_Provider = _Set_FromComponent_Component1$Provider();
+  late final _Set1Component1$Provider _set1Provider =
+      _Set1Component1$Provider();
 
   @override
-  Set<_i1.FromComponent> get classes => _set_FromComponent_Provider.get();
+  Set<_i1.FromComponent> get classes => _set1Provider.get();
   _i1.Component2 createComponent2() {
     return JuggerSubcomponent$Component2.create(this);
   }
@@ -28,12 +28,11 @@ class JuggerSubcomponent$Component2 implements _i1.Component2 {
 
   final JuggerComponent1 _parent;
 
-  late final _Set_FromComponent_Component2$Provider
-      _set_FromComponent_Provider =
-      _Set_FromComponent_Component2$Provider(this);
+  late final _Set1Component2$Provider _set1Provider =
+      _Set1Component2$Provider(this);
 
   @override
-  Set<_i1.FromComponent> get classes => _set_FromComponent_Provider.get();
+  Set<_i1.FromComponent> get classes => _set1Provider.get();
   _i1.Component3 createComponent3() {
     return JuggerSubcomponent$Component3.create(this);
   }
@@ -44,78 +43,77 @@ class JuggerSubcomponent$Component3 implements _i1.Component3 {
 
   final JuggerSubcomponent$Component2 _parent;
 
-  late final _Set_FromComponent_Component3$Provider
-      _set_FromComponent_Provider =
-      _Set_FromComponent_Component3$Provider(this);
+  late final _Set1Component3$Provider _set1Provider =
+      _Set1Component3$Provider(this);
 
   @override
-  Set<_i1.FromComponent> get classes => _set_FromComponent_Provider.get();
+  Set<_i1.FromComponent> get classes => _set1Provider.get();
 }
 
-class _Set_FromComponent_Component1$Provider
+class _Set1Component1$Provider
     implements _i2.IProvider<Set<_i1.FromComponent>> {
   late final _i2.IProvider<_i1.FromComponent>
-      _fromComponentffe3a427a9d95817130f2741c49bb424Provider =
+      _fromComponent0ffe3a427a9d95817130f2741c49bb424Provider =
       _i2.Provider<_i1.FromComponent>(
           () => _i1.Component1Module.provideClass());
 
   @override
   Set<_i1.FromComponent> get() => Set.unmodifiable(<_i1.FromComponent>{
-        _fromComponentffe3a427a9d95817130f2741c49bb424Provider.get()
+        _fromComponent0ffe3a427a9d95817130f2741c49bb424Provider.get()
       });
 }
 
-class _Set_FromComponent_Component2$Provider
+class _Set1Component2$Provider
     implements _i2.IProvider<Set<_i1.FromComponent>> {
-  _Set_FromComponent_Component2$Provider(this._component);
+  _Set1Component2$Provider(this._component);
 
   late final _i2.IProvider<_i1.FromComponent>
-      _fromComponent9b50cada45011c4a375051f6757f93adProvider =
+      _fromComponent0ffe3a427a9d95817130f2741c49bb424Provider = _component
+          ._parent
+          ._set1Provider
+          ._fromComponent0ffe3a427a9d95817130f2741c49bb424Provider;
+
+  late final _i2.IProvider<_i1.FromComponent>
+      _fromComponent19b50cada45011c4a375051f6757f93adProvider =
       _i2.Provider<_i1.FromComponent>(
           () => _i1.Component2Module.provideClass());
-
-  late final _i2.IProvider<_i1.FromComponent>
-      _fromComponentffe3a427a9d95817130f2741c49bb424Provider = _component
-          ._parent
-          ._set_FromComponent_Provider
-          ._fromComponentffe3a427a9d95817130f2741c49bb424Provider;
 
   final JuggerSubcomponent$Component2 _component;
 
   @override
   Set<_i1.FromComponent> get() => Set.unmodifiable(<_i1.FromComponent>{
-        _fromComponent9b50cada45011c4a375051f6757f93adProvider.get(),
-        _fromComponentffe3a427a9d95817130f2741c49bb424Provider.get(),
+        _fromComponent0ffe3a427a9d95817130f2741c49bb424Provider.get(),
+        _fromComponent19b50cada45011c4a375051f6757f93adProvider.get(),
       });
 }
 
-class _Set_FromComponent_Component3$Provider
+class _Set1Component3$Provider
     implements _i2.IProvider<Set<_i1.FromComponent>> {
-  _Set_FromComponent_Component3$Provider(this._component);
+  _Set1Component3$Provider(this._component);
 
   late final _i2.IProvider<_i1.FromComponent>
-      _fromComponent1cd37655385ba38080028436bbb5dee8Provider =
+      _fromComponent0ffe3a427a9d95817130f2741c49bb424Provider = _component
+          ._parent
+          ._set1Provider
+          ._fromComponent0ffe3a427a9d95817130f2741c49bb424Provider;
+
+  late final _i2.IProvider<_i1.FromComponent>
+      _fromComponent19b50cada45011c4a375051f6757f93adProvider = _component
+          ._parent
+          ._set1Provider
+          ._fromComponent19b50cada45011c4a375051f6757f93adProvider;
+
+  late final _i2.IProvider<_i1.FromComponent>
+      _fromComponent21cd37655385ba38080028436bbb5dee8Provider =
       _i2.Provider<_i1.FromComponent>(
           () => _i1.Component3Module.provideClass());
-
-  late final _i2.IProvider<_i1.FromComponent>
-      _fromComponent9b50cada45011c4a375051f6757f93adProvider = _component
-          ._parent
-          ._set_FromComponent_Provider
-          ._fromComponent9b50cada45011c4a375051f6757f93adProvider;
-
-  late final _i2.IProvider<_i1.FromComponent>
-      _fromComponentffe3a427a9d95817130f2741c49bb424Provider = _component
-          ._parent
-          ._set_FromComponent_Provider
-          ._fromComponentffe3a427a9d95817130f2741c49bb424Provider;
 
   final JuggerSubcomponent$Component3 _component;
 
   @override
   Set<_i1.FromComponent> get() => Set.unmodifiable(<_i1.FromComponent>{
-        _fromComponent1cd37655385ba38080028436bbb5dee8Provider.get(),
-        _fromComponent9b50cada45011c4a375051f6757f93adProvider.get(),
-        _fromComponentffe3a427a9d95817130f2741c49bb424Provider.get(),
+        _fromComponent0ffe3a427a9d95817130f2741c49bb424Provider.get(),
+        _fromComponent19b50cada45011c4a375051f6757f93adProvider.get(),
+        _fromComponent21cd37655385ba38080028436bbb5dee8Provider.get(),
       });
 }

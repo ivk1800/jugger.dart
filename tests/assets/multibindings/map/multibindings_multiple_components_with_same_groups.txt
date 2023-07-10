@@ -13,53 +13,51 @@ import 'package:jugger/jugger.dart' as _i2;
 class JuggerAppComponent1 implements _i1.AppComponent1 {
   JuggerAppComponent1.create();
 
-  late final _Map_int_String_AppComponent1$Provider _map_int_String_Provider =
-      _Map_int_String_AppComponent1$Provider();
+  late final _Map0AppComponent1$Provider _map0Provider =
+      _Map0AppComponent1$Provider();
 
   @override
-  Map<int, String> get strings => _map_int_String_Provider.get();
+  Map<int, String> get strings => _map0Provider.get();
 }
 
-class _Map_int_String_AppComponent1$Provider
-    implements _i2.IProvider<Map<int, String>> {
+class _Map0AppComponent1$Provider implements _i2.IProvider<Map<int, String>> {
   late final _i2.IProvider<String>
-      _string1cd1812dfa95f93a293be610f6aa4d36Provider =
-      _i2.Provider<String>(() => _i1.Module1.provideString2());
+      _string16e8c47e1b62c97a19ee198441b3d8f97Provider =
+      _i2.Provider<String>(() => _i1.Module1.provideString1());
 
   late final _i2.IProvider<String>
-      _string6e8c47e1b62c97a19ee198441b3d8f97Provider =
-      _i2.Provider<String>(() => _i1.Module1.provideString1());
+      _string21cd1812dfa95f93a293be610f6aa4d36Provider =
+      _i2.Provider<String>(() => _i1.Module1.provideString2());
 
   @override
   Map<int, String> get() => Map.unmodifiable(<int, String>{
-        2: _string1cd1812dfa95f93a293be610f6aa4d36Provider.get(),
-        1: _string6e8c47e1b62c97a19ee198441b3d8f97Provider.get(),
+        1: _string16e8c47e1b62c97a19ee198441b3d8f97Provider.get(),
+        2: _string21cd1812dfa95f93a293be610f6aa4d36Provider.get(),
       });
 }
 
 class JuggerAppComponent2 implements _i1.AppComponent2 {
   JuggerAppComponent2.create();
 
-  late final _Map_int_String_AppComponent2$Provider _map_int_String_Provider =
-      _Map_int_String_AppComponent2$Provider();
+  late final _Map0AppComponent2$Provider _map0Provider =
+      _Map0AppComponent2$Provider();
 
   @override
-  Map<int, String> get strings => _map_int_String_Provider.get();
+  Map<int, String> get strings => _map0Provider.get();
 }
 
-class _Map_int_String_AppComponent2$Provider
-    implements _i2.IProvider<Map<int, String>> {
+class _Map0AppComponent2$Provider implements _i2.IProvider<Map<int, String>> {
   late final _i2.IProvider<String>
-      _stringddd59a18c60f35a2d82a74165b5f1c0fProvider =
-      _i2.Provider<String>(() => _i1.Module2.provideString4());
+      _string1e74e573f41212a23d8a079c621093ddeProvider =
+      _i2.Provider<String>(() => _i1.Module2.provideString3());
 
   late final _i2.IProvider<String>
-      _stringe74e573f41212a23d8a079c621093ddeProvider =
-      _i2.Provider<String>(() => _i1.Module2.provideString3());
+      _string2ddd59a18c60f35a2d82a74165b5f1c0fProvider =
+      _i2.Provider<String>(() => _i1.Module2.provideString4());
 
   @override
   Map<int, String> get() => Map.unmodifiable(<int, String>{
-        2: _stringddd59a18c60f35a2d82a74165b5f1c0fProvider.get(),
-        1: _stringe74e573f41212a23d8a079c621093ddeProvider.get(),
+        1: _string1e74e573f41212a23d8a079c621093ddeProvider.get(),
+        2: _string2ddd59a18c60f35a2d82a74165b5f1c0fProvider.get(),
       });
 }

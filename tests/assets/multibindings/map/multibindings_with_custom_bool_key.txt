@@ -13,26 +13,25 @@ import 'package:jugger/jugger.dart' as _i2;
 class JuggerAppComponent implements _i1.AppComponent {
   JuggerAppComponent.create();
 
-  late final _Map_bool_String_AppComponent$Provider _map_bool_String_Provider =
-      _Map_bool_String_AppComponent$Provider();
+  late final _Map0AppComponent$Provider _map0Provider =
+      _Map0AppComponent$Provider();
 
   @override
-  Map<bool, String> get strings => _map_bool_String_Provider.get();
+  Map<bool, String> get strings => _map0Provider.get();
 }
 
-class _Map_bool_String_AppComponent$Provider
-    implements _i2.IProvider<Map<bool, String>> {
+class _Map0AppComponent$Provider implements _i2.IProvider<Map<bool, String>> {
   late final _i2.IProvider<String>
-      _string1cd1812dfa95f93a293be610f6aa4d36Provider =
-      _i2.Provider<String>(() => _i1.Module1.provideString2());
+      _string16e8c47e1b62c97a19ee198441b3d8f97Provider =
+      _i2.Provider<String>(() => _i1.Module1.provideString1());
 
   late final _i2.IProvider<String>
-      _string6e8c47e1b62c97a19ee198441b3d8f97Provider =
-      _i2.Provider<String>(() => _i1.Module1.provideString1());
+      _string21cd1812dfa95f93a293be610f6aa4d36Provider =
+      _i2.Provider<String>(() => _i1.Module1.provideString2());
 
   @override
   Map<bool, String> get() => Map.unmodifiable(<bool, String>{
-        true: _string1cd1812dfa95f93a293be610f6aa4d36Provider.get(),
-        false: _string6e8c47e1b62c97a19ee198441b3d8f97Provider.get(),
+        false: _string16e8c47e1b62c97a19ee198441b3d8f97Provider.get(),
+        true: _string21cd1812dfa95f93a293be610f6aa4d36Provider.get(),
       });
 }

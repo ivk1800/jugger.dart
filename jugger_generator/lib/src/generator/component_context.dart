@@ -23,13 +23,12 @@ import 'multibindings/multibindings_info.dart';
 import 'multibindings/multibindings_manager.dart';
 import 'subcomponent/parent_component_provider.dart';
 import 'tag.dart';
-import 'type_id_provider.dart';
 import 'visitors.dart';
 import 'wrappers.dart' as j;
 
 /// Class containing all information about the component, including the object
 /// graph.
-class ComponentContext implements TypeIdProvider {
+class ComponentContext {
   ComponentContext({
     required this.component,
     required this.componentBuilder,
@@ -162,18 +161,27 @@ class ComponentContext implements TypeIdProvider {
   }
 
   /// Get a unique type identifier within this component.
-  @override
   int getIdOf({
     required DartType type,
     Tag? tag,
     MultibindingsInfo? multibindingsInfo,
   }) {
-    final int index = graphObjects.firstIndexWhere(
-      (GraphObject element) =>
-          element.type == type &&
-          element.tag == tag &&
-          element.multibindingsInfo == multibindingsInfo,
-    );
+    int findIndex(Iterable<GraphObject> graphObjects) =>
+        graphObjects.firstIndexWhere(
+          (GraphObject element) =>
+              element.type == type &&
+              element.tag == tag &&
+              element.multibindingsInfo == multibindingsInfo,
+        );
+
+    for (final ParentComponentInfo value in _parentInfo) {
+      final int index = findIndex(value.graphObjects.values);
+      if (index != -1) {
+        return index;
+      }
+    }
+
+    final int index = findIndex(graphObjects);
     if (index == -1) {
       throw StateError('Id for type $type not found');
     }
@@ -218,7 +226,6 @@ class ComponentContext implements TypeIdProvider {
   }();
 
   late final ParentComponentInfo _selfAsParentInfo = ParentComponentInfo(
-    typeIdProvider: this,
     sources: providerSources.where((ProviderSource source) {
       return source is! MultibindingsSource &&
           // It makes no sense to pass this type, since the original object is
@@ -270,6 +277,7 @@ class ComponentContext implements TypeIdProvider {
           ParentMultibindingsItemSource(
             originalSource: parentSource,
             componentName: componentName,
+            parentId: parentId,
           ),
         );
       } else {
@@ -1024,6 +1032,7 @@ class ParentMultibindingsItemSource extends ProviderSource
   ParentMultibindingsItemSource({
     required this.originalSource,
     required this.componentName,
+    required this.parentId,
   })  : assert(originalSource is MultibindingsElementProvider),
         _originalMultibindingsElementProvider =
             originalSource as MultibindingsElementProvider,
@@ -1035,6 +1044,7 @@ class ParentMultibindingsItemSource extends ProviderSource
 
   final ProviderSource originalSource;
   final String componentName;
+  final int parentId;
   final MultibindingsElementProvider _originalMultibindingsElementProvider;
 
   @override
@@ -1109,7 +1119,6 @@ class MultibindingsSource extends ProviderSource {
 
 class ParentComponentInfo {
   ParentComponentInfo({
-    required this.typeIdProvider,
     required this.graphObjects,
     required this.componentName,
     required this.sources,
@@ -1117,7 +1126,6 @@ class ParentComponentInfo {
     required this.scope,
   });
 
-  final TypeIdProvider typeIdProvider;
   final Map<_Key, GraphObject> graphObjects;
   final List<ProviderSource> sources;
   final String componentName;

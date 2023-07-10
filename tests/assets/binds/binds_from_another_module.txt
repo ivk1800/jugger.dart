@@ -12,39 +12,39 @@ import 'package:jugger/jugger.dart' as _i2;
 class JuggerAppComponent implements _i1.AppComponent {
   JuggerAppComponent.create();
 
-  late final _i2.IProvider<_i1.IMainRouter> _iMainRouterProvider =
+  late final _i2.IProvider<_i1.IMainRouter> _iMainRouter0Provider =
       _i2.SingletonProvider<_i1.IMainRouter>(
           () => _i1.AppModule.provideMainRouter());
 
   @override
-  _i1.IMainRouter getMainRouter() => _iMainRouterProvider.get();
+  _i1.IMainRouter getMainRouter() => _iMainRouter0Provider.get();
 }
 
 class JuggerMyScreenComponent implements _i1.MyScreenComponent {
-  JuggerMyScreenComponent._create(this._appComponent);
+  JuggerMyScreenComponent._create(this._appComponent0);
 
-  late final _i2.IProvider<_i1.IMyScreenRouter> _iMyScreenRouterProvider =
+  late final _i2.IProvider<_i1.IMyScreenRouter> _iMyScreenRouter2Provider =
       _i2.SingletonProvider<_i1.IMyScreenRouter>(
-          () => _appComponent.getMainRouter());
+          () => _appComponent0.getMainRouter());
 
-  final _i1.AppComponent _appComponent;
+  final _i1.AppComponent _appComponent0;
 
   @override
-  _i1.IMyScreenRouter get myScreenRouter => _iMyScreenRouterProvider.get();
+  _i1.IMyScreenRouter get myScreenRouter => _iMyScreenRouter2Provider.get();
 }
 
 class JuggerMyScreenComponentBuilder implements _i1.MyScreenComponentBuilder {
-  _i1.AppComponent? _appComponent;
+  _i1.AppComponent? _appComponent0;
 
   @override
   _i1.MyScreenComponentBuilder appComponent(_i1.AppComponent foldersComponent) {
-    _appComponent = foldersComponent;
+    _appComponent0 = foldersComponent;
     return this;
   }
 
   @override
   _i1.MyScreenComponent build() {
-    assert(_appComponent != null);
-    return JuggerMyScreenComponent._create(_appComponent!);
+    assert(_appComponent0 != null);
+    return JuggerMyScreenComponent._create(_appComponent0!);
   }
 }

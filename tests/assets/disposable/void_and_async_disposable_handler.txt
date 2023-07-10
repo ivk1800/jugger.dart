@@ -13,7 +13,7 @@ import 'package:jugger/jugger.dart' as _i3;
 class JuggerAppComponent implements _i1.AppComponent {
   JuggerAppComponent.create();
 
-  late final _i3.IProvider<_i1.AsyncClass> _asyncClassProvider =
+  late final _i3.IProvider<_i1.AsyncClass> _asyncClass0Provider =
       _i3.SingletonProvider<_i1.AsyncClass>(() {
     _disposableManager.checkDisposed();
     _i1.AsyncClass disposable = const _i1.AsyncClass();
@@ -22,7 +22,7 @@ class JuggerAppComponent implements _i1.AppComponent {
     return disposable;
   });
 
-  late final _i3.IProvider<_i1.VoidClass> _voidClassProvider =
+  late final _i3.IProvider<_i1.VoidClass> _voidClass1Provider =
       _i3.SingletonProvider<_i1.VoidClass>(() {
     _disposableManager.checkDisposed();
     _i1.VoidClass disposable = const _i1.VoidClass();
@@ -37,13 +37,13 @@ class JuggerAppComponent implements _i1.AppComponent {
   @override
   _i1.AsyncClass getAsyncClass() {
     _disposableManager.checkDisposed();
-    return _asyncClassProvider.get();
+    return _asyncClass0Provider.get();
   }
 
   @override
   _i1.VoidClass getMyClass() {
     _disposableManager.checkDisposed();
-    return _voidClassProvider.get();
+    return _voidClass1Provider.get();
   }
 
   @override

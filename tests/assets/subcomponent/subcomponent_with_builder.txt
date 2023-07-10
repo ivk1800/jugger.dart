@@ -12,7 +12,7 @@ import 'package:jugger/jugger.dart' as _i2;
 class JuggerAppComponent implements _i1.AppComponent {
   JuggerAppComponent.create();
 
-  late final _i2.IProvider<String> _stringProvider =
+  late final _i2.IProvider<String> _string0Provider =
       _i2.SingletonProvider<String>(() => _i1.AppModule.provideString());
 
   _i1.MyComponent createMyComponent(_i1.MyComponentBuilder builder) {
@@ -26,27 +26,27 @@ class JuggerAppComponent implements _i1.AppComponent {
 class JuggerSubcomponent$MyComponent implements _i1.MyComponent {
   JuggerSubcomponent$MyComponent._create(
     this._parent,
-    this._double,
+    this._double1,
   );
 
   final JuggerAppComponent _parent;
 
-  late final _i2.IProvider<int> _intProvider =
+  late final _i2.IProvider<int> _int2Provider =
       _i2.Provider<int>(() => _i1.MyModule.provideCount(
-            _parent._stringProvider.get(),
-            _double,
+            _parent._string0Provider.get(),
+            _double1,
           ));
 
-  final double _double;
+  final double _double1;
 
   @override
-  int get count => _intProvider.get();
+  int get count => _int2Provider.get();
 }
 
 class JuggerSubcomponent$MyComponentBuilder implements _i1.MyComponentBuilder {
   JuggerAppComponent? _parent;
 
-  double? _double;
+  double? _double1;
 
   _i1.MyComponentBuilder _setParent(JuggerAppComponent parent) {
     _parent = parent;
@@ -55,17 +55,17 @@ class JuggerSubcomponent$MyComponentBuilder implements _i1.MyComponentBuilder {
 
   @override
   _i1.MyComponentBuilder setDouble(double d) {
-    _double = d;
+    _double1 = d;
     return this;
   }
 
   @override
   _i1.MyComponent build() {
-    assert(_double != null);
+    assert(_double1 != null);
     assert(_parent != null);
     return JuggerSubcomponent$MyComponent._create(
       _parent!,
-      _double!,
+      _double1!,
     );
   }
 }

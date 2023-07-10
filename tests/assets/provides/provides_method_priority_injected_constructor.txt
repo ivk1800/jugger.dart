@@ -13,16 +13,16 @@ import 'package:jugger/jugger.dart' as _i2;
 class JuggerAppComponent implements _i1.AppComponent {
   JuggerAppComponent.create();
 
-  late final _i2.IProvider<_i1.InjectedClass1> _injectedClass1Provider =
+  late final _i2.IProvider<_i1.InjectedClass1> _injectedClass10Provider =
       _i2.Provider<_i1.InjectedClass1>(
-          () => _i1.AppModule.provideInjectedClass1(_intProvider.get()));
+          () => _i1.AppModule.provideInjectedClass1(_int2Provider.get()));
 
-  late final _i2.IProvider<int> _intProvider =
+  late final _i2.IProvider<int> _int2Provider =
       _i2.Provider<int>(() => _i1.AppModule.providerIny());
 
-  late final _i2.IProvider<String> _stringProvider = _i2.Provider<String>(
-      () => _i1.AppModule.providerString(_injectedClass1Provider.get()));
+  late final _i2.IProvider<String> _string1Provider = _i2.Provider<String>(
+      () => _i1.AppModule.providerString(_injectedClass10Provider.get()));
 
   @override
-  String getString() => _stringProvider.get();
+  String getString() => _string1Provider.get();
 }

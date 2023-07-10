@@ -11,44 +11,43 @@ import 'package:tests/multibindings/map/multibindings_with_dependencies_from_arg
 import 'package:jugger/jugger.dart' as _i2;
 
 class JuggerAppComponent implements _i1.AppComponent {
-  JuggerAppComponent._create(this._int);
+  JuggerAppComponent._create(this._int2);
 
-  late final _Map_int_String_AppComponent$Provider _map_int_String_Provider =
-      _Map_int_String_AppComponent$Provider(this);
+  late final _Map0AppComponent$Provider _map0Provider =
+      _Map0AppComponent$Provider(this);
 
-  final int _int;
+  final int _int2;
 
   @override
-  Map<int, String> get strings => _map_int_String_Provider.get();
+  Map<int, String> get strings => _map0Provider.get();
 }
 
 class JuggerAppComponentBuilder implements _i1.AppComponentBuilder {
-  int? _int;
+  int? _int2;
 
   @override
   _i1.AppComponentBuilder setInt(int i) {
-    _int = i;
+    _int2 = i;
     return this;
   }
 
   @override
   _i1.AppComponent build() {
-    assert(_int != null);
-    return JuggerAppComponent._create(_int!);
+    assert(_int2 != null);
+    return JuggerAppComponent._create(_int2!);
   }
 }
 
-class _Map_int_String_AppComponent$Provider
-    implements _i2.IProvider<Map<int, String>> {
-  _Map_int_String_AppComponent$Provider(this._component);
+class _Map0AppComponent$Provider implements _i2.IProvider<Map<int, String>> {
+  _Map0AppComponent$Provider(this._component);
 
   late final _i2.IProvider<String>
-      _string6e8c47e1b62c97a19ee198441b3d8f97Provider =
-      _i2.Provider<String>(() => _i1.Module1.provideString1(_component._int));
+      _string16e8c47e1b62c97a19ee198441b3d8f97Provider =
+      _i2.Provider<String>(() => _i1.Module1.provideString1(_component._int2));
 
   final JuggerAppComponent _component;
 
   @override
   Map<int, String> get() => Map.unmodifiable(
-      <int, String>{1: _string6e8c47e1b62c97a19ee198441b3d8f97Provider.get()});
+      <int, String>{1: _string16e8c47e1b62c97a19ee198441b3d8f97Provider.get()});
 }

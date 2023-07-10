@@ -12,12 +12,12 @@ import 'package:jugger/jugger.dart' as _i2;
 class JuggerMyComponent implements _i1.MyComponent {
   JuggerMyComponent.create();
 
-  late final _i2.IProvider<_i1.MyClass> _myClassProvider =
-      _i2.Provider<_i1.MyClass>(() => _i1.MyClass(_myEnumProvider.get()));
+  late final _i2.IProvider<_i1.MyClass> _myClass0Provider =
+      _i2.Provider<_i1.MyClass>(() => _i1.MyClass(_myEnum1Provider.get()));
 
-  late final _i2.IProvider<_i1.MyEnum> _myEnumProvider =
+  late final _i2.IProvider<_i1.MyEnum> _myEnum1Provider =
       _i2.Provider<_i1.MyEnum>(() => _i1.MyModule.provideMyEnum());
 
   @override
-  _i1.MyClass get myClass => _myClassProvider.get();
+  _i1.MyClass get myClass => _myClass0Provider.get();
 }

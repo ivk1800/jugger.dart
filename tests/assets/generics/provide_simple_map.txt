@@ -12,11 +12,11 @@ import 'package:jugger/jugger.dart' as _i2;
 class JuggerAppComponent implements _i1.AppComponent {
   JuggerAppComponent.create();
 
-  late final _i2.IProvider<Map<String, _i1.Item>> _map_String_Item_Provider =
+  late final _i2.IProvider<Map<String, _i1.Item>> _map0Provider =
       _i2.Provider<Map<String, _i1.Item>>(() => _i1.AppModule.provideItems());
 
   @override
-  Map<String, _i1.Item> getItems() => _map_String_Item_Provider.get();
+  Map<String, _i1.Item> getItems() => _map0Provider.get();
   @override
-  Map<String, _i1.Item> get items => _map_String_Item_Provider.get();
+  Map<String, _i1.Item> get items => _map0Provider.get();
 }

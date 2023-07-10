@@ -9,26 +9,26 @@
 import 'package:tests/enum/enum_type_in_component_builder.dart' as _i1;
 
 class JuggerMyComponent implements _i1.MyComponent {
-  JuggerMyComponent._create(this._myEnum);
+  JuggerMyComponent._create(this._myEnum0);
 
-  final _i1.MyEnum _myEnum;
+  final _i1.MyEnum _myEnum0;
 
   @override
-  _i1.MyEnum get myEnum => _myEnum;
+  _i1.MyEnum get myEnum => _myEnum0;
 }
 
 class JuggerMyComponentBuilder implements _i1.MyComponentBuilder {
-  _i1.MyEnum? _myEnum;
+  _i1.MyEnum? _myEnum0;
 
   @override
   _i1.MyComponentBuilder setMyEnum(_i1.MyEnum value) {
-    _myEnum = value;
+    _myEnum0 = value;
     return this;
   }
 
   @override
   _i1.MyComponent build() {
-    assert(_myEnum != null);
-    return JuggerMyComponent._create(_myEnum!);
+    assert(_myEnum0 != null);
+    return JuggerMyComponent._create(_myEnum0!);
   }
 }

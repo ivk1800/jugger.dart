@@ -13,11 +13,11 @@ import 'package:jugger/jugger.dart' as _i2;
 class JuggerMyComponent implements _i1.MyComponent {
   JuggerMyComponent.create();
 
-  late final _i2.IProvider<String> _stringProvider =
+  late final _i2.IProvider<String> _string0Provider =
       _i2.Provider<String>(() => _i1.MyComponentModule.provideString());
 
   @override
-  String getString() => _stringProvider.get();
+  String getString() => _string0Provider.get();
   _i1.MySubcomponent createMySubcomponent() {
     return JuggerSubcomponent$MySubcomponent.create(this);
   }
@@ -28,12 +28,12 @@ class JuggerSubcomponent$MySubcomponent implements _i1.MySubcomponent {
 
   final JuggerMyComponent _parent;
 
-  late final _i2.IProvider<_i1.MyClass> _myClassProvider =
+  late final _i2.IProvider<_i1.MyClass> _myClass0Provider =
       _i2.Provider<_i1.MyClass>(
-          () => _i1.MyClass(_parent._stringProvider.get()));
+          () => _i1.MyClass(_parent._string0Provider.get()));
 
   @override
-  _i1.MyClass getMyClass() => _myClassProvider.get();
+  _i1.MyClass getMyClass() => _myClass0Provider.get();
   @override
-  _i1.MyClass get myClass => _myClassProvider.get();
+  _i1.MyClass get myClass => _myClass0Provider.get();
 }

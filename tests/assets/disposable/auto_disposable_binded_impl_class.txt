@@ -13,10 +13,10 @@ import 'package:jugger/jugger.dart' as _i3;
 class JuggerAppComponent implements _i1.AppComponent {
   JuggerAppComponent.create();
 
-  late final _i3.IProvider<_i1.IMyClass> _iMyClassProvider =
-      _i3.SingletonProvider<_i1.IMyClass>(() => _myClassImplProvider.get());
+  late final _i3.IProvider<_i1.IMyClass> _iMyClass0Provider =
+      _i3.SingletonProvider<_i1.IMyClass>(() => _myClassImpl1Provider.get());
 
-  late final _i3.IProvider<_i1.MyClassImpl> _myClassImplProvider =
+  late final _i3.IProvider<_i1.MyClassImpl> _myClassImpl1Provider =
       _i3.SingletonProvider<_i1.MyClassImpl>(() {
     _disposableManager.checkDisposed();
     _i1.MyClassImpl disposable = const _i1.MyClassImpl();
@@ -30,7 +30,7 @@ class JuggerAppComponent implements _i1.AppComponent {
   @override
   _i1.IMyClass getMyClass() {
     _disposableManager.checkDisposed();
-    return _iMyClassProvider.get();
+    return _iMyClass0Provider.get();
   }
 
   @override

@@ -13,25 +13,25 @@ import 'package:jugger/jugger.dart' as _i2;
 class JuggerAppComponent implements _i1.AppComponent {
   JuggerAppComponent.create();
 
-  late final _Set_String_AppComponent$Provider _set_String_Provider =
-      _Set_String_AppComponent$Provider();
+  late final _Set0AppComponent$Provider _set0Provider =
+      _Set0AppComponent$Provider();
 
   @override
-  Set<String> get strings => _set_String_Provider.get();
+  Set<String> get strings => _set0Provider.get();
 }
 
-class _Set_String_AppComponent$Provider implements _i2.IProvider<Set<String>> {
+class _Set0AppComponent$Provider implements _i2.IProvider<Set<String>> {
   late final _i2.IProvider<String>
-      _string6e8c47e1b62c97a19ee198441b3d8f97Provider =
+      _string16e8c47e1b62c97a19ee198441b3d8f97Provider =
       _i2.Provider<String>(() => _i1.Module1.provideString1());
 
   late final _i2.IProvider<String>
-      _stringd1392bfb910c11a847a9315fb7a35e3bProvider =
+      _string2d1392bfb910c11a847a9315fb7a35e3bProvider =
       _i2.Provider<String>(() => _i1.Module2.provideString2());
 
   @override
   Set<String> get() => Set.unmodifiable(<String>{
-        _string6e8c47e1b62c97a19ee198441b3d8f97Provider.get(),
-        _stringd1392bfb910c11a847a9315fb7a35e3bProvider.get(),
+        _string16e8c47e1b62c97a19ee198441b3d8f97Provider.get(),
+        _string2d1392bfb910c11a847a9315fb7a35e3bProvider.get(),
       });
 }

@@ -13,44 +13,44 @@ import 'package:jugger/jugger.dart' as _i2;
 class JuggerAppComponent1 implements _i1.AppComponent1 {
   JuggerAppComponent1.create();
 
-  late final _Set_String_AppComponent1$Provider _set_String_Provider =
-      _Set_String_AppComponent1$Provider();
+  late final _Set0AppComponent1$Provider _set0Provider =
+      _Set0AppComponent1$Provider();
 
-  late final _Set_int_AppComponent1$Provider _set_int_Provider =
-      _Set_int_AppComponent1$Provider();
+  late final _Set1AppComponent1$Provider _set1Provider =
+      _Set1AppComponent1$Provider();
 
   @override
-  Set<int> get ints => _set_int_Provider.get();
+  Set<int> get ints => _set1Provider.get();
   @override
-  Set<String> get strings => _set_String_Provider.get();
+  Set<String> get strings => _set0Provider.get();
 }
 
-class _Set_String_AppComponent1$Provider implements _i2.IProvider<Set<String>> {
+class _Set0AppComponent1$Provider implements _i2.IProvider<Set<String>> {
   late final _i2.IProvider<String>
-      _string1cd1812dfa95f93a293be610f6aa4d36Provider =
-      _i2.Provider<String>(() => _i1.Module1.provideString2());
+      _string26e8c47e1b62c97a19ee198441b3d8f97Provider =
+      _i2.Provider<String>(() => _i1.Module1.provideString1());
 
   late final _i2.IProvider<String>
-      _string6e8c47e1b62c97a19ee198441b3d8f97Provider =
-      _i2.Provider<String>(() => _i1.Module1.provideString1());
+      _string31cd1812dfa95f93a293be610f6aa4d36Provider =
+      _i2.Provider<String>(() => _i1.Module1.provideString2());
 
   @override
   Set<String> get() => Set.unmodifiable(<String>{
-        _string1cd1812dfa95f93a293be610f6aa4d36Provider.get(),
-        _string6e8c47e1b62c97a19ee198441b3d8f97Provider.get(),
+        _string26e8c47e1b62c97a19ee198441b3d8f97Provider.get(),
+        _string31cd1812dfa95f93a293be610f6aa4d36Provider.get(),
       });
 }
 
-class _Set_int_AppComponent1$Provider implements _i2.IProvider<Set<int>> {
-  late final _i2.IProvider<int> _int069e794bd481b8f3cc0d6e8b423f4b10Provider =
+class _Set1AppComponent1$Provider implements _i2.IProvider<Set<int>> {
+  late final _i2.IProvider<int> _int4069e794bd481b8f3cc0d6e8b423f4b10Provider =
       _i2.Provider<int>(() => _i1.Module1.provideInt1());
 
-  late final _i2.IProvider<int> _intf90d14319571372a713f7519a85f7a4aProvider =
+  late final _i2.IProvider<int> _int5f90d14319571372a713f7519a85f7a4aProvider =
       _i2.Provider<int>(() => _i1.Module1.provideInt2());
 
   @override
   Set<int> get() => Set.unmodifiable(<int>{
-        _int069e794bd481b8f3cc0d6e8b423f4b10Provider.get(),
-        _intf90d14319571372a713f7519a85f7a4aProvider.get(),
+        _int4069e794bd481b8f3cc0d6e8b423f4b10Provider.get(),
+        _int5f90d14319571372a713f7519a85f7a4aProvider.get(),
       });
 }

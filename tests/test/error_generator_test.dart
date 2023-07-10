@@ -2860,7 +2860,7 @@ abstract class AppModule {
           expect(
             error.toString(),
             'error: unused_generated_providers:\n'
-            'Found unused generated providers: _stringProvider\n'
+            'Found unused generated providers: _string0Provider\n'
             'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#unused_generated_providers',
           );
         },

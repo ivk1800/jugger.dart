@@ -9,26 +9,26 @@
 import 'package:tests/generics/provide_generic_build_instance.dart' as _i1;
 
 class JuggerAppComponent implements _i1.AppComponent {
-  JuggerAppComponent._create(this._list_Item_);
+  JuggerAppComponent._create(this._list0);
 
-  final List<_i1.Item> _list_Item_;
+  final List<_i1.Item> _list0;
 
   @override
-  List<_i1.Item> get items => _list_Item_;
+  List<_i1.Item> get items => _list0;
 }
 
 class JuggerAppComponentBuilder implements _i1.IAppComponentBuilder {
-  List<_i1.Item>? _list_Item_;
+  List<_i1.Item>? _list0;
 
   @override
   _i1.IAppComponentBuilder items(List<_i1.Item> value) {
-    _list_Item_ = value;
+    _list0 = value;
     return this;
   }
 
   @override
   _i1.AppComponent build() {
-    assert(_list_Item_ != null);
-    return JuggerAppComponent._create(_list_Item_!);
+    assert(_list0 != null);
+    return JuggerAppComponent._create(_list0!);
   }
 }

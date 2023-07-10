@@ -11,44 +11,44 @@ import 'package:tests/qualifier/component_arguments_with_custom_qualifier.dart'
 
 class JuggerAppComponent implements _i1.AppComponent {
   JuggerAppComponent._create(
-    this._myClass,
-    this._named_e4b98b05a8ae01d94a56d28d99d1f63e_MyClass,
+    this._myClass0,
+    this._myClass1,
   );
 
-  final _i1.MyClass _myClass;
+  final _i1.MyClass _myClass0;
 
-  final _i1.MyClass _named_e4b98b05a8ae01d94a56d28d99d1f63e_MyClass;
+  final _i1.MyClass _myClass1;
 
   @override
-  _i1.MyClass getMyClass1() => _myClass;
+  _i1.MyClass getMyClass1() => _myClass0;
   @override
-  _i1.MyClass getMyClass2() => _named_e4b98b05a8ae01d94a56d28d99d1f63e_MyClass;
+  _i1.MyClass getMyClass2() => _myClass1;
 }
 
 class JuggerAppComponentBuilder implements _i1.AppComponentBuilder {
-  _i1.MyClass? _myClass;
+  _i1.MyClass? _myClass0;
 
-  _i1.MyClass? _named_e4b98b05a8ae01d94a56d28d99d1f63e_MyClass;
+  _i1.MyClass? _myClass1;
 
   @override
   _i1.AppComponentBuilder setMyClass1(_i1.MyClass c) {
-    _myClass = c;
+    _myClass0 = c;
     return this;
   }
 
   @override
   _i1.AppComponentBuilder setMyClass2(_i1.MyClass c) {
-    _named_e4b98b05a8ae01d94a56d28d99d1f63e_MyClass = c;
+    _myClass1 = c;
     return this;
   }
 
   @override
   _i1.AppComponent build() {
-    assert(_myClass != null);
-    assert(_named_e4b98b05a8ae01d94a56d28d99d1f63e_MyClass != null);
+    assert(_myClass0 != null);
+    assert(_myClass1 != null);
     return JuggerAppComponent._create(
-      _myClass!,
-      _named_e4b98b05a8ae01d94a56d28d99d1f63e_MyClass!,
+      _myClass0!,
+      _myClass1!,
     );
   }
 }

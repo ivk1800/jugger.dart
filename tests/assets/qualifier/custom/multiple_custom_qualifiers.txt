@@ -12,26 +12,20 @@ import 'package:jugger/jugger.dart' as _i2;
 class JuggerAppComponent implements _i1.AppComponent {
   JuggerAppComponent.create();
 
-  late final _i2.IProvider<_i1.AppConfig>
-      _named_94b7b28849ff135673a1cbf6d77d8e11_AppConfigProvider =
+  late final _i2.IProvider<_i1.AppConfig> _appConfig0Provider =
       _i2.SingletonProvider<_i1.AppConfig>(
           () => _i1.AppModule.provideDevAppConfig());
 
-  late final _i2.IProvider<_i1.AppConfig>
-      _named_f193d969511731020848f498bafda562_AppConfigProvider =
+  late final _i2.IProvider<_i1.AppConfig> _appConfig1Provider =
       _i2.SingletonProvider<_i1.AppConfig>(
           () => _i1.AppModule.provideProdAppConfig());
 
   @override
-  _i1.AppConfig getDevAppConfig() =>
-      _named_94b7b28849ff135673a1cbf6d77d8e11_AppConfigProvider.get();
+  _i1.AppConfig getDevAppConfig() => _appConfig0Provider.get();
   @override
-  _i1.AppConfig getProdAppConfig() =>
-      _named_f193d969511731020848f498bafda562_AppConfigProvider.get();
+  _i1.AppConfig getProdAppConfig() => _appConfig1Provider.get();
   @override
-  _i1.AppConfig get devAppConfig =>
-      _named_94b7b28849ff135673a1cbf6d77d8e11_AppConfigProvider.get();
+  _i1.AppConfig get devAppConfig => _appConfig0Provider.get();
   @override
-  _i1.AppConfig get prodAppConfig =>
-      _named_f193d969511731020848f498bafda562_AppConfigProvider.get();
+  _i1.AppConfig get prodAppConfig => _appConfig1Provider.get();
 }

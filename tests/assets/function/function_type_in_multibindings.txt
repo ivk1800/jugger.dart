@@ -12,16 +12,14 @@ import 'package:jugger/jugger.dart' as _i2;
 class JuggerMyComponent implements _i1.MyComponent {
   JuggerMyComponent.create();
 
-  late final _Map_String_voidFunction_MyComponent$Provider
-      _map_String_voidFunction_Provider =
-      _Map_String_voidFunction_MyComponent$Provider();
+  late final _Map0MyComponent$Provider _map0Provider =
+      _Map0MyComponent$Provider();
 
   @override
-  Map<String, void Function()> get myFunctions =>
-      _map_String_voidFunction_Provider.get();
+  Map<String, void Function()> get myFunctions => _map0Provider.get();
 }
 
-class _Map_String_voidFunction_MyComponent$Provider
+class _Map0MyComponent$Provider
     implements _i2.IProvider<Map<String, void Function()>> {
   late final _i2.IProvider<void Function()>
       _function11ed7063c5c18e408e52f1ada15ab5c20Provider =

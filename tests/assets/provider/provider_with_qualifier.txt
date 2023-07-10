@@ -12,18 +12,16 @@ import 'package:jugger/jugger.dart' as _i2;
 class JuggerAppComponent implements _i1.AppComponent {
   JuggerAppComponent.create();
 
-  late final _i2.IProvider<_i1.Config> _configProvider =
-      _i2.Provider<_i1.Config>(() => _i1.AppModule.provideConfig2(
-          _named_6a1591ae851fb73347c07ad99d30728f_ConfigProvider));
-
-  late final _i2.IProvider<_i1.Config>
-      _named_6a1591ae851fb73347c07ad99d30728f_ConfigProvider =
+  late final _i2.IProvider<_i1.Config> _config0Provider =
       _i2.Provider<_i1.Config>(
-          () => _i1.AppModule.provideConfig1(_configProvider));
+          () => _i1.AppModule.provideConfig2(_config1Provider));
+
+  late final _i2.IProvider<_i1.Config> _config1Provider =
+      _i2.Provider<_i1.Config>(
+          () => _i1.AppModule.provideConfig1(_config0Provider));
 
   @override
-  _i1.Config getConfig1() =>
-      _named_6a1591ae851fb73347c07ad99d30728f_ConfigProvider.get();
+  _i1.Config getConfig1() => _config1Provider.get();
   @override
-  _i1.Config getConfig2() => _configProvider.get();
+  _i1.Config getConfig2() => _config0Provider.get();
 }

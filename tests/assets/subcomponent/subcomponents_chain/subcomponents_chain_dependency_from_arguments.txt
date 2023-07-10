@@ -11,9 +11,9 @@ import 'package:tests/subcomponent/subcomponents_chain/subcomponents_chain_depen
 import 'package:jugger/jugger.dart' as _i2;
 
 class JuggerComponent1 implements _i1.Component1 {
-  JuggerComponent1._create(this._fromComponent1);
+  JuggerComponent1._create(this._fromComponent10);
 
-  final _i1.FromComponent1 _fromComponent1;
+  final _i1.FromComponent1 _fromComponent10;
 
   _i1.Component2 createComponent2(_i1.Component2Builder builder) {
     assert(builder is JuggerSubcomponent$Component2Builder);
@@ -26,12 +26,12 @@ class JuggerComponent1 implements _i1.Component1 {
 class JuggerSubcomponent$Component2 implements _i1.Component2 {
   JuggerSubcomponent$Component2._create(
     this._parent,
-    this._fromComponent2,
+    this._fromComponent21,
   );
 
   final JuggerComponent1 _parent;
 
-  final _i1.FromComponent2 _fromComponent2;
+  final _i1.FromComponent2 _fromComponent21;
 
   _i1.Component3 createComponent3() {
     return JuggerSubcomponent$Component3.create(this);
@@ -43,36 +43,36 @@ class JuggerSubcomponent$Component3 implements _i1.Component3 {
 
   final JuggerSubcomponent$Component2 _parent;
 
-  late final _i2.IProvider<_i1.FromComponent3> _fromComponent3Provider =
+  late final _i2.IProvider<_i1.FromComponent3> _fromComponent32Provider =
       _i2.Provider<_i1.FromComponent3>(() => _i1.Component3Module.provideClass(
-            _parent._parent._fromComponent1,
-            _parent._fromComponent2,
+            _parent._parent._fromComponent10,
+            _parent._fromComponent21,
           ));
 
   @override
-  _i1.FromComponent3 getFromComponent3() => _fromComponent3Provider.get();
+  _i1.FromComponent3 getFromComponent3() => _fromComponent32Provider.get();
 }
 
 class JuggerComponent1Builder implements _i1.Component1Builder {
-  _i1.FromComponent1? _fromComponent1;
+  _i1.FromComponent1? _fromComponent10;
 
   @override
   _i1.Component1Builder setFromComponent1(_i1.FromComponent1 fromComponent1) {
-    _fromComponent1 = fromComponent1;
+    _fromComponent10 = fromComponent1;
     return this;
   }
 
   @override
   _i1.Component1 build() {
-    assert(_fromComponent1 != null);
-    return JuggerComponent1._create(_fromComponent1!);
+    assert(_fromComponent10 != null);
+    return JuggerComponent1._create(_fromComponent10!);
   }
 }
 
 class JuggerSubcomponent$Component2Builder implements _i1.Component2Builder {
   JuggerComponent1? _parent;
 
-  _i1.FromComponent2? _fromComponent2;
+  _i1.FromComponent2? _fromComponent21;
 
   _i1.Component2Builder _setParent(JuggerComponent1 parent) {
     _parent = parent;
@@ -81,17 +81,17 @@ class JuggerSubcomponent$Component2Builder implements _i1.Component2Builder {
 
   @override
   _i1.Component2Builder setFromComponent2(_i1.FromComponent2 fromComponent1) {
-    _fromComponent2 = fromComponent1;
+    _fromComponent21 = fromComponent1;
     return this;
   }
 
   @override
   _i1.Component2 build() {
-    assert(_fromComponent2 != null);
+    assert(_fromComponent21 != null);
     assert(_parent != null);
     return JuggerSubcomponent$Component2._create(
       _parent!,
-      _fromComponent2!,
+      _fromComponent21!,
     );
   }
 }

@@ -12,18 +12,18 @@ import 'package:jugger/jugger.dart' as _i2;
 class JuggerAppComponent implements _i1.AppComponent {
   JuggerAppComponent.create();
 
-  late final _i2.IProvider<_i1.Firebase> _firebaseProvider =
+  late final _i2.IProvider<_i1.Firebase> _firebase0Provider =
       _i2.Provider<_i1.Firebase>(() => const _i1.Firebase());
 
-  late final _i2.IProvider<_i1.Flurry> _flurryProvider =
+  late final _i2.IProvider<_i1.Flurry> _flurry1Provider =
       _i2.Provider<_i1.Flurry>(() => const _i1.Flurry());
 
-  late final _i2.IProvider<_i1.Tracker> _trackerProvider =
+  late final _i2.IProvider<_i1.Tracker> _tracker2Provider =
       _i2.Provider<_i1.Tracker>(() => _i1.Tracker(
-            firebase: _firebaseProvider.get(),
-            flurry: _flurryProvider.get(),
+            firebase: _firebase0Provider.get(),
+            flurry: _flurry1Provider.get(),
           ));
 
   @override
-  _i1.Tracker getTracker() => _trackerProvider.get();
+  _i1.Tracker getTracker() => _tracker2Provider.get();
 }

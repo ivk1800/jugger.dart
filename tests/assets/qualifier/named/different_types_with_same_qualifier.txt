@@ -13,17 +13,14 @@ import 'package:jugger/jugger.dart' as _i2;
 class JuggerAppComponent implements _i1.AppComponent {
   JuggerAppComponent.create();
 
-  late final _i2.IProvider<String>
-      _named_b068931cc450442b63f5b3d276ea4297_StringProvider =
-      _i2.Provider<String>(() => _i1.AppModule.provideName());
-
-  late final _i2.IProvider<int>
-      _named_b068931cc450442b63f5b3d276ea4297_intProvider =
+  late final _i2.IProvider<int> _int1Provider =
       _i2.Provider<int>(() => _i1.AppModule.provideVersion());
 
+  late final _i2.IProvider<String> _string0Provider =
+      _i2.Provider<String>(() => _i1.AppModule.provideName());
+
   @override
-  String get name =>
-      _named_b068931cc450442b63f5b3d276ea4297_StringProvider.get();
+  String get name => _string0Provider.get();
   @override
-  int get version => _named_b068931cc450442b63f5b3d276ea4297_intProvider.get();
+  int get version => _int1Provider.get();
 }

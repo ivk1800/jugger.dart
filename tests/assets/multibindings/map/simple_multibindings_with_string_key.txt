@@ -13,24 +13,23 @@ import 'package:jugger/jugger.dart' as _i2;
 class JuggerAppComponent implements _i1.AppComponent {
   JuggerAppComponent.create();
 
-  late final _Map_String_int_AppComponent$Provider _map_String_int_Provider =
-      _Map_String_int_AppComponent$Provider();
+  late final _Map0AppComponent$Provider _map0Provider =
+      _Map0AppComponent$Provider();
 
   @override
-  Map<String, int> get strings => _map_String_int_Provider.get();
+  Map<String, int> get strings => _map0Provider.get();
 }
 
-class _Map_String_int_AppComponent$Provider
-    implements _i2.IProvider<Map<String, int>> {
-  late final _i2.IProvider<int> _int069e794bd481b8f3cc0d6e8b423f4b10Provider =
+class _Map0AppComponent$Provider implements _i2.IProvider<Map<String, int>> {
+  late final _i2.IProvider<int> _int1069e794bd481b8f3cc0d6e8b423f4b10Provider =
       _i2.Provider<int>(() => _i1.Module1.provideInt1());
 
-  late final _i2.IProvider<int> _intf90d14319571372a713f7519a85f7a4aProvider =
+  late final _i2.IProvider<int> _int2f90d14319571372a713f7519a85f7a4aProvider =
       _i2.Provider<int>(() => _i1.Module1.provideInt2());
 
   @override
   Map<String, int> get() => Map.unmodifiable(<String, int>{
-        '1': _int069e794bd481b8f3cc0d6e8b423f4b10Provider.get(),
-        '2': _intf90d14319571372a713f7519a85f7a4aProvider.get(),
+        '1': _int1069e794bd481b8f3cc0d6e8b423f4b10Provider.get(),
+        '2': _int2f90d14319571372a713f7519a85f7a4aProvider.get(),
       });
 }

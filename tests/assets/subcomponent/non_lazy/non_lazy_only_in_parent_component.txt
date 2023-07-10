@@ -15,18 +15,18 @@ class JuggerMyComponent implements _i1.MyComponent {
     _initNonLazy();
   }
 
-  late final _i2.IProvider<String> _stringProvider =
+  late final _i2.IProvider<String> _string0Provider =
       _i2.SingletonProvider<String>(
           () => _i1.MyComponentModule.provideString());
 
   @override
-  String getString() => _stringProvider.get();
+  String getString() => _string0Provider.get();
   _i1.MySubcomponent createMySubcomponent() {
     return JuggerSubcomponent$MySubcomponent.create(this);
   }
 
   void _initNonLazy() {
-    _stringProvider.get();
+    _string0Provider.get();
   }
 }
 
@@ -36,5 +36,5 @@ class JuggerSubcomponent$MySubcomponent implements _i1.MySubcomponent {
   final JuggerMyComponent _parent;
 
   @override
-  String getString() => _parent._stringProvider.get();
+  String getString() => _parent._string0Provider.get();
 }

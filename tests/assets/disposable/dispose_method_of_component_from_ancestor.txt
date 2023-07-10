@@ -11,11 +11,11 @@ import 'package:tests/disposable/dispose_method_of_component_from_ancestor.dart'
 import 'dart:async' as _i2;
 
 class JuggerAppComponent implements _i1.AppComponent {
-  JuggerAppComponent._create(this._myClass1) {
+  JuggerAppComponent._create(this._myClass10) {
     _registerDisposableArguments();
   }
 
-  final _i1.MyClass1 _myClass1;
+  final _i1.MyClass1 _myClass10;
 
   final _DisposableManager _disposableManager =
       _DisposableManager('AppComponent');
@@ -23,28 +23,28 @@ class JuggerAppComponent implements _i1.AppComponent {
   @override
   _i1.MyClass1 getMyClass1() {
     _disposableManager.checkDisposed();
-    return _myClass1;
+    return _myClass10;
   }
 
   @override
   Future<void> dispose() => _disposableManager.dispose();
   void _registerDisposableArguments() =>
-      _disposableManager..register(_myClass1.dispose);
+      _disposableManager..register(_myClass10.dispose);
 }
 
 class JuggerAppComponentBuilder implements _i1.AppComponentBuilder {
-  _i1.MyClass1? _myClass1;
+  _i1.MyClass1? _myClass10;
 
   @override
   _i1.AppComponentBuilder setMyClass1(_i1.MyClass1 c) {
-    _myClass1 = c;
+    _myClass10 = c;
     return this;
   }
 
   @override
   _i1.AppComponent build() {
-    assert(_myClass1 != null);
-    return JuggerAppComponent._create(_myClass1!);
+    assert(_myClass10 != null);
+    return JuggerAppComponent._create(_myClass10!);
   }
 }
 

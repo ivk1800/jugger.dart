@@ -13,52 +13,51 @@ import 'package:jugger/jugger.dart' as _i2;
 class JuggerComponent1 implements _i1.Component1 {
   JuggerComponent1.create();
 
-  late final _i2.IProvider<int> _intProvider =
+  late final _i2.IProvider<int> _int0Provider =
       _i2.Provider<int>(() => _i1.Module1.provideInt());
 
   @override
-  int get i => _intProvider.get();
+  int get i => _int0Provider.get();
 }
 
 class JuggerComponent2 implements _i1.Component2 {
-  JuggerComponent2._create(this._component1);
+  JuggerComponent2._create(this._component10);
 
-  late final _Map_int_String_Component2$Provider _map_int_String_Provider =
-      _Map_int_String_Component2$Provider(this);
+  late final _Map1Component2$Provider _map1Provider =
+      _Map1Component2$Provider(this);
 
-  final _i1.Component1 _component1;
+  final _i1.Component1 _component10;
 
   @override
-  Map<int, String> get strings => _map_int_String_Provider.get();
+  Map<int, String> get strings => _map1Provider.get();
 }
 
 class JuggerComponent2Builder implements _i1.Component2Builder {
-  _i1.Component1? _component1;
+  _i1.Component1? _component10;
 
   @override
   _i1.Component2Builder setComponent1(_i1.Component1 component1) {
-    _component1 = component1;
+    _component10 = component1;
     return this;
   }
 
   @override
   _i1.Component2 build() {
-    assert(_component1 != null);
-    return JuggerComponent2._create(_component1!);
+    assert(_component10 != null);
+    return JuggerComponent2._create(_component10!);
   }
 }
 
-class _Map_int_String_Component2$Provider
-    implements _i2.IProvider<Map<int, String>> {
-  _Map_int_String_Component2$Provider(this._component);
+class _Map1Component2$Provider implements _i2.IProvider<Map<int, String>> {
+  _Map1Component2$Provider(this._component);
 
   late final _i2.IProvider<String>
-      _stringda5b2834f095eea8b570d10ba69b3dd7Provider = _i2.Provider<String>(
-          () => _i1.Module2.provideString1(_component._component1.i));
+      _string2da5b2834f095eea8b570d10ba69b3dd7Provider = _i2.Provider<String>(
+          () => _i1.Module2.provideString1(_component._component10.i));
 
   final JuggerComponent2 _component;
 
   @override
   Map<int, String> get() => Map.unmodifiable(
-      <int, String>{1: _stringda5b2834f095eea8b570d10ba69b3dd7Provider.get()});
+      <int, String>{1: _string2da5b2834f095eea8b570d10ba69b3dd7Provider.get()});
 }

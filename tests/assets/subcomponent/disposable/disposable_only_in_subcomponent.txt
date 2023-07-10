@@ -25,7 +25,7 @@ class JuggerSubcomponent$MySubcomponent implements _i1.MySubcomponent {
   final JuggerMyComponent _parent;
 
   late final _i3.IProvider<_i1.DisposableClassFromSubComponent>
-      _disposableClassFromSubComponentProvider =
+      _disposableClassFromSubComponent0Provider =
       _i3.SingletonProvider<_i1.DisposableClassFromSubComponent>(() {
     _disposableManager.checkDisposed();
     _i1.DisposableClassFromSubComponent disposable =
@@ -40,7 +40,7 @@ class JuggerSubcomponent$MySubcomponent implements _i1.MySubcomponent {
   @override
   _i1.DisposableClassFromSubComponent get disposableClassFromSubComponent {
     _disposableManager.checkDisposed();
-    return _disposableClassFromSubComponentProvider.get();
+    return _disposableClassFromSubComponent0Provider.get();
   }
 
   @override

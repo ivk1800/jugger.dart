@@ -20,26 +20,26 @@ class JuggerMyComponent1 implements _i1.MyComponent1 {
 }
 
 class JuggerMyComponent2 implements _i1.MyComponent2 {
-  JuggerMyComponent2._create(this._myComponent1);
+  JuggerMyComponent2._create(this._myComponent10);
 
-  final _i1.MyComponent1 _myComponent1;
+  final _i1.MyComponent1 _myComponent10;
 
   @override
-  void get myVoid => _myComponent1.myVoid;
+  void get myVoid => _myComponent10.myVoid;
 }
 
 class JuggerMyComponent2Builder implements _i1.Component2Builder {
-  _i1.MyComponent1? _myComponent1;
+  _i1.MyComponent1? _myComponent10;
 
   @override
   _i1.Component2Builder setMyComponent1(_i1.MyComponent1 component1) {
-    _myComponent1 = component1;
+    _myComponent10 = component1;
     return this;
   }
 
   @override
   _i1.MyComponent2 build() {
-    assert(_myComponent1 != null);
-    return JuggerMyComponent2._create(_myComponent1!);
+    assert(_myComponent10 != null);
+    return JuggerMyComponent2._create(_myComponent10!);
   }
 }

@@ -13,25 +13,23 @@ import 'package:jugger/jugger.dart' as _i2;
 class JuggerAppComponent implements _i1.AppComponent {
   JuggerAppComponent.create();
 
-  late final _i2.IProvider<int> _intProvider =
+  late final _i2.IProvider<int> _int1Provider =
       _i2.Provider<int>(() => _i1.AppModule.provideInt1());
 
-  late final _i2.IProvider<_i1.MyClass> _myClassProvider =
-      _i2.Provider<_i1.MyClass>(() => const _i1.MyClass()
-        ..init(
-          _named_28c72d2f94a2b6a72e85353ff4950ceb_intProvider.get(),
-          _named_b068931cc450442b63f5b3d276ea4297_intProvider.get(),
-          _intProvider.get(),
-        ));
-
-  late final _i2.IProvider<int>
-      _named_28c72d2f94a2b6a72e85353ff4950ceb_intProvider =
+  late final _i2.IProvider<int> _int2Provider =
       _i2.Provider<int>(() => _i1.AppModule.provideInt2());
 
-  late final _i2.IProvider<int>
-      _named_b068931cc450442b63f5b3d276ea4297_intProvider =
+  late final _i2.IProvider<int> _int3Provider =
       _i2.Provider<int>(() => _i1.AppModule.provideInt3());
 
+  late final _i2.IProvider<_i1.MyClass> _myClass0Provider =
+      _i2.Provider<_i1.MyClass>(() => const _i1.MyClass()
+        ..init(
+          _int2Provider.get(),
+          _int3Provider.get(),
+          _int1Provider.get(),
+        ));
+
   @override
-  _i1.MyClass getMyClass() => _myClassProvider.get();
+  _i1.MyClass getMyClass() => _myClass0Provider.get();
 }

@@ -12,30 +12,24 @@ import 'package:jugger/jugger.dart' as _i2;
 class JuggerMyComponent implements _i1.MyComponent {
   JuggerMyComponent.create();
 
-  late final _Map_String_String_int_MyComponent$Provider
-      _map_String_String_int_Provider =
-      _Map_String_String_int_MyComponent$Provider();
+  late final _Map5MyComponent$Provider _map5Provider =
+      _Map5MyComponent$Provider();
 
-  late final _Map_String_bool_List_String__MyComponent$Provider
-      _map_String_bool_List_String__Provider =
-      _Map_String_bool_List_String__MyComponent$Provider();
+  late final _Map6MyComponent$Provider _map6Provider =
+      _Map6MyComponent$Provider();
 
-  late final _Map_String_bool_int_MyComponent$Provider
-      _map_String_bool_int_Provider =
-      _Map_String_bool_int_MyComponent$Provider();
+  late final _Map7MyComponent$Provider _map7Provider =
+      _Map7MyComponent$Provider();
 
   @override
-  Map<String, (String, int)> get myRecords1 =>
-      _map_String_String_int_Provider.get();
+  Map<String, (String, int)> get myRecords1 => _map5Provider.get();
   @override
-  Map<String, (bool, int)> get myRecords2 =>
-      _map_String_bool_int_Provider.get();
+  Map<String, (bool, int)> get myRecords2 => _map7Provider.get();
   @override
-  Map<String, (bool, List<String>)> get myRecords3 =>
-      _map_String_bool_List_String__Provider.get();
+  Map<String, (bool, List<String>)> get myRecords3 => _map6Provider.get();
 }
 
-class _Map_String_String_int_MyComponent$Provider
+class _Map5MyComponent$Provider
     implements _i2.IProvider<Map<String, (String, int)>> {
   late final _i2.IProvider<(String, int)> _record0Provider =
       _i2.Provider<(String, int)>(() => _i1.MyModule.provide1());
@@ -50,7 +44,7 @@ class _Map_String_String_int_MyComponent$Provider
       });
 }
 
-class _Map_String_bool_List_String__MyComponent$Provider
+class _Map6MyComponent$Provider
     implements _i2.IProvider<Map<String, (bool, List<String>)>> {
   late final _i2.IProvider<(bool, List<String>)> _record2Provider =
       _i2.Provider<(bool, List<String>)>(() => _i1.MyModule.provide4());
@@ -66,7 +60,7 @@ class _Map_String_bool_List_String__MyComponent$Provider
       });
 }
 
-class _Map_String_bool_int_MyComponent$Provider
+class _Map7MyComponent$Provider
     implements _i2.IProvider<Map<String, (bool, int)>> {
   late final _i2.IProvider<(bool, int)> _record4Provider =
       _i2.Provider<(bool, int)>(() => _i1.MyModule.provide3());

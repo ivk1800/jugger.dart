@@ -838,9 +838,11 @@ class ComponentBuilderDelegate {
           ..write('.');
       }
 
-      final String base = '_${uncapitalize(provider.dependencyClass.name)}'
-          '.'
-          '${provider.element.name}';
+      final String fieldName = _generateFieldName(
+        type: provider.dependencyClass.thisType,
+        tag: null,
+      );
+      final String base = '_$fieldName.${provider.element.name}';
       final String postfix = provider.element is MethodElement ? '()' : '';
       assignExpressionBuilder.write('$base$postfix');
       return refer(assignExpressionBuilder.toString());
@@ -934,20 +936,9 @@ class ComponentBuilderDelegate {
       final ProviderSource provider =
           _componentContext.findProvider(type, tag, multibindingsInfo);
 
-      if (provider is ParentComponentSource) {
-        return _componentContext
-            .getParentInfo(provider.id)
-            .typeIdProvider
-            .getIdOf(
-              type: type,
-              tag: tag,
-              multibindingsInfo: provider.multibindingsInfo,
-            );
-      }
-
       return _componentContext.getIdOf(
-        type: type,
-        tag: tag,
+        type: provider.type,
+        tag: provider.tag,
         multibindingsInfo: provider.multibindingsInfo,
       );
     }
@@ -958,14 +949,16 @@ class ComponentBuilderDelegate {
       return 'void${getId()}';
     } else if (type is FunctionType) {
       return 'function${getId()}';
+    } else if (type is InterfaceType) {
+      return '${uncapitalize(type.element.name)}${getId()}';
     }
 
-    final String typeName = _typeNameGenerator.generate(type);
-    if (tag != null) {
-      return 'named_${tag.toAssignTag()}_$typeName';
-    }
-
-    return uncapitalize(typeName);
+    throw JuggerError(
+      buildErrorMessage(
+        error: JuggerErrorId.type_not_supported,
+        message: 'Type ${type.runtimeType} not supported.',
+      ),
+    );
   }
 
   /// Returns a method that is called immediately after the component is

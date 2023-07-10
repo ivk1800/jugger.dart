@@ -12,45 +12,45 @@ import 'package:jugger/jugger.dart' as _i2;
 class JuggerAppComponent implements _i1.AppComponent {
   JuggerAppComponent.create();
 
-  late final _Map_int_MyClass_AppComponent$Provider _map_int_MyClass_Provider =
-      _Map_int_MyClass_AppComponent$Provider(this);
+  late final _Map0AppComponent$Provider _map0Provider =
+      _Map0AppComponent$Provider(this);
 
-  late final _i2.IProvider<_i1.MyClassImpl1> _myClassImpl1Provider =
+  late final _i2.IProvider<_i1.MyClassImpl1> _myClassImpl14Provider =
       _i2.Provider<_i1.MyClassImpl1>(() => const _i1.MyClassImpl1());
 
-  late final _i2.IProvider<_i1.MyClassImpl2> _myClassImpl2Provider =
+  late final _i2.IProvider<_i1.MyClassImpl2> _myClassImpl25Provider =
       _i2.Provider<_i1.MyClassImpl2>(() => const _i1.MyClassImpl2());
 
-  late final _i2.IProvider<_i1.MyClassImpl3> _myClassImpl3Provider =
+  late final _i2.IProvider<_i1.MyClassImpl3> _myClassImpl36Provider =
       _i2.Provider<_i1.MyClassImpl3>(() => const _i1.MyClassImpl3());
 
   @override
-  Map<int, _i1.MyClass> get myClasses => _map_int_MyClass_Provider.get();
+  Map<int, _i1.MyClass> get myClasses => _map0Provider.get();
 }
 
-class _Map_int_MyClass_AppComponent$Provider
+class _Map0AppComponent$Provider
     implements _i2.IProvider<Map<int, _i1.MyClass>> {
-  _Map_int_MyClass_AppComponent$Provider(this._component);
+  _Map0AppComponent$Provider(this._component);
 
   late final _i2.IProvider<_i1.MyClass>
-      _myClass4d432aa8b085fa0be1ad8b0c8ce464ccProvider =
-      _i2.Provider<_i1.MyClass>(() => _component._myClassImpl1Provider.get());
+      _myClass14d432aa8b085fa0be1ad8b0c8ce464ccProvider =
+      _i2.Provider<_i1.MyClass>(() => _component._myClassImpl14Provider.get());
 
   late final _i2.IProvider<_i1.MyClass>
-      _myClass7125adde72c403cbc51d5190613e851dProvider =
-      _i2.Provider<_i1.MyClass>(() => _component._myClassImpl2Provider.get());
+      _myClass27125adde72c403cbc51d5190613e851dProvider =
+      _i2.Provider<_i1.MyClass>(() => _component._myClassImpl25Provider.get());
 
   late final _i2.IProvider<_i1.MyClass>
-      _myClass87c8a1903875e10ae3385fafb7018187Provider =
+      _myClass387c8a1903875e10ae3385fafb7018187Provider =
       _i2.SingletonProvider<_i1.MyClass>(
-          () => _component._myClassImpl3Provider.get());
+          () => _component._myClassImpl36Provider.get());
 
   final JuggerAppComponent _component;
 
   @override
   Map<int, _i1.MyClass> get() => Map.unmodifiable(<int, _i1.MyClass>{
-        1: _myClass4d432aa8b085fa0be1ad8b0c8ce464ccProvider.get(),
-        2: _myClass7125adde72c403cbc51d5190613e851dProvider.get(),
-        3: _myClass87c8a1903875e10ae3385fafb7018187Provider.get(),
+        1: _myClass14d432aa8b085fa0be1ad8b0c8ce464ccProvider.get(),
+        2: _myClass27125adde72c403cbc51d5190613e851dProvider.get(),
+        3: _myClass387c8a1903875e10ae3385fafb7018187Provider.get(),
       });
 }

@@ -13,26 +13,26 @@ import 'package:jugger/jugger.dart' as _i2;
 class JuggerAppComponent implements _i1.AppComponent {
   JuggerAppComponent.create();
 
-  late final _Map_MyEnum_String_AppComponent$Provider
-      _map_MyEnum_String_Provider = _Map_MyEnum_String_AppComponent$Provider();
+  late final _Map0AppComponent$Provider _map0Provider =
+      _Map0AppComponent$Provider();
 
   @override
-  Map<_i1.MyEnum, String> get strings => _map_MyEnum_String_Provider.get();
+  Map<_i1.MyEnum, String> get strings => _map0Provider.get();
 }
 
-class _Map_MyEnum_String_AppComponent$Provider
+class _Map0AppComponent$Provider
     implements _i2.IProvider<Map<_i1.MyEnum, String>> {
   late final _i2.IProvider<String>
-      _string1cd1812dfa95f93a293be610f6aa4d36Provider =
-      _i2.Provider<String>(() => _i1.Module1.provideString2());
+      _string16e8c47e1b62c97a19ee198441b3d8f97Provider =
+      _i2.Provider<String>(() => _i1.Module1.provideString1());
 
   late final _i2.IProvider<String>
-      _string6e8c47e1b62c97a19ee198441b3d8f97Provider =
-      _i2.Provider<String>(() => _i1.Module1.provideString1());
+      _string21cd1812dfa95f93a293be610f6aa4d36Provider =
+      _i2.Provider<String>(() => _i1.Module1.provideString2());
 
   @override
   Map<_i1.MyEnum, String> get() => Map.unmodifiable(<_i1.MyEnum, String>{
-        _i1.MyEnum.a: _string1cd1812dfa95f93a293be610f6aa4d36Provider.get(),
-        _i1.MyEnum.b: _string6e8c47e1b62c97a19ee198441b3d8f97Provider.get(),
+        _i1.MyEnum.b: _string16e8c47e1b62c97a19ee198441b3d8f97Provider.get(),
+        _i1.MyEnum.a: _string21cd1812dfa95f93a293be610f6aa4d36Provider.get(),
       });
 }

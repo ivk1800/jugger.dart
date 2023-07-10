@@ -9,26 +9,26 @@
 import 'package:tests/provides/provides_from_component_params.dart' as _i1;
 
 class JuggerAppComponent implements _i1.AppComponent {
-  JuggerAppComponent._create(this._mainRouter);
+  JuggerAppComponent._create(this._mainRouter0);
 
-  final _i1.MainRouter _mainRouter;
+  final _i1.MainRouter _mainRouter0;
 
   @override
-  _i1.MainRouter getMainRouter() => _mainRouter;
+  _i1.MainRouter getMainRouter() => _mainRouter0;
 }
 
 class JuggerAppComponentBuilder implements _i1.AppComponentBuilder {
-  _i1.MainRouter? _mainRouter;
+  _i1.MainRouter? _mainRouter0;
 
   @override
   _i1.AppComponentBuilder createNewChatComponent(_i1.MainRouter router) {
-    _mainRouter = router;
+    _mainRouter0 = router;
     return this;
   }
 
   @override
   _i1.AppComponent build() {
-    assert(_mainRouter != null);
-    return JuggerAppComponent._create(_mainRouter!);
+    assert(_mainRouter0 != null);
+    return JuggerAppComponent._create(_mainRouter0!);
   }
 }

@@ -13,11 +13,11 @@ import 'package:jugger/jugger.dart' as _i2;
 class JuggerMyComponent implements _i1.MyComponent {
   JuggerMyComponent.create();
 
-  late final _Set_String_MyComponent$Provider _set_String_Provider =
-      _Set_String_MyComponent$Provider();
+  late final _Set0MyComponent$Provider _set0Provider =
+      _Set0MyComponent$Provider();
 
   @override
-  Set<String> get strings => _set_String_Provider.get();
+  Set<String> get strings => _set0Provider.get();
   _i1.MySubcomponent createMySubcomponent() {
     return JuggerSubcomponent$MySubcomponent.create(this);
   }
@@ -28,34 +28,33 @@ class JuggerSubcomponent$MySubcomponent implements _i1.MySubcomponent {
 
   final JuggerMyComponent _parent;
 
-  late final _Set_String_MySubcomponent$Provider _set_String_Provider =
-      _Set_String_MySubcomponent$Provider(this);
+  late final _Set0MySubcomponent$Provider _set0Provider =
+      _Set0MySubcomponent$Provider(this);
 
   @override
-  Set<String> get strings => _set_String_Provider.get();
+  Set<String> get strings => _set0Provider.get();
 }
 
-class _Set_String_MyComponent$Provider implements _i2.IProvider<Set<String>> {
+class _Set0MyComponent$Provider implements _i2.IProvider<Set<String>> {
   late final _i2.IProvider<String>
-      _string18a037af09801ad0cfddf18dad7e20c3Provider =
+      _string118a037af09801ad0cfddf18dad7e20c3Provider =
       _i2.SingletonProvider<String>(
           () => _i1.MyComponentModule.provideString1());
 
   @override
   Set<String> get() => Set.unmodifiable(
-      <String>{_string18a037af09801ad0cfddf18dad7e20c3Provider.get()});
+      <String>{_string118a037af09801ad0cfddf18dad7e20c3Provider.get()});
 }
 
-class _Set_String_MySubcomponent$Provider
-    implements _i2.IProvider<Set<String>> {
-  _Set_String_MySubcomponent$Provider(this._component);
+class _Set0MySubcomponent$Provider implements _i2.IProvider<Set<String>> {
+  _Set0MySubcomponent$Provider(this._component);
 
   late final _i2.IProvider<String>
-      _string18a037af09801ad0cfddf18dad7e20c3Provider = _component._parent
-          ._set_String_Provider._string18a037af09801ad0cfddf18dad7e20c3Provider;
+      _string118a037af09801ad0cfddf18dad7e20c3Provider = _component._parent
+          ._set0Provider._string118a037af09801ad0cfddf18dad7e20c3Provider;
 
   late final _i2.IProvider<String>
-      _string19c19b3870b273fdc095dc19b93a2556Provider =
+      _string219c19b3870b273fdc095dc19b93a2556Provider =
       _i2.SingletonProvider<String>(
           () => _i1.MySubcomponentModule.provideString2());
 
@@ -63,7 +62,7 @@ class _Set_String_MySubcomponent$Provider
 
   @override
   Set<String> get() => Set.unmodifiable(<String>{
-        _string18a037af09801ad0cfddf18dad7e20c3Provider.get(),
-        _string19c19b3870b273fdc095dc19b93a2556Provider.get(),
+        _string118a037af09801ad0cfddf18dad7e20c3Provider.get(),
+        _string219c19b3870b273fdc095dc19b93a2556Provider.get(),
       });
 }
