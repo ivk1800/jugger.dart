@@ -15,8 +15,8 @@ dependencies:
   collection: ^1.15.0
   dart_style: ^2.0.0
   jugger: ^3.0.0
-  source_gen: ^1.2.7
   quiver: ^3.0.0
+  source_gen: ^1.2.7
 
 dev_dependencies:
   lint: 2.1.2
