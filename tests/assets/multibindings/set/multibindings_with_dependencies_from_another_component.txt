@@ -51,13 +51,11 @@ class JuggerComponent2Builder implements _i1.Component2Builder {
 class _Set1Component2$Provider implements _i2.IProvider<Set<String>> {
   _Set1Component2$Provider(this._component);
 
-  late final _i2.IProvider<String>
-      _string2da5b2834f095eea8b570d10ba69b3dd7Provider = _i2.Provider<String>(
-          () => _i1.Module2.provideString1(_component._component10.i));
+  late final _i2.IProvider<String> _string2Provider = _i2.Provider<String>(
+      () => _i1.Module2.provideString1(_component._component10.i));
 
   final JuggerComponent2 _component;
 
   @override
-  Set<String> get() => Set.unmodifiable(
-      <String>{_string2da5b2834f095eea8b570d10ba69b3dd7Provider.get()});
+  Set<String> get() => Set.unmodifiable(<String>{_string2Provider.get()});
 }

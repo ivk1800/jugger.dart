@@ -31,16 +31,13 @@ class JuggerAppComponent implements _i1.AppComponent {
 class _Set6AppComponent$Provider implements _i2.IProvider<Set<_i1.MyClass>> {
   _Set6AppComponent$Provider(this._component);
 
-  late final _i2.IProvider<_i1.MyClass>
-      _myClass04d432aa8b085fa0be1ad8b0c8ce464ccProvider =
+  late final _i2.IProvider<_i1.MyClass> _myClass0Provider =
       _i2.Provider<_i1.MyClass>(() => _component._myClassImpl13Provider.get());
 
-  late final _i2.IProvider<_i1.MyClass>
-      _myClass17125adde72c403cbc51d5190613e851dProvider =
+  late final _i2.IProvider<_i1.MyClass> _myClass1Provider =
       _i2.Provider<_i1.MyClass>(() => _component._myClassImpl24Provider.get());
 
-  late final _i2.IProvider<_i1.MyClass>
-      _myClass287c8a1903875e10ae3385fafb7018187Provider =
+  late final _i2.IProvider<_i1.MyClass> _myClass2Provider =
       _i2.SingletonProvider<_i1.MyClass>(
           () => _component._myClassImpl35Provider.get());
 
@@ -48,8 +45,8 @@ class _Set6AppComponent$Provider implements _i2.IProvider<Set<_i1.MyClass>> {
 
   @override
   Set<_i1.MyClass> get() => Set.unmodifiable(<_i1.MyClass>{
-        _myClass04d432aa8b085fa0be1ad8b0c8ce464ccProvider.get(),
-        _myClass17125adde72c403cbc51d5190613e851dProvider.get(),
-        _myClass287c8a1903875e10ae3385fafb7018187Provider.get(),
+        _myClass0Provider.get(),
+        _myClass1Provider.get(),
+        _myClass2Provider.get(),
       });
 }

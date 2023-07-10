@@ -26,33 +26,29 @@ class JuggerAppComponent implements _i1.AppComponent {
 }
 
 class _Set0AppComponent$Provider implements _i2.IProvider<Set<String>> {
-  late final _i2.IProvider<String>
-      _string26e8c47e1b62c97a19ee198441b3d8f97Provider =
+  late final _i2.IProvider<String> _string2Provider =
       _i2.Provider<String>(() => _i1.Module1.provideString1());
 
-  late final _i2.IProvider<String>
-      _string31cd1812dfa95f93a293be610f6aa4d36Provider =
+  late final _i2.IProvider<String> _string3Provider =
       _i2.Provider<String>(() => _i1.Module1.provideString2());
 
   @override
   Set<String> get() => Set.unmodifiable(<String>{
-        _string26e8c47e1b62c97a19ee198441b3d8f97Provider.get(),
-        _string31cd1812dfa95f93a293be610f6aa4d36Provider.get(),
+        _string2Provider.get(),
+        _string3Provider.get(),
       });
 }
 
 class _Set1AppComponent$Provider implements _i2.IProvider<Set<String>> {
-  late final _i2.IProvider<String>
-      _string4ee8074d2beafaf4a80df64cc15d416d1Provider =
+  late final _i2.IProvider<String> _string4Provider =
       _i2.Provider<String>(() => _i1.Module1.provideString3());
 
-  late final _i2.IProvider<String>
-      _string5217de402cb4e2234ba01b4c209a13373Provider =
+  late final _i2.IProvider<String> _string5Provider =
       _i2.Provider<String>(() => _i1.Module1.provideString4());
 
   @override
   Set<String> get() => Set.unmodifiable(<String>{
-        _string4ee8074d2beafaf4a80df64cc15d416d1Provider.get(),
-        _string5217de402cb4e2234ba01b4c209a13373Provider.get(),
+        _string4Provider.get(),
+        _string5Provider.get(),
       });
 }

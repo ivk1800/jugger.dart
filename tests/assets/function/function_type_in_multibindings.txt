@@ -21,18 +21,16 @@ class JuggerMyComponent implements _i1.MyComponent {
 
 class _Map0MyComponent$Provider
     implements _i2.IProvider<Map<String, void Function()>> {
-  late final _i2.IProvider<void Function()>
-      _function11ed7063c5c18e408e52f1ada15ab5c20Provider =
+  late final _i2.IProvider<void Function()> _function1Provider =
       _i2.Provider<void Function()>(() => _i1.MyModule.provideMyFunction1());
 
-  late final _i2.IProvider<void Function()>
-      _function2de69c94435b19e02cb250a6560ffa644Provider =
+  late final _i2.IProvider<void Function()> _function2Provider =
       _i2.Provider<void Function()>(() => _i1.MyModule.provideMyFunction2());
 
   @override
   Map<String, void Function()> get() =>
       Map.unmodifiable(<String, void Function()>{
-        '1': _function11ed7063c5c18e408e52f1ada15ab5c20Provider.get(),
-        '2': _function2de69c94435b19e02cb250a6560ffa644Provider.get(),
+        '1': _function1Provider.get(),
+        '2': _function2Provider.get(),
       });
 }

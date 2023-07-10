@@ -21,22 +21,19 @@ class JuggerAppComponent implements _i1.AppComponent {
 }
 
 class _Map0AppComponent$Provider implements _i2.IProvider<Map<int, String>> {
-  late final _i2.IProvider<String>
-      _string148a569ddbe9f8a6980714b62e9ba79f6Provider =
+  late final _i2.IProvider<String> _string1Provider =
       _i2.Provider<String>(() => _i1.Module1.provideString());
 
-  late final _i2.IProvider<String>
-      _string29e07833db8de032a7b65c3634145980eProvider =
+  late final _i2.IProvider<String> _string2Provider =
       _i2.Provider<String>(() => _i1.Module2.provideString());
 
-  late final _i2.IProvider<String>
-      _string30e594248949d49e5e93ff0da69640e23Provider =
+  late final _i2.IProvider<String> _string3Provider =
       _i2.Provider<String>(() => _i1.Module3.provideString());
 
   @override
   Map<int, String> get() => Map.unmodifiable(<int, String>{
-        1: _string148a569ddbe9f8a6980714b62e9ba79f6Provider.get(),
-        2: _string29e07833db8de032a7b65c3634145980eProvider.get(),
-        3: _string30e594248949d49e5e93ff0da69640e23Provider.get(),
+        1: _string1Provider.get(),
+        2: _string2Provider.get(),
+        3: _string3Provider.get(),
       });
 }

@@ -13,7 +13,6 @@ import 'check_unused_providers.dart';
 import 'component_builder_delegate.dart';
 import 'component_circular_dependency_detector.dart';
 import 'component_result.dart';
-import 'unique_name_registry.dart';
 import 'visitors.dart';
 import 'wrappers.dart' as j;
 
@@ -26,7 +25,6 @@ class AssetBuilder implements AssetContext {
     allocator: _allocator,
     useNullSafetySyntax: true,
   );
-  final UniqueIdGenerator _uniqueIdGenerator = UniqueIdGenerator();
   final ComponentCircularDependencyDetector
       _componentCircularDependencyDetector =
       ComponentCircularDependencyDetector();
@@ -135,9 +133,6 @@ class AssetBuilder implements AssetContext {
 
   @override
   DartEmitter get emitter => _emitter;
-
-  @override
-  UniqueIdGenerator get uniqueIdGenerator => _uniqueIdGenerator;
 
   @override
   ComponentCircularDependencyDetector get componentCircularDependencyDetector =>

@@ -36,25 +36,21 @@ class JuggerSubcomponent$MySubcomponent implements _i1.MySubcomponent {
 }
 
 class _Set0MyComponent$Provider implements _i2.IProvider<Set<String>> {
-  late final _i2.IProvider<String>
-      _string118a037af09801ad0cfddf18dad7e20c3Provider =
+  late final _i2.IProvider<String> _string1Provider =
       _i2.SingletonProvider<String>(
           () => _i1.MyComponentModule.provideString1());
 
   @override
-  Set<String> get() => Set.unmodifiable(
-      <String>{_string118a037af09801ad0cfddf18dad7e20c3Provider.get()});
+  Set<String> get() => Set.unmodifiable(<String>{_string1Provider.get()});
 }
 
 class _Set0MySubcomponent$Provider implements _i2.IProvider<Set<String>> {
   _Set0MySubcomponent$Provider(this._component);
 
-  late final _i2.IProvider<String>
-      _string118a037af09801ad0cfddf18dad7e20c3Provider = _component._parent
-          ._set0Provider._string118a037af09801ad0cfddf18dad7e20c3Provider;
+  late final _i2.IProvider<String> _string1Provider =
+      _component._parent._set0Provider._string1Provider;
 
-  late final _i2.IProvider<String>
-      _string219c19b3870b273fdc095dc19b93a2556Provider =
+  late final _i2.IProvider<String> _string2Provider =
       _i2.SingletonProvider<String>(
           () => _i1.MySubcomponentModule.provideString2());
 
@@ -62,7 +58,7 @@ class _Set0MySubcomponent$Provider implements _i2.IProvider<Set<String>> {
 
   @override
   Set<String> get() => Set.unmodifiable(<String>{
-        _string118a037af09801ad0cfddf18dad7e20c3Provider.get(),
-        _string219c19b3870b273fdc095dc19b93a2556Provider.get(),
+        _string1Provider.get(),
+        _string2Provider.get(),
       });
 }

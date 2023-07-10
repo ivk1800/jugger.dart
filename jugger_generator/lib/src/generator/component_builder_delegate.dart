@@ -25,7 +25,6 @@ import 'multibindings/multibindings_group.dart';
 import 'multibindings/multibindings_info.dart';
 import 'subcomponent/parent_component_provider.dart';
 import 'tag.dart';
-import 'unique_name_registry.dart';
 import 'visitors.dart';
 import 'wrappers.dart' as j;
 import 'wrappers.dart';
@@ -58,8 +57,6 @@ class ComponentBuilderDelegate {
   GlobalConfig get globalConfig => _assetContext.globalConfig;
 
   Allocator get _allocator => _assetContext.allocator;
-
-  UniqueIdGenerator get _uniqueIdGenerator => _assetContext.uniqueIdGenerator;
 
   ComponentResult generateComponent({
     required Component component,
@@ -2109,12 +2106,6 @@ if (_disposed) {
         ),
       );
 
-    if (multibindingsInfo != null && type is! RecordType) {
-      fieldNameBuilder.write(
-        generateMd5(multibindingsInfo.methodPath),
-      );
-    }
-
     fieldNameBuilder.write('Provider.get()');
     return fieldNameBuilder.toString();
   }
@@ -2131,11 +2122,6 @@ if (_disposed) {
         tag: tag,
       ),
     );
-    if (multibindingsInfo != null) {
-      fieldNameBuilder.write(
-        _uniqueIdGenerator.generate(multibindingsInfo.methodPath),
-      );
-    }
     final String componentName = _componentContext.component.element.name;
     fieldNameBuilder
       ..write(componentName)
@@ -2158,11 +2144,6 @@ if (_disposed) {
         multibindingsInfo: multibindingsInfo,
       ),
     );
-    if (multibindingsInfo != null && type is! RecordType) {
-      fieldNameBuilder.write(
-        generateMd5(multibindingsInfo.methodPath),
-      );
-    }
     fieldNameBuilder.write('Provider');
 
     return fieldNameBuilder.toString();

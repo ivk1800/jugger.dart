@@ -32,16 +32,13 @@ class _Map0AppComponent$Provider
     implements _i2.IProvider<Map<int, _i1.MyClass>> {
   _Map0AppComponent$Provider(this._component);
 
-  late final _i2.IProvider<_i1.MyClass>
-      _myClass14d432aa8b085fa0be1ad8b0c8ce464ccProvider =
+  late final _i2.IProvider<_i1.MyClass> _myClass1Provider =
       _i2.Provider<_i1.MyClass>(() => _component._myClassImpl14Provider.get());
 
-  late final _i2.IProvider<_i1.MyClass>
-      _myClass27125adde72c403cbc51d5190613e851dProvider =
+  late final _i2.IProvider<_i1.MyClass> _myClass2Provider =
       _i2.Provider<_i1.MyClass>(() => _component._myClassImpl25Provider.get());
 
-  late final _i2.IProvider<_i1.MyClass>
-      _myClass387c8a1903875e10ae3385fafb7018187Provider =
+  late final _i2.IProvider<_i1.MyClass> _myClass3Provider =
       _i2.SingletonProvider<_i1.MyClass>(
           () => _component._myClassImpl36Provider.get());
 
@@ -49,8 +46,8 @@ class _Map0AppComponent$Provider
 
   @override
   Map<int, _i1.MyClass> get() => Map.unmodifiable(<int, _i1.MyClass>{
-        1: _myClass14d432aa8b085fa0be1ad8b0c8ce464ccProvider.get(),
-        2: _myClass27125adde72c403cbc51d5190613e851dProvider.get(),
-        3: _myClass387c8a1903875e10ae3385fafb7018187Provider.get(),
+        1: _myClass1Provider.get(),
+        2: _myClass2Provider.get(),
+        3: _myClass3Provider.get(),
       });
 }
