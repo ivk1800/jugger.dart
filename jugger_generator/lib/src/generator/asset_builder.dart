@@ -4,6 +4,7 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:build/build.dart';
 import 'package:code_builder/code_builder.dart';
 import 'package:dart_style/dart_style.dart';
+import 'package:source_gen/source_gen.dart' show InvalidGenerationSourceError;
 
 import '../builder/global_config.dart';
 import '../errors_glossary.dart';
@@ -47,12 +48,15 @@ class AssetBuilder implements AssetContext {
     try {
       return await _buildOutputInternal(buildStep);
     } catch (e) {
-      if (e is! JuggerError) {
+      if (e is JuggerError) {
+        throw InvalidGenerationSourceError(
+          'error: ${e.message}',
+          element: e.element,
+        );
+      } else {
         throw UnexpectedJuggerError(
           buildUnexpectedErrorMessage(message: e.toString()),
         );
-      } else {
-        rethrow;
       }
     }
   }

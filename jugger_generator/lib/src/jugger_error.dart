@@ -1,12 +1,15 @@
+import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 
 import 'generator/tag.dart';
 
 /// General generation error.
 class JuggerError extends Error {
-  JuggerError(this.message);
+  JuggerError(this.message, [this.element]);
 
   final String message;
+
+  final Element? element;
 
   @override
   String toString() => 'error: $message';

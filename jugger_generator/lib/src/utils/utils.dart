@@ -384,10 +384,13 @@ String createClassNameWithPath(ClassElement element) {
   return '${element.name} ${element.library.identifier}';
 }
 
-// ignore: avoid_positional_boolean_parameters
-void check(bool condition, String Function() message) {
+void check(
+  bool condition,
+  String Function() message, {
+  Element? element,
+}) {
   if (!condition) {
-    throw JuggerError(message.call());
+    throw JuggerError(message.call(), element);
   }
 }
 
