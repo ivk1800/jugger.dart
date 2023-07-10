@@ -837,7 +837,12 @@ class ComponentBuilderDelegate {
           ..write(prefixScope)
           ..write('.');
       }
-      assignExpressionBuilder.write(provider.assignString);
+
+      final String base = '_${uncapitalize(provider.dependencyClass.name)}'
+          '.'
+          '${provider.element.name}';
+      final String postfix = provider.element is MethodElement ? '()' : '';
+      assignExpressionBuilder.write('$base$postfix');
       return refer(assignExpressionBuilder.toString());
     } else if (provider is ParentComponentSource) {
       if (provider.originalSource is ArgumentSource) {

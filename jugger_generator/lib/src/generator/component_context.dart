@@ -998,13 +998,12 @@ class AnotherComponentSource extends ProviderSource {
   AnotherComponentSource({
     required super.type,
     required this.element,
-    required ClassElement dependencyClass,
+    required this.dependencyClass,
     required super.annotations,
-  })  : _dependencyClass = dependencyClass,
-        assert(element is MethodElement || element is PropertyAccessorElement);
+  }) : assert(element is MethodElement || element is PropertyAccessorElement);
 
   /// The component class that is used as a dependency.
-  final ClassElement _dependencyClass;
+  final ClassElement dependencyClass;
 
   /// Method or property which provides an object instance.
   /// ```
@@ -1016,20 +1015,8 @@ class AnotherComponentSource extends ProviderSource {
   /// ```
   final Element element;
 
-  ///
-  /// example: _appComponent.getFoldersRouter()
-  /// or for property
-  /// example: _appComponent.foldersRouter
-  ///
-  String get assignString {
-    final String base =
-        '_${uncapitalize(_dependencyClass.name)}.${element.name}';
-    final String postfix = element is MethodElement ? '()' : '';
-    return '$base$postfix';
-  }
-
   @override
-  String get sourceString => '${_dependencyClass.name}.${element.name}';
+  String get sourceString => '${dependencyClass.name}.${element.name}';
 }
 
 class ParentMultibindingsItemSource extends ProviderSource
