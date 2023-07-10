@@ -1,10 +1,7 @@
-import 'dart:convert';
-
 import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
-import 'package:crypto/crypto.dart';
 import 'package:jugger/jugger.dart';
 
 import '../builder/session_cache.dart';
@@ -17,8 +14,6 @@ import 'dart_type_ext.dart';
 import 'element_annotation_ext.dart';
 import 'library_ext.dart';
 import 'module_extractor.dart';
-
-String generateMd5(String input) => md5.convert(utf8.encode(input)).toString();
 
 List<Annotation> getAnnotations(Element element) {
   return sessionCache.getAnnotations(element, () => _getAnnotations(element));
