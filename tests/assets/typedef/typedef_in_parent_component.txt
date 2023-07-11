@@ -1,0 +1,30 @@
+// ignore_for_file: implementation_imports
+// ignore_for_file: prefer_const_constructors
+// ignore_for_file: always_specify_types
+// ignore_for_file: directives_ordering
+// ignore_for_file: non_constant_identifier_names
+// ignore_for_file: type=lint
+// ignore_for_file: unused_field
+// ignore_for_file: no_leading_underscores_for_library_prefixes
+import 'package:tests/typedef/typedef_in_parent_component.dart' as _i1;
+import 'package:jugger/jugger.dart' as _i2;
+
+class JuggerParentComponent implements _i1.ParentComponent {
+  JuggerParentComponent.create();
+
+  late final _i2.IProvider<int> _int0Provider =
+      _i2.Provider<int>(() => _i1.ParentModule.provideMyTypedef());
+
+  _i1.ChildComponent createChildComponent() {
+    return JuggerSubcomponent$ChildComponent.create(this);
+  }
+}
+
+class JuggerSubcomponent$ChildComponent implements _i1.ChildComponent {
+  JuggerSubcomponent$ChildComponent.create(this._parent);
+
+  final JuggerParentComponent _parent;
+
+  @override
+  int get myTypedef => _parent._int0Provider.get();
+}
