@@ -35,11 +35,14 @@ extension ElementExt on Element {
 
   Reference asReference() {
     final String? n = name;
-    check(n != null, () => 'Unable create Reference, name is null');
+    checkUnexpected(
+      n != null,
+      message: () => 'Unable create Reference, name is null',
+    );
     final LibraryElement? l = library;
-    check(
+    checkUnexpected(
       l != null,
-      () => 'Unable create Reference, library is null',
+      message: () => 'Unable create Reference, library is null',
     );
     return refer(n!, l!.source.uri.toString());
   }

@@ -23,19 +23,21 @@ class DisposablesManager {
       );
       check(
         disposable != null,
-        () => buildErrorMessage(
+        message: () => buildErrorMessage(
           error: JuggerErrorId.unused_disposal_handler,
           message:
               'Found unused disposal handler ${handler.element.enclosingElement.name}.${handler.element.name}.',
         ),
+        element: handler.element,
       );
       check(
         disposable!.disposeHandler is DelegateDisposeHandler,
-        () => buildErrorMessage(
+        message: () => buildErrorMessage(
           error: JuggerErrorId.redundant_disposal_handler,
           message:
               '${disposable.type.getName()} marked as auto disposable, but declared handler ${handler.element.enclosingElement.name}.${handler.element.name}.',
         ),
+        element: handler.element,
       );
     }
     disposableArguments = allDisposable
@@ -108,7 +110,7 @@ class DisposablesManager {
         if (disposableAnnotation != null) {
           check(
             graphObject.type.isScoped(),
-            () => buildErrorMessage(
+            message: () => buildErrorMessage(
               error: JuggerErrorId.disposable_not_scoped,
               message:
                   '${graphObject.type.getName()} marked as disposable, but not scoped.',
@@ -161,7 +163,7 @@ class DisposablesManager {
       });
       check(
         !isBinds,
-        () => buildErrorMessage(
+        message: () => buildErrorMessage(
           error: JuggerErrorId.disposable_not_supported,
           message:
               'Disposable type ${source.type.getName()} not supported with binds.',
@@ -170,7 +172,7 @@ class DisposablesManager {
 
       check(
         source.isScoped,
-        () => buildErrorMessage(
+        message: () => buildErrorMessage(
           error: JuggerErrorId.disposable_not_scoped,
           message:
               '${graphObject.type.getName()} marked as disposable, but not scoped.',
@@ -215,7 +217,7 @@ class DisposablesManager {
             return method.name == 'dispose' &&
                 (type == 'Future<void>' || type == 'void');
           }),
-          () => buildErrorMessage(
+          message: () => buildErrorMessage(
             error: JuggerErrorId.missing_dispose_method,
             message:
                 '${type.getName()} marked as auto disposable, but not found properly dispose method.',
@@ -231,7 +233,7 @@ class DisposablesManager {
 
         check(
           method != null,
-          () => buildErrorMessage(
+          message: () => buildErrorMessage(
             error: JuggerErrorId.missing_dispose_method,
             message: 'Not found disposer for $type.',
           ),

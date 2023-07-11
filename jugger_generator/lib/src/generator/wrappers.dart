@@ -167,27 +167,31 @@ List<DisposalHandlerMethod> _getDisposalHandlerMethodsFromModules(
       .toList();
 
   for (final DisposalHandlerMethod method in methods) {
-    check(handlers.add(method), () {
-      final List<DisposalHandlerMethod> registeredHandlers =
-          <DisposalHandlerMethod>[
-        methods.firstWhere(
-          (DisposalHandlerMethod handler) => equalsHelper(handler, method),
-        ),
-        method
-      ];
+    check(
+      handlers.add(method),
+      message: () {
+        final List<DisposalHandlerMethod> registeredHandlers =
+            <DisposalHandlerMethod>[
+          methods.firstWhere(
+            (DisposalHandlerMethod handler) => equalsHelper(handler, method),
+          ),
+          method
+        ];
 
-      final String places = registeredHandlers
-          .map(
-            (DisposalHandlerMethod handler) =>
-                '${handler.element.enclosingElement.name}.${handler.element.name}',
-          )
-          .join(', ');
-      return buildErrorMessage(
-        error: JuggerErrorId.multiple_disposal_handlers_for_type,
-        message:
-            'Disposal handler for ${method.disposableType.getName()} provided multiple times: $places',
-      );
-    });
+        final String places = registeredHandlers
+            .map(
+              (DisposalHandlerMethod handler) =>
+                  '${handler.element.enclosingElement.name}.${handler.element.name}',
+            )
+            .join(', ');
+        return buildErrorMessage(
+          error: JuggerErrorId.multiple_disposal_handlers_for_type,
+          message:
+              'Disposal handler for ${method.disposableType.getName()} provided multiple times: $places',
+        );
+      },
+      element: method.element,
+    );
   }
   return handlers.toList(growable: false);
 }
@@ -497,11 +501,12 @@ class DisposalHandlerMethod extends ModuleMethod {
   factory DisposalHandlerMethod.fromMethodElement(MethodElement element) {
     check(
       element.parameters.length == 1,
-      () => buildErrorMessage(
+      message: () => buildErrorMessage(
         error: JuggerErrorId.invalid_handler_method,
         message:
             'Method ${element.enclosingElement.name}.${element.name} annotated with ${j.disposalHandler.runtimeType} must have one parameter.',
       ),
+      element: element,
     );
 
     final DartType parameterType = element.parameters.first.type;
@@ -533,11 +538,12 @@ class AbstractProvideMethod extends ProvideMethod {
     final Element moduleElement = element.enclosingElement;
     check(
       element.parameters.length == 1,
-      () => buildErrorMessage(
+      message: () => buildErrorMessage(
         error: JuggerErrorId.invalid_bind_method,
         message:
             'Method ${moduleElement.name}.${element.name} annotated with ${j.binds.runtimeType} must have one parameter.',
       ),
+      element: element,
     );
 
     final DartType parameterType = element.parameters.first.type;
@@ -551,11 +557,12 @@ class AbstractProvideMethod extends ProvideMethod {
 
     check(
       isSupertype,
-      () => buildErrorMessage(
+      message: () => buildErrorMessage(
         error: JuggerErrorId.bind_wrong_type,
         message:
             'Method ${moduleElement.name}.${element.name} parameter type must be assignable to the return type.',
       ),
+      element: element,
     );
 
     final Element rawParameter = element.parameters[0].type.element!;
@@ -642,11 +649,12 @@ class SubcomponentFactoryMethod extends ComponentMethod {
   late final ParameterElement _builderParameter = () {
     check(
       element.parameters.length == 1,
-      () => buildErrorMessage(
+      message: () => buildErrorMessage(
         error: JuggerErrorId.invalid_subcomponent_factory,
         message: 'Subcomponent factory method must have 1 parameter. And it '
             'should be a subcomponent builder',
       ),
+      element: element,
     );
     final ParameterElement parameter = element.parameters.first;
 
@@ -664,24 +672,27 @@ class SubcomponentFactoryMethod extends ComponentMethod {
 
     check(
       !parameter.isNamed,
-      () => buildErrorMessage(
+      message: () => buildErrorMessage(
         error: JuggerErrorId.wrong_subcomponent_factory,
         message: baseMessage('Named parameter not allowed.'),
       ),
+      element: parameter,
     );
     check(
       !parameter.isOptional,
-      () => buildErrorMessage(
+      message: () => buildErrorMessage(
         error: JuggerErrorId.wrong_subcomponent_factory,
         message: baseMessage('Optional parameter not allowed.'),
       ),
+      element: parameter,
     );
     check(
       parameter.type.nullabilitySuffix == NullabilitySuffix.none,
-      () => buildErrorMessage(
+      message: () => buildErrorMessage(
         error: JuggerErrorId.wrong_subcomponent_factory,
         message: baseMessage('Nullable parameter not allowed.'),
       ),
+      element: parameter,
     );
     return parameter;
   }();
@@ -690,25 +701,30 @@ class SubcomponentFactoryMethod extends ComponentMethod {
     final Element? builderElement = _builderParameter.type.element;
     check(
       builderElement?.getAnnotationOrNull<ComponentBuilderAnnotation>() != null,
-      () => buildErrorMessage(
+      message: () => buildErrorMessage(
         error: JuggerErrorId.invalid_subcomponent_factory,
         message: "Class ${builderElement?.name} must be annotated with "
             "@componentBuilder annotation.",
       ),
+      element: _builderParameter,
     );
     final ClassElement classElement = builderElement.requiredType();
     final MethodElement? buildMethod = classElement.methods
         .firstWhereOrNull((MethodElement element) => element.name == 'build');
-    checkUnexpected(buildMethod != null, () => 'build method not found.');
+    checkUnexpected(
+      buildMethod != null,
+      message: () => 'build method not found.',
+    );
 
     check(
       element.returnType == buildMethod!.returnType,
-      () => buildErrorMessage(
+      message: () => buildErrorMessage(
         error: JuggerErrorId.wrong_subcomponent_factory,
         message: 'Subcomponent builder must return the same type as the method.'
             '\nMethod return: ${element.returnType},\n'
             'Builder return: ${buildMethod.returnType}.',
       ),
+      element: element,
     );
     return classElement;
   }();

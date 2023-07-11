@@ -134,22 +134,24 @@ class ComponentBuilderDelegate {
       if (hasDisposables) {
         check(
           component.disposeMethod != null,
-          () => buildErrorMessage(
+          message: () => buildErrorMessage(
             error: JuggerErrorId.missing_dispose_method,
             message:
                 'Missing dispose method of component ${component.element.name}.',
           ),
+          element: component.element,
         );
       } else {
         check(
           component.disposeMethod == null,
-          () => buildErrorMessage(
+          message: () => buildErrorMessage(
             error: JuggerErrorId.missing_disposables,
             message: 'The component ${component.element.name} does not contain '
                 'disposable objects, but the dispose method '
                 '${component.disposeMethod?.element.enclosingElement.name}.'
                 '${component.disposeMethod?.element.name} is declared.',
           ),
+          element: component.element,
         );
       }
 
@@ -425,7 +427,7 @@ class ComponentBuilderDelegate {
     for (final GraphObject graphObject in filteredDependencies) {
       checkUnexpected(
         !graphObject.type.isValueProvider,
-        () => buildUnexpectedErrorMessage(
+        message: () => buildUnexpectedErrorMessage(
           message:
               'found registered dependency of provider [${graphObject.type.getName()}]',
         ),
@@ -661,7 +663,7 @@ class ComponentBuilderDelegate {
     for (final ExecutableElement executable in items) {
       checkUnexpected(
         executable is PropertyAccessorElement || executable is MethodElement,
-        () => 'executable $executable not supported.',
+        message: () => 'executable $executable not supported.',
       );
       final Method m = Method((MethodBuilder b) {
         b.annotations.add(_overrideAnnotationExpression);
@@ -843,7 +845,7 @@ class ComponentBuilderDelegate {
       if (provider.originalSource is ArgumentSource) {
         checkUnexpected(
           prefixScope == null,
-          () => 'prefixScope not allowed for $ParentComponentSource',
+          message: () => 'prefixScope not allowed for $ParentComponentSource',
         );
       }
       return _generateProviderAssignExpression(
@@ -973,7 +975,7 @@ class ComponentBuilderDelegate {
       for (final ProviderSource source in nonLazyProviders) {
         check(
           source.isScoped,
-          () => buildErrorMessage(
+          message: () => buildErrorMessage(
             error: JuggerErrorId.unscoped_non_lazy,
             message: 'It makes no sense to initialize a non-scoped object:\n'
                 '${source.sourceString}',
@@ -1089,7 +1091,7 @@ class ComponentBuilderDelegate {
 
     checkUnexpected(
       provider is InjectedConstructorSource,
-      () {
+      message: () {
         return 'Expected $InjectedConstructorSource, but was $provider.';
       },
     );
@@ -1221,12 +1223,13 @@ class ComponentBuilderDelegate {
 
     check(
       !(isPositional && isNamed),
-      () => buildErrorMessage(
+      message: () => buildErrorMessage(
         error: JuggerErrorId.invalid_parameters_types,
         message:
             '${reference.symbol} can have only positional parameters or only '
             'named parameters.',
       ),
+      element: method,
     );
 
     return _buildCallArgumentsExpression(
@@ -1316,7 +1319,8 @@ class ComponentBuilderDelegate {
   Reference _getProviderReferenceOfElement(Element element) {
     checkUnexpected(
       element is MethodElement || element is ConstructorElement,
-      () => buildUnexpectedErrorMessage(message: '$element not supported'),
+      message: () =>
+          buildUnexpectedErrorMessage(message: '$element not supported'),
     );
 
     // type inside brackets
@@ -1470,7 +1474,7 @@ class ComponentBuilderDelegate {
 
     checkUnexpected(
       arguments.isNotEmpty,
-      () => buildUnexpectedErrorMessage(
+      message: () => buildUnexpectedErrorMessage(
         message: 'disposable arguments is empty!',
       ),
     );
@@ -1568,24 +1572,28 @@ class ComponentBuilderDelegate {
         .findDisposableInfo(method.element.returnType, method.tag);
 
     if (method.isDisposable) {
+      // TODO: Add test
       check(
         disposableInfo != null,
-        () => buildUnexpectedErrorMessage(
+        message: () => buildUnexpectedErrorMessage(
           message:
               'Method ${method.element.name} marked as disposable, but disposal handler not found.',
         ),
+        element: method.element,
       );
       return _buildCallDisposableFromInfo(
         returnBlock: returnBlock,
         info: disposableInfo!,
       );
     } else {
+      // TODO: Add test
       check(
         disposableInfo == null,
-        () => buildUnexpectedErrorMessage(
+        message: () => buildUnexpectedErrorMessage(
           message:
               'Found disposal handler for method ${method.element.name}, but he does not marked as disposable.',
         ),
+        element: method.element,
       );
     }
 
@@ -2182,14 +2190,14 @@ if (_disposed) {
 
         checkUnexpected(
           baseComponentAnnotation != null,
-          () => 'Missing component annotation',
+          message: () => 'Missing component annotation',
         );
 
         final DartType? builderType = baseComponentAnnotation?.builder;
         if (builderType != null) {
           checkUnexpected(
             builderType == method.resolveBuilderParameterClass().thisType,
-            () => 'Builder type not matched with method return type.',
+            message: () => 'Builder type not matched with method return type.',
           );
         }
 
@@ -2266,8 +2274,10 @@ if (_disposed) {
     check(
       subcomponents.map((j.Component c) => c.element.name).toSet().length ==
           subcomponents.length,
-      () => 'Subcomponents with the same name are not supported in the parent '
+      message: () =>
+          'Subcomponents with the same name are not supported in the parent '
           'component.',
+      element: component.element,
     );
 
     return subcomponents;

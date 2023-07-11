@@ -21,7 +21,8 @@ class _InjectedMembersVisitor extends RecursiveElementVisitor<dynamic> {
         .any((Annotation annotation) => annotation is InjectAnnotation)) {
       check(
         element.isPublic && !element.isStatic && !element.isAbstract,
-        () => 'Field ${element.name} must be only public.',
+        message: () => 'Field ${element.name} must be only public.',
+        element: element,
       );
       _add(element);
     }
@@ -67,20 +68,22 @@ class _ModuleMethodsVisitor extends RecursiveElementVisitor<dynamic>
 
     check(
       element.isAbstract || element.isStatic,
-      () => buildErrorMessage(
+      message: () => buildErrorMessage(
         error: JuggerErrorId.unsupported_method_type,
         message:
             'Method ${moduleElement.name}.${element.name} must be abstract or static.',
       ),
+      element: element,
     );
 
     check(
       !element.isPrivate,
-      () => buildErrorMessage(
+      message: () => buildErrorMessage(
         error: JuggerErrorId.private_method_of_module,
         message:
             'Method ${moduleElement.name}.${element.name} can not be private.',
       ),
+      element: element,
     );
 
     final ProvideAnnotation? provideAnnotation =
@@ -91,11 +94,12 @@ class _ModuleMethodsVisitor extends RecursiveElementVisitor<dynamic>
 
     check(
       !(bindAnnotation != null && provideAnnotation != null),
-      () => buildErrorMessage(
+      message: () => buildErrorMessage(
         error: JuggerErrorId.ambiguity_of_provide_method,
         message:
             'Method [${moduleElement.name}.${element.name}] can not be annotated together with @${j.provides.runtimeType} and @${j.binds.runtimeType}',
       ),
+      element: element,
     );
 
     if (element.isStatic) {
@@ -103,10 +107,11 @@ class _ModuleMethodsVisitor extends RecursiveElementVisitor<dynamic>
         final String type = element.returnType.getName();
         check(
           type == 'Future<void>' || type == 'void',
-          () => buildErrorMessage(
+          message: () => buildErrorMessage(
             error: JuggerErrorId.invalid_handler_method,
             message: 'Disposal handler must return type Future<void> or void.',
           ),
+          element: element,
         );
         _methods.add(DisposalHandlerMethod.fromMethodElement(element));
         return null;
@@ -116,11 +121,12 @@ class _ModuleMethodsVisitor extends RecursiveElementVisitor<dynamic>
 
       check(
         provideAnnotation != null,
-        () => buildErrorMessage(
+        message: () => buildErrorMessage(
           error: JuggerErrorId.missing_provides_annotation,
           message:
               'Found static method ${moduleElement.name}.${element.name}, but is not annotated with @${j.provides.runtimeType}.',
         ),
+        element: element,
       );
       _methods.add(StaticProvideMethod.fromMethodElement(element));
       return null;
@@ -129,21 +135,23 @@ class _ModuleMethodsVisitor extends RecursiveElementVisitor<dynamic>
     if (element.isAbstract) {
       check(
         disposalHandlerAnnotation == null,
-        () => buildErrorMessage(
+        message: () => buildErrorMessage(
           error: JuggerErrorId.invalid_handler_method,
           message:
               'Method ${element.enclosingElement.name}.${element.name} marked with @${j.disposalHandler.runtimeType} must be static.',
         ),
+        element: element,
       );
 
       element.returnType.checkUnsupportedType();
       check(
         bindAnnotation != null,
-        () => buildErrorMessage(
+        message: () => buildErrorMessage(
           error: JuggerErrorId.missing_bind_annotation,
           message:
               'Found abstract method ${moduleElement.name}.${element.name}, but is not annotated with @${j.binds.runtimeType}.',
         ),
+        element: element,
       );
       _methods.add(AbstractProvideMethod.fromMethodElement(element));
       return null;
@@ -172,48 +180,54 @@ class _ComponentsVisitor extends RecursiveElementVisitor<dynamic> {
         final InterfaceElement interfaceElement = type.element;
         check(
           interfaceElement is ClassElement && interfaceElement.isAbstract,
-          () => buildErrorMessage(
+          message: () => buildErrorMessage(
             error: JuggerErrorId.invalid_component,
             message:
                 'Component ${element.name} should only have abstract classes as ancestor.',
           ),
+          element: element,
         );
       }
 
       check(
         element.isPublic,
-        () => buildErrorMessage(
+        message: () => buildErrorMessage(
           error: JuggerErrorId.public_component,
           message: 'Component ${element.name} must be public.',
         ),
+        element: element,
       );
       check(
         !element.isSealed,
-        () => buildErrorMessage(
+        message: () => buildErrorMessage(
           error: JuggerErrorId.base_component,
           message: 'Component ${element.name} cannot be sealed.',
         ),
+        element: element,
       );
       check(
         !element.isBase,
-        () => buildErrorMessage(
+        message: () => buildErrorMessage(
           error: JuggerErrorId.base_component,
           message: 'Component ${element.name} cannot be base.',
         ),
+        element: element,
       );
       check(
         !element.isFinal,
-        () => buildErrorMessage(
+        message: () => buildErrorMessage(
           error: JuggerErrorId.final_component,
           message: 'Component ${element.name} cannot be final.',
         ),
+        element: element,
       );
       check(
         element.isAbstract,
-        () => buildErrorMessage(
+        message: () => buildErrorMessage(
           error: JuggerErrorId.abstract_component,
           message: 'Component ${element.name} must be abstract.',
         ),
+        element: element,
       );
 
       components.add(
@@ -250,24 +264,27 @@ class _InjectedMethodsVisitor extends RecursiveElementVisitor<dynamic> {
       )) {
         check(
           element.isPublic,
-          () => buildErrorMessage(
+          message: () => buildErrorMessage(
             error: JuggerErrorId.invalid_injected_method,
             message: 'Injected method ${element.name} must be public.',
           ),
+          element: element,
         );
         check(
           !element.isStatic,
-          () => buildErrorMessage(
+          message: () => buildErrorMessage(
             error: JuggerErrorId.invalid_injected_method,
             message: 'Injected method ${element.name} can not be static.',
           ),
+          element: element,
         );
         check(
           !element.isAbstract,
-          () => buildErrorMessage(
+          message: () => buildErrorMessage(
             error: JuggerErrorId.invalid_injected_method,
             message: 'Injected method ${element.name} can not be abstract.',
           ),
+          element: element,
         );
         methods.add(element);
       }
@@ -304,31 +321,35 @@ class _ComponentBuildersVisitor extends RecursiveElementVisitor<dynamic> {
     if (annotation != null) {
       check(
         !element.isSealed,
-        () => buildErrorMessage(
+        message: () => buildErrorMessage(
           error: JuggerErrorId.sealed_component_builder,
           message: 'Component builder ${element.name} cannot be sealed.',
         ),
+        element: element,
       );
       check(
         !element.isBase,
-        () => buildErrorMessage(
+        message: () => buildErrorMessage(
           error: JuggerErrorId.base_component_builder,
           message: 'Component builder ${element.name} cannot be base.',
         ),
+        element: element,
       );
       check(
         !element.isFinal,
-        () => buildErrorMessage(
+        message: () => buildErrorMessage(
           error: JuggerErrorId.final_component_builder,
           message: 'Component builder ${element.name} cannot be final.',
         ),
+        element: element,
       );
       check(
         element.isPublic,
-        () => buildErrorMessage(
+        message: () => buildErrorMessage(
           error: JuggerErrorId.public_component_builder,
           message: 'Component builder ${element.name} must be public.',
         ),
+        element: element,
       );
       final List<MethodElement> methods = element.getComponentBuilderMethods();
 
@@ -336,36 +357,41 @@ class _ComponentBuildersVisitor extends RecursiveElementVisitor<dynamic> {
         final MethodElement methodElement = methods[i];
         check(
           methodElement.isPublic,
-          () => buildErrorMessage(
+          message: () => buildErrorMessage(
             error: JuggerErrorId.component_builder_private_method,
             message: 'Method ${methodElement.name} must be public.',
           ),
+          element: methodElement,
         );
 
         if (methodElement.name == 'build') {
           check(
             methodElement.parameters.isEmpty,
-            () => buildErrorMessage(
+            message: () => buildErrorMessage(
               error: JuggerErrorId.wrong_arguments_of_build_method,
               message: 'Build method should not contain arguments.',
             ),
+            element: methodElement,
           );
         } else {
           check(
             methodElement.returnType == element.thisType,
-            () => buildErrorMessage(
+            message: () => buildErrorMessage(
               error: JuggerErrorId.component_builder_invalid_method_type,
               message: 'Invalid type of method ${methodElement.name}. '
                   'Expected ${element.thisType}.',
             ),
+            element: methodElement,
           );
+          // TODO: Add tests
           check(
             methodElement.parameters.length == 1,
-            () => buildErrorMessage(
+            message: () => buildErrorMessage(
               error: JuggerErrorId.component_builder_invalid_method_parameters,
               message:
                   'Method ${methodElement.name} should have only one parameter.',
             ),
+            element: methodElement,
           );
         }
       }
@@ -377,11 +403,12 @@ class _ComponentBuildersVisitor extends RecursiveElementVisitor<dynamic> {
       });
       check(
         buildMethodNullable != null,
-        () => buildErrorMessage(
+        message: () => buildErrorMessage(
           error: JuggerErrorId.missing_build_method,
           message:
               'Missing required build method of ${createClassNameWithPath(element)}',
         ),
+        element: element,
       );
       buildMethod = buildMethodNullable!;
 
@@ -398,10 +425,11 @@ class _ComponentBuildersVisitor extends RecursiveElementVisitor<dynamic> {
 
         check(
           dependencyProvided,
-          () => buildErrorMessage(
+          message: () => buildErrorMessage(
             error: JuggerErrorId.missing_component_dependency,
             message: 'Dependency (${dep.element.name}) not provided.',
           ),
+          element: element,
         );
       }
 
@@ -439,11 +467,12 @@ class _ComponentBuilderMethodsVisitor extends RecursiveElementVisitor<dynamic>
           element.returnType.element!.getAnnotationOrNull();
       check(
         componentAnnotation != null,
-        () => buildErrorMessage(
+        message: () => buildErrorMessage(
           error: JuggerErrorId.wrong_type_of_build_method,
           message:
               'build method of ${element.enclosingElement.name} return wrong type.',
         ),
+        element: element,
       );
     }
     _methods.add(element);
@@ -509,28 +538,32 @@ class _ComponentMembersVisitor extends GeneralizingElementVisitor<dynamic>
 
   @override
   dynamic visitMethodElement(MethodElement method) {
+    // TODO: Add tests
     check(
       !method.isOperator,
-      () => buildErrorMessage(
+      message: () => buildErrorMessage(
         error: JuggerErrorId.invalid_member,
         message: 'Unsupported member ${method.name} in $subjectName.',
       ),
+      element: method,
     );
 
     check(
       method.isAbstract,
-      () => buildErrorMessage(
+      message: () => buildErrorMessage(
         error: JuggerErrorId.invalid_method_of_component,
         message: 'Method ${method.name} of component must be abstract.',
       ),
+      element: method,
     );
 
     check(
       method.isPublic,
-      () => buildErrorMessage(
+      message: () => buildErrorMessage(
         error: JuggerErrorId.invalid_method_of_component,
         message: 'Method ${method.name} of component must be public.',
       ),
+      element: method,
     );
 
     final List<Annotation> annotations = getAnnotations(method);
@@ -541,14 +574,18 @@ class _ComponentMembersVisitor extends GeneralizingElementVisitor<dynamic>
       final SubcomponentAnnotation? subcomponentAnnotation = method
           .returnType.element
           ?.getAnnotationOrNull<SubcomponentAnnotation>();
-      check(subcomponentAnnotation != null, () {
-        return buildErrorMessage(
-          error: JuggerErrorId.wrong_subcomponent_factory,
-          message:
-              "Factory method ${method.enclosingElement.name}.${method.name} "
-              "must return subcomponent type.",
-        );
-      });
+      check(
+        subcomponentAnnotation != null,
+        message: () {
+          return buildErrorMessage(
+            error: JuggerErrorId.wrong_subcomponent_factory,
+            message:
+                "Factory method ${method.enclosingElement.name}.${method.name} "
+                "must return subcomponent type.",
+          );
+        },
+        element: method,
+      );
       _members.putIfAbsent(
         method.name,
         () => SubcomponentFactoryMethod(method),
@@ -559,20 +596,22 @@ class _ComponentMembersVisitor extends GeneralizingElementVisitor<dynamic>
     if (method.name == 'dispose') {
       check(
         method.returnType.getName() == 'Future<void>',
-        () => buildErrorMessage(
+        message: () => buildErrorMessage(
           error: JuggerErrorId.invalid_handler_method,
           message:
               'Dispose method ${method.name} of component must have type Future<void>.',
         ),
+        element: method,
       );
 
       check(
         method.parameters.isEmpty,
-        () => buildErrorMessage(
+        message: () => buildErrorMessage(
           error: JuggerErrorId.invalid_handler_method,
           message:
               'Disposal method ${method.name} of component must have zero parameters.',
         ),
+        element: method,
       );
 
       _members.putIfAbsent(
@@ -586,12 +625,13 @@ class _ComponentMembersVisitor extends GeneralizingElementVisitor<dynamic>
     if (method.returnType is VoidType) {
       check(
         method.parameters.length == 1,
-        () {
+        message: () {
           return buildErrorMessage(
             error: JuggerErrorId.invalid_injectable_method,
             message: 'Injected method ${method.name} must have one parameter.',
           );
         },
+        element: method,
       );
       _members.putIfAbsent(
         method.name,
@@ -603,13 +643,14 @@ class _ComponentMembersVisitor extends GeneralizingElementVisitor<dynamic>
 
     check(
       method.parameters.isEmpty,
-      () {
+      message: () {
         return buildErrorMessage(
           error: JuggerErrorId.invalid_method_of_component,
           message:
               'Method ${method.name} of component must have zero parameters.',
         );
       },
+      element: method,
     );
 
     _members.putIfAbsent(
@@ -624,18 +665,20 @@ class _ComponentMembersVisitor extends GeneralizingElementVisitor<dynamic>
   dynamic visitPropertyAccessorElement(PropertyAccessorElement property) {
     check(
       !property.isSetter,
-      () => buildErrorMessage(
+      message: () => buildErrorMessage(
         error: JuggerErrorId.invalid_member,
         message: 'Unsupported member ${property.name} in $subjectName.',
       ),
+      element: property,
     );
-
+    // TODO: Add tests
     check(
       property.isAbstract,
-      () => buildErrorMessage(
+      message: () => buildErrorMessage(
         error: JuggerErrorId.invalid_method_of_component,
         message: 'Accessor ${property.name} of component must be abstract.',
       ),
+      element: property,
     );
     _members.putIfAbsent(
       property.name,

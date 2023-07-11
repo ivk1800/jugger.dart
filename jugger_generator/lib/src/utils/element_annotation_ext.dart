@@ -24,11 +24,12 @@ extension ElementAnnotationExt on Element {
         getAnnotations(this).whereType<QualifierAnnotation>().toList();
     check(
       qualifierAnnotation.length <= 1,
-      () => buildErrorMessage(
+      message: () => buildErrorMessage(
         error: JuggerErrorId.multiple_qualifiers,
         message:
             'Multiple qualifiers of ${enclosingElement?.name}.$name not allowed.',
       ),
+      element: this,
     );
 
     return qualifierAnnotation.firstInstanceOrNull<QualifierAnnotation>();
@@ -77,9 +78,9 @@ extension ElementAnnotationExt on Element {
   }
 
   MultibindingsKeyAnnotation<Object?> getSingleMultibindsKeyAnnotation() {
-    check(
+    checkUnexpected(
       this is MethodElement,
-      () => buildUnexpectedErrorMessage(
+      message: () => buildUnexpectedErrorMessage(
         message: 'Expected MethodElement, but was $this',
       ),
     );
@@ -89,21 +90,23 @@ extension ElementAnnotationExt on Element {
 
     check(
       keys.isNotEmpty,
-      () => buildErrorMessage(
+      message: () => buildErrorMessage(
         error: JuggerErrorId.multibindings_missing_key,
         message: 'Methods of type map must declare a map key:\n'
             '${(enclosingElement as ClassElement).name}.$name',
       ),
+      element: this,
     );
 
     check(
       keys.length == 1,
-      () => buildErrorMessage(
+      message: () => buildErrorMessage(
         error: JuggerErrorId.multibindings_multiple_keys,
         message: 'Methods may not have more than one map key:\n'
             '${(enclosingElement as ClassElement).name}.$name\n'
             'keys: ${keys.map((MultibindingsKeyAnnotation<Object?> annotation) => annotation.key).join(', ')}',
       ),
+      element: this,
     );
 
     return keys.first;
@@ -135,11 +138,12 @@ extension MethodElementExt on MethodElement {
 
     check(
       multibindingsAnnotations.length == 1,
-      () => buildErrorMessage(
+      message: () => buildErrorMessage(
         error: JuggerErrorId.multiple_multibinding_annotation,
         message: 'Methods cannot have more than one multibinding annotation:\n'
             '${enclosingElement.name}.$name',
       ),
+      element: this,
     );
 
     return multibindingsAnnotations.first;

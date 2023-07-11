@@ -62,7 +62,7 @@ extension DartTypeExt on DartType {
     final InterfaceType interfaceType = this as InterfaceType;
     checkUnexpected(
       interfaceType.typeArguments.length == 1,
-      () => buildUnexpectedErrorMessage(
+      message: () => buildUnexpectedErrorMessage(
         message: 'interfaceType.typeArguments must be 1',
       ),
     );
@@ -149,10 +149,11 @@ extension DartTypeExt on DartType {
 
     check(
       !constructorElement.isPrivate,
-      () => buildErrorMessage(
+      message: () => buildErrorMessage(
         error: JuggerErrorId.invalid_injected_constructor,
         message: 'Constructor $constructorLogName can not be private.',
       ),
+      element: constructorElement,
     );
 
     return constructorElement;
@@ -183,7 +184,7 @@ extension DartTypeExt on DartType {
           this is RecordType ||
           this is VoidType ||
           this is FunctionType,
-      () => buildErrorMessage(
+      message: () => buildErrorMessage(
         error: JuggerErrorId.type_not_supported,
         message: 'Type $this not supported.',
       ),
@@ -191,7 +192,7 @@ extension DartTypeExt on DartType {
 
     check(
       nullabilitySuffix == NullabilitySuffix.none,
-      () => buildErrorMessage(
+      message: () => buildErrorMessage(
         error: JuggerErrorId.type_not_supported,
         message: 'Type $this not supported.',
       ),
@@ -205,11 +206,12 @@ extension DartTypeExt on DartType {
     if (componentBuilder != null) {
       check(
         expectedComponentType == componentBuilder.componentClass.thisType,
-        () => buildErrorMessage(
+        message: () => buildErrorMessage(
           error: JuggerErrorId.invalid_subcomponent_factory,
           message: 'The ${componentBuilder.element.name} is not suitable for '
               'the ${expectedComponentType.getName()} it is bound to.',
         ),
+        element: componentBuilder.element,
       );
     }
     return componentBuilder;
@@ -219,7 +221,7 @@ extension DartTypeExt on DartType {
     final Element? e = element;
     checkUnexpected(
       e != null,
-      () => 'Unable create Reference, element is null.',
+      message: () => 'Unable create Reference, element is null.',
     );
     return e!.asReference();
   }

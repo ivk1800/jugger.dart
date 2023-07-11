@@ -28,44 +28,49 @@ class ModuleExtractor {
     }
     check(
       moduleClass.hasAnnotatedAsModule(),
-      () => buildErrorMessage(
+      message: () => buildErrorMessage(
         error: JuggerErrorId.module_annotation_required,
         message:
             'The ${moduleClass.name} is missing an annotation ${j.module.runtimeType}.',
       ),
+      element: moduleClass,
     );
     check(
       moduleClass.isAbstract,
-      () => buildErrorMessage(
+      message: () => buildErrorMessage(
         error: JuggerErrorId.abstract_module,
         message: 'Module ${moduleClass.name} must be abstract',
       ),
+      element: moduleClass,
     );
     check(
       moduleClass.isPublic,
-      () => buildErrorMessage(
+      message: () => buildErrorMessage(
         error: JuggerErrorId.public_module,
         message: 'Module ${moduleClass.name} must be public.',
       ),
+      element: moduleClass,
     );
 
     final List<ElementAnnotation> resolvedMetadata = moduleClass.metadata;
     check(
       resolvedMetadata.length == 1,
-      () => buildErrorMessage(
+      message: () => buildErrorMessage(
         error: JuggerErrorId.multiple_module_annotations,
         message:
             'Multiple annotations on module ${moduleClass.name} not supported.',
       ),
+      element: moduleClass,
     );
 
     final ElementAnnotation elementAnnotation = resolvedMetadata.first;
     check(
       !_modulesQueue.contains(elementAnnotation),
-      () => buildErrorMessage(
+      message: () => buildErrorMessage(
         error: JuggerErrorId.circular_modules_dependency,
         message: 'Found circular included modules!',
       ),
+      element: moduleClass,
     );
 
     _modulesQueue.addFirst(elementAnnotation);

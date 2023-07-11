@@ -102,7 +102,7 @@ List<Annotation> _getAnnotations(Element element) {
         } else if (enumElement != null) {
           check(
             enumElement is EnumElement,
-            () => buildErrorMessage(
+            message: () => buildErrorMessage(
               error: JuggerErrorId.multibindings_unsupported_key_type,
               message: 'Type $field unsupported.',
             ),
@@ -151,15 +151,16 @@ List<Annotation> _getAnnotations(Element element) {
           );
           check(
             !dependencies.contains(element),
-            () => buildErrorMessage(
+            message: () => buildErrorMessage(
               error: JuggerErrorId.component_depend_himself,
               message: 'A component ${element.name} cannot depend on himself.',
             ),
+            element: element,
           );
           return dependencies.map((ClassElement c) {
             check(
               c.getComponentAnnotationOrNull() != null,
-              () => buildErrorMessage(
+              message: () => buildErrorMessage(
                 error: JuggerErrorId.invalid_component_dependency,
                 message:
                     'Dependency ${c.name} is not allowed, only other components are allowed.',
@@ -207,7 +208,7 @@ List<Annotation> _getAnnotations(Element element) {
         for (final List<ModuleAnnotation> group in groupedAnnotations.values) {
           check(
             group.length == 1,
-            () => buildErrorMessage(
+            message: () => buildErrorMessage(
               error: JuggerErrorId.repeated_modules,
               message:
                   'Repeated modules [${group.first.moduleElement.name}] not allowed.',
@@ -228,7 +229,7 @@ List<Annotation> _getAnnotations(Element element) {
 
           check(
             componentBuilderAnnotation != null,
-            () => buildErrorMessage(
+            message: () => buildErrorMessage(
               error: JuggerErrorId.wrong_component_builder,
               message: '${builderType.getName()} is not component builder.',
             ),
@@ -313,7 +314,7 @@ Tag _getTag(
         annotation.computeConstantValue()!.getField('name')!.toStringValue();
     checkUnexpected(
       stringName != null,
-      () => buildUnexpectedErrorMessage(
+      message: () => buildUnexpectedErrorMessage(
         message: 'Unable get name of Named',
       ),
     );
@@ -333,7 +334,7 @@ void checkUniqueClasses(Iterable<ClassElement> classes) {
   for (final List<ClassElement> group in groupedAnnotations.values) {
     check(
       group.length == 1,
-      () => buildErrorMessage(
+      message: () => buildErrorMessage(
         error: JuggerErrorId.repeated_modules,
         message: 'Repeated modules [${group.first.name}] not allowed.',
       ),
@@ -355,7 +356,7 @@ List<ClassElement> getClassListFromField(
       .toList();
   checkUnexpected(
     result != null,
-    () => buildUnexpectedErrorMessage(
+    message: () => buildUnexpectedErrorMessage(
       message: 'unable get $name from annotation',
     ),
   );
@@ -384,9 +385,15 @@ String createClassNameWithPath(ClassElement element) {
   return '${element.name} ${element.library.identifier}';
 }
 
+void error({
+  required String message,
+  Element? element,
+}) =>
+    throw JuggerError(message, element);
+
 void check(
-  bool condition,
-  String Function() message, {
+  bool condition, {
+  required String Function() message,
   Element? element,
 }) {
   if (!condition) {
@@ -395,7 +402,10 @@ void check(
 }
 
 // ignore: avoid_positional_boolean_parameters
-void checkUnexpected(bool condition, String Function() message) {
+void checkUnexpected(
+  bool condition, {
+  required String Function() message,
+}) {
   if (!condition) {
     throw UnexpectedJuggerError(message.call());
   }

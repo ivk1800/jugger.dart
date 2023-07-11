@@ -14,7 +14,7 @@ void checkUnusedProviders(String content) {
 
   check(
     visitor.variables.isEmpty,
-    () => buildErrorMessage(
+    message: () => buildErrorMessage(
       error: JuggerErrorId.unused_generated_providers,
       message:
           'Found unused generated providers: ${visitor.variables.join(', ')}',

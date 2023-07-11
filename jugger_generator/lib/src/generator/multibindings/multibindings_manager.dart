@@ -39,26 +39,31 @@ class MultibindingsManager {
   void handleSource(ProviderSource source) {
     checkUnexpected(
       source is MultibindingsElementProvider,
-      () =>
+      message: () =>
           'Expected $MultibindingsElementProvider, but was ${source.runtimeType}',
     );
 
-    check(_multibindingsSources.add(source), () {
-      final List<ProviderSource> sources = <ProviderSource>[
-        _multibindingsSources
-            .firstWhere((ProviderSource s) => _providesSourceEquals(s, source)),
-        source
-      ];
+    check(
+      _multibindingsSources.add(source),
+      message: () {
+        final List<ProviderSource> sources = <ProviderSource>[
+          _multibindingsSources.firstWhere(
+            (ProviderSource s) => _providesSourceEquals(s, source),
+          ),
+          source
+        ];
 
-      final String places = sources
-          .map((ProviderSource source) => source.sourceString)
-          .join(', ');
-      final String message = '${source.type} provided multiple times: $places';
-      return buildErrorMessage(
-        error: JuggerErrorId.multiple_providers_for_type,
-        message: message,
-      );
-    });
+        final String places = sources
+            .map((ProviderSource source) => source.sourceString)
+            .join(', ');
+        final String message =
+            '${source.type} provided multiple times: $places';
+        return buildErrorMessage(
+          error: JuggerErrorId.multiple_providers_for_type,
+          message: message,
+        );
+      },
+    );
   }
 
   List<MultibindingsGroup> getBindingsInfo() {
@@ -102,7 +107,10 @@ class MultibindingsManager {
     return groups.keys.map((_MultibindsGroup key) {
       final List<ProviderSource> providers =
           groups[key]!.toList(growable: false);
-      check(providers.isNotEmpty, () => 'providers is empty');
+      check(
+        providers.isNotEmpty,
+        message: () => 'providers is empty',
+      );
 
       if (key is _SetMultibindsGroup) {
         return _createGroupForSet(key, providers);
@@ -132,7 +140,7 @@ class MultibindingsManager {
     });
     check(
       graphObject != null,
-      () => buildErrorMessage(
+      message: () => buildErrorMessage(
         error: JuggerErrorId.unused_multibinding,
         message:
             'Multibindings $multibindingTypeString is declared, but not used.',
@@ -164,7 +172,7 @@ class MultibindingsManager {
     });
     check(
       graphObject != null,
-      () => buildErrorMessage(
+      message: () => buildErrorMessage(
         error: JuggerErrorId.unused_multibinding,
         message:
             'Multibindings $multibindingTypeString is declared, but not used.',
@@ -188,7 +196,7 @@ class MultibindingsManager {
 
     check(
       groupedKeys.values.every((Set<ProviderSource> keys) => keys.length == 1),
-      () {
+      message: () {
         final Iterable<String> duplicates = groupedKeys.keys
             .where((Object? key) {
               return groupedKeys[key]!.length > 1;

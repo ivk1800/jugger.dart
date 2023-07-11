@@ -77,11 +77,12 @@ class ComponentContext {
     if (component.dependencies.isNotEmpty) {
       check(
         componentBuilder != null,
-        () => buildErrorMessage(
+        message: () => buildErrorMessage(
           error: JuggerErrorId.missing_component_builder,
           message:
               'Component ${component.element.name} depends on ${component.dependencies.map((j.DependencyAnnotation de) => de.element.name).join(',')}, but component builder is missing.',
         ),
+        element: component.element,
       );
     }
 
@@ -269,7 +270,7 @@ class ComponentContext {
     for (final ProviderSource parentSource in sources) {
       checkUnexpected(
         parentSource is! MultibindingsSource,
-        () =>
+        message: () =>
             "$MultibindingsSource can not be return from $ParentComponentProvider",
       );
       if (parentSource.isMultibindings) {
@@ -305,7 +306,7 @@ class ComponentContext {
           parentInfo.where((ParentComponentInfo p) => p.scope != null);
       check(
         scopedParents.every((ParentComponentInfo p) => p.scope != selfScope),
-        () {
+        message: () {
           final String info = '${component.element.name}: $selfScope\n'
               '${scopedParents.map((ParentComponentInfo p) {
             return '${p.componentName}: ${p.scope ?? 'unscoped'}';
@@ -317,6 +318,7 @@ class ComponentContext {
                 'scope of the parent or should there be no scope.\n$info',
           );
         },
+        element: component.element,
       );
     }
   }
@@ -423,9 +425,9 @@ class ComponentContext {
     key.type.checkUnsupportedType();
 
     if (object.type.isValueProvider) {
-      check(
+      checkUnexpected(
         object.dependencies.isEmpty,
-        () => buildUnexpectedErrorMessage(
+        message: () => buildUnexpectedErrorMessage(
           message: 'provider with dependencies!',
         ),
       );
@@ -586,22 +588,27 @@ class ComponentContext {
     ProviderSource source,
   ) {
     _validateSource(source);
-    check(providerSources.add(source), () {
-      final List<ProviderSource> sources = <ProviderSource>[
-        providerSources
-            .firstWhere((ProviderSource s) => _providesSourceEquals(s, source)),
-        source
-      ];
+    check(
+      providerSources.add(source),
+      message: () {
+        final List<ProviderSource> sources = <ProviderSource>[
+          providerSources.firstWhere(
+            (ProviderSource s) => _providesSourceEquals(s, source),
+          ),
+          source
+        ];
 
-      final String places = sources
-          .map((ProviderSource source) => source.sourceString)
-          .join(', ');
-      final String message = '${source.type} provided multiple times: $places';
-      return buildErrorMessage(
-        error: JuggerErrorId.multiple_providers_for_type,
-        message: message,
-      );
-    });
+        final String places = sources
+            .map((ProviderSource source) => source.sourceString)
+            .join(', ');
+        final String message =
+            '${source.type} provided multiple times: $places';
+        return buildErrorMessage(
+          error: JuggerErrorId.multiple_providers_for_type,
+          message: message,
+        );
+      },
+    );
   }
 
   void _validateSource(ProviderSource source) {
@@ -613,7 +620,7 @@ class ComponentContext {
     check(
       componentScope == source.scope ||
           (source is ParentComponentSource && componentScope != source.scope),
-      () {
+      message: () {
         final StringBuffer messageBuilder = StringBuffer()
           ..write(component.element.name)
           ..write(' ');

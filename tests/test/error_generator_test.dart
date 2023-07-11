@@ -32,7 +32,12 @@ abstract class Module1 {
               'error: multiple_multibinding_annotation:\n'
               'Methods cannot have more than one multibinding annotation:\n'
               'Module1.provideString1\n'
-              'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#multiple_multibinding_annotation',
+              'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#multiple_multibinding_annotation\n'
+              'package:tests/test.dart:15:17\n'
+              '   ╷\n'
+              '15 │   static String provideString1() => \'1\';\n'
+              '   │                 ^^^^^^^^^^^^^^\n'
+              '   ╵',
             );
           },
         );
@@ -204,7 +209,12 @@ abstract class Module1 {
               'error: multibindings_missing_key:\n'
               'Methods of type map must declare a map key:\n'
               'Module1.provideString1\n'
-              'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#multibindings_missing_key',
+              'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#multibindings_missing_key\n'
+              'package:tests/test.dart:14:17\n'
+              '   ╷\n'
+              '14 │   static String provideString1() => \'1\';\n'
+              '   │                 ^^^^^^^^^^^^^^\n'
+              '   ╵',
             );
           },
         );
@@ -238,7 +248,12 @@ abstract class Module1 {
               'Methods may not have more than one map key:\n'
               'Module1.provideString2\n'
               'keys: 1, 0\n'
-              'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#multibindings_multiple_keys',
+              'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#multibindings_multiple_keys\n'
+              'package:tests/test.dart:16:17\n'
+              '   ╷\n'
+              '16 │   static String provideString2() => \'2\';\n'
+              '   │                 ^^^^^^^^^^^^^^\n'
+              '   ╵',
             );
           },
         );
@@ -354,7 +369,12 @@ class MyClass {
             error.toString(),
             'error: missing_disposables:\n'
             'The component MyComponent does not contain disposable objects, but the dispose method MyComponent.dispose is declared.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#missing_disposables',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#missing_disposables\n'
+            'package:tests/test.dart:4:16\n'
+            '  ╷\n'
+            '4 │ abstract class MyComponent {\n'
+            '  │                ^^^^^^^^^^^\n'
+            '  ╵',
           );
         },
       );
@@ -472,7 +492,12 @@ class MyClass {
             error.toString(),
             'error: unused_disposal_handler:\n'
             'Found unused disposal handler AppComponentModule.disposeMyClass.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#unused_generated_providers',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#unused_generated_providers\n'
+            'package:tests/test.dart:16:23\n'
+            '   ╷\n'
+            '16 │   static Future<void> disposeMyClass(MyClass myClass) async {\n'
+            '   │                       ^^^^^^^^^^^^^^\n'
+            '   ╵',
           );
         },
       );
@@ -516,7 +541,12 @@ class MyClass {
             error.toString(),
             'error: invalid_handler_method:\n'
             'Method AppComponentModule.disposeMyClass annotated with DisposalHandler must have one parameter.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_handler_method',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_handler_method\n'
+            'package:tests/test.dart:16:23\n'
+            '   ╷\n'
+            '16 │   static Future<void> disposeMyClass(MyClass myClass, MyClass myClass2) async {\n'
+            '   │                       ^^^^^^^^^^^^^^\n'
+            '   ╵',
           );
         },
       );
@@ -547,7 +577,12 @@ class MyClass {
             error.toString(),
             'error: missing_dispose_method:\n'
             'Missing dispose method of component AppComponent.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#missing_dispose_method',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#missing_dispose_method\n'
+            'package:tests/test.dart:5:16\n'
+            '  ╷\n'
+            '5 │ abstract class AppComponent {\n'
+            '  │                ^^^^^^^^^^^^\n'
+            '  ╵',
           );
         },
       );
@@ -589,7 +624,12 @@ class MyClass {
             error.toString(),
             'error: invalid_handler_method:\n'
             'Disposal handler must return type Future<void> or void.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_handler_method',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_handler_method\n'
+            'package:tests/test.dart:15:10\n'
+            '   ╷\n'
+            '15 │   static disposeMyClass(MyClass myClass) {\n'
+            '   │          ^^^^^^^^^^^^^^\n'
+            '   ╵',
           );
         },
       );
@@ -635,7 +675,12 @@ class MyClass {
             error.toString(),
             'error: invalid_handler_method:\n'
             'Method Module3.disposeMyClass marked with @DisposalHandler must be static.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_handler_method',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_handler_method\n'
+            'package:tests/test.dart:26:16\n'
+            '   ╷\n'
+            '26 │   Future<void> disposeMyClass(MyClass myClass);\n'
+            '   │                ^^^^^^^^^^^^^^\n'
+            '   ╵',
           );
         },
       );
@@ -685,7 +730,12 @@ class MyClass {
             error.toString(),
             'error: multiple_disposal_handlers_for_type:\n'
             'Disposal handler for MyClass provided multiple times: Module1.disposeMyClass, Module2.disposeMyClass\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#multiple_disposal_handlers_for_type',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#multiple_disposal_handlers_for_type\n'
+            'package:tests/test.dart:28:23\n'
+            '   ╷\n'
+            '28 │   static Future<void> disposeMyClass(MyClass myClass) async {\n'
+            '   │                       ^^^^^^^^^^^^^^\n'
+            '   ╵',
           );
         },
       );
@@ -732,7 +782,12 @@ class MyClass {
             error.toString(),
             'error: multiple_disposal_handlers_for_type:\n'
             'Disposal handler for MyClass provided multiple times: AppModule.disposeMyClass, AppModule.disposeMyClass2\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#multiple_disposal_handlers_for_type',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#multiple_disposal_handlers_for_type\n'
+            'package:tests/test.dart:20:23\n'
+            '   ╷\n'
+            '20 │   static Future<void> disposeMyClass2(MyClass myClass) async {\n'
+            '   │                       ^^^^^^^^^^^^^^^\n'
+            '   ╵',
           );
         },
       );
@@ -852,7 +907,12 @@ class MyClass {}
             error.toString(),
             'error: unused_disposal_handler:\n'
             'Found unused disposal handler AppModule.disposeMyClass.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#unused_generated_providers',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#unused_generated_providers\n'
+            'package:tests/test.dart:16:23\n'
+            '   ╷\n'
+            '16 │   static Future<void> disposeMyClass(MyClass myClass) async {}\n'
+            '   │                       ^^^^^^^^^^^^^^\n'
+            '   ╵',
           );
         },
       );
@@ -895,7 +955,12 @@ class MyClass {
             error.toString(),
             'error: redundant_disposal_handler:\n'
             'MyClass marked as auto disposable, but declared handler AppModule.disposeMyClass.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#redundant_disposal_handler',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#redundant_disposal_handler\n'
+            'package:tests/test.dart:16:23\n'
+            '   ╷\n'
+            '16 │   static Future<void> disposeMyClass(MyClass myClass) async {\n'
+            '   │                       ^^^^^^^^^^^^^^\n'
+            '   ╵',
           );
         },
       );
@@ -993,7 +1058,12 @@ abstract class AppComponent {
             error.toString(),
             'error: invalid_handler_method:\n'
             'Dispose method dispose of component must have type Future<void>.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_handler_method',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_handler_method\n'
+            'package:tests/test.dart:5:8\n'
+            '  ╷\n'
+            '5 │   void dispose();\n'
+            '  │        ^^^^^^^\n'
+            '  ╵',
           );
         },
       );
@@ -1014,7 +1084,12 @@ abstract class AppComponent {
             error.toString(),
             'error: invalid_handler_method:\n'
             'Disposal method dispose of component must have zero parameters.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_handler_method',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_handler_method\n'
+            'package:tests/test.dart:5:16\n'
+            '  ╷\n'
+            '5 │   Future<void> dispose(int i);\n'
+            '  │                ^^^^^^^\n'
+            '  ╵',
           );
         },
       );
@@ -1306,7 +1381,12 @@ abstract class AppModule { }
             error.toString(),
             'error: multiple_module_annotations:\n'
             'Multiple annotations on module AppModule not supported.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#multiple_module_annotations',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#multiple_module_annotations\n'
+            'package:tests/test.dart:8:16\n'
+            '  ╷\n'
+            '8 │ abstract class AppModule { }\n'
+            '  │                ^^^^^^^^^\n'
+            '  ╵',
           );
         },
       );
@@ -1341,7 +1421,12 @@ abstract class AppModule {
             error.toString(),
             'error: invalid_parameters_types:\n'
             'provideHello can have only positional parameters or only named parameters.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_parameters_types',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_parameters_types\n'
+            'package:tests/test.dart:11:17\n'
+            '   ╷\n'
+            '11 │   static String provideHello(int numberInt, {\n'
+            '   │                 ^^^^^^^^^^^^\n'
+            '   ╵',
           );
         },
       );
@@ -1377,7 +1462,12 @@ abstract class Module2 {
             error.toString(),
             'error: circular_modules_dependency:\n'
             'Found circular included modules!\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#modules_circular_dependency',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#modules_circular_dependency\n'
+            'package:tests/test.dart:11:16\n'
+            '   ╷\n'
+            '11 │ abstract class Module1 {\n'
+            '   │                ^^^^^^^\n'
+            '   ╵',
           );
         },
       );
@@ -1411,7 +1501,12 @@ class MyClass {
             error.toString(),
             'error: invalid_injected_constructor:\n'
             'Constructor MyClass._ can not be private.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_injected_constructor',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_injected_constructor\n'
+            'package:tests/test.dart:16:11\n'
+            '   ╷\n'
+            '16 │   MyClass._();\n'
+            '   │           ^\n'
+            '   ╵',
           );
         },
       );
@@ -1786,7 +1881,12 @@ abstract class AppComponent {
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: Subcomponents with the same name are not supported in the parent component.',
+            'error: Subcomponents with the same name are not supported in the parent component.\n'
+            'package:tests/test.dart:6:16\n'
+            '  ╷\n'
+            '6 │ abstract class AppComponent {\n'
+            '  │                ^^^^^^^^^^^^\n'
+            '  ╵',
           );
         },
       );
@@ -1878,7 +1978,12 @@ abstract class MySubcomponent {}
             'The scope of the component must be different from the scope of the parent or should there be no scope.\n'
             'MySubcomponent: Scope1\n'
             'MyComponent: Scope1\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_scope',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_scope\n'
+            'package:tests/test.dart:13:16\n'
+            '   ╷\n'
+            '13 │ abstract class MySubcomponent {}\n'
+            '   │                ^^^^^^^^^^^^^^\n'
+            '   ╵',
           );
         },
       );
@@ -1904,7 +2009,12 @@ abstract class MyComponent {}
             error.toString(),
             'error: wrong_subcomponent_factory:\n'
             'Factory method AppComponent.createMyComponent must return subcomponent type.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#wrong_subcomponent_factory',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#wrong_subcomponent_factory\n'
+            'package:tests/test.dart:6:15\n'
+            '  ╷\n'
+            '6 │   MyComponent createMyComponent();\n'
+            '  │               ^^^^^^^^^^^^^^^^^\n'
+            '  ╵',
           );
         },
       );
@@ -1938,7 +2048,12 @@ abstract class MyComponentBuilder {
             error.toString(),
             'error: invalid_subcomponent_factory:\n'
             'Class String must be annotated with @componentBuilder annotation.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_subcomponent_factory',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_subcomponent_factory\n'
+            'package:tests/test.dart:6:40\n'
+            '  ╷\n'
+            '6 │   MyComponent createMyComponent(String builder);\n'
+            '  │                                        ^^^^^^^\n'
+            '  ╵',
           );
         },
       );
@@ -1971,7 +2086,12 @@ abstract class MyComponentBuilder {
             error.toString(),
             'error: invalid_subcomponent_factory:\n'
             'Subcomponent factory method must have 1 parameter. And it should be a subcomponent builder\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_subcomponent_factory',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_subcomponent_factory\n'
+            'package:tests/test.dart:6:15\n'
+            '  ╷\n'
+            '6 │   MyComponent createMyComponent(String s1, String s2);\n'
+            '  │               ^^^^^^^^^^^^^^^^^\n'
+            '  ╵',
           );
         },
       );
@@ -2014,7 +2134,12 @@ abstract class MyComponentBuilder {
             'Subcomponent builder must return the same type as the method.\n'
             'Method return: MyComponent,\n'
             'Builder return: AppComponent.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#wrong_subcomponent_factory',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#wrong_subcomponent_factory\n'
+            'package:tests/test.dart:8:15\n'
+            '  ╷\n'
+            '8 │   MyComponent createMyComponent(AppComponentBuilder builder);\n'
+            '  │               ^^^^^^^^^^^^^^^^^\n'
+            '  ╵',
           );
         },
       );
@@ -2048,7 +2173,12 @@ abstract class MyComponentBuilder {
             error.toString(),
             'error: wrong_subcomponent_factory:\n'
             'Method AppComponent.createMyComponent is invalid. Nullable parameter not allowed.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#wrong_subcomponent_factory',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#wrong_subcomponent_factory\n'
+            'package:tests/test.dart:6:53\n'
+            '  ╷\n'
+            '6 │   MyComponent createMyComponent(MyComponentBuilder? builder);\n'
+            '  │                                                     ^^^^^^^\n'
+            '  ╵',
           );
         },
       );
@@ -2082,7 +2212,12 @@ abstract class MyComponentBuilder {
             error.toString(),
             'error: wrong_subcomponent_factory:\n'
             'Method AppComponent.createMyComponent is invalid. Named parameter not allowed.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#wrong_subcomponent_factory',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#wrong_subcomponent_factory\n'
+            'package:tests/test.dart:6:62\n'
+            '  ╷\n'
+            '6 │   MyComponent createMyComponent({required MyComponentBuilder builder});\n'
+            '  │                                                              ^^^^^^^\n'
+            '  ╵',
           );
         },
       );
@@ -2116,7 +2251,12 @@ abstract class MyComponentBuilder {
             error.toString(),
             'error: wrong_subcomponent_factory:\n'
             'Method AppComponent.createMyComponent is invalid. Optional parameter not allowed.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#wrong_subcomponent_factory',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#wrong_subcomponent_factory\n'
+            'package:tests/test.dart:6:54\n'
+            '  ╷\n'
+            '6 │   MyComponent createMyComponent([MyComponentBuilder? builder]);\n'
+            '  │                                                      ^^^^^^^\n'
+            '  ╵',
           );
         },
       );
@@ -2374,7 +2514,12 @@ abstract class MyModule {
             error.toString(),
             'error: missing_component_builder:\n'
             'Component MyComponent depends on AppComponent, but component builder is missing.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#missing_component_builder',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#missing_component_builder\n'
+            'package:tests/test.dart:26:16\n'
+            '   ╷\n'
+            '26 │ abstract class MyComponent {\n'
+            '   │                ^^^^^^^^^^^\n'
+            '   ╵',
           );
         },
       );
@@ -2429,7 +2574,12 @@ abstract class MyModule {
             error.toString(),
             'error: missing_build_method:\n'
             'Missing required build method of MyComponentBuilder package:tests/test.dart\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#missing_build_method',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#missing_build_method\n'
+            'package:tests/test.dart:32:16\n'
+            '   ╷\n'
+            '32 │ abstract class MyComponentBuilder {\n'
+            '   │                ^^^^^^^^^^^^^^^^^^\n'
+            '   ╵',
           );
         },
       );
@@ -2487,7 +2637,12 @@ abstract class MyModule {
             error.toString(),
             'error: wrong_type_of_build_method:\n'
             'build method of AppComponentBuilder return wrong type.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#wrong_type_of_build_method',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#wrong_type_of_build_method\n'
+            'package:tests/test.dart:36:23\n'
+            '   ╷\n'
+            '36 │   AppComponentBuilder build();\n'
+            '   │                       ^^^^^\n'
+            '   ╵',
           );
         },
       );
@@ -2542,7 +2697,12 @@ abstract class MyModule {
             error.toString(),
             'error: missing_component_dependency:\n'
             'Dependency (AppComponent) not provided.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#missing_component_dependency',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#missing_component_dependency\n'
+            'package:tests/test.dart:32:16\n'
+            '   ╷\n'
+            '32 │ abstract class MyComponentBuilder {\n'
+            '   │                ^^^^^^^^^^^^^^^^^^\n'
+            '   ╵',
           );
         },
       );
@@ -2961,7 +3121,12 @@ abstract class AppModule {
             error.toString(),
             'error: multiple_qualifiers:\n'
             'Multiple qualifiers of AppComponent.appConfig not allowed.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#multiple_qualifiers',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#multiple_qualifiers\n'
+            'package:tests/test.dart:9:17\n'
+            '  ╷\n'
+            '9 │   AppConfig get appConfig;\n'
+            '  │                 ^^^^^^^^^\n'
+            '  ╵',
           );
         },
       );
@@ -2995,7 +3160,12 @@ abstract class AppModule {
         onError: (Object error) {
           expect(
             error.toString(),
-            'error: Field _helloString must be only public.',
+            'error: Field _helloString must be only public.\n'
+            'package:tests/test.dart:5:15\n'
+            '  ╷\n'
+            '5 │   late String _helloString;\n'
+            '  │               ^^^^^^^^^^^^\n'
+            '  ╵',
           );
         },
         options: const BuilderOptions(
@@ -3027,7 +3197,12 @@ abstract class Module1 {
             error.toString(),
             'error: bind_wrong_type:\n'
             'Method Module1.bindPattern parameter type must be assignable to the return type.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#bind_wrong_type',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#bind_wrong_type\n'
+            'package:tests/test.dart:9:11\n'
+            '  ╷\n'
+            '9 │   Pattern bindPattern(int impl);\n'
+            '  │           ^^^^^^^^^^^\n'
+            '  ╵',
           );
         },
       );
@@ -3054,7 +3229,12 @@ abstract class AppModule {
             error.toString(),
             'error: invalid_bind_method:\n'
             'Method AppModule.bindString annotated with Binds must have one parameter.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_bind_method',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_bind_method\n'
+            'package:tests/test.dart:11:10\n'
+            '   ╷\n'
+            '11 │   String bindString(String s, int i);\n'
+            '   │          ^^^^^^^^^^\n'
+            '   ╵',
           );
         },
       );
@@ -3396,7 +3576,12 @@ abstract class Module1 {
             error.toString(),
             'error: missing_bind_annotation:\n'
             'Found abstract method Module1.bindPattern, but is not annotated with @Binds.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#missing_bind_annotation',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#missing_bind_annotation\n'
+            'package:tests/test.dart:8:11\n'
+            '  ╷\n'
+            '8 │   Pattern bindPattern(String impl);\n'
+            '  │           ^^^^^^^^^^^\n'
+            '  ╵',
           );
         },
       );
@@ -3418,7 +3603,12 @@ abstract class _Module {}
             error.toString(),
             'error: public_module:\n'
             'Module _Module must be public.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#public_module',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#public_module\n'
+            'package:tests/test.dart:7:16\n'
+            '  ╷\n'
+            '7 │ abstract class _Module {}\n'
+            '  │                ^^^^^^^\n'
+            '  ╵',
           );
         },
       );
@@ -3440,7 +3630,12 @@ class Module {}
             error.toString(),
             'error: abstract_module:\n'
             'Module Module must be abstract\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#abstract_module',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#abstract_module\n'
+            'package:tests/test.dart:7:7\n'
+            '  ╷\n'
+            '7 │ class Module {}\n'
+            '  │       ^^^^^^\n'
+            '  ╵',
           );
         },
       );
@@ -3461,7 +3656,12 @@ abstract class Module {}
             error.toString(),
             'error: module_annotation_required:\n'
             'The Module is missing an annotation Module.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#module_annotation_required',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#module_annotation_required\n'
+            'package:tests/test.dart:6:16\n'
+            '  ╷\n'
+            '6 │ abstract class Module {}\n'
+            '  │                ^^^^^^\n'
+            '  ╵',
           );
         },
       );
@@ -3485,7 +3685,12 @@ abstract class Module1 {
             error.toString(),
             'error: missing_provides_annotation:\n'
             'Found static method Module1.provideString, but is not annotated with @Provides.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#missing_provides_annotation',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#missing_provides_annotation\n'
+            'package:tests/test.dart:8:17\n'
+            '  ╷\n'
+            '8 │   static String provideString() => \'\';\n'
+            '  │                 ^^^^^^^^^^^^^\n'
+            '  ╵',
           );
         },
       );
@@ -3510,7 +3715,12 @@ abstract class Module1 {
             error.toString(),
             'error: unsupported_method_type:\n'
             'Method Module1.providerString must be abstract or static.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#unsupported_method_type',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#unsupported_method_type\n'
+            'package:tests/test.dart:9:10\n'
+            '  ╷\n'
+            '9 │   String providerString() => \'\';\n'
+            '  │          ^^^^^^^^^^^^^^\n'
+            '  ╵',
           );
         },
       );
@@ -3535,7 +3745,12 @@ abstract class Module1 {
             error.toString(),
             'error: private_method_of_module:\n'
             'Method Module1._providerString can not be private.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#private_method_of_module',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#private_method_of_module\n'
+            'package:tests/test.dart:9:17\n'
+            '  ╷\n'
+            '9 │   static String _providerString() => \'\';\n'
+            '  │                 ^^^^^^^^^^^^^^^\n'
+            '  ╵',
           );
         },
       );
@@ -3561,7 +3776,12 @@ abstract class Module1 {
             error.toString(),
             'error: ambiguity_of_provide_method:\n'
             'Method [Module1.bindPattern] can not be annotated together with @Provides and @Binds\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#ambiguity_of_provide_method',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#ambiguity_of_provide_method\n'
+            'package:tests/test.dart:10:11\n'
+            '   ╷\n'
+            '10 │   Pattern bindPattern(String impl);\n'
+            '   │           ^^^^^^^^^^^\n'
+            '   ╵',
           );
         },
       );
@@ -3622,7 +3842,12 @@ abstract class MyComponent {}
               error.toString(),
               'error: invalid_subcomponent_factory:\n'
               'The MyComponentBuilder is not suitable for the AppComponent it is bound to.\n'
-              'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_subcomponent_factory',
+              'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_subcomponent_factory\n'
+              'package:tests/test.dart:7:16\n'
+              '  ╷\n'
+              '7 │ abstract class MyComponentBuilder {\n'
+              '  │                ^^^^^^^^^^^^^^^^^^\n'
+              '  ╵',
             );
           },
         );
@@ -3672,7 +3897,12 @@ abstract class AppComponent {
               error.toString(),
               'error: invalid_member:\n'
               'Unsupported member setter= in Component.\n'
-              'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_member',
+              'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_member\n'
+              'package:tests/test.dart:5:7\n'
+              '  ╷\n'
+              '5 │   set setter(bool value);\n'
+              '  │       ^^^^^^\n'
+              '  ╵',
             );
           },
         );
@@ -3739,7 +3969,12 @@ abstract class Module1 {
               error.toString(),
               'error: invalid_component:\n'
               'Component AppComponent should only have abstract classes as ancestor.\n'
-              'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_component',
+              'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_component\n'
+              'package:tests/test.dart:6:16\n'
+              '  ╷\n'
+              '6 │ abstract class AppComponent extends Ancestor1 {\n'
+              '  │                ^^^^^^^^^^^^\n'
+              '  ╵',
             );
           },
         );
@@ -3763,7 +3998,12 @@ abstract class AppComponent {
               error.toString(),
               'error: invalid_injectable_method:\n'
               'Injected method inject must have one parameter.\n'
-              'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_injectable_method',
+              'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_injectable_method\n'
+              'package:tests/test.dart:5:8\n'
+              '  ╷\n'
+              '5 │   void inject(int i, String s);\n'
+              '  │        ^^^^^^\n'
+              '  ╵',
             );
           },
         );
@@ -3787,7 +4027,12 @@ abstract class AppComponent {
               error.toString(),
               'error: invalid_method_of_component:\n'
               'Method getString of component must be abstract.\n'
-              'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_method_of_component',
+              'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_method_of_component\n'
+              'package:tests/test.dart:5:10\n'
+              '  ╷\n'
+              '5 │   String getString() => \'\';\n'
+              '  │          ^^^^^^^^^\n'
+              '  ╵',
             );
           },
         );
@@ -3811,7 +4056,12 @@ abstract class AppComponent {
               error.toString(),
               'error: invalid_method_of_component:\n'
               'Method _getString of component must be public.\n'
-              'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_method_of_component',
+              'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_method_of_component\n'
+              'package:tests/test.dart:5:10\n'
+              '  ╷\n'
+              '5 │   String _getString();\n'
+              '  │          ^^^^^^^^^^\n'
+              '  ╵',
             );
           },
         );
@@ -3835,7 +4085,12 @@ abstract class AppComponent {
               error.toString(),
               'error: invalid_method_of_component:\n'
               'Method getString of component must have zero parameters.\n'
-              'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_method_of_component',
+              'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_method_of_component\n'
+              'package:tests/test.dart:5:10\n'
+              '  ╷\n'
+              '5 │   String getString(String s);\n'
+              '  │          ^^^^^^^^^\n'
+              '  ╵',
             );
           },
         );
@@ -3945,7 +4200,12 @@ abstract final class MyComponent { }
             error.toString(),
             'error: final_component:\n'
             'Component MyComponent cannot be final.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#final_component',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#final_component\n'
+            'package:tests/test.dart:4:22\n'
+            '  ╷\n'
+            '4 │ abstract final class MyComponent { }\n'
+            '  │                      ^^^^^^^^^^^\n'
+            '  ╵',
           );
         },
       );
@@ -3964,7 +4224,12 @@ abstract base class MyComponent { }
             error.toString(),
             'error: base_component:\n'
             'Component MyComponent cannot be base.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#base_component',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#base_component\n'
+            'package:tests/test.dart:4:21\n'
+            '  ╷\n'
+            '4 │ abstract base class MyComponent { }\n'
+            '  │                     ^^^^^^^^^^^\n'
+            '  ╵',
           );
         },
       );
@@ -3983,7 +4248,12 @@ sealed class MyComponent { }
             error.toString(),
             'error: base_component:\n'
             'Component MyComponent cannot be sealed.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#base_component',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#base_component\n'
+            'package:tests/test.dart:4:14\n'
+            '  ╷\n'
+            '4 │ sealed class MyComponent { }\n'
+            '  │              ^^^^^^^^^^^\n'
+            '  ╵',
           );
         },
       );
@@ -4007,7 +4277,12 @@ abstract final class MyComponentBuilder {
             error.toString(),
             'error: final_component_builder:\n'
             'Component builder MyComponentBuilder cannot be final.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#final_component_builder',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#final_component_builder\n'
+            'package:tests/test.dart:7:22\n'
+            '  ╷\n'
+            '7 │ abstract final class MyComponentBuilder {\n'
+            '  │                      ^^^^^^^^^^^^^^^^^^\n'
+            '  ╵',
           );
         },
       );
@@ -4031,7 +4306,12 @@ abstract base class MyComponentBuilder {
             error.toString(),
             'error: base_component_builder:\n'
             'Component builder MyComponentBuilder cannot be base.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#base_component_builder',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#base_component_builder\n'
+            'package:tests/test.dart:7:21\n'
+            '  ╷\n'
+            '7 │ abstract base class MyComponentBuilder {\n'
+            '  │                     ^^^^^^^^^^^^^^^^^^\n'
+            '  ╵',
           );
         },
       );
@@ -4055,7 +4335,12 @@ sealed class MyComponentBuilder {
             error.toString(),
             'error: sealed_component_builder:\n'
             'Component builder MyComponentBuilder cannot be sealed.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#sealed_component_builder',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#sealed_component_builder\n'
+            'package:tests/test.dart:7:14\n'
+            '  ╷\n'
+            '7 │ sealed class MyComponentBuilder {\n'
+            '  │              ^^^^^^^^^^^^^^^^^^\n'
+            '  ╵',
           );
         },
       );
@@ -4074,7 +4359,12 @@ abstract class _Component {}
             error.toString(),
             'error: public_component:\n'
             'Component _Component must be public.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#public_component',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#public_component\n'
+            'package:tests/test.dart:4:16\n'
+            '  ╷\n'
+            '4 │ abstract class _Component {}\n'
+            '  │                ^^^^^^^^^^\n'
+            '  ╵',
           );
         },
       );
@@ -4093,7 +4383,12 @@ class AppComponent {}
             error.toString(),
             'error: abstract_component:\n'
             'Component AppComponent must be abstract.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#abstract_component',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#abstract_component\n'
+            'package:tests/test.dart:4:7\n'
+            '  ╷\n'
+            '4 │ class AppComponent {}\n'
+            '  │       ^^^^^^^^^^^^\n'
+            '  ╵',
           );
         },
       );
@@ -4131,7 +4426,12 @@ abstract class AppComponent {}
             error.toString(),
             'error: component_depend_himself:\n'
             'A component AppComponent cannot depend on himself.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#component_depend_himself',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#component_depend_himself\n'
+            'package:tests/test.dart:4:16\n'
+            '  ╷\n'
+            '4 │ abstract class AppComponent {}\n'
+            '  │                ^^^^^^^^^^^^\n'
+            '  ╵',
           );
         },
       );
@@ -4158,7 +4458,12 @@ abstract class _MyComponentBuilder {
             error.toString(),
             'error: public_component_builder:\n'
             'Component builder _MyComponentBuilder must be public.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#public_component_builder',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#public_component_builder\n'
+            'package:tests/test.dart:10:16\n'
+            '   ╷\n'
+            '10 │ abstract class _MyComponentBuilder {\n'
+            '   │                ^^^^^^^^^^^^^^^^^^^\n'
+            '   ╵',
           );
         },
       );
@@ -4186,7 +4491,12 @@ abstract class ComponentBuilder {
             error.toString(),
             'error: component_builder_invalid_method_type:\n'
             'Invalid type of method setInt. Expected ComponentBuilder.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#component_builder_invalid_method_type',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#component_builder_invalid_method_type\n'
+            'package:tests/test.dart:10:16\n'
+            '   ╷\n'
+            '10 │   AppComponent setInt(int i);\n'
+            '   │                ^^^^^^\n'
+            '   ╵',
           );
         },
       );
@@ -4212,7 +4522,12 @@ abstract class ComponentBuilder {
             error.toString(),
             'error: wrong_arguments_of_build_method:\n'
             'Build method should not contain arguments.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#wrong_arguments_of_build_method',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#wrong_arguments_of_build_method\n'
+            'package:tests/test.dart:10:16\n'
+            '   ╷\n'
+            '10 │   AppComponent build(int i);\n'
+            '   │                ^^^^^\n'
+            '   ╵',
           );
         },
       );
@@ -4274,7 +4589,12 @@ abstract class MyComponentBuilder {
             error.toString(),
             'error: component_builder_private_method:\n'
             'Method _setString must be public.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#component_builder_private_method',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#component_builder_private_method\n'
+            'package:tests/test.dart:12:22\n'
+            '   ╷\n'
+            '12 │   MyComponentBuilder _setString(String s);\n'
+            '   │                      ^^^^^^^^^^\n'
+            '   ╵',
           );
         },
       );
@@ -4311,7 +4631,12 @@ class MyClass {
             error.toString(),
             'error: invalid_injected_method:\n'
             'Injected method _init must be public.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_injected_method',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_injected_method\n'
+            'package:tests/test.dart:19:8\n'
+            '   ╷\n'
+            '19 │   void _init(int i) {}\n'
+            '   │        ^^^^^\n'
+            '   ╵',
           );
         },
       );
@@ -4346,7 +4671,12 @@ class MyClass {
             error.toString(),
             'error: invalid_injected_method:\n'
             'Injected method init can not be static.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_injected_method',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_injected_method\n'
+            'package:tests/test.dart:19:15\n'
+            '   ╷\n'
+            '19 │   static void init(int i) {}\n'
+            '   │               ^^^^\n'
+            '   ╵',
           );
         },
       );
@@ -4388,7 +4718,12 @@ abstract class BaseClass {
             error.toString(),
             'error: invalid_injected_method:\n'
             'Injected method init can not be abstract.\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_injected_method',
+            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_injected_method\n'
+            'package:tests/test.dart:26:8\n'
+            '   ╷\n'
+            '26 │   void init(int i);\n'
+            '   │        ^^^^\n'
+            '   ╵',
           );
         },
       );
