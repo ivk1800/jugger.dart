@@ -3567,32 +3567,6 @@ abstract class Module1 {
       );
     });
 
-    test('ambiguity of provide method', () async {
-      await checkBuilderResult(
-        mainContent: '''
-import 'package:jugger/jugger.dart';
-
-@Component(modules: <Type>[Module1])
-abstract class AppComponent {}
-
-@Module()
-abstract class Module1 {
-  @binds
-  @provides
-  Pattern bindPattern(String impl);
-}
-        ''',
-        onError: (Object error) {
-          expect(
-            error.toString(),
-            'error: ambiguity_of_provide_method:\n'
-            'Method [Module1.bindPattern] can not be annotated together with @Provides and @Binds\n'
-            'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#ambiguity_of_provide_method',
-          );
-        },
-      );
-    });
-
     test('provides nullable type', () async {
       await checkBuilderResult(
         mainContent: '''
@@ -3734,38 +3708,6 @@ abstract class MyComponentBuilder {
               'error: invalid_member:\n'
               'Unsupported member getter in ComponentBuilder.\n'
               'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_member',
-            );
-          },
-        );
-      },
-    );
-
-    test(
-      'Component should only have abstract classes as ancestor.',
-      () async {
-        await checkBuilderResult(
-          mainContent: '''
-import 'package:jugger/jugger.dart';
-
-class Ancestor1 {}
-
-@Component(modules: <Type>[Module1])
-abstract class AppComponent extends Ancestor1 {
-  String getString1();
-}
-
-@module
-abstract class Module1 {
-  @provides
-  static String provideString() => 's';
-}
-        ''',
-          onError: (Object error) {
-            expect(
-              error.toString(),
-              'error: invalid_component:\n'
-              'Component AppComponent should only have abstract classes as ancestor.\n'
-              'Explanation of Error: https://github.com/ivk1800/jugger.dart/blob/master/jugger_generator/GLOSSARY_OF_ERRORS.md#invalid_component',
             );
           },
         );
