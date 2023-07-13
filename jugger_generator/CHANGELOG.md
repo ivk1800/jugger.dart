@@ -1,3 +1,16 @@
+## 3.2.0
+
+* Support enum type.
+* Support record type.
+* Support function type.
+* Support void type.
+* Fix nullable type in generic.
+* Removed crypto dependency.
+* Upgrade dependencies for Dart 3.
+* Require SDK >=2.19.0 <4.0.0.
+* Internal refactor: improved names generation for types.
+* Using InvalidGenerationSourceError for generation error.
+
 ## 3.1.1
 
 * Upgrade analyzer.
