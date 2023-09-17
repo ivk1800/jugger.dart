@@ -1,0 +1,30 @@
+// ignore_for_file: implementation_imports
+// ignore_for_file: prefer_const_constructors
+// ignore_for_file: always_specify_types
+// ignore_for_file: directives_ordering
+// ignore_for_file: non_constant_identifier_names
+// ignore_for_file: type=lint
+// ignore_for_file: unused_field
+// ignore_for_file: no_leading_underscores_for_library_prefixes
+import 'package:tests/mixin/mixin_type_in_parent_component.dart' as _i1;
+import 'package:jugger/jugger.dart' as _i2;
+
+class JuggerParentComponent implements _i1.ParentComponent {
+  JuggerParentComponent.create();
+
+  late final _i2.IProvider<_i1.MyMixin> _myMixin0Provider =
+      _i2.Provider<_i1.MyMixin>(() => _i1.ParentModule.provideMyMixin());
+
+  _i1.ChildComponent createChildComponent() {
+    return JuggerSubcomponent$ChildComponent.create(this);
+  }
+}
+
+class JuggerSubcomponent$ChildComponent implements _i1.ChildComponent {
+  JuggerSubcomponent$ChildComponent.create(this._parent);
+
+  final JuggerParentComponent _parent;
+
+  @override
+  _i1.MyMixin get myMixin => _parent._myMixin0Provider.get();
+}

@@ -406,6 +406,7 @@ class ComponentContext {
     required List<GraphObject> or,
   }) {
     if (type.element is EnumElement ||
+        type.element is MixinElement ||
         type is RecordType ||
         type is VoidType ||
         type is FunctionType) {
@@ -655,6 +656,7 @@ class ComponentContext {
       final DartType type = graphObject.type;
 
       if (type.element is EnumElement ||
+          type.element is MixinElement ||
           type is RecordType ||
           type is VoidType ||
           type is FunctionType) {
