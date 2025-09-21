@@ -1,3 +1,8 @@
+### ⚠️ Archived  
+This repository is no longer maintained.
+
+I am no longer interested in **Flutter/Dart** and don’t have time to continue development or provide support.
+
 ## jugger.dart - Dependency Injection for Flutter and Dart
 
 Compile-time dependency injection for Dart and Flutter. Inspired by [inject.dart](https://github.com/google/inject.dart) and [Dagger 2](https://github.com/google/dagger).
