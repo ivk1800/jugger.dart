@@ -20,7 +20,11 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        sdk: [ 2.17.0 ]
+        sdk: [
+          2.17.0,
+          2.18.0,
+          2.19.0,
+        ]
         dir: ['jugger', 'jugger_generator', 'tests']
     steps:
       - uses: actions/checkout@v2
